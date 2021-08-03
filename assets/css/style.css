@@ -1,0 +1,56 @@
+.wc-esl-search-city__wrap {
+    position: relative;
+    width: 100%;
+}
+
+.wc-esl-search-city__list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+	border-left: 1px solid #f2f2f2;
+	border-right: 1px solid #f2f2f2;
+	position: absolute;
+    background: #fff;
+    width: 100%;
+    z-index: 200;
+}
+
+.wc-esl-search-city__item {
+	cursor: pointer;
+	padding: 4px 9px;
+	border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city__item:hover {
+	background: #fafafa;
+}
+
+.wc-esl-terminals__button {
+	margin: 0 0 1.41575em;
+}
+
+.woocommerce-checkout .form-row,
+.woocommerce-shipping-calculator .form-row {
+	position: relative;
+}
+
+#wc_esl_yandex_map .modal-header {
+	display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#wc_esl_yandex_map .modal-header:before,
+#wc_esl_yandex_map .modal-header:after {
+	display: none;
+}
+
+#wc_esl_yandex_map .modal-header h4 {
+	margin: 0;
+}
+
+[data-accept-terminal] {
+	position: relative;
+    left: 1px;
+    bottom: 2px;
+}
