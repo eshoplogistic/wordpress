@@ -9,7 +9,7 @@
  * @package           WC_Eshop_Logistic
  *
  * @wordpress-plugin
- * Plugin Name:       Калькулятор доставки для интернет-магазинов eShopLogistic
+ * Plugin Name:       Калькулятор доставки для интернет-магазинов eShopLogisticRu
  * Plugin URI:        https://wp.eshoplogistic.ru/
  * Description:       Несколько служб доставки в одной интеграции: CDEK, DPD, Boxberry, IML, Почта России, Деловые Линии, ПЭК, Dostavista, GTD, Байкал Сервис и др.
  * Version:           1.0.0

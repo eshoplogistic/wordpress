@@ -101,14 +101,14 @@ class AssetsLoader implements ModuleInterface
         {
             wp_enqueue_style(
                 'wc_esl_bootstrap_css',
-                'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css',
+                WC_ESL_PLUGIN_URL . 'assets/css/bootstrap.min.css',
                 [],
                 '4.6.0'
             );
 
             wp_enqueue_style(
                 'wc_esl_font_awesome_css',
-                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
+                WC_ESL_PLUGIN_URL . 'assets/css/all.min.css',
                 [],
                 '5.15.3'
             );
@@ -122,7 +122,7 @@ class AssetsLoader implements ModuleInterface
 
             wp_enqueue_script(
                 'wc_esl_bootstrap_js',
-                'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js',
+                WC_ESL_PLUGIN_URL . 'assets/js/bootstrap.min.js',
                 [],
                 '4.6.0',
                 true

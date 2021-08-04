@@ -27,8 +27,16 @@ class Footer implements ModuleInterface
         ?>
 
         <div id="eShopLogisticApp" data-key="<?= $widgetKey ?>"></div>
-        <script src="https://api.eshoplogistic.ru/widget/modal/v1/app.js"></script>
+        <!-- <script src="https://api.eshoplogistic.ru/widget/modal/v1/app.js"></script> -->
 
         <?php
+
+        wp_enqueue_script(
+            'wc_esl_app_js',
+            WC_ESL_PLUGIN_URL . 'assets/js/app.js',
+            [],
+            WC_ESL_VERSION,
+            true
+        );
     }
 }

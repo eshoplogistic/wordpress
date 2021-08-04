@@ -52,7 +52,7 @@ class Ajax implements ModuleInterface
 
     public function changeEnablePlugin()
     {
-        $status = isset($_POST['status']) ? $_POST['status'] : null;
+        $status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
 
         $options = [];
 
@@ -70,7 +70,7 @@ class Ajax implements ModuleInterface
 
     public function saveApiKey()
     {
-        $api_key = !empty($_POST['api_key']) ? $_POST['api_key'] : '';
+        $api_key = !empty($_POST['api_key']) ? wc_clean($_POST['api_key']) : '';
 
         $optionsController = new OptionsController();
         $response = $optionsController->saveApiKey($api_key);
@@ -80,7 +80,7 @@ class Ajax implements ModuleInterface
 
     public function saveWidgetSecretCode()
     {
-        $secretCode = !empty($_POST['secret_code']) ? $_POST['secret_code'] : '';
+        $secretCode = !empty($_POST['secret_code']) ? wc_clean($_POST['secret_code']) : '';
 
         $optionsController = new OptionsController();
         $response = $optionsController->saveWidgetSecretCode($secretCode);
@@ -90,7 +90,7 @@ class Ajax implements ModuleInterface
 
     public function saveWidgetKey()
     {
-        $widgetKey = !empty($_POST['widget_key']) ? $_POST['widget_key'] : '';
+        $widgetKey = !empty($_POST['widget_key']) ? wc_clean($_POST['widget_key']) : '';
 
         $optionsController = new OptionsController();
         $response = $optionsController->saveWidgetKey($widgetKey);
@@ -100,7 +100,7 @@ class Ajax implements ModuleInterface
 
     public function searchCities()
     {
-        $target = isset($_POST['target']) ? $_POST['target'] : '';
+        $target = isset($_POST['target']) ? wc_clean($_POST['target']) : '';
 
         $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
         $result = $eshopLogisticApi->search($target);
@@ -115,12 +115,12 @@ class Ajax implements ModuleInterface
 
     public function updateShippingAddress()
     {
-        $fias = isset($_POST['fias']) ? $_POST['fias'] : '';
-        $city = isset($_POST['city']) ? $_POST['city'] : '';
-        $region = isset($_POST['region']) ? $_POST['region'] : '';
-        $postcode = isset($_POST['postcode']) ? $_POST['postcode'] : '';
-        $services = isset($_POST['services']) ? $_POST['services'] : [];
-        $mode = isset($_POST['mode']) ? $_POST['mode'] : 'billing';
+        $fias = isset($_POST['fias']) ? wc_clean($_POST['fias']) : '';
+        $city = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
+        $region = isset($_POST['region']) ? wc_clean($_POST['region']) : '';
+        $postcode = isset($_POST['postcode']) ? wc_clean($_POST['postcode']) : '';
+        $services = isset($_POST['services']) ? wc_clean($_POST['services']) : [];
+        $mode = isset($_POST['mode']) ? wc_clean($_POST['mode']) : 'billing';
 
         $data = [
             'shipping_city' => $city,
@@ -196,7 +196,7 @@ class Ajax implements ModuleInterface
 
     public function savePaymentMethod()
     {
-        $formData = isset($_POST['formData']) ? $_POST['formData'] : null;
+        $formData = isset($_POST['formData']) ? wc_clean($_POST['formData']) : null;
 
         if(is_null($formData)) {
             wp_send_json([
@@ -244,7 +244,7 @@ class Ajax implements ModuleInterface
 
     public function setTerminalAddress()
     {
-        $terminal = isset($_POST['terminal']) ? $_POST['terminal'] : '';
+        $terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
 
         if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", WC_ESL_DOMAIN)]);
 
