@@ -30,8 +30,8 @@ class AssetsLoader implements ModuleInterface
 
         if(is_checkout() || is_cart()) {
             wp_enqueue_style(
-                'wc_esl_bootstrap_css',
-                WC_ESL_PLUGIN_URL . 'assets/plugins/bootstrap/css/bootstrap.min.css',
+                'wc_esl_modal_css',
+                WC_ESL_PLUGIN_URL . 'assets/plugins/bootstrap/css/modal.min.css',
                 [],
                 WC_ESL_VERSION
             );
@@ -56,8 +56,16 @@ class AssetsLoader implements ModuleInterface
 
         if(is_checkout()) {
             wp_enqueue_script(
-                'wc_esl_bootstrap_js',
-                WC_ESL_PLUGIN_URL . 'assets/plugins/bootstrap/js/bootstrap.min.js',
+                'wc_esl_modal_transition_js',
+                WC_ESL_PLUGIN_URL . 'assets/plugins/bootstrap/js/transition.js',
+                [ 'jquery' ],
+                WC_ESL_VERSION,
+                true
+            );
+
+            wp_enqueue_script(
+                'wc_esl_modal_js',
+                WC_ESL_PLUGIN_URL . 'assets/plugins/bootstrap/js/modal.min.js',
                 [ 'jquery' ],
                 WC_ESL_VERSION,
                 true

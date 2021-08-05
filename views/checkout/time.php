@@ -1,3 +1,3 @@
 <div class="wc-esl-shipping-method-time">
-	<p><?= __( 'Срок:', WC_ESL_DOMAIN ) ?> <span><?= $time ?></span></p>
+	<p><?php echo __( 'Срок:', WC_ESL_DOMAIN ) ?> <span><?php echo $time ?></span></p>
 </div>

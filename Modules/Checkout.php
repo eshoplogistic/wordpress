@@ -50,7 +50,7 @@ class Checkout implements ModuleInterface
     {
         ?>
 
-        <div id="wc-esl-terminals-wrap-<?= $type ?>" class="wc-esl-terminals__container">
+        <div id="wc-esl-terminals-wrap-<?php echo $type ?>" class="wc-esl-terminals__container">
 
             <?php
                 $sessionService = new SessionService();
@@ -71,9 +71,9 @@ class Checkout implements ModuleInterface
             <button
             	class="wc-esl-terminals__button"
             	type="button"
-            	data-mode="<?= $type ?>"
+            	data-mode="<?php echo $type ?>"
             >
-                <?= $sessionService->get('terminal_location') ? __('Выбрать другой пункт выдачи', WC_ESL_DOMAIN) : __('Выбрать пункт выдачи', WC_ESL_DOMAIN) ?>
+                <?php echo $sessionService->get('terminal_location') ? __('Выбрать другой пункт выдачи', WC_ESL_DOMAIN) : __('Выбрать пункт выдачи', WC_ESL_DOMAIN) ?>
             </button>
         </div>
 
