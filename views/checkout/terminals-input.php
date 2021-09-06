@@ -8,4 +8,4 @@ $terminals = !empty($terminals) ? $terminals : '';
 
 ?>
 
-<input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo htmlspecialchars($terminals) ?>" />
+<input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(htmlspecialchars($terminals)) ?>" />

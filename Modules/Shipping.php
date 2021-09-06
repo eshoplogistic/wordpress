@@ -53,7 +53,7 @@ class Shipping implements ModuleInterface
         foreach($rates as $key => $rate) {
             if(
                 isset($shippingMethods[$key]) ||
-                (count(explode(WC_ESL_DOMAIN, $key)) < 1)
+                (count(explode(WC_ESL_PREFIX, $key)) < 2)
             ) {
                 $newRates[$key] = $rate;
             }

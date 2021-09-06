@@ -287,6 +287,7 @@
 		});
 
 		$( 'body' ).on( 'change', 'input[name="shipping_method[0]"]', function( e ) {
+			$('#wc_esl_billing_terminal').val('');
 			currentShippingMethod 	= $( 'input[name="shipping_method[0]"]:checked' ).val();
 			shippingMethodIsEshop 	= shippingMethodIsEshopFunc( currentShippingMethod );
 			typeShippingMethod 		= shippingMethodTypeFunc( currentShippingMethod );

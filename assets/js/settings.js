@@ -1,4 +1,8 @@
-window.onload = function() {
+window.addEventListener('load', function(event) {
+	eslRun()
+});
+
+function eslRun() {
 	let AdminSettingsEsl = {
 		enablePluginCheckbox: document.getElementById('enablePlugin'),
 		apiKeyInput: document.getElementById('apiKeyInput'),

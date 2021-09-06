@@ -7,7 +7,7 @@ use eshoplogistic\WCEshopLogistic\Services\SessionService;
 use eshoplogistic\WCEshopLogistic\Services\CalculationService;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
-use eshoplogistic\WCEshopLogistic\Helpers\СonflictPluginsHelper;
+use eshoplogistic\WCEshopLogistic\Helpers\ConflictPluginsHelper;
 
 class Base extends \WC_Shipping_Method
 {
@@ -69,7 +69,7 @@ class Base extends \WC_Shipping_Method
         $shippingHelper = new ShippingHelper();
         $options = $this->getOptionMethod($shippingHelper->getSlugMethod($this->id));
 
-        $typeMethodTitle = ($shippingHelper->getTypeMethod($this->id) === 'terminal') ? 'Доставка до пункта выдачи' : 'Доставка куръером';
+        $typeMethodTitle = ($shippingHelper->getTypeMethod($this->id) === 'terminal') ? 'Доставка до пункта выдачи' : 'Доставка курьером';
         $defaultTitle = isset( $options['name'] ) ? $options['name'] . ': ' . $typeMethodTitle : '';
  
         $this->instance_form_fields = array(
@@ -160,7 +160,7 @@ class Base extends \WC_Shipping_Method
                 $shippingMethods[$this->id] = $response[$this->getType()];
                 $cost = isset($response[$this->getType()]['price']) ? $response[$this->getType()]['price'] : 0;
                 //Костыль для оброботки конфликтов с другими плагинами(WOOCS)
-                $conflict = new СonflictPluginsHelper();
+                $conflict = new ConflictPluginsHelper();
                 $cost = $conflict->init($cost);
 
                 switch($this->getType()) {

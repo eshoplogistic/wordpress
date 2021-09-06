@@ -4,7 +4,7 @@ namespace eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods;
 
 use eshoplogistic\WCEshopLogistic\Classes\Shipping\Base;
 
-class BaikalDoor extends Base
+class ZdeDoor extends Base
 {
     /**
      * Constructor class
@@ -14,9 +14,10 @@ class BaikalDoor extends Base
      */
     public function __construct( $instance_id = 0 )
     {
+
         parent::__construct( $instance_id );
 
-        $slug = 'baikal';
+        $slug = 'zde';
         $type = 'door';
 
         $option = $this->getOptionMethod($slug);
@@ -24,7 +25,7 @@ class BaikalDoor extends Base
         $title = isset( $option['name'] ) ? $option['name'] . ': Доставка курьером' : '';
 
         $this->id                   = WC_ESL_PREFIX . $slug . '_' . $type;
-        $this->method_title         = $title;
+        $this->method_title         = isset( $option['name'] ) ? $option['name'] . ': Доставка курьером' : '';
         $this->method_description   = '';
 
         $this->init();

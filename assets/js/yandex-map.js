@@ -1,4 +1,8 @@
-window.onload = function() {
+window.addEventListener('load', function(event) {
+    eslRunMap()
+});
+
+function eslRunMap() {
 
     esl = {
       setTerminal: function ( terminal ) {

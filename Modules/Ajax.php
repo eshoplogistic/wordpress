@@ -196,7 +196,7 @@ class Ajax implements ModuleInterface
 
     public function savePaymentMethod()
     {
-        $formData = isset($_POST['formData']) ? wc_clean($_POST['formData']) : null;
+        $formData = isset($_POST['formData']) ? $_POST['formData'] : null;
 
         if(is_null($formData)) {
             wp_send_json([

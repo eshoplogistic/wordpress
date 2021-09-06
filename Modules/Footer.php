@@ -13,7 +13,8 @@ class Footer implements ModuleInterface
 {
     public function init()
     {
-        add_action('wp_footer', [$this, 'addWidgetScript']);
+        add_shortcode('shortcode_widget_button', 'shortcode_widget_button_handler');
+        //add_action('wp_footer', [$this, 'addWidgetScript']);
     }
 
     public function addWidgetScript()
@@ -26,7 +27,7 @@ class Footer implements ModuleInterface
 
         ?>
 
-        <div id="eShopLogisticApp" data-key="<?php echo $widgetKey ?>"></div>
+        <div id="eShopLogisticApp" data-key="<?php echo esc_attr($widgetKey) ?>"></div>
         <!-- <script src="https://api.eshoplogistic.ru/widget/modal/v1/app.js"></script> -->
 
         <?php
@@ -39,4 +40,6 @@ class Footer implements ModuleInterface
             true
         );
     }
+
+
 }

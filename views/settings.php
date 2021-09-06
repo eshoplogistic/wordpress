@@ -71,7 +71,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                     placeholder="<?php echo __( 'API Ключ', WC_ESL_DOMAIN ) ?>"
                                                     id="apiKeyInput"
                                                     name="api_key"
-                                                    value="<?php echo $api_key ?>"
+                                                    value="<?php echo esc_attr($api_key) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
@@ -107,11 +107,11 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                             <?php foreach ($paymentGateways as $paymentGateway) : ?>
 
                                             <tr>
-                                                <th scope="row"><?php echo $paymentGateway->title ?></th>
+                                                <th scope="row"><?php echo esc_attr($paymentGateway->title) ?></th>
                                                 <td>
                                                     <input
                                                             type="radio"
-                                                            name="esl_pay_type[<?php echo $paymentGateway->id ?>]"
+                                                            name="esl_pay_type[<?php echo esc_attr($paymentGateway->id) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ?>"
                                                             <?php echo ( $paymentMethods[$paymentGateway->id] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ) ? 'checked' : '' ?>
                                                     />
@@ -119,7 +119,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                 <td>
                                                     <input
                                                             type="radio"
-                                                            name="esl_pay_type[<?php echo $paymentGateway->id ?>]"
+                                                            name="esl_pay_type[<?php echo esc_attr($paymentGateway->id) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ?>"
                                                             <?php echo ( $paymentMethods[$paymentGateway->id] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ) ? 'checked' : '' ?>
                                                     />
@@ -127,7 +127,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                 <td>
                                                     <input
                                                             type="radio"
-                                                            name="esl_pay_type[<?php echo $paymentGateway->id ?>]"
+                                                            name="esl_pay_type[<?php echo esc_attr($paymentGateway->id) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ?>"
                                                             <?php echo ( $paymentMethods[$paymentGateway->id] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ) ? 'checked' : '' ?>
                                                     />
@@ -135,7 +135,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                 <td>
                                                     <input
                                                             type="radio"
-                                                            name="esl_pay_type[<?php echo $paymentGateway->id ?>]"
+                                                            name="esl_pay_type[<?php echo esc_attr($paymentGateway->id) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ?>"
                                                             <?php echo ( $paymentMethods[$paymentGateway->id] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ) ? 'checked' : '' ?>
                                                     />
@@ -173,7 +173,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                 placeholder="<?php echo __( 'Ключ виджета', WC_ESL_DOMAIN ) ?>"
                                                 id="eslWidgetKey"
                                                 name="esl_widget_key"
-                                                value="<?php echo $widget_key ?>"
+                                                value="<?php echo esc_attr($widget_key) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
@@ -198,7 +198,7 @@ $widget_key = !empty($widget_key) ? $widget_key : '';
                                                 placeholder="<?php echo __( 'Секретный код', WC_ESL_DOMAIN ) ?>"
                                                 id="eslWidgetSecretCode"
                                                 name="esl_widget_secret_code"
-                                                value="<?php echo $secret_code ?>"
+                                                value="<?php echo esc_attr($secret_code) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
