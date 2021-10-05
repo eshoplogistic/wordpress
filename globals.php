@@ -41,11 +41,11 @@ if ( ! function_exists('shortcode_widget_button_handler')) {
             $wc_product['id'],
             $wc_product['name'],
             $wc_product['price'],
-            $wc_product['weight'],
+            $wc_product['weight']
         );
         $block_content .= sprintf(
             '<div id="eShopLogisticApp" data-key="%1$s"></div>',
-            $widgetKey,
+            $widgetKey
         );
 
         wp_enqueue_script(

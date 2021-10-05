@@ -164,9 +164,9 @@ class Base extends \WC_Shipping_Method
                 $cost = $conflict->init($cost);
 
                 switch($this->getType()) {
-                    case 'terminal':
-                        $shippingMethods[$this->id]['terminals'] = $response['terminals'];
-                        break;
+	                case 'terminal' && isset($response['terminals']):
+		                $shippingMethods[$this->id]['terminals'] = $response['terminals'];
+		                break;
                 
                     case 'door':
                         break;
@@ -175,9 +175,9 @@ class Base extends \WC_Shipping_Method
                         break;
                 }
 
-                if(isset($response['comments'])) {
-                    $shippingMethods[$this->id]['comments'] = $response['comments'];
-                }
+	            if(isset($response['comments'])) {
+		            $shippingMethods[$this->id]['comments'] = ($shippingMethods[$this->id]['comments'])?$shippingMethods[$this->id]['comments'].' '.$response['comments']:$response['comments'];
+	            }
             } else {
             	unset($shippingMethods[$this->id]);
             }

@@ -13,12 +13,12 @@ function eslRunMap() {
         request.responseType = 'json'
         request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
         request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-        request.send( `action=wc_esl_set_terminal_address&terminal=${terminal}` )
+        request.send( `action=wc_esl_set_terminal_address&terminal=${terminal.address}&terminal_code=${terminal.code}` )
         
         request.addEventListener("readystatechange", () => {
       
             if (request.readyState === 4 && request.status === 200) {
-              jQuery( '#wc_esl_billing_terminal, #wc_esl_shipping_terminal' ).val( terminal );
+              jQuery( '#wc_esl_billing_terminal, #wc_esl_shipping_terminal' ).val( terminal.address );
               jQuery(".wc-esl-terminals__button").text("Выбрать другой пункт выдачи");
               console.log( request.response );
   
@@ -191,7 +191,7 @@ function eslRunMap() {
                           },
                           selectedTerminal: function (){
                               // document.dispatchEvent(new CustomEvent('onSelectAddress', {detail: terminal}))
-                              esl.setTerminal( terminal.address )
+                              esl.setTerminal( terminal )
                               // modal.close()
                           }
                       }

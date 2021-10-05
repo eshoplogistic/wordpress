@@ -54,3 +54,7 @@
     left: 1px;
     bottom: 2px;
 }
+
+#wc_esl_yandex_map .modal-body .row {
+	display: block !important;
+}

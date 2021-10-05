@@ -244,18 +244,19 @@ class Ajax implements ModuleInterface
 
     public function setTerminalAddress()
     {
-        $terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
+	    $terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
+	    $terminal_code = isset($_POST['terminal_code']) ? wc_clean($_POST['terminal_code']) : '';
 
-        if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", WC_ESL_DOMAIN)]);
+	    if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", WC_ESL_DOMAIN)]);
 
-        $sessionService = new SessionService();
-        $sessionService->set('terminal_location', $terminal);
+	    $sessionService = new SessionService();
+	    $sessionService->set('terminal_location', $terminal. 'Код пункта: '.$terminal_code);
 
-        wp_send_json([
-            'success' => true,
-            'data' => $terminal,
-            'msg' => __("Aдрес пункта выдачи успешно сохранён", WC_ESL_DOMAIN)
-        ]);
+	    wp_send_json([
+		    'success' => true,
+		    'data' => $terminal,
+		    'msg' => __("Aдрес пункта выдачи успешно сохранён", WC_ESL_DOMAIN)
+	    ]);
     }
 
     public function resetShippingAddress()

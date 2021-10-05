@@ -110,6 +110,7 @@
 		let billingAddress2 	= $( '#billing_address_2_field' );
 		let shippingAddress1 	= $( '#shipping_address_1_field' );
 		let shippingAddress2 	= $( '#shipping_address_2_field' );
+		let inputListTerminals 	= $( '#wcEslTerminals' );
 
 		if( isTerminal ) {
 
@@ -150,6 +151,10 @@
 				shippingAddress1.show();
 				shippingAddress2.show();
 			}
+
+			if(inputListTerminals.length === 0){
+				billingTerminals.hide();
+			}
 			
 		} else {
 			billingTerminals.hide();
@@ -177,22 +182,33 @@
 			currentShippingCountry
 		);
 
-		$( 'body' ).on( 'keyup focus', '#billing_city', function( e ) {
-			let value = $( this ).val();
-			let mode = 'billing';
-			let $this = $( this );
 
-			if( value.length > 2 ) {
+		if($('#billing_city').length === 1){
+			$('#billing_city').prop("autocomplete", "nope");
+			inputFocusCity('billing_city');
+		}else if($('#billing_state').length === 1){
+			$('#billing_state').prop("autocomplete", "nope");
+			inputFocusCity('billing_state');
+		}
 
-				if( currentBillingCountry === 'RU' ) {
-					searchCity( value, function( items ) {
-						$this.parents( '.form-row' ).append(
-							renderCitiesList( items, mode )
-						);
-					} );
+		function inputFocusCity($name = 'billing_city'){
+			$( 'body' ).on( 'keyup focus', '#'+$name, function( e ) {
+				let value = $( this ).val();
+				let mode = 'billing';
+				let $this = $( this );
+
+				if( value.length > 2 ) {
+
+					if( currentBillingCountry === 'RU' ) {
+						searchCity( value, function( items ) {
+							$this.parents( '.form-row' ).append(
+								renderCitiesList( items, mode )
+							);
+						} );
+					}
 				}
-			}
-		});
+			});
+		}
 
 		$( 'body' ).on( 'keyup focus', '#shipping_city', function( e ) {
 			let value = $( this ).val();

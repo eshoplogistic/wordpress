@@ -59,8 +59,8 @@ class Payment implements ModuleInterface
             foreach($paymentsForShippingMethod as $payment) {
                 if($wcEslPaymentMethods[$key] === $payment['key']) {
                     $newGateways[$key] = $gateway;
-                    $newGateways[$key]->description = $payment['comment'];
-                    break;
+	                $newGateways[$key]->description = ($newGateways[$key]->description)?$newGateways[$key]->description.' '.$payment['comment']:$payment['comment'];
+	                break;
                 }
             }
         }
