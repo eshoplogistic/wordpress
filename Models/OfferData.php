@@ -59,12 +59,13 @@ class OfferData implements OfferInterface
 
     public function getWeight()
     {
-        return round(
-            floatval(
-                $this->prepareWeight($this->product->get_weight())
-            ) * intval($this->get('quantity')),
-            2
-        );
+	    // * intval($this->get('quantity'))
+	    return round(
+		    floatval(
+			    $this->prepareWeight($this->product->get_weight())
+		    ),
+		    2
+	    );
     }
 
     public function getLength()

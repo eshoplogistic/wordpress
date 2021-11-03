@@ -41,6 +41,11 @@ class CheckoutValidator implements ModuleInterface
     }
 
     private function validateTerminalField($mode) {
+	    $check = $_POST['shipping_method'][0] ?? false;
+	    if($check === 'wc_esl_postrf_terminal'){
+		    return;
+	    }
+
         if(empty($_POST['wc_esl_'. $mode .'_terminal'])) {
             $message = "<strong>Пункт выдачи доставки</strong> является обязательным полем.";
 

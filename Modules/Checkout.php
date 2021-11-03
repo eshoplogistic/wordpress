@@ -14,10 +14,11 @@ class Checkout implements ModuleInterface
 {
     public function init()
     {
-        add_action('woocommerce_after_checkout_billing_form', [$this, 'injectBillingFields']);
-        add_action('woocommerce_after_checkout_shipping_form', [$this, 'injectShippingFields']);
+        //add_action('woocommerce_after_checkout_billing_form', [$this, 'injectBillingFields']);
+        //add_action('woocommerce_after_checkout_shipping_form', [$this, 'injectShippingFields']);
         add_action('woocommerce_checkout_update_order_review', [$this, 'clearShippingCache']);
         add_action('woocommerce_after_shipping_rate', [$this, 'infoShippingMethodItem']);
+	    add_action('woocommerce_review_order_before_payment', [$this, 'injectShippingFormFields']);
     }
 
     public function clearShippingCache()
@@ -30,6 +31,13 @@ class Checkout implements ModuleInterface
             unset( WC()->session->$shipping_session );
         }
     }
+
+
+	public function injectShippingFormFields($item)
+	{
+		$this->injectFields( 'billing' );
+		$this->injectFields( 'shipping' );
+	}
 
     public function injectBillingFields()
     {
