@@ -19,7 +19,7 @@
 				if( method_name.indexOf( '_door' ) !== -1 ) type = 'door';
 				else if( method_name.indexOf( '_terminal' ) !== -1 ) type = 'terminal';
 				else type = null;
-	
+
 			}
 
 		}
@@ -45,23 +45,23 @@
 
 	function searchCity( target, renderFunc ) {
 		$.ajax({
-            method: 'POST',
-            url: wc_esl_shipping_global.ajaxUrl,
-            async: true,
-            data: {
-                action : 'wc_esl_search_cities',
-                target
-            },
-            dataType: 'json',
-            success: function( response ) {
+			method: 'POST',
+			url: wc_esl_shipping_global.ajaxUrl,
+			async: true,
+			data: {
+				action : 'wc_esl_search_cities',
+				target
+			},
+			dataType: 'json',
+			success: function( response ) {
 
-                console.log(response);
+				console.log(response);
 
 				if( response.success ) {
 					renderFunc( response.data );
 				}
-            }
-        });
+			}
+		});
 	}
 
 	function renderCitiesItem( { fias, name, region, postal_code, services } ) {
@@ -104,13 +104,16 @@
 		billingCountry = '',
 		shippingCountry = ''
 	) {
-		let billingTerminals 	= $( '#wc-esl-terminals-wrap-billing' );
-		let shippingTerminals 	= $( '#wc-esl-terminals-wrap-shipping' );
-		let billingAddress1 	= $( '#billing_address_1_field' );
-		let billingAddress2 	= $( '#billing_address_2_field' );
-		let shippingAddress1 	= $( '#shipping_address_1_field' );
-		let shippingAddress2 	= $( '#shipping_address_2_field' );
-		let inputListTerminals 	= $( '#wcEslTerminals' );
+		let billingTerminals 		= $( '#wc-esl-terminals-wrap-billing' );
+		let shippingTerminals 		= $( '#wc-esl-terminals-wrap-shipping' );
+		let billingAddress1 		= $( '#billing_address_1_field' );
+		let billingAddress2 		= $( '#billing_address_2_field' );
+		let shippingAddress1 		= $( '#shipping_address_1_field' );
+		let shippingAddress2 		= $( '#shipping_address_2_field' );
+		let inputListTerminals 		= $( '#wcEslTerminals' );
+		let currentShippingMethod	= $( 'input[name="shipping_method[0]"]:checked' ).val();
+		if(!currentShippingMethod)
+			currentShippingMethod = $( 'input[name="shipping_method[0]"]' ).val();
 
 		if( isTerminal ) {
 
@@ -138,10 +141,17 @@
 				billingTerminals.show();
 				shippingTerminals.hide();
 
-				billingAddress1.hide();
-				billingAddress2.hide();
-				shippingAddress1.hide();
-				shippingAddress2.hide();
+				if(currentShippingMethod !== 'wc_esl_postrf_terminal'){
+					billingAddress1.hide();
+					billingAddress2.hide();
+					shippingAddress1.hide();
+					shippingAddress2.hide();
+				}else{
+					billingAddress1.show();
+					billingAddress2.show();
+					shippingAddress1.show();
+					shippingAddress2.show();
+				}
 			} else {
 				billingTerminals.hide();
 				shippingTerminals.hide();
@@ -154,8 +164,9 @@
 
 			if(inputListTerminals.length === 0){
 				billingTerminals.hide();
+				shippingTerminals.hide();
 			}
-			
+
 		} else {
 			billingTerminals.hide();
 			shippingTerminals.hide();
@@ -201,9 +212,16 @@
 
 					if( currentBillingCountry === 'RU' ) {
 						searchCity( value, function( items ) {
-							$this.parents( '.form-row' ).append(
-								renderCitiesList( items, mode )
-							);
+							if($this.parents( '.cfw-input-wrap-row' ).length === 1){
+								$this.parents( '.cfw-input-wrap-row' ).append(
+									renderCitiesList( items, mode )
+								);
+							}else{
+								$this.parents( '.form-row' ).append(
+									renderCitiesList( items, mode )
+								);
+							}
+
 						} );
 					}
 				}
@@ -219,9 +237,15 @@
 
 				if( currentBillingCountry === 'RU' ) {
 					searchCity( value, function( items ) {
-						$this.parents( '.form-row' ).append(
-							renderCitiesList( items, mode )
-						);
+						if($this.parents( '.cfw-input-wrap-row' ).length === 1){
+							$this.parents('.cfw-input-wrap-row' ).append(
+								renderCitiesList( items, mode )
+							);
+						}else{
+							$this.parents( '.form-row' ).append(
+								renderCitiesList( items, mode )
+							);
+						}
 					} );
 				}
 			}
@@ -232,7 +256,11 @@
 		});
 
 		$( 'body' ).on( 'updated_checkout', function() {
-			
+			if(!typeShippingMethod){
+				currentShippingMethod = $( 'input[name="shipping_method[0]"]' ).val();
+				typeShippingMethod = shippingMethodTypeFunc( currentShippingMethod )
+			}
+
 			changeVisibleElements(
 				differentShippingAddress,
 				typeShippingMethod === 'terminal',
@@ -257,22 +285,22 @@
 			$( '.wc-esl-search-city__list' ).hide();
 
 			$.ajax({
-                method: 'POST',
-                url: wc_esl_shipping_global.ajaxUrl,
-                async: true,
-                data: {
-                    action : 'wc_esl_update_shipping_address',
-                    fias,
-                    region,
-                    postcode,
-                    services,
-                    city,
-                    mode
-                },
-                dataType: 'json',
-                success: function( response ) {
+				method: 'POST',
+				url: wc_esl_shipping_global.ajaxUrl,
+				async: true,
+				data: {
+					action : 'wc_esl_update_shipping_address',
+					fias,
+					region,
+					postcode,
+					services,
+					city,
+					mode
+				},
+				dataType: 'json',
+				success: function( response ) {
 
-                	console.log( response );
+					console.log( response );
 
 					if( response.success ) {
 
@@ -287,14 +315,14 @@
 					}
 
 					$( 'body' ).trigger( 'update_checkout' );
-                }
-            });
+				}
+			});
 		});
 
 		$( 'body' ).on( 'change', '#ship-to-different-address-checkbox', function( e ) {
 			differentShippingAddress = $( this ).is( ':checked' );
 
-            changeVisibleElements(
+			changeVisibleElements(
 				differentShippingAddress,
 				typeShippingMethod === 'terminal',
 				currentBillingCountry,

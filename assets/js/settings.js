@@ -5,6 +5,8 @@ window.addEventListener('load', function(event) {
 function eslRun() {
 	let AdminSettingsEsl = {
 		enablePluginCheckbox: document.getElementById('enablePlugin'),
+		enablePluginPriceShippingCheckbox: document.getElementById('enablePluginPriceShipping'),
+		enablePluginLogCheckbox: document.getElementById('enablePluginLog'),
 		apiKeyInput: document.getElementById('apiKeyInput'),
 		apiKeyForm: document.getElementById('apiKeyForm'),
 		widgetSecretCodeInput: document.getElementById('eslWidgetSecretCode'),
@@ -17,6 +19,14 @@ function eslRun() {
 
 		init: function () {
 			this.enablePluginCheckbox.addEventListener('change', this.changeEnablePluginCheckbox.bind({
+				_self: this
+			}));
+
+			this.enablePluginPriceShippingCheckbox.addEventListener('change', this.changeEnablePluginPriceShippingCheckbox.bind({
+				_self: this
+			}));
+
+			this.enablePluginLogCheckbox.addEventListener('change', this.changeEnablePluginLogCheckbox.bind({
 				_self: this
 			}));
 
@@ -54,6 +64,60 @@ function eslRun() {
 		},
 
 		callbackChangePluginStatus: function (response) {
+			let _self = this._self;
+			PushEsl.addItem(response.status, response.msg);
+			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
+			console.log(response);
+		},
+
+		changeEnablePluginPriceShippingCheckbox: function (event) {
+			let _self = this._self;
+			let status = _self.enablePluginPriceShippingCheckbox.checked;
+
+			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
+
+			_self.changePluginPriceShippingStatus(status);
+		},
+
+		changePluginPriceShippingStatus: function (status) {
+			let data = [];
+
+			data['action'] = 'wc_esl_shipping_change_enable_plugin_price_shipping';
+			data['status'] = status;
+
+			HttpClientEsl.post(data, this.callbackChangePluginPriceShippingStatus.bind({
+				_self: this
+			}));
+		},
+
+		callbackChangePluginPriceShippingStatus: function (response) {
+			let _self = this._self;
+			PushEsl.addItem(response.status, response.msg);
+			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
+			console.log(response);
+		},
+
+
+		changeEnablePluginLogCheckbox: function (event) {
+			let _self = this._self;
+			let status = _self.enablePluginLogCheckbox.checked;
+
+			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
+
+			_self.changePluginLogStatus(status);
+		},
+
+		changePluginLogStatus: function (status) {
+			let data = [];
+
+			data['action'] = 'wc_esl_shipping_change_enable_plugin_log';
+			data['status'] = status;
+			HttpClientEsl.post(data, this.callbackChangePluginLogStatus.bind({
+				_self: this
+			}));
+		},
+
+		callbackChangePluginLogStatus: function (response) {
 			let _self = this._self;
 			PushEsl.addItem(response.status, response.msg);
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
@@ -182,7 +246,7 @@ function eslRun() {
 				},
 				dataType: 'json',
 				success: function( response ) {
-	
+
 					console.log(response);
 
 					PreloaderEsl.hide('.wc-esl-settings-general-options .card-body');
@@ -210,7 +274,7 @@ function eslRun() {
 				},
 				dataType: 'json',
 				success: function( response ) {
-	
+
 					console.log(response);
 
 					PreloaderEsl.hide('#eslPayTypeForm');

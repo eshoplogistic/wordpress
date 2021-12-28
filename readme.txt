@@ -3,7 +3,7 @@ Contributors: Moonshine
 Tags: доставка, eshoplogisticru, цена доставки, срок доставки, стоимость доставки, WooCommerce, сдэк, пэк, dostavista, picpoint, деловые линии, iml, boxberry, gtd, байкалсервис, delivery
 Requires at least: 5.3
 Tested up to: 5.8
-Stable tag: 1.0.19
+Stable tag: 1.0.40
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,13 +17,13 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Официальный модуль eShopLogistic для WordPress.
 
+Модуль проверен на версиях: 5.8. Совместим с CheckoutWC.
+
 Плагин предназначен для интеграции woocommerce c сервисом [eshoplogistic.ru](https://eshoplogistic.ru/). Добавляет расчет доставки в корзине и карточке товара популярными службами доставки + вашей собственной, если она настроена в личном кабинете [eshoplogistic.ru](https://eshoplogistic.ru/).
 
 Только расчет доставки, заявки в ЛК служб доставки не оформляет.
 
 Подробная документация и демо сайт: [wp.eshoplogistic.ru](https://wp.eshoplogistic.ru/)
-
-Модуль проверен на версиях: 5.8.
 
 eShoplogistic — интеграционный сервис, позволяющий легко подключить к сайту расчет доставки сразу всеми нужными службами доставки
 Подробнее: [eshoplogistic.ru](https://eshoplogistic.ru/)

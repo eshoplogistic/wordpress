@@ -36,7 +36,7 @@ if ( ! function_exists('shortcode_widget_button_handler')) {
             data-price="%3$s" 
             data-unit="" 
             data-weight="%4$s">
-            В корзину
+            Быстрый заказ с расчётом доставки
             </button>',
             $wc_product['id'],
             $wc_product['name'],

@@ -1,6 +1,6 @@
 .wc-esl-search-city__wrap {
-    position: relative;
-    width: 100%;
+	position: relative;
+	width: 100%;
 }
 
 .wc-esl-search-city__list {
@@ -10,14 +10,19 @@
 	border-left: 1px solid #f2f2f2;
 	border-right: 1px solid #f2f2f2;
 	position: absolute;
-    background: #fff;
-    width: 100%;
-    z-index: 200;
+	background: #fff;
+	width: 100%;
+	z-index: 200;
+}
+
+.cfw-input-wrap-row .wc-esl-search-city__list {
+	width: auto !important;
+	z-index: 1002;
 }
 
 .wc-esl-search-city__item {
 	cursor: pointer;
-	padding: 4px 9px;
+	padding: 4px 9px !important;
 	border-bottom: 1px solid #f2f2f2;
 }
 
@@ -36,8 +41,8 @@
 
 #wc_esl_yandex_map .modal-header {
 	display: flex;
-    align-items: center;
-    justify-content: space-between;
+	align-items: center;
+	justify-content: space-between;
 }
 
 #wc_esl_yandex_map .modal-header:before,
@@ -51,8 +56,8 @@
 
 [data-accept-terminal] {
 	position: relative;
-    left: 1px;
-    bottom: 2px;
+	left: 1px;
+	bottom: 2px;
 }
 
 #wc_esl_yandex_map .modal-body .row {

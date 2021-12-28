@@ -172,7 +172,7 @@ function eslRunMap() {
                       continue;
                   }
                   const BalloonContentLayout = ymaps.templateLayoutFactory.createClass(
-                      `<h3 style="font-size: 1.3em;font-weight: bold;margin-bottom: 0.5em;">{{ properties.address }}</h3><p>{{ properties.note }}</p><p><b>Время работы: {{ properties.timeWork }}</b></p><button type="button" data-accept-terminal class="btn btn-success">Забрать отсюда</button>`,
+                      `<h3 style="font-size: 1.3em;font-weight: bold;margin-bottom: 0.5em;">{{ properties.address }}</h3><p>{{ properties.note }}</p><p><b>{% if properties.timeWork %} Время работы: {{ properties.timeWork }} {% endif %}</b></p><button type="button" data-accept-terminal class="btn btn-success">Забрать отсюда</button>`,
                       {
                           build: function (){
                               BalloonContentLayout.superclass.build.call(this)
@@ -199,7 +199,7 @@ function eslRunMap() {
                   geoObjects[iteration] = new ymaps.Placemark([terminal.lat, terminal.lon],{
                       note: terminal.note,
                       address: terminal.address,
-                      timeWork: terminal.workTime ? terminal.workTime : 'РќРµ СѓРєР°Р·Р°РЅРѕ',
+                      timeWork: terminal.workTime ? terminal.workTime : false,
                   },{
                       balloonContentLayout: BalloonContentLayout,
                       balloonPanelMaxMapArea: 0
@@ -214,7 +214,9 @@ function eslRunMap() {
   
           },
           destroyMap: function (){
-              document.getElementById(YANDEX_MAP_CONTAINER_ID).remove()
+              if(document.getElementById(YANDEX_MAP_CONTAINER_ID)){
+                  document.getElementById(YANDEX_MAP_CONTAINER_ID).remove()
+              }
           }
       }
       yandexMaps.initApi()

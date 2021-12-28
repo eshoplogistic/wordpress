@@ -105,6 +105,8 @@ class OfferData implements OfferInterface
 
     private function prepareWeight($weight)
     {
+	    $weight = (float)$weight;
+
         switch (get_option('woocommerce_weight_unit')) {
             case 'kg':
                 return $weight;
@@ -130,7 +132,9 @@ class OfferData implements OfferInterface
 
     private function prepareDimensions($dimension)
     {
-        switch (get_option('woocommerce_dimension_unit')) {
+		$dimension = (float)$dimension;
+
+	    switch (get_option('woocommerce_dimension_unit')) {
             case 'cm':
                 return $dimension;
                 break;
