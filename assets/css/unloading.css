@@ -1,0 +1,319 @@
+.modal-esl {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 9999;
+}
+.modal-esl .modal_content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    z-index: 99999;
+}
+.modal-esl .modal_content .close_modal_window {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-esl .title {
+    padding-bottom: 45px;
+    font-size: 18px;
+}
+
+.modal-esl #buttonModalUnload{
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.modal-esl .footer{
+    padding-top: 50px;
+}
+
+.modal-esl main {
+    margin: 0 auto;
+    background: #fff;
+}
+
+.modal-esl section {
+    display: none;
+    padding: 20px 0 0;
+    border-top: 1px solid #ddd;
+}
+
+.modal-esl input[name="tabs"] {
+    display: none;
+}
+
+.modal-esl label {
+    display: inline-block;
+    margin: 0 0 -1px;
+    padding: 15px 25px;
+    font-weight: 600;
+    text-align: center;
+    color: #bbb;
+    border: 1px solid transparent;
+}
+
+.modal-esl label[name="tabLabel"] {
+    display: inline-block;
+    margin: 0 0 -1px;
+    padding: 15px 25px;
+    font-weight: 600;
+    text-align: center;
+    color: #bbb;
+    border: 1px solid transparent;
+}
+
+.modal-esl label[name="tabLabel"]:before {
+    font-weight: normal;
+    margin-right: 10px;
+}
+
+.modal-esl label[name="tabLabel"]:hover {
+    color: #888;
+    cursor: pointer;
+}
+
+.modal-esl input:checked + label {
+    color: #555;
+    border: 1px solid #ddd;
+    border-top: 2px solid color(srgb 0.1337 0.4415 0.6943);
+    border-bottom: 1px solid #fff;
+}
+
+.modal-esl #tab1:checked ~ form #content1,
+.modal-esl #tab2:checked ~ form #content2,
+.modal-esl #tab3:checked ~ form #content3,
+.modal-esl #tab4:checked ~ form #content4 {
+    display: block;
+}
+
+.modal-esl .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 35px;
+}
+
+.modal-esl .form-field {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.modal-esl form .label {
+    position: absolute;
+    left: -3px;
+    top: -15px;
+    pointer-events: none;
+    line-height: 26px;
+    font-weight: 400;
+    text-transform: capitalize;
+    color: #888;
+    cursor: text;
+    padding: 2px;
+    border-radius: 5px;
+    border: 1px solid color(srgb 0.88 0.88 0.88 / 0.21);
+    background-color: color(srgb 0.1355 0.4428 0.695 / 0.05);
+    box-shadow: 2px 2px 4px -5px black;
+}
+
+.modal-esl form input,
+.modal-esl form textarea,
+.modal-esl form select {
+    border: none !important;
+    height: 50px;
+    padding: 0 10px;
+    background-color: rgb(247,247,247);
+    color: rgb(85,85,85);
+}
+
+.modal-esl form #content1 input,
+.modal-esl form #content1 textarea,
+.modal-esl form #content1 select,
+.modal-esl form #content2 input,
+.modal-esl form #content2 textarea,
+.modal-esl form #content2 select {
+    min-width: 239px;
+}
+
+.modal-esl td input {
+    width: 100% !important;
+    padding: 0 !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding-left: 5px !important;
+}
+
+.esl_list_links td{
+    background-color: color(srgb 0.9686 0.9686 0.9687);
+}
+
+.modal-esl form textarea {
+    height: 100px !important;
+    width: 200px !important;
+    padding: 15px 10px;
+    display: block;
+}
+
+.modal-esl form input:focus,
+.modal-esl form textarea:focus,
+.modal-esl form select:focus {
+    box-shadow: none !important;
+    border-bottom: 2px solid color(srgb 0.1355 0.4428 0.695 / 0.48) !important;
+}
+
+.modal-esl form .form-box {
+    border-bottom: 1px solid color(srgb 0.8666 0.8667 0.8668);
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-shadow: 0px 9px 9px -16px black;
+}
+
+.esl-notifications {
+    position: fixed;
+    top: 120px;
+    right: 15px;
+    width: 100%;
+    max-width: 315px;
+    z-index: 99999;
+}
+
+.esl-notifications__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: start;
+    padding: .9em 1em;
+    margin-bottom: 1em;
+    border-top: 3px solid;
+}
+
+.esl-notifications__item-success {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, .85);
+}
+
+.esl-notifications__item-error {
+    border-color: #dc3545;
+    background: rgba(220, 53, 69, .85);
+}
+
+.esl-notifications__item-warning {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, .85);
+}
+
+.esl-notifications__icon {
+    color: #FFFFFF;
+    font-size: 21px;
+    margin-right: .8em;
+}
+
+.esl-notifications__msg {
+    margin: 0;
+    color: #000;
+    font-size: .85em;
+    font-weight: 500;
+}
+
+.esl-preloader {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    z-index: 200;
+    background: rgba(255, 255, 255, .57);
+}
+
+.esl-preloader .spinner-grow {
+    color: rgb(113, 23, 247);
+}
+
+.modal-esl form input[type=checkbox] {
+    float: unset;
+    height: 15px;
+    width: 15px !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    margin: 2px auto;
+    min-width: 10px !important;
+    display: block;
+}
+
+.modal-esl form .checkbox-area .label{
+    position: static;
+}
+
+.modal-esl form .checkbox-area{
+    top: -24px;
+    margin-right: 4px;
+}
+
+.modal-esl form #content4 .label{
+    position: static;
+}
+
+.modal-esl form #content4 input{
+    border: black !important;
+    height: 15px;
+    margin-left: 2px;
+}
+
+.modal-esl form #content4 input[type=checkbox]:checked::before {
+    float: unset;
+}
+
+.modal-esl form #content4 input[type=checkbox] {
+    float: unset;
+    height: 15px;
+    width: 15px !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    margin: 2px auto;
+}
+
+.modal-esl .form-field_add {
+    margin: 10px;
+    display: inline-grid;
+}
+
+#woocommerce-order-esl-unloading .inside button {
+    padding-top: 5px;
+    width: 55px;
+    margin-top: 5px;
+}
+
+.esl-status__order {
+    border-bottom: 1px solid color(srgb 0.7638 0.7688 0.7817);
+}
+
+@media screen and (max-width: 650px) {
+    .modal-esl .tabLabel {
+        font-size: 0;
+    }
+
+    .modal-esl .tabLabel:before {
+        margin: 0;
+        font-size: 18px;
+    }
+}
+@media screen and (max-width: 400px) {
+    .modal-esl label {
+        padding: 15px;
+    }
+}

@@ -1,0 +1,179 @@
+.eShopLogisticStatic__block .selected-terminal_site-style {
+    display: block !important;
+}
+
+.eShopLogisticStatic__block .selected-terminal__grid-main__right_site-style {
+    height: 560px !important;
+}
+
+.eShopLogisticStatic__block .selected-terminal__grid-main__left_site-style {
+    margin-bottom: 25px;
+}
+
+.eshoplogistic-widget-modal .eshoplogistic-theme{
+    position: initial !important;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme__output-terminals{
+    display: block;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme{
+    font-size: 1.5rem !important;
+    z-index: 1;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-filter-button__info{
+    font-size: 1.5rem !important;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-filter-button__footer{
+    font-size: 1.3rem !important;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-services-list{
+    grid-template-columns: auto !important;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-filter-button-group{
+    display: block !important;
+}
+
+#eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-filter-button{
+    margin-bottom: 5px !important;
+    font-size: 1.2em;
+}
+
+#eShopLogisticWidgetBlock{
+    z-index: 1 !important;
+}
+
+#eShopLogisticWidgetModal .eshoplogistic-widget-modal .eshoplogistic-theme-modal_size-big{
+    margin-top: 5%;
+    font-size: 1.5rem;
+}
+
+#eShopLogisticWidgetModal .eshoplogistic-widget-block .eshoplogistic-theme {
+    font-size: 1.5rem !important;
+}
+
+#eShopLogisticWidgetModal .eshoplogistic-widget-block .eshoplogistic-theme-filter-button__info{
+    font-size: 1rem !important;
+}
+
+#eShopLogisticWidgetModal .eshoplogistic-widget-block .eshoplogistic-theme-filter-button__footer{
+    font-size: 1rem !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-filter-button__info {
+    font-size: 1.5rem !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-filter-button, 
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__header {
+    font-size: 1em;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-filter-button__footer, 
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__footer {
+    font-size: 1.5rem !important;
+    font-weight: 500;
+}
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__info {
+    font-size: 0.8em !important;
+}
+.eshoplogistic-theme-picture{
+	height: auto;
+    width: 12rem;
+}
+.eshoplogistic-theme-service__property {
+	font-weight: 500 !important;
+}
+
+.eshoplogistic-theme-service__comment {
+	font-size: 0.9em !important;
+    text-align: center !important;
+    margin-top: 5px;
+    font-weight: 500 !important;
+}
+.eshoplogistic-theme__output-terminals__map {
+	margin-top: 10px !important;
+}
+.eshoplogistic-widget-block {
+	margin-bottom: 5px;
+}
+.eshoplogistic-widget-block .eshoplogistic-theme p {
+    margin-bottom: 0.5rem;
+    line-height: 2rem;
+}
+.eshoplogistic-widget-block .eshoplogistic-theme-label_radiobutton {
+    line-height: 1.3rem;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme p {
+    font-size: 1.3rem !important;
+    line-height: 1.6rem !important;
+}
+.eshoplogistic-widget-block .eshoplogistic-theme-label_size-small {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+.eshoplogistic-widget-block .eshoplogistic-theme-input-search {
+    width: 80%;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme p {
+    margin-bottom: 1.5rem !important;
+    font-weight: 500 !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-modal__header {
+    font-size: 1.6rem !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-label_size-small {
+    font-size: 1.3rem !important;
+    font-weight: 500 !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-payments__payment:not(:last-child) {
+    margin-bottom: 1rem;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-payments {
+	margin: 1em 0;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-input-search {
+	width: 88%  !important;
+}
+.eshoplogistic-widget-modal .eshoplogistic-theme-map__balloon__info p, 
+.eshoplogistic-widget-block .eshoplogistic-theme-map__balloon__info p {
+	margin-bottom: 0 !important;
+    font-size: 1.5em !important;
+}
+
+@media screen and (min-width: 768px) {
+    .eshoplogistic-widget-block .eshoplogistic-theme__order-block__wrap>div:nth-child(1) {
+        flex-basis: 40%;
+    }
+    .eshoplogistic-widget-block .eshoplogistic-theme__order-block__wrap>div:nth-child(2) {
+        flex-basis: 60%;
+    }
+    #eShopLogisticWidgetModal .eshoplogistic-widget-modal .eshoplogistic-theme-service_inline .eshoplogistic-theme-service__property{
+        font-size: 1.5rem !important;
+    }
+
+    #eShopLogisticWidgetBlock .eshoplogistic-widget-block .eshoplogistic-theme-service_inline .eshoplogistic-theme-service__property{
+        font-size: 1.5rem !important;
+    }
+    .eshoplogistic-widget-modal .eshoplogistic-theme__order-block__wrap>div:nth-child(1) {
+        flex-basis: 40%;
+        padding: 1em 1em 0 1em;
+    }
+    .eshoplogistic-widget-modal .eshoplogistic-theme__order-block__wrap>div:nth-child(2) {
+        flex-basis: 60%;
+    }
+}
+@media screen and (max-width: 350px) {
+	.eshoplogistic-theme-container .eshoplogistic-theme-filter-button__title {
+    	max-width: 170px;
+        line-height: 1em;
+    }
+}
+@media screen and (max-width: 435px) {
+    button[data-esl-widget]{
+    	margin-top: 1em;
+    }
+    
+}

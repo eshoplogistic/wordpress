@@ -1,0 +1,358 @@
+.wc-esl-search-city__wrap {
+	position: relative;
+	width: 100%;
+}
+
+.wc-esl-search-city__list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+	border-left: 1px solid #f2f2f2;
+	border-right: 1px solid #f2f2f2;
+	position: absolute;
+	background: #fff;
+	width: 100%;
+	z-index: 200;
+}
+
+.cfw-input-wrap-row .wc-esl-search-city__list {
+	width: auto !important;
+	z-index: 1002;
+}
+
+.wc-esl-search-city__item {
+	cursor: pointer;
+	padding: 4px 9px !important;
+	border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city__item:hover {
+	background: #fafafa;
+}
+
+.wc-esl-search-city-modal__list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+.wc-esl-search-city-modal__item {
+	cursor: pointer;
+	padding: 4px 9px !important;
+	border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city-modal__item:hover {
+	background: #fafafa;
+}
+
+.wc-esl-search-region-modal__list{
+	display: inline-grid;
+	width: 33%;
+	padding-top: 30px;
+}
+
+.wc-esl-search-region-modal__list .title-region{
+	font-size: 16px;
+	font-weight: 600;
+}
+
+#esl_modal-search {
+	width: 100%;
+	margin-top: 15px;
+}
+
+.esl_city_button{
+	position: absolute;
+	display: inline-flex;
+	left: 0;
+	width: 100%;
+	height: 62%;
+	background-color: rgba(242, 242, 242, 0);
+}
+
+.esl_city_button svg {
+	width: 23px;
+	height: 23px;
+	position: absolute;
+	right: 25px;
+}
+
+.wc-esl-terminals__button {
+	margin: 0 0 1.41575em;
+}
+
+.woocommerce-checkout .form-row#billing_city_field,
+.woocommerce-shipping-calculator .form-row#billing_city_field,
+.woocommerce-checkout .form-row#shipping_city_field,
+.woocommerce-shipping-calculator .form-row#shipping_city_field{
+	position: relative;
+}
+
+#wc_esl_yandex_map .modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#wc_esl_yandex_map .modal-header:before,
+#wc_esl_yandex_map .modal-header:after {
+	display: none;
+}
+
+#wc_esl_yandex_map .modal-header h4 {
+	margin: 0;
+}
+
+[data-accept-terminal] {
+	position: relative;
+	left: 1px;
+	bottom: 2px;
+}
+
+#wc_esl_yandex_map .modal-body .row {
+	display: block !important;
+}
+
+.without-map{
+	position: absolute;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	right: 0;
+	text-align: center;
+	top: 50%;
+}
+
+#modal-filter-esl label{
+	padding-left: 15px;
+	margin-bottom: 15px;
+}
+
+#modal-filter-esl label input{
+	margin-right: 5px;
+}
+
+#modal-filter-esl{
+	margin-bottom: 30px;
+}
+
+#modal-filter-esl .title-end-esl{
+	float: right;
+	padding-right: 15px;
+	color: rgb(134, 134, 134);
+}
+
+#tips-city-container i.ico {
+	display: inline-block;
+	width: 20px;
+	text-align: center;
+	font-style: normal;
+	font-weight: 700;
+}
+
+#tips-city-container{
+	color: #ba3939;
+	background: #ffe0e0;
+	border: 1px solid #a33a3a;
+	padding: 5px;
+	margin-bottom: 5%;
+}
+
+.modal-esl-frame {
+	display: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0,0,0,0.6);
+	z-index: 9999;
+}
+.modal-esl-frame .modal_content {
+	background-color: #fefefe;
+	margin: 10% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%;
+	z-index: 99999;
+}
+.modal-esl-frame .modal_content .close_modal_window {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.modal-esl-frame .title {
+	padding-bottom: 45px;
+}
+
+.modal-esl-frame #buttonModalDoor{
+	position: relative;
+	left: 50%;
+	transform: translate(-50%, 0);
+}
+
+
+
+.preloader {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.34);
+	z-index: 9999;
+	display: none;
+}
+
+.preloader__row {
+	position: relative;
+	top: 50%;
+	left: 50%;
+	width: 70px;
+	height: 70px;
+	margin-top: -35px;
+	margin-left: -35px;
+	text-align: center;
+	animation: preloader-rotate 2s infinite linear;
+}
+
+.preloader__img {
+	position: relative;
+	top: 50%;
+	left: 50%;
+	width: 150px;
+	height: 150px;
+	margin-top: -35px;
+	margin-left: -35px;
+	text-align: center;
+}
+
+.preloader__item {
+	position: absolute;
+	display: inline-block;
+	top: 0;
+	background-color: #337ab7;
+	border-radius: 100%;
+	width: 35px;
+	height: 35px;
+	animation: preloader-bounce 2s infinite ease-in-out;
+}
+
+.preloader__item:last-child {
+	top: auto;
+	bottom: 0;
+	animation-delay: -1s;
+}
+
+@keyframes preloader-rotate {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes preloader-bounce {
+
+	0%,
+	100% {
+		transform: scale(0);
+	}
+
+	50% {
+		transform: scale(1);
+	}
+}
+
+.loaded_hiding .preloader {
+	transition: 0.3s none;
+	opacity: 0;
+	display: none;
+}
+
+.load .preloader {
+	display: block;
+}
+
+#eShopLogisticMap {
+	overflow: hidden;
+}
+
+.cart_totals li:has(#shipping_method_0_wc_esl_frame_mixed) {
+	display: none !important;
+}
+
+.cart-collaterals .woocommerce-shipping-totals {
+	display: none;
+}
+
+#eShopLogisticWidgetCart .eshoplogistic-widget-cart .eshoplogistic-theme{
+	font-size: 1.5rem !important;
+}
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__footer {
+ font-size: 1.5rem !important;
+    font-weight: 500;
+}
+.eshoplogistic-widget-cart .eshoplogistic-theme-services-list {
+	max-height: 25rem !important;
+}
+
+#modal-esl-frame .footer{
+	padding-top: 15px;
+	border: 0;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info span{
+	font-size: 12px !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info img{
+	height: 2.2rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info p{
+	margin-bottom: 0px !important;
+}
+
+#modal-esl-city .title{
+	padding-bottom: 0px !important;
+}
+
+.modal-esl-frame .modal_content{
+	margin: 5% auto !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__title,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__price,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__time{
+	font-size: 1.42rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal_size-small{
+	max-width: 105rem !important;
+	margin-top: 1% !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__tariff{
+	margin-top: 10px !important;
+	font-size: 1.1rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__select-tariff{
+	font-size: 1rem !important;
+}
+
+@media (max-width:641px)  {
+	.modal-esl-frame .modal_content{
+		border: none;
+		width: 100%;
+	}
+    .eshoplogistic-widget-cart .eshoplogistic-theme-h2 {
+        margin-top: 1em;
+        font-size: 1em;
+        font-weight: 500;
+    }
+}
