@@ -107,7 +107,12 @@ class Shipping implements ModuleInterface
 		        $mode = $sessionService->get('mode_shipping');
 		        //$sessionService->drop($mode);
 
-		        $city = WC()->customer->get_shipping_city();
+		        if($mode == 'shipping'){
+			        $city = WC()->customer->get_shipping_city();
+		        }else{
+			        $city = WC()->customer->get_billing_city();
+		        }
+
 		        $widgetCityEsl = $sessionService->get($mode) ? $sessionService->get($mode) : [];
 		        $widgetCityEslName = isset($widgetCityEsl['name'])?mb_strtolower($widgetCityEsl['name']):'';
 				if(!$widgetCityEsl || ($city && mb_strtolower($city) != $widgetCityEslName)){

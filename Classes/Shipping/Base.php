@@ -142,10 +142,6 @@ class Base extends \WC_Shipping_Method
 		$cityName = isset($modeState['city']) ? $modeState['city'] : '';
 		$cityFias = isset($modeState['fias']) ? $modeState['fias'] : '';
 
-		$ip = $shippingHelper->get_the_user_ip();
-		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
-		$ipCity = $eshopLogisticApi->geo($ip);
-
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 		$cityFrom = isset($accountServices[$service]['city_code']) ? $accountServices[$service]['city_code'] : '';
 		$cityTo = isset($avalaibleServices[$service]) ? $avalaibleServices[$service] : $cityFias;
@@ -155,10 +151,25 @@ class Base extends \WC_Shipping_Method
 		$shippingMethodsRequest = isset($postRequest['shipping_method0']) ? $postRequest['shipping_method0'] : '';
 
 		$adressRequired = $shippingHelper->getAdressRequired($service, $shippingMethodsRequest);
-		if(!$cityTo && isset($ipCity[0])){
-			$cityToTmp = $ipCity[0];
-			$cityTo = isset($cityToTmp['services'][$service]) ? $cityToTmp['services'][$service] : $cityToTmp['fias'];
-			$cityName = $ipCity[0]['name'];
+
+		if(!$cityTo){
+			$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+			$wpCity = isset($package['destination']['city'])?$package['destination']['city']:'';
+			$searchDefault = $eshopLogisticApi->search($wpCity);
+			$searchDefault = $searchDefault->data();
+
+			if(isset($searchDefault[0]['fias'])){
+				$cityTo = $searchDefault[0]['fias'];
+				$cityName = $searchDefault[0]['name'];
+			}else{
+				$ip = $shippingHelper->get_the_user_ip();
+				$ipCity = $eshopLogisticApi->geo($ip);
+				if(isset($ipCity[0])){
+					$cityToTmp = $ipCity[0];
+					$cityTo = isset($cityToTmp['services'][$service]) ? $cityToTmp['services'][$service] : $cityToTmp['fias'];
+					$cityName = $ipCity[0]['name'];
+				}
+			}
 		}
 
 		$logger = new \WC_Logger();
