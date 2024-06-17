@@ -144,6 +144,9 @@ $eslTable = new Table();
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="text"
                                                value="<?php echo $value?>">
 									<?php endif; ?>
+	                                <?php if ( $type === 'checkbox' ): ?>
+                                        <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="checkbox">
+	                                <?php endif; ?>
 	                                <?php if ( $type === 'date' ): ?>
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="date"
                                                value="<?php echo $value?>">

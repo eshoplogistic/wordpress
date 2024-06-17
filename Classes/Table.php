@@ -26,7 +26,7 @@ class Table extends WP_List_Table {
 	}
 
 	function get_columns() {
-		return $columns = array(
+		return array(
 			'product_id'     => __( 'ID' ),
 			'name'   => __( 'Имя' ),
 			'quantity'  => __( 'Кол-во' ),
@@ -35,6 +35,7 @@ class Table extends WP_List_Table {
 			'width'  => __( 'Ширина' ),
 			'length' => __( 'Длина' ),
 			'height' => __( 'Высота' ),
+			'delete' => __( 'Удалить' ),
 		);
 	}
 
@@ -100,11 +101,152 @@ class Table extends WP_List_Table {
 		$this->items = $records;
 	}
 
+	function print_column_headers($with_id = true ){
+		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+		$columns = $this->get_columns();
+
+		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$current_url = remove_query_arg( 'paged', $current_url );
+
+		// When users click on a column header to sort by other columns.
+		if ( isset( $_GET['orderby'] ) ) {
+			$current_orderby = $_GET['orderby'];
+			// In the initial view there's no orderby parameter.
+		} else {
+			$current_orderby = '';
+		}
+
+		// Not in the initial view and descending order.
+		if ( isset( $_GET['order'] ) && 'desc' === $_GET['order'] ) {
+			$current_order = 'desc';
+		} else {
+			// The initial view is not always 'asc', we'll take care of this below.
+			$current_order = 'asc';
+		}
+
+		if ( ! empty( $columns['cb'] ) ) {
+			static $cb_counter = 1;
+			$columns['cb']     = '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />
+			<label for="cb-select-all-' . $cb_counter . '">' .
+			                     '<span class="screen-reader-text">' .
+			                     /* translators: Hidden accessibility text. */
+			                     __( 'Select All' ) .
+			                     '</span>' .
+			                     '</label>';
+			++$cb_counter;
+		}
+
+		foreach ( $columns as $column_key => $column_display_name ) {
+			$class          = array( 'manage-column', "column-$column_key" );
+			$aria_sort_attr = '';
+			$abbr_attr      = '';
+			$order_text     = '';
+
+			if ( in_array( $column_key, $hidden, true ) ) {
+				$class[] = 'hidden';
+			}
+
+			if ( 'cb' === $column_key ) {
+				$class[] = 'check-column';
+			} elseif ( in_array( $column_key, array( 'posts', 'comments', 'links' ), true ) ) {
+				$class[] = 'num';
+			}
+
+			if ( $column_key === $primary ) {
+				$class[] = 'column-primary';
+			}
+
+			if ( isset( $sortable[ $column_key ] ) ) {
+				$orderby       = isset( $sortable[ $column_key ][0] ) ? $sortable[ $column_key ][0] : '';
+				$desc_first    = isset( $sortable[ $column_key ][1] ) ? $sortable[ $column_key ][1] : false;
+				$abbr          = isset( $sortable[ $column_key ][2] ) ? $sortable[ $column_key ][2] : '';
+				$orderby_text  = isset( $sortable[ $column_key ][3] ) ? $sortable[ $column_key ][3] : '';
+				$initial_order = isset( $sortable[ $column_key ][4] ) ? $sortable[ $column_key ][4] : '';
+
+				/*
+				 * We're in the initial view and there's no $_GET['orderby'] then check if the
+				 * initial sorting information is set in the sortable columns and use that.
+				 */
+				if ( '' === $current_orderby && $initial_order ) {
+					// Use the initially sorted column $orderby as current orderby.
+					$current_orderby = $orderby;
+					// Use the initially sorted column asc/desc order as initial order.
+					$current_order = $initial_order;
+				}
+
+				/*
+				 * True in the initial view when an initial orderby is set via get_sortable_columns()
+				 * and true in the sorted views when the actual $_GET['orderby'] is equal to $orderby.
+				 */
+				if ( $current_orderby === $orderby ) {
+					// The sorted column. The `aria-sort` attribute must be set only on the sorted column.
+					if ( 'asc' === $current_order ) {
+						$order          = 'desc';
+						$aria_sort_attr = ' aria-sort="ascending"';
+					} else {
+						$order          = 'asc';
+						$aria_sort_attr = ' aria-sort="descending"';
+					}
+
+					$class[] = 'sorted';
+					$class[] = $current_order;
+				} else {
+					// The other sortable columns.
+					$order = strtolower( $desc_first );
+
+					if ( ! in_array( $order, array( 'desc', 'asc' ), true ) ) {
+						$order = $desc_first ? 'desc' : 'asc';
+					}
+
+					$class[] = 'sortable';
+					$class[] = 'desc' === $order ? 'asc' : 'desc';
+
+					/* translators: Hidden accessibility text. */
+					$asc_text = __( 'Sort ascending.' );
+					/* translators: Hidden accessibility text. */
+					$desc_text  = __( 'Sort descending.' );
+					$order_text = 'asc' === $order ? $asc_text : $desc_text;
+				}
+
+				if ( '' !== $order_text ) {
+					$order_text = ' <span class="screen-reader-text">' . $order_text . '</span>';
+				}
+
+				// Print an 'abbr' attribute if a value is provided via get_sortable_columns().
+				$abbr_attr = $abbr ? ' abbr="' . esc_attr( $abbr ) . '"' : '';
+
+				$column_display_name = sprintf(
+					'<a href="%1$s">' .
+					'<span>%2$s</span>' .
+					'<span class="sorting-indicators">' .
+					'<span class="sorting-indicator asc" aria-hidden="true"></span>' .
+					'<span class="sorting-indicator desc" aria-hidden="true"></span>' .
+					'</span>' .
+					'%3$s' .
+					'</a>',
+					esc_url( add_query_arg( compact( 'orderby', 'order' ), $current_url ) ),
+					$column_display_name,
+					$order_text
+				);
+			}
+
+			$tag   = ( 'cb' === $column_key ) ? 'td' : 'th';
+			$scope = ( 'th' === $tag ) ? 'scope="col"' : '';
+			$id    = $with_id ? "id='$column_key'" : '';
+
+			if ( ! empty( $class ) ) {
+				$class = "class='" . implode( ' ', $class ) . "'";
+			}
+
+			echo "<$tag $scope $id $class $aria_sort_attr $abbr_attr>$column_display_name</$tag>";
+		}
+	}
+
 	function display_rows() {
 
 		$records = $this->items;
 
-		list( $columns, $hidden ) = $this->get_column_info();
+		$columns = $this->get_columns();
 
 		if ( ! empty( $records ) ) {
 			$i = 0;
@@ -117,13 +259,17 @@ class Table extends WP_List_Table {
 
 					$class = "class='column-$column_name' name='$column_name'";
 					$style = "";
-					if ( in_array( $column_name, $hidden ) ) {
-						$style = ' style="display:none;"';
-					}
+
 					$attributes = $class . $style;
 					$editlink = '/wp-admin/link.php?action=edit&link_id=' . (int) $rec['id'];
 
-					echo '<td ' . $attributes . '><input type="text" data-count="'.$i.'" name="products['.$i.']['.$column_name.']" value="'.stripslashes( $rec[$column_name] ).'"/></td>';
+					if($column_name == 'delete'){
+						if($i != 0){
+							echo '<td ' . $attributes . '><div class="esl-delete_table_elem">&#65794;</div></td>';
+						}
+					}else{
+						echo '<td ' . $attributes . '><input type="text" data-count="'.$i.'" name="products['.$i.']['.$column_name.']" value="'.stripslashes( $rec[$column_name] ).'"/></td>';
+					}
 				}
 
 				echo '</tr>';

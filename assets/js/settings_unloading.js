@@ -93,6 +93,7 @@ function eslRun() {
             e.preventDefault();
 
             let data = JSON.stringify($('#unloading_form').serializeControls(), null, 2);
+            console.log(data)
             PreloaderEsl.show('#unloading_form');
 
             $.ajax({
@@ -127,7 +128,6 @@ function eslRun() {
             let tbodyTrArray = [...tbodyTrAll];
             let tbodyTrArrayCount = Number(tbodyTrArray.length)+1;
             let tr = document.createElement('tr');
-            console.log(tbodyTrArrayCount)
             tbodyTdArray.forEach(element => {
                 let td = document.createElement('td');
                 let input = document.createElement('input');
@@ -140,12 +140,21 @@ function eslRun() {
             table.querySelector('tbody').appendChild(tr);
         });
 
+        $('.esl-delete_table_elem').click(function(e) {
+            e.preventDefault();
+            $(this).parents('tr').remove();
+        });
+
 
         $.fn.serializeControls = function() {
             let data = {};
             function buildInputObject(arr, val) {
+                if(val === 'on')
+                    val = 1
+
                 if (arr.length < 1)
                     return val;
+
                 let objkey = arr[0];
                 if (objkey.slice(-1) == "]") {
                     objkey = objkey.slice(0,-1);
@@ -157,6 +166,7 @@ function eslRun() {
                     arr.shift();
                     result[objkey] = buildInputObject(arr, val);
                 }
+                console.log(arr)
                 return result;
             }
             $.each(this.serializeArray(), function() {

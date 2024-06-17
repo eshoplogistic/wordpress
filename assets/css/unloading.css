@@ -302,6 +302,14 @@
     border-bottom: 1px solid color(srgb 0.7638 0.7688 0.7817);
 }
 
+.esl_list_links tr th{
+    font-size: 10px;
+}
+
+.modal-esl form input[type=checkbox]{
+    margin: 16px;
+}
+
 @media screen and (max-width: 650px) {
     .modal-esl .tabLabel {
         font-size: 0;

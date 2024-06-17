@@ -103,6 +103,14 @@ class ExportFileds {
 			);
 		}
 
+		if( $name === 'halva'){
+			$result = array(
+				'order' => array(
+					'packing' => ''
+				)
+			);
+		}
+
 		return $result;
 	}
 
@@ -284,6 +292,14 @@ class ExportFileds {
 				),
 				'delivery' => array(
 					'produce_date||date' => $produce_date,
+				)
+			);
+		}
+
+		if ( $name === 'halva' ) {
+			$result = array(
+				'order' => array(
+					'packing||checkbox' => '',
 				)
 			);
 		}
