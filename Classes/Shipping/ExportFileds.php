@@ -81,7 +81,9 @@ class ExportFileds {
 				'delivery' => array(
 					'tariff' => '',
 					'location_to' => array(
-						'index' => ''
+						'address' => array(
+							'index' => ''
+						)
 					)
 				),
 			);

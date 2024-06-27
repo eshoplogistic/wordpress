@@ -1,6 +1,7 @@
 window.keyDelivery = 'terminal'
 window.widgetInit = false
 let cityMain = false
+let errorCity = 0
 
 function isHidden(el) {
     var style = window.getComputedStyle(el);
@@ -639,11 +640,14 @@ function isNumeric(value) {
 
             if (!current_payment) {
                 check = false
+                console.log('Ошибка поиска payment_method')
             } else {
                 this.current.payment_id = current_payment.value
             }
-            if (!document.getElementById(this.items.esldata_payments_id))
+            if (!document.getElementById(this.items.esldata_payments_id)){
                 check = false
+                console.log('Ошибка поиска widgetPaymentEsl')
+            }
 
             let billing_city = document.getElementById('billing_city')
             let shipping_city = document.getElementById('shipping_city')
@@ -933,6 +937,13 @@ function isNumeric(value) {
         root.addEventListener('eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
             console.log('Неверный код населенного пункта')
 
+            errorCity = errorCity + 1
+            if(errorCity < 2){
+                esl.sleep(2000).then(() => {
+                    esl.run('city')
+                });
+            }
+
             errorGetMessage()
         })
 
@@ -1051,6 +1062,7 @@ function isNumeric(value) {
         let last = box[box.length - 1];
 
         for (let i = 0; i < box.length; i++) {
+            console.log(box[i])
             if (box[i] !== last) {
                 box[i].parentNode.removeChild(box[i]);
             }

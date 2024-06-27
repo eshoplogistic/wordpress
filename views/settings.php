@@ -328,7 +328,6 @@ $status_translate             = [
 
 									<?php if ( ! empty( $paymentGateways ) ) : ?>
 										<?php foreach ( $paymentGateways as $paymentGateway ) : ?>
-
                                             <tr>
                                                 <th scope="row"><?php echo esc_attr( $paymentGateway->title ) ?></th>
                                                 <td>
@@ -336,7 +335,9 @@ $status_translate             = [
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ?>"
-														<?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ) ? 'checked' : '' ?>
+                                                            <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
+														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ) ? 'checked' : '' ?>
+                                                            <?php endif; ?>
                                                     />
                                                 </td>
                                                 <td>
@@ -344,7 +345,9 @@ $status_translate             = [
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ?>"
-														<?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ) ? 'checked' : '' ?>
+	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
+                                                                <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ) ? 'checked' : '' ?>
+	                                                        <?php endif; ?>
                                                     />
                                                 </td>
                                                 <td>
@@ -352,7 +355,9 @@ $status_translate             = [
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ?>"
-														<?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ) ? 'checked' : '' ?>
+	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
+														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ) ? 'checked' : '' ?>
+	                                                        <?php endif; ?>
                                                     />
                                                 </td>
                                                 <td>
@@ -360,7 +365,9 @@ $status_translate             = [
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
                                                             value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ?>"
-														<?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ) ? 'checked' : '' ?>
+	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
+														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ) ? 'checked' : '' ?>
+	                                                        <?php endif; ?>
                                                     />
                                                 </td>
                                                 <td>
@@ -369,10 +376,12 @@ $status_translate             = [
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
                                                             value="<?php echo ( $moduleVersion ) ? \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_V2 : \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON ?>"
 														<?php
-														if ( $moduleVersion ) {
-															echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_V2 ) ? 'checked' : '';
-														} else {
-															echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON ) ? 'checked' : '';
+														if(isset($paymentMethods[ $paymentGateway->id ])){
+                                                            if ( $moduleVersion ) {
+                                                                echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_V2 ) ? 'checked' : '';
+                                                            } else {
+                                                                echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON ) ? 'checked' : '';
+                                                            }
 														}
 														?>
                                                     />

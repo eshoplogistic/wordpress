@@ -630,7 +630,7 @@ class Ajax implements ModuleInterface
 		if(isset($shippingMethod) && $shippingMethod){
 			$shippingMethods = json_decode($shippingMethod, true);
 			if(isset($shippingMethods['answer']['order']['id'])){
-				$html .= '<div class="esl-status_infoTitle">Номер заказа: '.$shippingMethods['answer']['order']['id'].'</div>';
+				$html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "название тк": '.$shippingMethods['answer']['order']['id'].'</div>';
 			}
 		}
 		if(isset($result['order']['orderId'])){
