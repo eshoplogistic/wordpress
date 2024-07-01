@@ -1,4 +1,12 @@
-window.keyDelivery = 'terminal'
+if(document.getElementById('wc_esl_billing_terminal').value){
+    window.keyDelivery = 'terminal'
+}else if(document.getElementById('wc_esl_shipping_terminal').value){
+    window.keyDelivery = 'terminal'
+}else{
+    window.keyDelivery = 'door'
+}
+
+console.log(window.keyDelivery)
 window.widgetInit = false
 let cityMain = false
 let errorCity = 0
@@ -417,6 +425,15 @@ function isNumeric(value) {
                             $('#tips-city-container').show();
                             $(`.wc-esl-terminals__button`).prop('disabled', true);
                             $('.wc-esl-terminals__container').hide()
+                            window.keyDelivery = 'door'
+                            currentShippingMethod = shippingFieldName();
+                            typeShippingMethod = shippingMethodTypeFunc(currentShippingMethod)
+                            changeVisibleElements(
+                                differentShippingAddress,
+                                typeShippingMethod,
+                                currentBillingCountry,
+                                currentShippingCountry
+                            );
                             esl.request('');
                         }
 
@@ -540,7 +557,6 @@ function isNumeric(value) {
         $('body').on('updated_checkout', function () {
             currentShippingMethod = shippingFieldName();
             typeShippingMethod = shippingMethodTypeFunc(currentShippingMethod)
-
 
             changeVisibleElements(
                 differentShippingAddress,
@@ -1062,7 +1078,6 @@ function isNumeric(value) {
         let last = box[box.length - 1];
 
         for (let i = 0; i < box.length; i++) {
-            console.log(box[i])
             if (box[i] !== last) {
                 box[i].parentNode.removeChild(box[i]);
             }
@@ -1081,7 +1096,6 @@ function isNumeric(value) {
     }
 
     jQuery('body').on('update_esl_city', function () {
-
         jQuery('body').on('updated_checkout', function () {
             document.body.classList.add('load')
             document.body.classList.remove("loaded_hiding")
@@ -1098,6 +1112,7 @@ function isNumeric(value) {
                 esl.run('payment')
                 jQuery('body').off('updated_checkout');
                 document.getElementById('wc_esl_billing_terminal').value = '';
+                document.getElementById('wc_esl_shipping_terminal').value = '';
                 jQuery('.esl_desct_delivery').append('<p>Информация о доставке была обновлена, пожалуйста, выберите подходящий вариант доставки.</p>')
             });
 
