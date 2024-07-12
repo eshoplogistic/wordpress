@@ -37,6 +37,8 @@ class CheckoutValidator implements ModuleInterface
 
     public function validateFields()
     {
+        $this->chosenShippingMethodsIsEshopSelected();
+
         if(!$this->chosenShippingMethodsIsEshopTerminal()) return;
 
         $type = $this->getTypeToValidate();
@@ -101,6 +103,39 @@ class CheckoutValidator implements ModuleInterface
 
         return ($value)?:'';
     }
+
+	private function chosenShippingMethodsIsEshopSelected()
+	{
+		$optionsRepository = new OptionsRepository();
+		$checkDelivery = $optionsRepository->getOption('wc_esl_shipping_add_form');
+		if(isset($checkDelivery['checkDelivery']) && $checkDelivery['checkDelivery'] == 'true')
+			return false;
+
+		$chosenShippingMethods = isset(WC()->session->get('chosen_shipping_methods')[0]) ? WC()->session->get('chosen_shipping_methods')[0] : '';
+
+		if(!$chosenShippingMethods) return false;
+
+		$explodedAtPrefix = explode(WC_ESL_PREFIX, $chosenShippingMethods);
+
+		if(empty($explodedAtPrefix)) return false;
+
+		$typeServiceShipping = explode('_', $explodedAtPrefix[1]);
+
+		if(!isset($typeServiceShipping[1])) return false;
+
+		$typeServiceShipping = $typeServiceShipping[1];
+
+		if($typeServiceShipping === 'mixed'){
+			$sessionService = new SessionService();
+			$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
+			if(!isset($shippingFrame['name'])){
+				$message = "<strong>Выбор доставки</strong> является обязательным условием.";
+				$this->addErrorNotice($message);
+			}
+		}
+
+		return true;
+	}
 
     private function chosenShippingMethodsIsEshopTerminal()
     {

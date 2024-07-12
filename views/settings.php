@@ -558,6 +558,25 @@ $status_translate             = [
 										<?php if ( $moduleVersion ): ?>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+													<?php echo __( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', WC_ESL_DOMAIN ) ?>
+                                                </label>
+												<?php
+												$checkDelivery = '';
+												if ( isset( $add_form['checkDelivery'] ) ) {
+													$checkDelivery = $add_form['checkDelivery'];
+												}
+												?>
+                                                <input
+                                                        type="checkbox"
+                                                        placeholder="<?php echo __( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', WC_ESL_DOMAIN ) ?>"
+                                                        name="checkDelivery"
+                                                        class="col-sm-8 form-control checkbox"
+												<?php echo ( $checkDelivery == 'true' ) ? 'checked=checked' : ''; ?>"
+                                                />
+                                            </div>
+
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Изменить способ выбора города', WC_ESL_DOMAIN ) ?>
                                                 </label>
 												<?php

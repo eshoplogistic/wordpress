@@ -88,7 +88,13 @@ class Table extends WP_List_Table {
 				}else{
 					$idProduct = $records[$key]['product_id'];
 				}
+
 				$getProductDetail = wc_get_product( $idProduct );
+				$sku = $getProductDetail->get_sku();
+				if($sku){
+					$records[$key]['product_id'] = $sku;
+				}
+
 				$attrProduct = $getProductDetail->get_data();
 				$records[$key]['weight'] = (isset($attrProduct['weight']))?round(floatval($attrProduct['weight']),2):0;
 				$records[$key]['width'] = (isset($attrProduct['width']))?round(floatval($attrProduct['width']),2):0;

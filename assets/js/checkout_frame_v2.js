@@ -274,8 +274,8 @@ function isNumeric(value) {
         let currentShippingMethod = shippingFieldName();
         let shippingMethodIsEshop = shippingMethodIsEshopFunc(currentShippingMethod);
         let typeShippingMethod = shippingMethodTypeFunc(currentShippingMethod);
-        let currentBillingCountry = $('#billing_country').val();
-        let currentShippingCountry = $('#shipping_country').val();
+        let currentBillingCountry = ($('#billing_country').val())?$('#billing_country').val():'RU';
+        let currentShippingCountry = ($('#shipping_country').val())?$('#shipping_country').val():'RU';
         let addCityAdressBilling = $('#billing_address_1').val();
         let addCityAdressShipping = $('#shipping_address_1').val();
         let checkAddAdress = false;
@@ -883,8 +883,8 @@ function isNumeric(value) {
                 jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
                 window.keyDelivery = data.typeDelivery
                 let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-                let currentBillingCountry = jQuery('#billing_country').val();
-                let currentShippingCountry = jQuery('#shipping_country').val();
+                let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
+                let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
                 if (window.keyDelivery === 'door') {
                     jQuery('#buttonModalDoor').show();
                 } else {
@@ -930,8 +930,8 @@ function isNumeric(value) {
             document.body.classList.remove("load")
 
             let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-            let currentBillingCountry = jQuery('#billing_country').val();
-            let currentShippingCountry = jQuery('#shipping_country').val();
+            let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
+            let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
             if (window.keyDelivery === 'door') {
                 jQuery('#buttonModalDoor').show();
             } else {
@@ -996,8 +996,8 @@ function isNumeric(value) {
             document.body.classList.remove("load")
 
             let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-            let currentBillingCountry = jQuery('#billing_country').val();
-            let currentShippingCountry = jQuery('#shipping_country').val();
+            let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
+            let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
             if (window.keyDelivery === 'door') {
                 jQuery('#buttonModalDoor').show();
             } else {
