@@ -24,7 +24,11 @@ class ExportFileds {
 		if ( $name === 'sdek' ) {
 			$result = array(
 				'order'    => array(
-					'type' => ''
+					'type' => '',
+					'combine_places' => array(
+						'apply' => '',
+						'dimensions' => ''
+					)
 				),
 				'delivery' => array(
 					'tariff' => '',
@@ -166,6 +170,10 @@ class ExportFileds {
 							'text' => 'Доставка'
 						),
 					),
+				),
+				'order[combine_places]' => array(
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??''
 				),
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,

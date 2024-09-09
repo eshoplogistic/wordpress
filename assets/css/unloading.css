@@ -56,13 +56,10 @@
 }
 
 .modal-esl label {
-    display: inline-block;
     margin: 0 0 -1px;
-    padding: 15px 25px;
+    padding: 10px 5px;
     font-weight: 600;
     text-align: center;
-    color: #bbb;
-    border: 1px solid transparent;
 }
 
 .modal-esl label[name="tabLabel"] {
@@ -108,25 +105,16 @@
 .modal-esl .form-field {
     position: relative;
     display: inline-block;
-    margin-bottom: 10px;
-    margin-top: 10px;
+    width: 30.8%;
+    margin-right: 15px;
+}
+
+.modal-esl .form-field select {
+    max-width: 100% !important;
 }
 
 .modal-esl form .label {
-    position: absolute;
-    left: -3px;
-    top: -15px;
-    pointer-events: none;
-    line-height: 26px;
-    font-weight: 400;
-    text-transform: capitalize;
-    color: #888;
-    cursor: text;
-    padding: 2px;
-    border-radius: 5px;
-    border: 1px solid color(srgb 0.88 0.88 0.88 / 0.21);
-    background-color: color(srgb 0.1355 0.4428 0.695 / 0.05);
-    box-shadow: 2px 2px 4px -5px black;
+    display: table;
 }
 
 .modal-esl form input,
@@ -145,7 +133,8 @@
 .modal-esl form #content2 input,
 .modal-esl form #content2 textarea,
 .modal-esl form #content2 select {
-    min-width: 239px;
+    width: 100%;
+    font-size: 11px;
 }
 
 .modal-esl td input {
@@ -174,12 +163,9 @@
 }
 
 .modal-esl form .form-box {
+    display: block;
     border-bottom: 1px solid color(srgb 0.8666 0.8667 0.8668);
     padding-bottom: 25px;
-    margin-bottom: 25px;
-    padding-left: 15px;
-    padding-right: 15px;
-    box-shadow: 0px 9px 9px -16px black;
 }
 
 .esl-notifications {
@@ -261,8 +247,7 @@
 }
 
 .modal-esl form .checkbox-area{
-    top: -24px;
-    margin-right: 4px;
+
 }
 
 .modal-esl form #content4 .label{
@@ -307,7 +292,7 @@
 }
 
 .modal-esl form input[type=checkbox]{
-    margin: 16px;
+
 }
 
 @media screen and (max-width: 650px) {
@@ -320,6 +305,17 @@
         font-size: 18px;
     }
 }
+
+@media screen and (max-width: 1050px) {
+    .modal-esl .form-field {
+        width: 98.8%;
+    }
+
+    .modal-esl #the-list tr:last-child td, .modal-esl #the-list tr:last-child th{
+        display: grid !important;
+    }
+}
+
 @media screen and (max-width: 400px) {
     .modal-esl label {
         padding: 15px;

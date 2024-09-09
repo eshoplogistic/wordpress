@@ -6,7 +6,6 @@ if(document.getElementById('wc_esl_billing_terminal').value){
     window.keyDelivery = 'door'
 }
 
-console.log(window.keyDelivery)
 window.widgetInit = false
 let cityMain = false
 let errorCity = 0
@@ -281,6 +280,8 @@ function isNumeric(value) {
         let checkAddAdress = false;
         let searchCityVar;
         let modalSelectCity = $('#modal-esl-city').length > 0;
+        let billingCityFields = $('#eslBillingCityFields').val();
+        let shippingCityFields = $('#eslShippingCityFields').val();
 
         changeVisibleElements(
             differentShippingAddress,
@@ -290,20 +291,13 @@ function isNumeric(value) {
         );
 
 
-        if ($('#billing_city').length === 1) {
-            $('#billing_city').prop("autocomplete", "nope");
-            inputFocusCity('billing_city');
-        } else if ($('#billing_state').length === 1) {
-            $('#billing_state').prop("autocomplete", "nope");
-            inputFocusCity('billing_state');
-        } else if ($('#billing_address_1').length === 1) {
-            inputFocusAdress('billing_address_1');
-        } else if ($('#shipping_address_1').length === 1) {
-            inputFocusAdress('shipping_address_1');
+        if ($('#'+billingCityFields).length === 1) {
+            $('#'+billingCityFields).prop("autocomplete", "nope");
+            inputFocusCity(billingCityFields);
         }
-        if ($('#shipping_city').length === 1 && modalSelectCity) {
-            $('#shipping_city').prop("autocomplete", "nope");
-            inputFocusCity('shipping_city');
+        if ($('#'+shippingCityFields).length === 1 && modalSelectCity) {
+            $('#'+shippingCityFields).prop("autocomplete", "nope");
+            inputFocusCity(shippingCityFields);
         }
         if(modalSelectCity){
             inputStartCityModal();
@@ -340,8 +334,8 @@ function isNumeric(value) {
                 }
 
                 if (!searchCityVar && checkAddAdress) {
-                    $('#billing_city').val('');
-                    $('#shipping_city').val('');
+                    $('#'+billingCityFields).val('');
+                    $('#'+shippingCityFields).val('');
                 }
 
             });
@@ -518,7 +512,7 @@ function isNumeric(value) {
             });
         }
 
-        $('body').on('keyup changed', '#shipping_city', function (e) {
+        $('body').on('keyup changed', '#'+shippingCityFields, function (e) {
             let value = $(this).val();
             let mode = 'shipping';
             let $this = $(this);
@@ -665,8 +659,11 @@ function isNumeric(value) {
                 console.log('Ошибка поиска widgetPaymentEsl')
             }
 
-            let billing_city = document.getElementById('billing_city')
-            let shipping_city = document.getElementById('shipping_city')
+
+            let billingCityFields = document.getElementById('eslBillingCityFields').value
+            let shippingCityFields = document.getElementById('eslShippingCityFields').value
+            let billing_city = document.getElementById(billingCityFields)
+            let shipping_city = document.getElementById(shippingCityFields)
 
             if(billing_city !== null){
                 if(billing_city.value){

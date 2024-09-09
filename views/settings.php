@@ -15,6 +15,9 @@ if ( ! did_action( 'wp_enqueue_media' ) ) {
 	wp_enqueue_media();
 }
 
+$WC_Checkout = new WC_Checkout();
+$list_fields = $WC_Checkout->get_checkout_fields();
+
 $plugin_enable                = isset( $plugin_enable ) ? $plugin_enable : '0';
 $plugin_enable_price_shipping = isset( $plugin_enable_price_shipping ) ? $plugin_enable_price_shipping : '1';
 $plugin_enable_log            = isset( $plugin_enable_log ) ? $plugin_enable_log : '0';
@@ -616,6 +619,57 @@ $status_translate             = [
                                             </div>
 										<?php endif; ?>
 
+                                        <div class="input-group">
+                                            <label for="" class="col-sm-4 col-form-label">
+			                                    <?php echo __( 'Поле адреса доставки (Billing)', WC_ESL_DOMAIN ) ?>
+                                            </label>
+		                                    <?php
+		                                    $billingList = array();
+		                                    if(isset($add_form['billingCity']) && !is_array($add_form['billingCity'])){
+			                                    $billingList[] = $add_form['billingCity'];
+		                                    }elseif ( isset( $add_form['billingCity'] ) ) {
+			                                    $billingList = $add_form['billingCity'];
+		                                    }
+		                                    ?>
+
+                                            <select name="billingCity" style="width: 100%; margin-bottom: 15px;">
+                                                <option value="billing_city">По умолчанию</option>
+			                                    <?php
+			                                    foreach ( $list_fields['billing'] as $value => $label ) {
+				                                    $selected = ( in_array( $value, $billingList ) ) ? 'selected' : '';
+				                                    echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label['label'] . ' - '.$value.'</option>';
+			                                    }
+			                                    ?>
+                                            </select>
+
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="" class="col-sm-4 col-form-label">
+			                                    <?php echo __( 'Поле другого адреса доставки (Shipping)', WC_ESL_DOMAIN ) ?>
+                                            </label>
+		                                    <?php
+		                                    $billingList = array();
+		                                    if(isset($add_form['shippingCity']) && !is_array($add_form['shippingCity'])){
+			                                    $billingList[] = $add_form['shippingCity'];
+		                                    }elseif ( isset( $add_form['shippingCity'] ) ) {
+			                                    $billingList = $add_form['shippingCity'];
+		                                    }
+		                                    ?>
+
+                                            <select name="shippingCity" style="width: 100%; margin-bottom: 15px;">
+                                                <option value="shipping_city">По умолчанию</option>
+			                                    <?php
+			                                    foreach ( $list_fields['shipping'] as $value => $label ) {
+				                                    $selected = ( in_array( $value, $billingList ) ) ? 'selected' : '';
+				                                    echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label['label'] . ' - '.$value.'</option>';
+			                                    }
+			                                    ?>
+                                            </select>
+
+                                        </div>
+
+
                                         <div class="card-header">
 		                                    <?php echo __( 'Планировщик выгрузки заказов', WC_ESL_DOMAIN ) ?>
                                         </div>
@@ -919,6 +973,44 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Объединить все грузовые места в одно (СДЭК)', WC_ESL_DOMAIN ) ?>
+                                                </label>
+		                                        <?php
+		                                        $combine_places_apply = '';
+		                                        if ( isset( $export_form['combine-places-apply'] ) && $export_form['combine-places-apply'] == "on") {
+			                                        $combine_places_apply = 'checked';
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="checkbox"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Объединить все грузовые места в одно', WC_ESL_DOMAIN ) ?>"
+                                                        name="combine-places-apply"
+                                                        class="col-sm-8"
+                                                        <?php echo $combine_places_apply ?>
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Габариты итогового грузового места. Формат: строка вида «Д*Ш*В», в сантиметрах (СДЭК)', WC_ESL_DOMAIN ) ?>
+                                                </label>
+		                                        <?php
+		                                        $combine_places_dimensions = '';
+		                                        if ( isset( $export_form['combine-places-dimensions'] ) ) {
+			                                        $combine_places_dimensions = $export_form['combine-places-dimensions'];
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Габариты итогового грузового места', WC_ESL_DOMAIN ) ?>"
+                                                        name="combine-places-dimensions"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $combine_places_dimensions ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Код терминала (Деловые линии)', WC_ESL_DOMAIN ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1106,12 +1198,63 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Название компании', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Название компании.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+		                                        <?php
+		                                        $sender_company = '';
+		                                        if ( isset( $export_form['sender-company'] ) ) {
+			                                        $sender_company = $export_form['sender-company'];
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Название компании', WC_ESL_DOMAIN ) ?>"
+                                                        name="sender-company"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $sender_company ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Электронная почта', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Электронная почта.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+		                                        <?php
+		                                        $sender_email = '';
+		                                        if ( isset( $export_form['sender-email'] ) ) {
+			                                        $sender_email = $export_form['sender-email'];
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Электронная почта', WC_ESL_DOMAIN ) ?>"
+                                                        name="sender-email"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $sender_email ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Регион', WC_ESL_DOMAIN ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
-                                                                Адрес для забора груза, если забирает транспортная
-                                                                компания.
+                                                                Электронная почта.
                                                             </p>
                                                         </div>
                                                     </label>
@@ -1131,7 +1274,6 @@ $status_translate             = [
                                                         value="<?php echo esc_attr( $sender_region ) ?>"
                                                 />
                                             </div>
-
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Населённый пункт', WC_ESL_DOMAIN ) ?>

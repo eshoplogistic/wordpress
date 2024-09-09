@@ -86,6 +86,19 @@ class Shipping implements ModuleInterface
 
 	    $paymentCalc = '';
 	    $paymentCalcTmp = $optionsRepository->getOption('wc_esl_shipping_add_form');
+	    $addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
+	    $eslBillingCityFields = 'billing_city';
+	    $eslShippingCityFields = 'shipping_city';
+	    if(isset($addForm['billingCity']))
+		    $eslBillingCityFields = $addForm['billingCity'];
+		if(isset($addForm['shippingCity']))
+			$eslShippingCityFields = $addForm['shippingCity'];
+
+	    echo View::render('checkout/add-fields', [
+		    'eslBillingCityFields' => $eslBillingCityFields,
+		    'eslShippingCityFields' => $eslShippingCityFields,
+	    ]);
+
 	    if(isset($paymentCalcTmp['paymentCalc']) && $paymentCalcTmp['paymentCalc'] == 'true')
 		    $paymentCalc = $paymentCalcTmp['paymentCalc'];
 

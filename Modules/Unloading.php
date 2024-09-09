@@ -41,11 +41,14 @@ class Unloading implements ModuleInterface {
 		),
 		'receiver' => array( //Данные получателя
 			'name'  => '',
-			'phone' => ''
+			'phone' => '',
+			'email' => ''
 		),
 		'sender'   => array(
 			'name'  => '',
 			'phone' => '',
+			'company' => '',
+			'email' => '',
 		),
 		'delivery' => array(
 			'type'          => '',
@@ -451,10 +454,13 @@ class Unloading implements ModuleInterface {
 			'receiver' => array( //Данные получателя
 				'name'  => $data['receiver-name'],
 				'phone' => $data['receiver-phone'],
+				'email' => $data['receiver-email'],
 			),
 			'sender'   => array(
 				'name'  => $data['sender-name'],
 				'phone' => $data['sender-phone'],
+				'company' => $data['sender-company'],
+				'email' => $data['sender-email'],
 			),
 			'delivery' => array(
 				'type'          => $data['delivery_type'],

@@ -242,6 +242,8 @@
 		let checkAddAdress 				= false;
 		let searchCityVar;
 		let modalSelectCity = $('#modal-esl-city').length > 0;
+		let billingCityFields = $('#eslBillingCityFields').val();
+		let shippingCityFields = $('#eslShippingCityFields').val();
 
 		changeVisibleElements(
 			differentShippingAddress,
@@ -251,12 +253,9 @@
 		);
 
 
-		if($('#billing_city').length === 1){
-			$('#billing_city').prop("autocomplete", "nope");
-			inputFocusCity('billing_city');
-		}else if($('#billing_state').length === 1){
-			$('#billing_state').prop("autocomplete", "nope");
-			inputFocusCity('billing_state');
+		if($('#'+billingCityFields).length === 1){
+			$('#'+billingCityFields).prop("autocomplete", "nope");
+			inputFocusCity(billingCityFields);
 		}
 
 		if($('#billing_address_1').length === 1){
@@ -266,9 +265,9 @@
 			inputFocusAdress('shipping_address_1');
 		}
 
-		if ($('#shipping_city').length === 1 && modalSelectCity) {
-			$('#shipping_city').prop("autocomplete", "nope");
-			inputFocusCity('shipping_city');
+		if ($('#'+shippingCityFields).length === 1 && modalSelectCity) {
+			$('#'+shippingCityFields).prop("autocomplete", "nope");
+			inputFocusCity(shippingCityFields);
 		}
 		if(modalSelectCity){
 			inputStartCityModal();
@@ -300,8 +299,8 @@
 				}
 
 				if(!searchCityVar && checkAddAdress){
-					$('#billing_city').val('');
-					$('#shipping_city').val('');
+					$('#'+billingCityFields).val('');
+					$('#'+shippingCityFields).val('');
 				}
 
 			});
@@ -459,7 +458,7 @@
 			});
 		}
 
-		$( 'body' ).on( 'keyup focus', '#shipping_city', function( e ) {
+		$( 'body' ).on( 'keyup focus', '#'+shippingCityFields, function( e ) {
 			let value = $( this ).val();
 			let mode = 'shipping';
 			let $this = $( this );

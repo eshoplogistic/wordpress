@@ -136,16 +136,24 @@ $eslTable = new Table();
 								$name = $explodeKey[0];
 								$type = $explodeKey[1];
 								$nameRu = $explodeKey[2] ?? $name;
+                                $styleForm = '';
+
+                                if($type === 'checkbox')
+	                                $styleForm = 'checkbox-area';
 								?>
 
-                                <div class="form-field">
+                                <div class="form-field <?php echo $styleForm ?>">
                                     <label class="label" for="<?php echo $name ?>"><?php echo $nameRu ?></label>
 									<?php if ( $type === 'text' ): ?>
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="text"
                                                value="<?php echo $value?>">
 									<?php endif; ?>
-	                                <?php if ( $type === 'checkbox' ): ?>
-                                        <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="checkbox">
+	                                <?php if ( $type === 'checkbox' ):
+		                                $checked = '';
+                                        if($value == true)
+                                            $checked = 'checked';
+                                        ?>
+                                        <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="checkbox" <?php echo $checked ?>>
 	                                <?php endif; ?>
 	                                <?php if ( $type === 'date' ): ?>
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="date"
@@ -183,6 +191,11 @@ $eslTable = new Table();
                                        value="<?php echo $address['phone'] ?>">
                             </div>
                             <div class="form-field">
+                                <label class="label" for="receiver-email">Электронная почта:</label>
+                                <input class="form-value" name="receiver-email" type="text"
+                                       value="<?php echo $address['email'] ?>">
+                            </div>
+                            <div class="form-field">
                                 <label class="label" for="receiver-region">Регион:</label>
                                 <input class="form-value" name="receiver-region" type="text"
                                        value="<?php echo( $shippingMethods['debug']['shipping_route']['to']['region'] ?? '' ) ?>">
@@ -217,6 +230,16 @@ $eslTable = new Table();
                                 <label class="label" for="sender-phone">Телефон:</label>
                                 <input class="form-value" name="sender-phone" type="text"
                                        value="<?php echo ( isset( $exportFormSettings['sender-phone'] ) ) ? $exportFormSettings['sender-phone'] : '' ?>">
+                            </div>
+                            <div class="form-field">
+                                <label class="label" for="sender-company">Название компании:</label>
+                                <input class="form-value" name="sender-company" type="text"
+                                       value="<?php echo ( isset( $exportFormSettings['sender-company'] ) ) ? $exportFormSettings['sender-company'] : '' ?>">
+                            </div>
+                            <div class="form-field">
+                                <label class="label" for="sender-email">Электронная почта:</label>
+                                <input class="form-value" name="sender-email" type="text"
+                                       value="<?php echo ( isset( $exportFormSettings['sender-email'] ) ) ? $exportFormSettings['sender-email'] : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label">Способ доставки до терминала ТК:</label>
