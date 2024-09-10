@@ -95,11 +95,14 @@ class Table extends WP_List_Table {
 					$records[$key]['product_id'] = $sku;
 				}
 
-				$attrProduct = $getProductDetail->get_data();
-				$records[$key]['weight'] = (isset($attrProduct['weight']))?round(floatval($attrProduct['weight']),2):0;
-				$records[$key]['width'] = (isset($attrProduct['width']))?round(floatval($attrProduct['width']),2):0;
-				$records[$key]['length'] = (isset($attrProduct['length']))?round(floatval($attrProduct['length']),2):0;
-				$records[$key]['height'] = (isset($attrProduct['height']))?round(floatval($attrProduct['height']),2):0;
+				$weight = $getProductDetail->get_weight();
+				$width = $getProductDetail->get_width();
+				$length = $getProductDetail->get_length();
+				$height = $getProductDetail->get_height();
+				$records[$key]['weight'] = (isset($weight))?round(floatval($weight),2):0;
+				$records[$key]['width'] = (isset($width))?round(floatval($width),2):0;
+				$records[$key]['length'] = (isset($length))?round(floatval($length),2):0;
+				$records[$key]['height'] = (isset($height))?round(floatval($height),2):0;
 			}
 		}
 

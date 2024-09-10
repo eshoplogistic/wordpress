@@ -188,3 +188,10 @@ function eslRun() {
     });
 
 })( jQuery );
+
+function copyToClipboard(containerid) {
+    let copyText = containerid;
+    copyText.select();
+    document.execCommand("copy");
+    alert("Текст скопирован: " + copyText.value);
+}
