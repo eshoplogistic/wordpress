@@ -351,3 +351,22 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 	}
 
 }
+
+if ( ! function_exists( 'shortcode_widget_email_time_delivery' ) ) {
+	function shortcode_widget_email_time_delivery( $atts, $content = null, $code = "" ) {
+		if(!isset($atts['id']))
+			return false;
+
+		$order = wc_get_order( $atts['id'] );
+		if($order){
+			$orderShippings = $order->get_shipping_methods();
+			foreach ($orderShippings as $key=>$item){
+				$shippingMethod = wc_get_order_item_meta( $item->get_id() , 'esl_shipping_methods', $single = true );
+			}
+			$shippingMethods = json_decode($shippingMethod, true);
+			if(isset($shippingMethods['time'])){
+				echo $shippingMethods['time']['value'].' '.$shippingMethods['time']['unit'];
+			}
+		}
+	}
+}
