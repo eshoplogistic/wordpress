@@ -48,7 +48,7 @@
 
 .wc-esl-search-region-modal__list{
 	display: inline-grid;
-	width: 33%;
+	width: 49.9%;
 	padding-top: 30px;
 }
 
@@ -343,6 +343,10 @@
 
 .eshoplogistic-widget-cart .eshoplogistic-theme-service__select-tariff{
 	font-size: 1rem !important;
+}
+
+#esl_modal_button-search{
+	margin-top: 25px;
 }
 
 @media (max-width:641px)  {

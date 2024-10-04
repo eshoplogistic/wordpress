@@ -120,7 +120,7 @@ class ExportFileds {
 		return $result;
 	}
 
-	public function exportFields( $name, $shippingMethods = array() ) {
+	public function exportFields( $name, $shippingMethods = array(), $order = array() ) {
 		$result = array();
 		if ( $name === 'boxberry' ) {
 			$result = array(
@@ -148,8 +148,8 @@ class ExportFileds {
 			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 			$tariffs          = $eshopLogisticApi->apiServiceTariffs( $name );
 			$tariffs          = $tariffs->data();
-			if ( isset( $shippingMethods['data']['terminal']['tariff'] ) ) {
-				$selectedTariffCode = $shippingMethods['data']['terminal']['tariff']['code'];
+			if ( isset( $shippingMethods['data']['terminal']['tariff'] ) || isset( $shippingMethods['tariff']['code'] ) ) {
+				$selectedTariffCode = $shippingMethods['data']['terminal']['tariff']['code'] ?? $shippingMethods['tariff']['code'];
 				if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
 					$value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
 					unset( $tariffs[ $selectedTariffCode ] );
@@ -265,12 +265,18 @@ class ExportFileds {
 				}
 			}
 
+			$index = '';
+			if($order){
+				$orderData = $order->get_data();
+				$index = $orderData['billing']['postcode']??'';
+			}
+
 			$result = array(
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,
 				),
 				'delivery[location_to][address]' => array(
-					'index||text||Индекс адреса доставки' => ''
+					'index||text||Индекс адреса доставки' => $index
 				)
 			);
 		}

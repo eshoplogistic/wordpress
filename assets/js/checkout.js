@@ -319,9 +319,13 @@
 				if (value.length > 1) {
 					if (currentBillingCountry) {
 						searchCity(value, function (items) {
-							$this.next('#esl_result-search').html(
-								renderCitiesModal(items, modeInput)
-							);
+							if(Object.getOwnPropertyNames(items).length > 1) {
+								$this.next('#esl_result-search').html(
+									renderCitiesModal(items, modeInput)
+								);
+							}else{
+								$this.next('#esl_result-search').html('<button id="esl_modal_button-search">Выбрать данный населённый пункт</button>');
+							}
 						}, currentBillingCountry, 'region');
 					}
 				}else{
@@ -333,6 +337,30 @@
 				searchCityVar = this;
 				sendRequestCity(this);
 				document.getElementById("modal-esl-city").style.display = "none"
+			});
+
+			$('body').on('click', '#esl_modal_button-search', function (e) {
+				e.preventDefault();
+				let modalSearch = $('#esl_modal-search');
+				let value = modalSearch.val();
+				let modeInput = modalSearch.attr('data-mode');
+				$( `#${modeInput}_city` ).val( value );
+				$.ajax({
+					method: 'POST',
+					url: wc_esl_shipping_global.ajaxUrl,
+					async: true,
+					data: {
+						action : 'wc_esl_update_shipping_address',
+					},
+					dataType: 'json',
+					success: function( response ) {
+
+						console.log( response );
+
+						$( 'body' ).trigger( 'update_checkout' );
+						document.getElementById("modal-esl-city").style.display = "none"
+					}
+				});
 			});
 		}
 

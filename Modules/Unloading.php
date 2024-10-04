@@ -284,7 +284,7 @@ class Unloading implements ModuleInterface {
 				);
 
 				$methodDelivery = new ExportFileds();
-				$fieldDelivery  = $methodDelivery->exportFields( mb_strtolower( $typeMethod['name'] ), $this->shippingMethods );
+				$fieldDelivery  = $methodDelivery->exportFields( mb_strtolower( $typeMethod['name'] ), $this->shippingMethods, $order );
 
 				$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 				$additionalFields = $eshopLogisticApi->apiExportAdditional( $additional );

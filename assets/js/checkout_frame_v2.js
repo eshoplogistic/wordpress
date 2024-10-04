@@ -353,9 +353,16 @@ function isNumeric(value) {
                 if (value.length > 1) {
                     if (currentBillingCountry) {
                         searchCity(value, function (items) {
-                            $this.closest('.modal-esl-frame').find('#esl_result-search').html(
-                                renderCitiesModal(items, modeInput)
-                            );
+                            if(Object.getOwnPropertyNames(items).length > 1) {
+                                $this.closest('.modal-esl-frame').find('#esl_result-search').html(
+                                    renderCitiesModal(items, modeInput)
+                                );
+                            }else{
+                                $this.closest('.modal-esl-frame').find('#esl_result-search').html(
+                                    '<button id="esl_modal_button-search">Выбрать данный населённый пункт</button>'
+                                );
+                            }
+
                         }, currentBillingCountry, 'region');
                     }
                 }else{
@@ -369,6 +376,24 @@ function isNumeric(value) {
                 let city = $(this).data('city');
                 inputSearch.val(city)
                 document.getElementById("modal-esl-city").style.display = "none"
+            });
+
+            $('body').on('click', '#esl_modal_button-search', function (e) {
+                e.preventDefault();
+                let modalSearch = $('#esl_modal-search');
+                let value = modalSearch.val();
+                let modeInput = modalSearch.attr('data-mode');
+                $( `#${modeInput}_city` ).val( value );
+
+                document.getElementById("modal-esl-city").style.display = "none"
+                window.keyDelivery = 'door'
+                changeVisibleElements(
+                    differentShippingAddress,
+                    false,
+                    currentBillingCountry,
+                    currentShippingCountry
+                );
+                esl.request('');
             });
         }
 

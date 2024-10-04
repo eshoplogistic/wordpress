@@ -246,8 +246,6 @@ class Base extends \WC_Shipping_Method
 
 		$sessionService->set('shipping_methods', $shippingMethods);
 
-
-
 		$labelTitle =  str_replace(':',' -',$this->title);
 		$labelDescription = $this->method_description;
 		$pluginEnableShippingPrice = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_price_shipping');
@@ -342,7 +340,7 @@ class Base extends \WC_Shipping_Method
 			$cost = 0;
 		}
 
-		$apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
+		$apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
 		$cacheJson = array(
 			'city' => $widgetCityEsl['fias'] ?? '',
 			'key' => $apiWidgetKey,
