@@ -669,6 +669,25 @@ $status_translate             = [
 
                                         </div>
 
+                                        <div class="input-group">
+                                            <label for="" class="col-sm-4 col-form-label">
+			                                    <?php echo __( 'Отключить скрытие полей адреса при выборе ПВЗ', WC_ESL_DOMAIN ) ?>
+                                            </label>
+		                                    <?php
+		                                    $offAddressCheck = '';
+		                                    if ( isset( $add_form['offAddressCheck'] ) ) {
+			                                    $offAddressCheck = $add_form['offAddressCheck'];
+		                                    }
+		                                    ?>
+                                            <input
+                                                    type="checkbox"
+                                                    placeholder="<?php echo __( 'Отключить скрытие полей адреса при выборе ПВЗ', WC_ESL_DOMAIN ) ?>"
+                                                    name="offAddressCheck"
+                                                    class="col-sm-8 form-control checkbox"
+		                                    <?php echo ( $offAddressCheck == 'true' ) ? 'checked=checked' : ''; ?>"
+                                            />
+                                        </div>
+
 
                                         <div class="card-header">
 		                                    <?php echo __( 'Планировщик выгрузки заказов', WC_ESL_DOMAIN ) ?>

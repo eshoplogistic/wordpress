@@ -177,41 +177,47 @@
 		let shippingAddress2 		= $( '#shipping_address_2_field' );
 		let inputListTerminals 		= $( '#wcEslTerminals' );
 		let currentShippingMethod	= shippingFieldName();
+		let offAddressCheck = $('#offAddressCheck');
 
 		if( isTerminal ) {
 			if( differentShippingAddress && ( shippingCountry ) ) {
+				if(offAddressCheck.length === 0){
+					billingAddress1.show();
+					billingAddress2.show();
+					shippingAddress1.hide();
+					shippingAddress2.hide();
+				}
+
 				billingTerminals.hide().removeClass('show');
 				shippingTerminals.show().addClass('show');
-
-				billingAddress1.show();
-				billingAddress2.show();
-				shippingAddress1.hide();
-				shippingAddress2.hide();
 			}else if(
 				!differentShippingAddress && ( billingCountry )
 			) {
+				if(offAddressCheck.length === 0){
+					if(currentShippingMethod !== 'wc_esl_postrf_terminal'){
+						billingAddress1.hide();
+						billingAddress2.hide();
+						shippingAddress1.hide();
+						shippingAddress2.hide();
+					}else{
+						billingAddress1.show();
+						billingAddress2.show();
+						shippingAddress1.show();
+						shippingAddress2.show();
+					}
+				}
 				billingTerminals.show().addClass('show');
 				shippingTerminals.hide().removeClass('show');
-
-				if(currentShippingMethod !== 'wc_esl_postrf_terminal'){
-					billingAddress1.hide();
-					billingAddress2.hide();
-					shippingAddress1.hide();
-					shippingAddress2.hide();
-				}else{
+			} else {
+				if(offAddressCheck.length === 0){
 					billingAddress1.show();
 					billingAddress2.show();
 					shippingAddress1.show();
 					shippingAddress2.show();
 				}
-			} else {
+
 				billingTerminals.hide().removeClass('show');
 				shippingTerminals.hide().removeClass('show');
-
-				billingAddress1.show();
-				billingAddress2.show();
-				shippingAddress1.show();
-				shippingAddress2.show();
 			}
 
 			if(inputListTerminals.length === 0){
@@ -220,13 +226,15 @@
 			}
 
 		} else {
+			if(offAddressCheck.length === 0){
+				billingAddress1.show();
+				billingAddress2.show();
+				shippingAddress1.show();
+				shippingAddress2.show();
+			}
+
 			billingTerminals.hide().removeClass('show');
 			shippingTerminals.hide().removeClass('show');
-
-			billingAddress1.show();
-			billingAddress2.show();
-			shippingAddress1.show();
-			shippingAddress2.show();
 		}
 	}
 

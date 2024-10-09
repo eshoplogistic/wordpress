@@ -199,56 +199,63 @@ function isNumeric(value) {
         let billingAddress2 = $('#billing_address_2_field');
         let shippingAddress1 = $('#shipping_address_1_field');
         let shippingAddress2 = $('#shipping_address_2_field');
+        let offAddressCheck = $('#offAddressCheck');
 
         if (isTerminal === 'terminal' && cityMain) {
             if (differentShippingAddress && (shippingCountry)) {
-                billingTerminals.hide().removeClass('show');
-                shippingTerminals.show().addClass('show');
+                if(offAddressCheck.length === 0){
+                    billingAddress1.hide();
+                    billingAddress2.hide();
+                    shippingAddress1.hide();
+                    shippingAddress2.hide();
+                }
+
                 billingButton.hide();
                 shippingButton.show();
-
-                billingAddress1.hide();
-                billingAddress2.hide();
-                shippingAddress1.hide();
-                shippingAddress2.hide();
+                billingTerminals.hide().removeClass('show');
+                shippingTerminals.show().addClass('show');
             } else if (
                 !differentShippingAddress && (billingCountry)
             ) {
-                billingTerminals.show().addClass('show');
-                shippingTerminals.hide().removeClass('show');
+                if(offAddressCheck.length === 0){
+                    billingAddress1.hide();
+                    billingAddress2.hide();
+                    shippingAddress1.hide();
+                    shippingAddress2.hide();
+                }
+
                 billingButton.show();
                 shippingButton.hide();
-
-                billingAddress1.hide();
-                billingAddress2.hide();
-                shippingAddress1.hide();
-                shippingAddress2.hide();
-            } else {
-
-                billingTerminals.hide().removeClass('show');
+                billingTerminals.show().addClass('show');
                 shippingTerminals.hide().removeClass('show');
+            } else {
+                if(offAddressCheck.length === 0){
+                    billingAddress1.show();
+                    billingAddress2.show();
+                    shippingAddress1.show();
+                    shippingAddress2.show();
+                }
+
                 billingButton.hide();
                 shippingButton.hide();
+                billingTerminals.hide().removeClass('show');
+                shippingTerminals.hide().removeClass('show');
+            }
 
+        } else if (
+            isTerminal === 'door' && cityMain
+        ) {
+            if(offAddressCheck.length === 0){
                 billingAddress1.show();
                 billingAddress2.show();
                 shippingAddress1.show();
                 shippingAddress2.show();
             }
 
-
-        } else if (
-            isTerminal === 'door' && cityMain
-        ) {
-            billingTerminals.hide().removeClass('show');
-            shippingTerminals.hide().removeClass('show');
             billingButton.show();
             shippingButton.hide();
-
-            billingAddress1.show();
-            billingAddress2.show();
-            shippingAddress1.show();
-            shippingAddress2.show();
+            billingTerminals.hide().removeClass('show');
+            shippingTerminals.hide().removeClass('show');
 
             let response = [];
             response.deliveryAddress = [];
@@ -256,15 +263,17 @@ function isNumeric(value) {
             response.deliveryAddress.code = [];
             //esl.setTerminal(response)
         } else {
-            billingTerminals.hide().removeClass('show');
-            shippingTerminals.hide().removeClass('show');
+            if(offAddressCheck.length === 0){
+                billingAddress1.show();
+                billingAddress2.show();
+                shippingAddress1.show();
+                shippingAddress2.show();
+            }
+
             billingButton.hide();
             shippingButton.hide();
-
-            billingAddress1.show();
-            billingAddress2.show();
-            shippingAddress1.show();
-            shippingAddress2.show();
+            billingTerminals.hide().removeClass('show');
+            shippingTerminals.hide().removeClass('show');
         }
     }
 
