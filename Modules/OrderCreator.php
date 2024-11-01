@@ -63,6 +63,37 @@ class OrderCreator implements ModuleInterface
 				unset($shippingMethods[$shippingMethodId]['terminals']);
 				$jsonArr = json_encode( $shippingMethods[$shippingMethodId], JSON_UNESCAPED_UNICODE);
 				$item->update_meta_data('esl_shipping_methods', $jsonArr);
+				if($terminal){
+					if(isset($shippingMethods[$shippingMethodId]['data']['terminal']['time'])){
+						$timeVal = $shippingMethods[$shippingMethodId]['data']['terminal']['time']['value'] ?? '';
+						$timeUnit = $shippingMethods[$shippingMethodId]['data']['terminal']['time']['unit'] ?? '';
+						$timeText = $shippingMethods[$shippingMethodId]['data']['terminal']['time']['text'] ?? '';
+						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
+						$item->update_meta_data(__("Срок доставки", WC_ESL_DOMAIN), $time);
+					}
+					if(isset($shippingMethods[$shippingMethodId]['time'])){
+						$timeVal = $shippingMethods[$shippingMethodId]['time']['value'] ?? '';
+						$timeUnit = $shippingMethods[$shippingMethodId]['time']['unit'] ?? '';
+						$timeText = $shippingMethods[$shippingMethodId]['time']['text'] ?? '';
+						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
+						$item->update_meta_data(__("Срок доставки", WC_ESL_DOMAIN), $time);
+					}
+				}else{
+					if(isset($shippingMethods[$shippingMethodId]['data']['door']['time'])){
+						$timeVal = $shippingMethods[$shippingMethodId]['data']['door']['time']['value'] ?? '';
+						$timeUnit = $shippingMethods[$shippingMethodId]['data']['door']['time']['unit'] ?? '';
+						$timeText = $shippingMethods[$shippingMethodId]['data']['door']['time']['text'] ?? '';
+						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
+						$item->update_meta_data(__("Срок доставки", WC_ESL_DOMAIN), $time);
+					}
+					if(isset($shippingMethods[$shippingMethodId]['time'])){
+						$timeVal = $shippingMethods[$shippingMethodId]['time']['value'] ?? '';
+						$timeUnit = $shippingMethods[$shippingMethodId]['time']['unit'] ?? '';
+						$timeText = $shippingMethods[$shippingMethodId]['time']['text'] ?? '';
+						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
+						$item->update_meta_data(__("Срок доставки", WC_ESL_DOMAIN), $time);
+					}
+				}
 			}
 			$sessionService->drop('shipping_methods');
 

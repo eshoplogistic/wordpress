@@ -210,9 +210,9 @@ class Shipping implements ModuleInterface
             $stateShippingMethods[$item->method_id]['price'] === 0
         ) echo ': ' . wc_price(0);
 
-        if(isset($stateShippingMethods[$item->method_id]['time'])) {
-            echo View::render('checkout/time', ['time' => $stateShippingMethods[$item->method_id]['time']]);
-        }
+        //if(isset($stateShippingMethods[$item->method_id]['time'])) {
+            //echo View::render('checkout/time', ['time' => $stateShippingMethods[$item->method_id]['time']]);
+        //}
 
         if(isset($accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment'])) {
             echo View::render(

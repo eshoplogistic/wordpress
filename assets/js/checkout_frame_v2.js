@@ -9,6 +9,7 @@ if(document.getElementById('wc_esl_billing_terminal').value){
 window.widgetInit = false
 let cityMain = false
 let errorCity = 0
+let hashSelectService = []
 
 function isHidden(el) {
     var style = window.getComputedStyle(el);
@@ -849,7 +850,7 @@ function isNumeric(value) {
             await this.request(JSON.stringify(esldata))
 
         },
-        setTerminal: function (response) {
+        setTerminal: function (response, hide = true) {
             _self = this
 
             let address = response
@@ -865,7 +866,8 @@ function isNumeric(value) {
                 if (request.readyState === 4 && request.status === 200) {
                     jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val(address.address);
                     //jQuery(".wc-esl-terminals__button").text("Выбрать способ доставки и пункт самовывоза");
-                    modalEsl.style.display = "none";
+                    if(hide)
+                        modalEsl.style.display = "none";
                 }
             })
         },
@@ -905,11 +907,14 @@ function isNumeric(value) {
             window.widgetInit = true
         });
 
-        root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
+        root.addEventListener('eShopLogisticWidgetCart:onBalloonOpen', (event) => {
             let data = event.detail
-            console.log('Событие onSelectedService', data)
+            console.log('Событие onBalloonOpen', data)
+            let hash = objectHash.sha1(data);
+            hashSelectService = hash
+
             if (typeof data.terminal == 'object') {
-                esl.setTerminal(data.terminal)
+                esl.setTerminal(data.terminal, false)
             } else {
                 jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
                 window.keyDelivery = data.typeDelivery
@@ -930,7 +935,40 @@ function isNumeric(value) {
                 );
 
             }
-            esl.confirm(data)
+        })
+
+        root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
+            let data = event.detail
+            console.log('Событие onSelectedService', data)
+            let hash = objectHash.sha1(event.detail);
+            console.log(hash)
+            console.log(hashSelectService)
+
+            if (typeof data.terminal == 'object') {
+                esl.setTerminal(data.terminal)
+            } else {
+                jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
+                window.keyDelivery = data.typeDelivery
+                let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
+                let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
+                let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
+                if (window.keyDelivery === 'door') {
+                    jQuery('#buttonModalDoor').show();
+                } else {
+                    jQuery('#buttonModalDoor').hide();
+                }
+
+                changeVisibleElements(
+                    differentShippingAddress,
+                    window.keyDelivery,
+                    currentBillingCountry,
+                    currentShippingCountry
+                );
+            }
+
+            if(hash !== hashSelectService){
+                esl.confirm(data)
+            }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {

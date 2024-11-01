@@ -17,7 +17,12 @@ class ExportFileds {
 					'barcode' => '',
 					'type' => '',
 					'packing_type' => '',
-					'issue'        => ''
+					'issue'        => '',
+					'combine_places' => array(
+						'apply' => '',
+						'dimensions' => '',
+						'weight' => ''
+					)
 				)
 			);
 		}
@@ -27,7 +32,8 @@ class ExportFileds {
 					'type' => '',
 					'combine_places' => array(
 						'apply' => '',
-						'dimensions' => ''
+						'dimensions' => '',
+						'weight' => ''
 					)
 				),
 				'delivery' => array(
@@ -123,6 +129,8 @@ class ExportFileds {
 	public function exportFields( $name, $shippingMethods = array(), $order = array() ) {
 		$result = array();
 		if ( $name === 'boxberry' ) {
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 			$result = array(
 				'order' => array(
 					'barcode||text||Штрих-код посылки'        => '',
@@ -141,7 +149,12 @@ class ExportFileds {
 						1 => 'выдача со вскрытием и проверкой комплектности',
 						2 => 'выдача части вложения'
 					)
-				)
+				),
+				'order[combine_places]' => array(
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+				),
 			);
 		}
 		if ( $name === 'sdek' ) {
@@ -173,7 +186,8 @@ class ExportFileds {
 				),
 				'order[combine_places]' => array(
 					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??''
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
 				),
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,

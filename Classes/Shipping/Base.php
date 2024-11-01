@@ -263,6 +263,8 @@ class Base extends \WC_Shipping_Method
 		if($cost === 0)
 			$labelTitle = $labelTitle.': Бесплатно';
 
+		if(isset($shippingMethods[$this->id]['time']['value']))
+			$labelTitle = $labelTitle.'. Срок доставки - '.$shippingMethods[$this->id]['time']['value'].' '.$shippingMethods[$this->id]['time']['unit'];
 
 		$rate = array(
 			'id' => $this->id,

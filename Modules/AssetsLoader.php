@@ -112,12 +112,20 @@ class AssetsLoader implements ModuleInterface
 					true
 				);
 				wp_enqueue_script(
+					'wc_esl_object_hash',
+					WC_ESL_PLUGIN_URL . 'assets/js/object_hash.js',
+					[],
+					WC_ESL_VERSION,
+					true
+				);
+				wp_enqueue_script(
 					'wc_esl_checkout_frame_js_v2',
 					WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
 					[ 'jquery' ],
 					WC_ESL_VERSION,
 					true
 				);
+				$this->injectGlobals('wc_esl_object_hash');
 				$this->injectGlobals('wc_esl_checkout_frame_js_v2');
 			}else{
 				wp_enqueue_script(

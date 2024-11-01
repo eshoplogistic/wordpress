@@ -992,7 +992,14 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Объединить все грузовые места в одно (СДЭК)', WC_ESL_DOMAIN ) ?>
+			                                        <?php echo __( 'Объединить все грузовые места в одно', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                СДЭК, Boxberry
+                                                            </p>
+                                                        </div>
+                                                    </label>
                                                 </label>
 		                                        <?php
 		                                        $combine_places_apply = '';
@@ -1011,7 +1018,14 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Габариты итогового грузового места. Формат: строка вида «Д*Ш*В», в сантиметрах (СДЭК)', WC_ESL_DOMAIN ) ?>
+			                                        <?php echo __( 'Габариты итогового грузового места. Формат: строка вида «Д*Ш*В», в сантиметрах', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                СДЭК, Boxberry
+                                                            </p>
+                                                        </div>
+                                                    </label>
                                                 </label>
 		                                        <?php
 		                                        $combine_places_dimensions = '';
@@ -1026,6 +1040,32 @@ $status_translate             = [
                                                         name="combine-places-dimensions"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $combine_places_dimensions ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Вес итогового грузового места в кг', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                СДЭК, Boxberry
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+		                                        <?php
+		                                        $combine_places_weight = '';
+		                                        if ( isset( $export_form['combine-places-weight'] ) ) {
+			                                        $combine_places_weight = $export_form['combine-places-weight'];
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Вес итогового грузового места в кг', WC_ESL_DOMAIN ) ?>"
+                                                        name="combine-places-weight"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $combine_places_weight ) ?>"
                                                 />
                                             </div>
                                             <div class="input-group">
