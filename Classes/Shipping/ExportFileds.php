@@ -123,6 +123,21 @@ class ExportFileds {
 			);
 		}
 
+		if ( $name === 'magnit' ) {
+			$result = array(
+				'receiver' => array(
+					'last_name' => ''
+				),
+				'order' => array(
+					'combine_places' => array(
+						'apply' => '',
+						'dimensions' => '',
+						'weight' => ''
+					)
+				)
+			);
+		}
+
 		return $result;
 	}
 
@@ -331,6 +346,21 @@ class ExportFileds {
 				'order' => array(
 					'packing||checkbox' => '',
 				)
+			);
+		}
+
+		if ( $name === 'magnit' ) {
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+			$result = array(
+				'receiver' => array(
+					'last_name||text||Фамилия получателя' => ''
+				),
+				'order[combine_places]' => array(
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+				),
 			);
 		}
 

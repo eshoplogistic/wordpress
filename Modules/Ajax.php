@@ -72,6 +72,8 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_unloading_info', [$this, 'unloadingInfo']);
 		add_action('wp_ajax_wc_esl_shipping_save_status_form', [$this, 'unloadingStatus']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_status_update', [$this, 'unloadingStatusUpdate']);
+		add_action('wp_ajax_wc_esl_shipping_unloading_delete', [$this, 'unloadingDelete']);
+
 	}
 
 	public function changeEnablePlugin()
@@ -605,6 +607,24 @@ class Ajax implements ModuleInterface
 			]);
 		}
 
+	}
+
+	public function unloadingDelete()
+	{
+		if(!isset($_POST['order_id']))
+			return false;
+		if(!isset($_POST['order_type']))
+			return false;
+
+
+		$unloading = new Unloading();
+		$result = $unloading->infoOrder($_POST['order_id'], $_POST['order_type'], 'delete');
+
+		wp_send_json([
+			'success' => true,
+			'data' => $result,
+			'msg' => __("Удаление заказа для выгрузки", WC_ESL_DOMAIN)
+		]);
 	}
 
 	public function unloadingInfo()

@@ -51,6 +51,19 @@ function eslRun() {
                 modalEslInfo.querySelector('main').innerHTML = obj.data;
             }
         },
+        clickOnDelete: function (event) {
+            let order_id = document.getElementById("order_info_id").value
+            let order_type = document.getElementById("order_info_type").value
+            const xhr = new XMLHttpRequest()
+            xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
+            let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type;
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+            xhr.send(params)
+            xhr.onload = () => {
+                let obj = JSON.parse(xhr.responseText);
+                console.log(obj)
+            }
+        },
         clickOnStatusUpdate: function (event) {
             let order_id = document.getElementById("order_info_id").value
             let order_type = document.getElementById("order_info_type").value
@@ -79,6 +92,10 @@ function eslRun() {
 
     let els_terminals_info = document.getElementById('esl_unloading_status')
     els_terminals_info.addEventListener('click', bindEvents.clickOnInfo, false)
+
+    let els_terminals_delete = document.getElementById('esl_unloading_delete')
+    if(els_terminals_delete)
+        els_terminals_delete.addEventListener('click', bindEvents.clickOnDelete, false)
 
     let els_terminals_status_update = document.getElementById('esl_unloading_status_update')
     els_terminals_status_update.addEventListener('click', bindEvents.clickOnStatusUpdate, false)

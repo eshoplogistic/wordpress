@@ -400,6 +400,7 @@ class Unloading implements ModuleInterface {
 			'Kit'             => 'kit',
 			'Почта России'    => 'postrf',
 			'ПЭК'             => 'pecom',
+			'Магнит Пост'     => 'magnit',
 		);
 
 		$typeList = array(
@@ -599,7 +600,7 @@ class Unloading implements ModuleInterface {
 		return $result;
 	}
 
-	public function infoOrder( $id, $type ) {
+	public function infoOrder( $id, $type, $action = 'get' ) {
 
 		$optionsRepository = new OptionsRepository();
 		$apiKey            = $optionsRepository->getOption( 'wc_esl_shipping_api_key' );
@@ -616,10 +617,9 @@ class Unloading implements ModuleInterface {
 			}
 		}
 
-
 		$data             = array(
 			'key'      => $apiKey,
-			'action'   => 'get',
+			'action'   => $action,
 			'order_id' => $id,
 			'service'  => $type
 		);

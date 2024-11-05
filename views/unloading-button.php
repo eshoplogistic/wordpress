@@ -21,3 +21,8 @@ $unloadingStatus    = isset($shippingMethods['answer']['state']['status']['code'
 <button type="button" id="esl_unloading_status_update" class="button button-primary" title="Обновить статус заказа">
     <span class="dashicons dashicons-update-alt"></span>
 </button>
+<?php if(isset($_GET['eslD'])): ?>
+<button type="button" id="esl_unloading_delete" class="button button-primary" title="Удалить выгрузку">
+    <span class="dashicons dashicons-trash"></span>
+</button>
+<?php endif; ?>

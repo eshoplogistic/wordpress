@@ -973,6 +973,34 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+			                                        <?php echo __( 'Код терминала (Магнит Пост)', WC_ESL_DOMAIN ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Код терминала в случае самостоятельной доставки на
+                                                                терминал транспортной компании.
+                                                                Узнайте у своего менеджера.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+		                                        <?php
+		                                        $sender_terminal = '';
+		                                        if ( isset( $export_form['sender-terminal-magnit'] ) ) {
+			                                        $sender_terminal = $export_form['sender-terminal-magnit'];
+		                                        }
+		                                        ?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        name="sender-terminal-magnit"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Тип заказа (СДЭК)', WC_ESL_DOMAIN ) ?>
                                                 </label>
 												<?php
