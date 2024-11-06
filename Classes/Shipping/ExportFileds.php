@@ -138,6 +138,42 @@ class ExportFileds {
 			);
 		}
 
+		if( $name === 'baikal'){
+			$result = array(
+				'sender' => array(
+					'legal' => '',
+					'identity' => array(
+						'type' => '',
+						'series' => '',
+						'number' => '',
+						'inn' => '',
+						'kpp' => '',
+					)
+				),
+				'receiver' => array(
+					'legal' => '',
+					'identity' => array(
+						'type' => '',
+						'series' => '',
+						'number' => '',
+						'inn' => '',
+						'kpp' => '',
+					)
+				),
+				'delivery' => array(
+					'location_from' => array(
+						'pick_up_data' => array(
+							'date' => '',
+							'time_from' => '',
+							'time_to' => '',
+							'lift' => '',
+							'floor' => '',
+						)
+					)
+				),
+			);
+		}
+
 		return $result;
 	}
 
@@ -361,6 +397,59 @@ class ExportFileds {
 					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
 					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
 				),
+			);
+		}
+
+		if ( $name === 'baikal' ) {
+			$date = new DateTime();
+			$date->modify('+1 day');
+			$produce_date = $date->format('Y-m-d');
+
+			$result = array(
+				'sender' => array(
+					'legal||select||Форма контрагента' => array(
+						1   => 'Юридическое лицо',
+						2   => 'Физическое лицо'
+					),
+				),
+				'sender[identity]'   => array(
+					'type||select||Тип организационно-правовой формы'    => array(
+						1 => 'Физическое лицо',
+						5 => 'ООО',
+						9 => 'ИП',
+						12 => 'АО',
+					),
+					'series||text||Серия документа для физического лица' => '',
+					'number||text||Номер документа для физического лица' => '',
+					'inn||text||ИНН для юридического лица' => '',
+					'kpp||text||КПП для юридического лица' => '',
+				),
+				'receiver' => array(
+					'legal||select||Форма контрагента' => array(
+						1   => 'Юридическое лицо',
+						2   => 'Физическое лицо'
+					),
+				),
+				'receiver[identity]'   => array(
+					'type||select||Тип организационно-правовой формы'    => array(
+						1 => 'Физическое лицо',
+						5 => 'ООО',
+						9 => 'ИП',
+						12 => 'АО',
+					),
+					'series||text||Серия документа для физического лица' => '',
+					'number||text||Номер документа для физического лица' => '',
+					'inn||text||ИНН для юридического лица' => '',
+					'kpp||text||КПП для юридического лица' => '',
+				),
+				'delivery[location_from][pick_up_data]' => array(
+					'date||date||Дата забора груза от отправителя' => $produce_date,
+					'time_from||date||Время начала периода забора груза от отправителя' => $produce_date,
+					'time_to||date||Время окончания периода забора груза от отправителя' => $produce_date,
+					'lift||checkbox||Флаг наличия лифта' => '',
+					'floor||text||Количество этажей, если нужен спуск/подъём' => '',
+
+				)
 			);
 		}
 

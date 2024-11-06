@@ -164,25 +164,6 @@ class Unloading implements ModuleInterface {
 		}
 
 		if ( $pageType == 'shop_order' ) {
-			$order          = wc_get_order( $postId );
-			$orderShippings = $order->get_shipping_methods();
-			$orderShipping  = array();
-
-			foreach ( $orderShippings as $key => $item ) {
-				$orderShipping = array(
-					'id'   => $item->get_method_id(),
-					'name' => $item->get_method_title(),
-				);
-			}
-			$checkDelivery = stripos( $orderShipping['id'], WC_ESL_PREFIX );
-			if ( $checkDelivery === false ) {
-				return false;
-			}
-
-			$checkName = $this->getMethodByName( $orderShipping['name'] );
-			if ( ! $checkName['name'] ) {
-				return false;
-			}
 
 			add_meta_box(
 				'woocommerce-order-esl-unloading',
@@ -212,6 +193,26 @@ class Unloading implements ModuleInterface {
 		}
 
 		if ( ( $pageType == 'shop_order' && $pagenow == 'post.php' ) || ( $pageType == 'shop_order' && $pagenow == 'admin.php' ) ) {
+			$order          = wc_get_order( $postId );
+			$orderShippings = $order->get_shipping_methods();
+			$orderShipping  = array();
+
+			foreach ( $orderShippings as $key => $item ) {
+				$orderShipping = array(
+					'id'   => $item->get_method_id(),
+					'name' => $item->get_method_title(),
+				);
+			}
+			$checkDelivery = stripos( $orderShipping['id'], WC_ESL_PREFIX );
+			if ( $checkDelivery === false ) {
+				return false;
+			}
+
+			$checkName = $this->getMethodByName( $orderShipping['name'] );
+			if ( ! $checkName['name'] ) {
+				return false;
+			}
+
 			$order = wc_get_order( $postId );
 			if ( $order !== false ) {
 				$orderData          = $order->get_data();
@@ -401,6 +402,8 @@ class Unloading implements ModuleInterface {
 			'Почта России'    => 'postrf',
 			'ПЭК'             => 'pecom',
 			'Магнит Пост'     => 'magnit',
+			'Байкал Сервис'   => 'baikal',
+			'Фулфилмент-оператор «Почтальон»'   => 'pochtalion',
 		);
 
 		$typeList = array(
