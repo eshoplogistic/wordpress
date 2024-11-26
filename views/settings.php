@@ -714,7 +714,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Статусы заказов для завершения планировщика', WC_ESL_DOMAIN ) ?>
+			                                    <?php echo __( 'Статусы заказов для работы планировщика', WC_ESL_DOMAIN ) ?>
                                             </label>
 		                                    <?php
 		                                    $statusEnd = array();
@@ -728,6 +728,9 @@ $status_translate             = [
                                             <select name="statusEnd" multiple="multiple" style="width: 100%; margin-bottom: 15px;">
 		                                        <?php
 		                                        foreach ( $status_wp as $value => $label ) {
+                                                    if($value == 'wc-completed' || $value == 'wc-cancelled' || $value == 'wc-refunded' || $value == 'wc-failed'  || $value == 'wc-test-status' || $value == 'wc-checkout-draft')
+                                                        continue;
+
 			                                        $selected = ( in_array( $value, $statusEnd ) ) ? 'selected' : '';
 			                                        echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label . '</option>';
 		                                        }

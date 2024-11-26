@@ -42,6 +42,9 @@ class UnloadingCron
 			$wpStatusesKeys = $this->addForm['statusEnd'];
 		}
 
+		if(!$wpStatusesKeys)
+			return false;
+
 		$args = array(
 			'status' => $wpStatusesKeys,
 			'limit' => -1

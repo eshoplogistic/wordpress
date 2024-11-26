@@ -30,7 +30,7 @@ class Table extends WP_List_Table {
 			'product_id'     => __( 'ID' ),
 			'name'   => __( 'Имя' ),
 			'quantity'  => __( 'Кол-во' ),
-			'total'  => __( 'Цена' ),
+			'price'  => __( 'Цена' ),
 			'weight' => __( 'Вес' ),
 			'width'  => __( 'Ширина' ),
 			'length' => __( 'Длина' ),
@@ -94,11 +94,12 @@ class Table extends WP_List_Table {
 				if($sku){
 					$records[$key]['product_id'] = $sku;
 				}
-
+				$price = $getProductDetail->get_price();
 				$weight = $getProductDetail->get_weight();
 				$width = $getProductDetail->get_width();
 				$length = $getProductDetail->get_length();
 				$height = $getProductDetail->get_height();
+				$records[$key]['price'] = $price;
 				$records[$key]['weight'] = (isset($weight))?round(floatval($weight),2):0;
 				$records[$key]['width'] = (isset($width))?round(floatval($width),2):0;
 				$records[$key]['length'] = (isset($length))?round(floatval($length),2):0;
