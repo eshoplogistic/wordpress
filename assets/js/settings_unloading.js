@@ -206,9 +206,16 @@ function eslRun() {
 
 })( jQuery );
 
-function copyToClipboard(containerid) {
-    let copyText = containerid;
-    copyText.select();
-    document.execCommand("copy");
-    alert("Текст скопирован: " + copyText.value);
+function copyToClipboard(containerid, e) {
+    let elemText = containerid
+    let elemBut = e.id
+    new ClipboardJS('#'+elemBut, {
+        text: function(trigger) {
+            return elemText.value
+        }
+    }).on('success', function(e) {
+        let button = document.getElementById(elemBut);
+        button.textContent = 'Скопировано'
+        console.log('Текст успешно скопирован в буфер обмена')
+    });
 }

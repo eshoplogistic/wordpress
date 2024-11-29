@@ -648,7 +648,7 @@ class Ajax implements ModuleInterface
 			$html = '<div class="esl-status_infoTitle">'.$result['data']['messages'].'</div>';
 		}
 		if(isset($result['state']['number'])){
-			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="'.$result['state']['number'].'" id="copyText1" disabled><button class="button button-primary" onclick="copyToClipboard(copyText1)">Скопировать номер</button></div>';
+			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="'.$result['state']['number'].'" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
 		}
 		if(isset($shippingMethod) && $shippingMethod){
 			$shippingMethods = json_decode($shippingMethod, true);
