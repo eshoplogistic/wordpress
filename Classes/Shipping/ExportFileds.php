@@ -174,6 +174,28 @@ class ExportFileds {
 			);
 		}
 
+		if ( $name === 'dpd' ) {
+			$result = array(
+				'receiver' => array(
+					'email' => ''
+				),
+				'order' => array(
+					'content' => '',
+					'costly' => '',
+					'combine_places' => array(
+						'apply' => '',
+						'dimensions' => '',
+						'weight' => ''
+					)
+				),
+				'delivery' => array(
+					'produce_date' => '',
+					'produce_time' => '',
+					'tariff' => '',
+				),
+			);
+		}
+
 		return $result;
 	}
 
@@ -450,6 +472,45 @@ class ExportFileds {
 					'floor||text||Количество этажей, если нужен спуск/подъём' => '',
 
 				)
+			);
+		}
+
+		if ( $name === 'dpd'){
+			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
+			$tariffs          = $eshopLogisticApi->apiServiceTariffs( $name );
+			$tariffs          = $tariffs->data();
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+			$date = new DateTime();
+			$date->modify('+1 day');
+			$produce_date = $date->format('Y-m-d');
+			if ( isset( $shippingMethods['tariff'] ) ) {
+				$selectedTariffCode = $shippingMethods['tariff']['code'];
+				if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
+					$value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
+					unset( $tariffs[ $selectedTariffCode ] );
+					$tariffs = $value + $tariffs;
+				}
+			}
+
+			$result = array(
+				'receiver' => array(
+					'email||text||Адрес электронной почты' => ''
+				),
+				'order' => array(
+					'content||text||Содержимое отправления (что за товары)' => '',
+					'costly||checkbox||Флаг «Ценный груз»' => '',
+				),
+				'order[combine_places]' => array(
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+				),
+				'delivery' => array(
+					'produce_date||date||Дата приёма груза' => $produce_date,
+					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => '',
+					'tariff||select||Тариф' => $tariffs,
+				),
 			);
 		}
 
