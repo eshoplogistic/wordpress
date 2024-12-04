@@ -294,12 +294,12 @@ $eslTable = new Table();
                     <section id="content4">
 						<?php if ( isset( $additionalFields ) && $additionalFields ): ?>
                             <div class="esl-box_add">
-								<?php foreach ( $additionalFields as $key => $value ):
-                                    if(!isset($v['name']))
-                                        continue;
-                                    ?>
+								<?php foreach ( $additionalFields as $key => $value ):?>
                                     <p><?php echo ( $additionalFieldsRu[ $key ] ) ?? $key ?></p>
-									<?php foreach ( $value as $k => $v ): ?>
+									<?php foreach ( $value as $k => $v ):
+										if(!isset($v['name']))
+											continue;
+                                        ?>
                                         <div class="form-field_add">
                                             <label class="label" for="<?php echo $k ?>"><?php echo $v['name'] ?></label>
 											<?php if ( $v['type'] === 'integer' ): ?>

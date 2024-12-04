@@ -515,7 +515,7 @@ class Unloading implements ModuleInterface {
 					'article'    => $item['product_id'],
 					'name'       => $item['name'],
 					'count'      => $item['quantity'],
-					'price'      => $item['total'],
+					'price'      => $item['price'],
 					'weight'     => $shippingHelper->weightOption( $item['weight'] ),
 					//Вес, в кг.
 					'dimensions' => $shippingHelper->dimensionsOption( $item['width'] ) . '*' . $shippingHelper->dimensionsOption( $item['length'] ) . '*' . $shippingHelper->dimensionsOption( $item['height'] ),
