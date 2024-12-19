@@ -1,10 +1,15 @@
-if(document.getElementById('wc_esl_billing_terminal').value){
-    window.keyDelivery = 'terminal'
-}else if(document.getElementById('wc_esl_shipping_terminal').value){
-    window.keyDelivery = 'terminal'
+if(document.getElementById('wc_esl_billing_terminal')){
+    if(document.getElementById('wc_esl_billing_terminal').value){
+        window.keyDelivery = 'terminal'
+    }else if(document.getElementById('wc_esl_shipping_terminal').value){
+        window.keyDelivery = 'terminal'
+    }else{
+        window.keyDelivery = 'door'
+    }
 }else{
     window.keyDelivery = 'door'
 }
+
 
 window.widgetInit = false
 let cityMain = false

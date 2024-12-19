@@ -79,6 +79,7 @@ class OptionsPage implements ModuleInterface
 			'frame_enable'     => $this->option->getOption('wc_esl_shipping_frame_enable'),
 			'status_form'     => $this->option->getOption('wc_esl_shipping_plugin_status_form'),
 			'status_wp'     => $this->unloading->getStatusWp(),
+			'add_field_form'     => $this->option->getOption('wc_esl_shipping_add_field_form'),
 		);
 	}
 }

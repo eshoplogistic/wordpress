@@ -66,7 +66,7 @@ class OfferData implements OfferInterface
 			floatval(
 				$weight
 			),
-			2
+			8
 		);
 		if($result === 0.0 && $weight)
 			$result = 0.1;
@@ -80,7 +80,7 @@ class OfferData implements OfferInterface
 			floatval(
 				$this->prepareDimensionsInEsl($this->product->get_length())
 			),
-			2
+			8
 		);
 	}
 
@@ -90,7 +90,7 @@ class OfferData implements OfferInterface
 			floatval(
 				$this->prepareDimensionsInEsl($this->product->get_width())
 			),
-			2
+			8
 		);
 	}
 
@@ -100,7 +100,7 @@ class OfferData implements OfferInterface
 			floatval(
 				$this->prepareDimensionsInEsl($this->product->get_height())
 			),
-			2
+			8
 		);
 	}
 

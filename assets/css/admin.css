@@ -60,6 +60,7 @@
     right: 15px;
     width: 100%;
     max-width: 315px;
+    z-index: 999999;
 }
 
 .esl-notifications__item {
@@ -261,4 +262,79 @@
     margin-left: 2px;
     margin-top: -17px;
     color: rgba(236, 0, 0, 0.66);
+}
+
+.modal-esl-frame {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 9999;
+}
+.modal-esl-frame .modal_content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    z-index: 99999;
+}
+.modal-esl-frame .modal_content .close_modal_window {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-esl-frame .title {
+    padding-bottom: 45px;
+}
+
+.modal-esl-frame #buttonModalAddField{
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    height: auto;
+    color: #fff;
+    background-color: #489afa;
+    border-color: #0062cc;
+    margin-top: 15px;
+}
+
+.modal-esl-frame #buttonModalAddField:hover{
+    background-color: #086be1;
+    border-color: #0062cc;
+}
+
+
+#modal-esl-add-field .label{
+    position: static;
+}
+
+#modal-esl-add-field input{
+    border: black !important;
+    height: 15px;
+    margin-left: 2px;
+}
+
+#modal-esl-add-field input[type=checkbox]:checked::before {
+    float: unset;
+}
+
+#modal-esl-add-field input[type=checkbox] {
+    float: unset;
+    height: 15px;
+    width: 15px !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    margin: 2px auto;
+}
+
+#modal-esl-add-field .form-field_add {
+    margin: 10px;
+    display: inline-grid;
 }

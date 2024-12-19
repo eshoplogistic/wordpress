@@ -1560,6 +1560,42 @@ $status_translate             = [
                         </div>
 					<?php endif; ?>
 
+	                <?php if ( $moduleVersion ): ?>
+                        <div class="card wc-esl-settings-status esl-section_add_field">
+                            <div class="card-header">
+				                <?php echo __( 'Дополнительные услуги', WC_ESL_DOMAIN ) ?>
+                            </div>
+
+                            <div class="card-body" id="eslAddFormField">
+                                <div class="form-group row align-items-center mb-3">
+                                    <div class="col-sm-12">
+
+                                        <div class="row">
+                                            <div class="esl-inner_add col-sm-6">
+                                                <button type="button" class="wc-esl-add__button" data-mode="sdek">Настройки для СДЭК</button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="modal-esl-add-field" class="modal-esl-frame">
+                                <div class="modal_content">
+                                    <div class="title">
+                                        <span class="close_modal_window">×</span>
+                                        <p><strong>Дополнительные услуги</strong><br></p>
+                                    </div>
+                                    <div id="content-add-field_ajax"></div>
+                                    <div class="footer">
+                                        <input id="buttonModalAddField" class="btn btn-primary" type="button"  value="Сохранить">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+	                <?php endif; ?>
+
                 </div>
             </div>
         </div>

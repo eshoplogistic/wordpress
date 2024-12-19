@@ -1,5 +1,47 @@
 window.addEventListener('load', function(event) {
 	eslRun()
+
+	let modalAddField = document.getElementById("modal-esl-add-field")
+	let contentAjax = document.getElementById("content-add-field_ajax")
+	let span = document.getElementsByClassName("close_modal_window")[0]
+
+	span.onclick = function () {
+		modalAddField.style.display = "none"
+	}
+
+	window.onclick = function (event) {
+		if (event.target === modalAddField) {
+			modalAddField.style.display = "none"
+		}
+	}
+
+	let bindEvents = {
+		clickOnAddField: function (event) {
+			console.log(event)
+			let data = [];
+			data['action'] = 'wc_esl_shipping_get_add_field';
+			data['type'] = 'sdek';
+
+			HttpClientEsl.post(data, function(result){
+				console.log(result)
+				if(result.success === true){
+					contentAjax.innerHTML = result.data;
+				}
+			});
+			modalAddField.style.display = "block"
+		},
+		onCloseModal: function () {
+			console.log('closeModal')
+		},
+	}
+
+	let els_add_buttons = document.getElementsByClassName('wc-esl-add__button')
+	if (els_add_buttons) {
+		for (let i = 0; i < els_add_buttons.length; i++) {
+			els_add_buttons[i].addEventListener('click', bindEvents.clickOnAddField, false);
+		}
+
+	}
 });
 
 function eslRun() {
@@ -31,6 +73,9 @@ function eslRun() {
 		exportForm: document.getElementById('eslExportForm'),
 		enableFrameCheckbox: document.getElementById('enableFrame'),
 		statusSave: document.getElementById('statusSave'),
+		eslAddFieldForm: 'eslAddFieldForm',
+		buttonAddFieldForm: document.getElementById('buttonModalAddField'),
+		eslAddFieldSelector: '.modal-esl-frame .modal_content',
 
 		init: function () {
 			this.enablePluginCheckbox.addEventListener('change', this.changeEnablePluginCheckbox.bind({
@@ -98,6 +143,46 @@ function eslRun() {
 					_self: this
 				}));
 			}
+			if(this.buttonAddFieldForm){
+				this.buttonAddFieldForm.addEventListener('click', this.submitAddFieldForm.bind({
+					_self: this
+				}));
+			}
+		},
+
+		submitAddFieldForm: function (event) {
+			event.preventDefault();
+
+			let _self = this._self;
+			let form = document.getElementById(_self.eslAddFieldForm);
+			let type = form.getAttribute('data-type');
+			let result = [];
+			let data = new FormData(form);
+			for (let [key, value] of data) {
+				result.push({name:key, value:value});
+			}
+
+			PreloaderEsl.show(_self.eslAddFieldSelector);
+			_self.changeAddField(result, type);
+		},
+
+		changeAddField: function (result, type) {
+			let data = [];
+
+			data['action'] = 'wc_esl_shipping_save_add_field';
+			data['result'] = JSON.stringify(result);
+			data['type'] = type;
+
+			HttpClientEsl.post(data, this.callbackChangeAddField.bind({
+				_self: this
+			}));
+		},
+
+		callbackChangeAddField: function (response) {
+			let _self = this._self;
+			PushEsl.addItem(response.status, response.msg);
+			PreloaderEsl.hide(_self.eslAddFieldSelector);
+			console.log(response);
 		},
 
 		changeEnablePluginCheckbox: function (event) {
@@ -591,6 +676,7 @@ function eslRun() {
 function sortableDelete(elem){
 	elem.parentNode.remove();
 }
+
 
 (function( $ ) {
 

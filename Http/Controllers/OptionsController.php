@@ -265,6 +265,27 @@ class OptionsController extends Controller
 	}
 
 	/**
+	 * @param string $key
+	 *
+	 * @return ResponseInterface
+	 */
+	public function saveAddFieldForm($addField) {
+		if(empty($addField)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', WC_ESL_DOMAIN)]);
+
+		$this->options->save([
+			'wc_esl_shipping' => [
+				'add_field_form' => $addField
+			]
+		]);
+
+		return $this->json([
+			'status' => 'success',
+			'msg'    => __('Данные по выгрузке успешно сохранены', WC_ESL_DOMAIN),
+			'data'   => $this->options->getOption('wc_esl_shipping_add_field_form')
+		]);
+	}
+
+	/**
 	 * @param string $data
 	 *
 	 * @return ResponseInterface

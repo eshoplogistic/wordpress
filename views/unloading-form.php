@@ -22,6 +22,7 @@ $shippingMethods    = isset( $shippingMethods ) ? $shippingMethods : array();
 $fieldDelivery      = isset( $fieldDelivery ) ? $fieldDelivery : array();
 $orderShippingId    = isset( $orderShippingId ) ? $orderShippingId : '';
 $infoApi            = isset( $infoApi ) ? $infoApi : '';
+$addFieldSaved      = isset( $addFieldSaved ) ? $addFieldSaved : array();
 
 $fulfillment = false;
 if(isset($infoApi['services']['pochtalion'])){
@@ -299,14 +300,24 @@ $eslTable = new Table();
 									<?php foreach ( $value as $k => $v ):
 										if(!isset($v['name']))
 											continue;
+
+                                        $type = mb_strtolower( $typeMethod['name']);
+										$valueSaved = '0';
+										if(isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0'){
+											$valueSaved = $addFieldSaved[$type][$k];
+										}
                                         ?>
                                         <div class="form-field_add">
                                             <label class="label" for="<?php echo $k ?>"><?php echo $v['name'] ?></label>
 											<?php if ( $v['type'] === 'integer' ): ?>
                                                 <input class="form-value_add" name="<?php echo $k ?>" type="number"
-                                                       value="0" max="<?php echo $v['max_value'] ?>">
-											<?php else: ?>
-                                                <input class="form-value_add" name="<?php echo $k ?>" type="checkbox">
+                                                       value="<?php echo $valueSaved ?>" max="<?php echo $v['max_value'] ?>">
+											<?php else:
+												$check = '';
+												if($valueSaved != '0')
+													$check = 'checked="checked"';
+                                                ?>
+                                                <input class="form-value_add" name="<?php echo $k ?>" type="checkbox" <?php echo $check ?>>
 											<?php endif; ?>
                                         </div>
 									<?php endforeach; ?>

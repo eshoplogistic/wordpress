@@ -73,7 +73,8 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_save_status_form', [$this, 'unloadingStatus']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_status_update', [$this, 'unloadingStatusUpdate']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_delete', [$this, 'unloadingDelete']);
-
+		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
+		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
 	}
 
 	public function changeEnablePlugin()
@@ -252,6 +253,28 @@ class Ajax implements ModuleInterface
 
 		$response->send();
 	}
+
+	public function saveAddField()
+	{
+		$addField = !empty($_POST['result']) ? wc_clean($_POST['result']) : [];
+		$type = !empty($_POST['type']) ? wc_clean($_POST['type']) : [];
+		$addField = stripslashes(html_entity_decode($addField));
+		$addField = json_decode($addField, true);
+
+		$optionsRepository = new OptionsRepository();
+		$result = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+
+		foreach ($addField as $value){
+			if(isset($value['name']))
+				$result[$type][$value['name']] = $value['value'];
+		}
+
+		$optionsController = new OptionsController();
+		$response = $optionsController->saveAddFieldForm($result);
+
+		$response->send();
+	}
+
 
 	public function searchCities()
 	{
@@ -734,6 +757,77 @@ class Ajax implements ModuleInterface
 				$this->errorString .= $this->errorString.'<span>'.$val.'</span><br>';
 			}
 		}
+	}
+
+	public function getAddField()
+	{
+		$type = isset($_POST['type']) ? wc_clean($_POST['type']) : null;
+
+		$optionsRepository = new OptionsRepository();
+		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
+
+		$additional = array(
+			'key'     => $apiKey,
+			'service' => mb_strtolower( $type ),
+			'detail'  => true
+		);
+
+		$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
+		$additionalFields = $eshopLogisticApi->apiExportAdditional( $additional );
+		if ( $additionalFields->hasErrors() ) {
+			$html = '<p>Ошибка при получении дополнительных услуг</p>';
+		} else {
+			$additionalFields = $additionalFields->data();
+			if ( $additionalFields ){
+				$additionalFieldsRu = array(
+					'packages'  => 'Упаковка',
+					'cargo'     => 'Груз',
+					'recipient' => 'Получатель',
+					'other'     => 'Другие услуги',
+
+				);
+				$type = mb_strtolower( $type );
+				$optionsRepository = new OptionsRepository();
+				$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+
+				$html = '<form action="/" method="post" id="eslAddFieldForm" data-type="'.$type.'"><div class="esl-box_add">';
+				foreach ( $additionalFields as $key => $value) {
+					$title = ( $additionalFieldsRu[ $key ] ) ?? $key;
+					$html .= '<p>'. $title. '</p>';
+					foreach ( $value as $k => $v ){
+						if(!isset($v['name']))
+							continue;
+
+						$valueSaved = '0';
+						if(isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0'){
+							$valueSaved = $addFieldSaved[$type][$k];
+						}
+						$html .= '<div class="form-field_add">';
+						$html .= '<label class="label" for="'.$k.'">'.$v['name'].'</label>';
+						if ( $v['type'] === 'integer' ){
+							$html .= '<input class="form-value_add" type="number" name="'.$k.'" value="'.$valueSaved.'" max="'.$v['max_value'].'">';
+						}else{
+							$check = '';
+							if($valueSaved != '0')
+								$check = 'checked="checked"';
+
+							$html .= '<input class="form-value_add" name="'.$k.'" type="checkbox" '.$check.'>';
+						}
+						$html .= '</div>';
+					}
+				}
+				$html .= '</div></div>';
+			}else{
+				$html = '<p>Дополнительные услуги отсутствуют.</p>';
+			}
+
+		}
+
+		wp_send_json([
+			'success' => true,
+			'data' => $html,
+			'msg' => __("", WC_ESL_DOMAIN)
+		]);
 	}
 
 }

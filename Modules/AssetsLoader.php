@@ -174,6 +174,13 @@ class AssetsLoader implements ModuleInterface
 				filemtime( WC_ESL_PLUGIN_DIR . 'assets/css/admin.css' )
 			);
 
+			wp_enqueue_style(
+				'wc_esl_modal_css',
+				WC_ESL_PLUGIN_URL . 'assets/css/modal.css',
+				[],
+				WC_ESL_VERSION
+			);
+
 			wp_enqueue_script(
 				'wc_esl_bootstrap_js',
 				WC_ESL_PLUGIN_URL . 'assets/js/bootstrap.min.js',
@@ -220,6 +227,14 @@ class AssetsLoader implements ModuleInterface
 				[],
 				filemtime( WC_ESL_PLUGIN_DIR . 'assets/js/html5sortable.js' ),
 				false
+			);
+
+			wp_enqueue_script(
+				'wc_esl_modal_js',
+				WC_ESL_PLUGIN_URL . 'assets/js/modal.js',
+				[ 'jquery' ],
+				WC_ESL_VERSION,
+				true
 			);
 		}
 

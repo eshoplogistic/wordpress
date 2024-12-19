@@ -303,6 +303,10 @@ class Unloading implements ModuleInterface {
 					$infoApi = $infoApi->data();
 				}
 
+				$optionsRepository = new OptionsRepository();
+				$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+
+
 				echo View::render( 'unloading-form', [
 					'orderData'          => $orderData,
 					'orderItems'         => $orderItems,
@@ -315,7 +319,8 @@ class Unloading implements ModuleInterface {
 					'shippingMethods'    => $this->shippingMethods,
 					'fieldDelivery'      => $fieldDelivery,
 					'orderShippingId'    => $orderShippingId,
-					'infoApi'            => $infoApi
+					'infoApi'            => $infoApi,
+					'addFieldSaved'   => $addFieldSaved
 				] );
 			}
 		}
