@@ -53,6 +53,14 @@ class OfferData implements OfferInterface
 		return $this->get('line_total');
 	}
 
+	public function getPriceProductLineTotal()
+	{
+		$lineTotal = $this->get('line_total');
+		$count = $this->getQuantity();
+
+		return $lineTotal / $count;
+	}
+
 	public function getPrice()
 	{
 		return apply_filters('wc_esl_offer_data_price', $this->product->get_price());

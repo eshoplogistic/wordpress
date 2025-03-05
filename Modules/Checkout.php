@@ -248,7 +248,7 @@ class Checkout implements ModuleInterface
                     <span class="close_modal_window">×</span>
                 </div>
                 <?php if(isset($moduleVersion) && $moduleVersion == '1'):?>
-                    <div id="eShopLogisticWidgetCart" data-key="<?php echo $apiKeyWCart ?>" data-lazy-load="false" data-controller="/wp-json/wc-esl/v2/widget-data" data-v-app></div>
+                    <div id="eShopLogisticWidgetCart" data-key="<?php echo $apiKeyWCart ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
                 <?php else: ?>
                     <div id="eShopLogisticStatic" data-key="<?php echo $widgetKey ?>"></div>
                 <?php endif; ?>

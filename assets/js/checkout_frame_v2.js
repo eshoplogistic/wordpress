@@ -972,8 +972,9 @@ function isNumeric(value) {
             }
 
             if(hash !== hashSelectService){
-                esl.confirm(data)
             }
+            esl.confirm(data)
+
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {

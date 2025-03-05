@@ -73,7 +73,7 @@ class CalculationService
             'article' => $offer->getArticle(),
             'name' => $offer->getName(),
             'count' => $offer->getQuantity(),
-            'price' => $offer->getPrice(),
+            'price' => $offer->getPriceProductLineTotal(),
             'weight' => $offer->getWeight(),
             'dimensions' => $offer->getDimensions(),
         ];

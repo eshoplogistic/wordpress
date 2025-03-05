@@ -165,6 +165,26 @@ class Unloading implements ModuleInterface {
 
 		if ( $pageType == 'shop_order' ) {
 
+			$order          = wc_get_order( $postId );
+			$orderShippings = $order->get_shipping_methods();
+			$orderShipping  = array();
+
+			foreach ( $orderShippings as $key => $item ) {
+				$orderShipping = array(
+					'id'   => $item->get_method_id(),
+					'name' => $item->get_method_title(),
+				);
+			}
+			$checkDelivery = stripos( $orderShipping['id'], WC_ESL_PREFIX );
+			if ( $checkDelivery === false ) {
+				return false;
+			}
+
+			$checkName = $this->getMethodByName( $orderShipping['name'] );
+			if ( ! $checkName['name'] ) {
+				return false;
+			}
+
 			add_meta_box(
 				'woocommerce-order-esl-unloading',
 				__( 'Параметры выгрузки' ),

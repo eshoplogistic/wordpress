@@ -70,12 +70,14 @@ class Base extends \WC_Shipping_Method
 	 */
 	function init_form_fields() {
 		$shippingHelper = new ShippingHelper();
-		$options = $this->getOptionMethod($shippingHelper->getSlugMethod($this->id));
+		$slug = $shippingHelper->getSlugMethod($this->id);
+		$options = $this->getOptionMethod($slug);
+		$typeMethod = $shippingHelper->getTypeMethod($this->id);
 
-		$typeMethodTitle = ($shippingHelper->getTypeMethod($this->id) === 'terminal') ? 'Доставка до пункта выдачи' : 'Доставка курьером';
+		$typeMethodTitle = ($typeMethod === 'terminal') ? 'Доставка до пункта выдачи' : 'Доставка курьером';
 		$defaultTitle = isset( $options['name'] ) ? $options['name'] . ': ' . $typeMethodTitle : '';
 
-		$this->instance_form_fields = array(
+		$formFields = array(
 			'title' => array(
 				'title' => __('Название', WC_ESL_DOMAIN),
 				'type' => 'text',
@@ -84,7 +86,26 @@ class Base extends \WC_Shipping_Method
 			),
 		);
 
+		if($slug == 'custom'){
+			$option = $this->getOptionMethod($slug);
+			$optionsRepository = new OptionsRepository();
+			$services = $optionsRepository->getOption('wc_esl_shipping_account_services');
+			$optionCustom = array();
+			foreach($services as $key => $service){
+				$exCustom = explode('-', $key);
+				if($exCustom[0] == 'custom' && $service[$typeMethod]){
+					$optionCustom[$key] = $service['name'];
+				}
+			}
+			$formFields['custom'] = array(
+				'title' => __('Кастомная доставка', WC_ESL_DOMAIN),
+				'type' => 'select',
+				'options' => $optionCustom,
+				'description' => __('Выберите тип кастомной доставки, которую вы создали в кабинете eShopLogistic', WC_ESL_DOMAIN),
+			);
+		}
 
+		$this->instance_form_fields = $formFields;
 	}
 
 	/**
@@ -181,6 +202,14 @@ class Base extends \WC_Shipping_Method
 			if(!$cityTo) throw new \Exception(__("Город доставки не установлен", WC_ESL_DOMAIN));
 
 			$data = new CheckoutOrderData($package['contents']);
+
+			if($service == 'custom'){
+				$settingsService = $this->instance_settings;
+				if(isset($settingsService['custom']) && $settingsService['custom']){
+					$service = $settingsService['custom'];
+					$this->id = WC_ESL_PREFIX . $settingsService['custom']. '_' . $this->type;
+				}
+			}
 
 			$cacheKey = str_replace(
 				' ',

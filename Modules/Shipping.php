@@ -36,6 +36,10 @@ class Shipping implements ModuleInterface
 		    $methods[ WC_ESL_PREFIX . 'frame_mixed' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\FrameMixed';
 	    }elseif(!empty($services)){
 		    foreach($services as $serviceKey => $service) {
+				$exCustom = explode('-', $serviceKey);
+				if($exCustom[0] == 'custom'){
+					$serviceKey = 'custom';
+				}
 			    if($service['door'] == '1') {
 				    $methods[ WC_ESL_PREFIX . strtolower($serviceKey) . '_door' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
 			    }

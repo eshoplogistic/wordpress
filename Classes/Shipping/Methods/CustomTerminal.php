@@ -22,10 +22,10 @@ class CustomTerminal extends Base
 
         $option = $this->getOptionMethod($slug);
 
-        $title = isset( $option['name'] ) ? $option['name'] . ': Доставка до пункта выдачи' : '';
+        $title = isset( $option['name'] ) ? $option['name'] . ': Доставка до пункта выдачи' : 'Своя доставка: Доставка до пункта выдачи';
 
         $this->id                   = WC_ESL_PREFIX . $slug . '_' . $type;
-        $this->method_title         = isset( $option['name'] ) ? $option['name'] . ': Доставка до пункта выдачи' : '';
+        $this->method_title         = isset( $option['name'] ) ? $option['name'] . ': Доставка до пункта выдачи' : 'Своя доставка: Доставка до пункта выдачи';
         $this->method_description   = '';
         
         $this->init();
