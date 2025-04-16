@@ -90,6 +90,9 @@ class Table extends WP_List_Table {
 				}
 
 				$getProductDetail = wc_get_product( $idProduct );
+				if(!$getProductDetail)
+					continue;
+
 				$sku = $getProductDetail->get_sku();
 				if($sku){
 					$records[$key]['product_id'] = $sku;
