@@ -204,6 +204,9 @@ class ExportFileds {
 		if ( $name === 'boxberry' ) {
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+            if(!isset($exportFormSettings['combine-places-apply']))
+                $exportFormSettings['combine-places-apply'] = false;
+
 			$result = array(
 				'order' => array(
 					'barcode||text||Штрих-код посылки'        => '',
@@ -244,6 +247,12 @@ class ExportFileds {
 			}
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+            if(!isset($exportFormSettings['type-order-sdek']))
+                $exportFormSettings['type-order-sdek'] = false;
+
+            if(!isset($exportFormSettings['combine-places-apply']))
+                $exportFormSettings['combine-places-apply'] = false;
+
 			$result = array(
 				'order'    => array(
 					'type||select||Тип заказа' => array(

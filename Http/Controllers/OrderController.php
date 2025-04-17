@@ -33,8 +33,6 @@ class OrderController extends Controller {
 	 * @return ResponseInterface
 	 */
 	public function save( \WP_REST_Request $request ): ResponseInterface {
-		$path = $_SERVER["DOCUMENT_ROOT"] . '/wp-content/esl_test.log';
-		error_log(print_r($request, true), 3, $path);
 		$data                 = [];
 		$optionsRepository    = new OptionsRepository();
 		$paymentMethodOptions = $optionsRepository->getOption( 'wc_esl_shipping_payment_methods' );

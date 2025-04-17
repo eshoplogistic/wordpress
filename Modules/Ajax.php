@@ -575,7 +575,7 @@ class Ajax implements ModuleInterface
 		$data['city'] = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
-		if(!isset($data['address']))
+		if(!isset($data['address']) || !$data['address'])
 			$sessionService->drop('terminal_location');
 
 	}
