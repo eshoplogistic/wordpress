@@ -1004,103 +1004,6 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Тип заказа (СДЭК)', WC_ESL_DOMAIN ) ?>
-                                                </label>
-												<?php
-												$type_sdek = '';
-												if ( isset( $export_form['type-order-sdek'] ) ) {
-													$type_sdek = $export_form['type-order-sdek'];
-												}
-												?>
-                                                <select id="typeOrderSdek" name="type-order-sdek">
-                                                    <option value="1" <?php echo $type_sdek == 1 ? 'selected' : '' ?>>
-                                                        Интернет-магазин
-                                                    </option>
-                                                    <option value="2" <?php echo $type_sdek == 2 ? 'selected' : '' ?>>
-                                                        Доставка
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Объединить все грузовые места в одно', WC_ESL_DOMAIN ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                СДЭК, Boxberry
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $combine_places_apply = '';
-		                                        if ( isset( $export_form['combine-places-apply'] ) && $export_form['combine-places-apply'] == "on") {
-			                                        $combine_places_apply = 'checked';
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="checkbox"
-                                                        class="form-control"
-                                                        placeholder="<?php echo __( 'Объединить все грузовые места в одно', WC_ESL_DOMAIN ) ?>"
-                                                        name="combine-places-apply"
-                                                        class="col-sm-8"
-                                                        <?php echo $combine_places_apply ?>
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Габариты итогового грузового места. Формат: строка вида «Д*Ш*В», в сантиметрах', WC_ESL_DOMAIN ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                СДЭК, Boxberry
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $combine_places_dimensions = '';
-		                                        if ( isset( $export_form['combine-places-dimensions'] ) ) {
-			                                        $combine_places_dimensions = $export_form['combine-places-dimensions'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php echo __( 'Габариты итогового грузового места', WC_ESL_DOMAIN ) ?>"
-                                                        name="combine-places-dimensions"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $combine_places_dimensions ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Вес итогового грузового места в кг', WC_ESL_DOMAIN ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                СДЭК, Boxberry
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $combine_places_weight = '';
-		                                        if ( isset( $export_form['combine-places-weight'] ) ) {
-			                                        $combine_places_weight = $export_form['combine-places-weight'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php echo __( 'Вес итогового грузового места в кг', WC_ESL_DOMAIN ) ?>"
-                                                        name="combine-places-weight"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $combine_places_weight ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
 													<?php echo __( 'Код терминала (Деловые линии)', WC_ESL_DOMAIN ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1571,8 +1474,41 @@ $status_translate             = [
                                     <div class="col-sm-12">
 
                                         <div class="row">
-                                            <div class="esl-inner_add col-sm-6">
-                                                <button type="button" class="wc-esl-add__button" data-mode="sdek">Настройки для СДЭК</button>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="sdek">Настройки для СДЭК</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="yandex">Настройки для Яндекс</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="fivepost">Настройки для 5POST</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="boxberry">Настройки для Boxberry</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="delline">Настройки для Деловые линии</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="pecom">Настройки для ПЭК</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="baikal">Настройки для Байкал Сервис</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="kit">Настройки для Кит</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="halva">Настройки для Постаматы «Халва»</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="postrf">Настройки для Почта России</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="magnit">Настройки для Магнит Пост</button>
+                                            </div>
+                                            <div class="esl-inner_add col-sm-6 mb-1">
+                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="dpd">Настройки для DPD</button>
                                             </div>
                                         </div>
 

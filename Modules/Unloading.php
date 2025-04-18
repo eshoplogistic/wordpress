@@ -326,8 +326,20 @@ class Unloading implements ModuleInterface {
 				$optionsRepository = new OptionsRepository();
 				$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
 
+                $street = get_post_meta( $order->get_id(), 'esl_billing_field_street', true );
+                $building = get_post_meta( $order->get_id(), 'esl_billing_field_building', true );
+                $room = get_post_meta( $order->get_id(), 'esl_billing_field_room', true );
 
-				echo View::render( 'unloading-form', [
+                if(!$street)
+                    $street = get_post_meta( $order->get_id(), 'esl_shipping_field_street', true );
+
+                if(!$building)
+                    $building = get_post_meta( $order->get_id(), 'esl_shipping_field_building', true );
+
+                if(!$room)
+                    $room = get_post_meta( $order->get_id(), 'esl_shipping_field_room', true );
+
+                echo View::render( 'unloading-form', [
 					'orderData'          => $orderData,
 					'orderItems'         => $orderItems,
 					'orderShipping'      => $orderShipping,
@@ -340,7 +352,10 @@ class Unloading implements ModuleInterface {
 					'fieldDelivery'      => $fieldDelivery,
 					'orderShippingId'    => $orderShippingId,
 					'infoApi'            => $infoApi,
-					'addFieldSaved'   => $addFieldSaved
+					'addFieldSaved'      => $addFieldSaved,
+					'street'             => $street,
+					'building'           => $building,
+					'room'               => $room
 				] );
 			}
 		}

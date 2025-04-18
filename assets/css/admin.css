@@ -316,25 +316,23 @@
     position: static;
 }
 
-#modal-esl-add-field input{
-    border: black !important;
+#modal-esl-add-field input, #modal-esl-add-field select{
     height: 15px;
-    margin-left: 2px;
+    margin-left: 10px;
+}
+
+#modal-esl-add-field input[type=number] {
+    width: 63px;
 }
 
 #modal-esl-add-field input[type=checkbox]:checked::before {
     float: unset;
 }
 
-#modal-esl-add-field input[type=checkbox] {
-    float: unset;
-    height: 15px;
-    width: 15px !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    margin: 2px auto;
-}
-
 #modal-esl-add-field .form-field_add {
-    margin: 10px;
-    display: inline-grid;
+    margin: 6px;
+    display: inline-flex;
+    background-color: #eee;
+    padding: 8px;
+    border-radius:8px;
 }

@@ -15,13 +15,39 @@ class Checkout implements ModuleInterface
 {
     public function init()
     {
-        //add_action('woocommerce_after_checkout_billing_form', [$this, 'injectBillingFields']);
-        //add_action('woocommerce_after_checkout_shipping_form', [$this, 'injectShippingFields']);
+        add_action('woocommerce_after_checkout_billing_form', [$this, 'injectBillingFields']);
+        add_action('woocommerce_after_checkout_shipping_form', [$this, 'injectShippingFields']);
         add_action('woocommerce_checkout_update_order_review', [$this, 'clearShippingCache']);
         add_action('woocommerce_after_shipping_rate', [$this, 'infoShippingMethodItem']);
 	    add_action('woocommerce_review_order_before_payment', [$this, 'injectShippingFormFields']);
 	    add_action('cfw_checkout_after_shipping_methods', [$this, 'injectShippingFormFields']);
 	    add_action('woocommerce_after_shipping_rate', [$this, 'buttonTerminal'], 10, 2);
+        add_action('woocommerce_checkout_update_order_meta',[$this, 'addSaveField'], 25);
+    }
+
+
+    function addSaveField( $order_id ){
+
+        if( ! empty( $_POST[ 'esl_billing_field_street' ] ) ) {
+            update_post_meta( $order_id, 'esl_billing_field_street', sanitize_text_field( $_POST[ 'esl_billing_field_street' ] ) );
+        }
+        if( ! empty( $_POST[ 'esl_billing_field_building' ] ) ) {
+            update_post_meta( $order_id, 'esl_billing_field_building', sanitize_text_field( $_POST[ 'esl_billing_field_building' ] ) );
+        }
+        if( ! empty( $_POST[ 'esl_billing_field_room' ] ) ) {
+            update_post_meta( $order_id, 'esl_billing_field_room', sanitize_text_field( $_POST[ 'esl_billing_field_room' ] ) );
+        }
+
+        if( ! empty( $_POST[ 'esl_shipping_field_street' ] ) ) {
+            update_post_meta( $order_id, 'esl_shipping_field_street', sanitize_text_field( $_POST[ 'esl_shipping_field_street' ] ) );
+        }
+        if( ! empty( $_POST[ 'esl_shipping_field_building' ] ) ) {
+            update_post_meta( $order_id, 'esl_shipping_field_building', sanitize_text_field( $_POST[ 'esl_shipping_field_building' ] ) );
+        }
+        if( ! empty( $_POST[ 'esl_shipping_field_room' ] ) ) {
+            update_post_meta( $order_id, 'esl_shipping_field_room', sanitize_text_field( $_POST[ 'esl_shipping_field_room' ] ) );
+        }
+
     }
 
     public function buttonTerminal($method){
@@ -90,12 +116,70 @@ class Checkout implements ModuleInterface
 
     public function injectBillingFields()
     {
-        $this->injectFields( 'billing' );
+        woocommerce_form_field(
+            'esl_billing_field_street',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Улица',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
+        woocommerce_form_field(
+            'esl_billing_field_building',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Здание',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
+        woocommerce_form_field(
+            'esl_billing_field_room',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Квартира / офис',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
     }
 
     public function injectShippingFields()
     {
-        $this->injectFields( 'shipping' );
+        woocommerce_form_field(
+            'esl_shipping_field_street',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Улица',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
+        woocommerce_form_field(
+            'esl_shipping_field_building',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Здание',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
+        woocommerce_form_field(
+            'esl_shipping_field_room',
+            array(
+                'type'          => 'text',
+                'required'	=> true,
+                'class'         => array( 'true-field', 'form-row-wide' ),
+                'label'         => 'Квартира / офис',
+                'label_class'   => 'true-label', // класс лейбла
+            ),
+        );
     }
 
     private function injectFields($type)

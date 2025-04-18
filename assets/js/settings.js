@@ -17,13 +17,11 @@ window.addEventListener('load', function(event) {
 
 	let bindEvents = {
 		clickOnAddField: function (event) {
-			console.log(event)
 			let data = [];
 			data['action'] = 'wc_esl_shipping_get_add_field';
-			data['type'] = 'sdek';
+			data['type'] = event.target.getAttribute('data-mode');
 
 			HttpClientEsl.post(data, function(result){
-				console.log(result)
 				if(result.success === true){
 					contentAjax.innerHTML = result.data;
 				}
@@ -161,6 +159,7 @@ function eslRun() {
 			for (let [key, value] of data) {
 				result.push({name:key, value:value});
 			}
+			console.log(data)
 
 			PreloaderEsl.show(_self.eslAddFieldSelector);
 			_self.changeAddField(result, type);

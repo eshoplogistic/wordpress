@@ -2,6 +2,7 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OptionsController;
@@ -264,6 +265,7 @@ class Ajax implements ModuleInterface
 		$optionsRepository = new OptionsRepository();
 		$result = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
 
+        $result[$type] = [];
 		foreach ($addField as $value){
 			if(isset($value['name']))
 				$result[$type][$value['name']] = $value['value'];
@@ -774,8 +776,13 @@ class Ajax implements ModuleInterface
 
 		$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 		$additionalFields = $eshopLogisticApi->apiExportAdditional( $additional );
+        $addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+        $methodDelivery = new ExportFileds();
+        $fieldDelivery  = $methodDelivery->exportFields( mb_strtolower( $type ));
+
+        $html = '<form action="/" method="post" id="eslAddFieldForm" data-type="'.$type.'">';
 		if ( $additionalFields->hasErrors() ) {
-			$html = '<p>Ошибка при получении дополнительных услуг</p>';
+			$html .= '<p>Ошибка при получении дополнительных услуг</p>';
 		} else {
 			$additionalFields = $additionalFields->data();
 			if ( $additionalFields ){
@@ -787,10 +794,8 @@ class Ajax implements ModuleInterface
 
 				);
 				$type = mb_strtolower( $type );
-				$optionsRepository = new OptionsRepository();
-				$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
 
-				$html = '<form action="/" method="post" id="eslAddFieldForm" data-type="'.$type.'"><div class="esl-box_add">';
+				$html .= '<div class="esl-box_add">';
 				foreach ( $additionalFields as $key => $value) {
 					$title = ( $additionalFieldsRu[ $key ] ) ?? $key;
 					$html .= '<p>'. $title. '</p>';
@@ -816,12 +821,114 @@ class Ajax implements ModuleInterface
 						$html .= '</div>';
 					}
 				}
-				$html .= '</div></div>';
+				$html .= '</div>';
 			}else{
-				$html = '<p>Дополнительные услуги отсутствуют.</p>';
+				$html .= '<p>Дополнительные услуги отсутствуют.</p>';
 			}
 
 		}
+
+        if ( $fieldDelivery ) {
+            $html .= ' <h4>Дополнительные настройки выгрузки ТК.</h4>';
+            // Внешний цикл по массиву полей
+            foreach ($fieldDelivery as $nameArr => $arr) {
+                // Внутренний цикл по каждому полю
+                foreach ($arr as $key => $value) {
+                    // Разбиваем ключ на части
+                    list($name, $typeField, $nameRu) = explode('||', $key);
+                    $nameRu = $nameRu ?? $name;
+                    $styleForm = '';
+
+                    // Устанавливаем специальный класс для чекбоксов
+                    if ($typeField === 'checkbox') {
+                        $styleForm = 'checkbox-area';
+                    }
+
+                    // Выводим контейнер поля формы
+                    $html .= '
+                                <div class="form-field_add '.$styleForm.'">
+                                <label class="label" for="'.$name.'">'.$nameRu.'</label>
+                                ';
+
+
+                    $nameValue = $nameArr.'['.$name.']';
+                    $nameFiledSaved = $nameArr.'['.$name.']';
+                    // Генерируем соответствующее поле ввода
+                    switch ($typeField) {
+                        case 'text':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
+                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="text" value="'.$valueSaved.'">';
+                            break;
+
+                        case 'checkbox':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on'){
+                                $valueSaved = 'checked';
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="checkbox" '.$valueSaved.'>';
+                            break;
+
+                        case 'date':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
+                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="date" value="'.$valueSaved.'">';
+                            break;
+
+                        case 'select':
+                            $html .= '<select class="form-value" name="'.$nameValue.'">';
+
+                            // Цикл по опциям селекта
+                            foreach ($value as $k => $v) {
+                                if (is_array($v) && isset($v['text'])) {
+                                    $valueSaved = '';
+                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
+                                        $valueSaved = 'selected';
+                                    }
+                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v['text'].'</option>';
+                                } else {
+                                    $valueSaved = '';
+                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
+                                        $valueSaved = 'selected';
+                                    }
+                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v.'</option>';
+                                }
+                            }
+
+                            $html .= '</select>';
+                            break;
+                    }
+
+                    $html .= '</div>';
+                }
+            }
+
+        }
+
+        $checkSelf = '';
+        $checkTK = '';
+        if(isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0){
+            $checkSelf = 'selected';
+        }
+        if(isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 1){
+            $checkTK = 'selected';
+        }
+        $html .= '
+            <h4>Дополнительные настройки ТК.</h4>
+            <div class="form-field_add">
+                <label class="label">Способ доставки до терминала ТК</label>
+                 <select name="pick_up" class="form-value">
+                    <option value="0" '.$checkSelf.'>Сами привезём на терминал транспортной компании</option>
+                    <option value="1" '.$checkTK.'>Груз заберёт транспортная компания</option>
+                 </select>
+            </div>
+        ';
+
+        $html .= '</form>';
 
 		wp_send_json([
 			'success' => true,

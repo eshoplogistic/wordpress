@@ -23,6 +23,9 @@ $fieldDelivery      = isset( $fieldDelivery ) ? $fieldDelivery : array();
 $orderShippingId    = isset( $orderShippingId ) ? $orderShippingId : '';
 $infoApi            = isset( $infoApi ) ? $infoApi : '';
 $addFieldSaved      = isset( $addFieldSaved ) ? $addFieldSaved : array();
+$street             = isset( $street ) ? $street : '';
+$building           = isset( $building ) ? $building : '';
+$room               = isset( $room ) ? $room : '';
 
 $fulfillment = false;
 if(isset($infoApi['services']['pochtalion'])){
@@ -138,6 +141,8 @@ $eslTable = new Table();
 								$type = $explodeKey[1];
 								$nameRu = $explodeKey[2] ?? $name;
                                 $styleForm = '';
+                                $typeDelivery = mb_strtolower( $typeMethod['name']);
+                                $nameFiledSaved = $nameArr.'['.$name.']';
 
                                 if($type === 'checkbox')
 	                                $styleForm = 'checkbox-area';
@@ -145,18 +150,29 @@ $eslTable = new Table();
 
                                 <div class="form-field <?php echo $styleForm ?>">
                                     <label class="label" for="<?php echo $name ?>"><?php echo $nameRu ?></label>
-									<?php if ( $type === 'text' ): ?>
+									<?php if ( $type === 'text' ):
+                                        $valueSaved = '';
+                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved])){
+                                            $valueSaved = $addFieldSaved[$typeDelivery][$nameFiledSaved];
+                                        }
+                                        ?>
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="text"
-                                               value="<?php echo $value?>">
+                                               value="<?php echo $valueSaved?>">
 									<?php endif; ?>
 	                                <?php if ( $type === 'checkbox' ):
-		                                $checked = '';
-                                        if($value == true)
-                                            $checked = 'checked';
+                                        $valueSaved = '';
+                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $addFieldSaved[$typeDelivery][$nameFiledSaved] == 'on'){
+                                            $valueSaved = 'checked';
+                                        }
                                         ?>
-                                        <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="checkbox" <?php echo $checked ?>>
+                                        <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="checkbox" <?php echo $valueSaved ?>>
 	                                <?php endif; ?>
-	                                <?php if ( $type === 'date' ): ?>
+	                                <?php if ( $type === 'date' ):
+                                        $valueSaved = '';
+                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved])){
+                                            $valueSaved = $addFieldSaved[$typeDelivery][$nameFiledSaved];
+                                        }
+                                        ?>
                                         <input class="form-value" name="<?php echo $nameArr?>[<?php echo $name ?>]" type="date"
                                                value="<?php echo $value?>">
 	                                <?php endif; ?>
@@ -164,10 +180,20 @@ $eslTable = new Table();
                                         <select name="<?php echo $nameArr?>[<?php echo $name ?>]" form="unloading_form"
                                                 class="form-value">
 											<?php foreach ( $value as $k => $v ):?>
-                                                <?php if(is_array($v) && isset($v['text'])):?>
-                                                    <option value="<?php echo $k ?>" <?php echo ($v['selected'] == true)?'selected':'' ?>><?php echo $v['text'] ?></option>
-                                                <?php else: ?>
-                                                    <option value="<?php echo $k ?>"><?php echo $v ?></option>
+                                                <?php if(is_array($v) && isset($v['text'])):
+                                                    $valueSaved = '';
+                                                    if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $k == $addFieldSaved[$typeDelivery][$nameFiledSaved]){
+                                                        $valueSaved = 'selected';
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo $k ?>" <?php echo $valueSaved ?>><?php echo $v['text'] ?></option>
+                                                <?php else:
+                                                    $valueSaved = '';
+                                                    if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $k == $addFieldSaved[$typeDelivery][$nameFiledSaved]){
+                                                        $valueSaved = 'selected';
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo $k ?>" <?php echo $valueSaved ?>><?php echo $v ?></option>
                                                 <?php endif; ?>
 											<?php endforeach; ?>
                                         </select>
@@ -209,15 +235,15 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="receiver-street">Улица:</label>
                                 <input class="form-value" name="receiver-street" type="text"
-                                       value="<?php echo $address['address_1'] ?>">
+                                       value="<?php echo $street ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-house">Здание:</label>
-                                <input class="form-value" name="receiver-house" type="text">
+                                <input class="form-value" name="receiver-house" type="text" value="<?php echo $building ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-room">Квартира / офис:</label>
-                                <input class="form-value" name="receiver-room" type="text">
+                                <input class="form-value" name="receiver-room" type="text" value="<?php echo $room ?>">
                             </div>
                         </div>
 
@@ -246,9 +272,9 @@ $eslTable = new Table();
                                 <label class="label">Способ доставки до терминала ТК:</label>
                                 <select name="pick_up" form="unloading_form" class="form-value">
                                     <?php if($typeMethod['name'] != 'halva'): ?>
-                                    <option value="0">Сами привезём на терминал транспортной компании</option>
+                                    <option value="0" <?php echo ( isset( $addFieldSaved[$typeMethod['name']]['pick_up'] ) && $addFieldSaved[$typeMethod['name']]['pick_up']  == 0 ) ? 'selected' : ''?>>Сами привезём на терминал транспортной компании</option>
                                     <?php endif; ?>
-                                    <option value="1">Груз заберёт транспортная компания</option>
+                                    <option value="1" <?php echo ( isset( $addFieldSaved[$typeMethod['name']]['pick_up'] ) && $addFieldSaved[$typeMethod['name']]['pick_up']  == 1 ) ? 'selected' : ''?>>Груз заберёт транспортная компания</option>
                                 </select>
                             </div>
                             <div class="form-field">

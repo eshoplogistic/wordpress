@@ -179,6 +179,14 @@
 		let currentShippingMethod	= shippingFieldName();
 		let offAddressCheck = $('#offAddressCheck');
 
+		let billingFieldStreet = $('#esl_billing_field_street_field');
+		let billingFieldBuilding = $('#esl_billing_field_building_field');
+		let billingFieldRoom = $('#esl_billing_field_room_field');
+
+		let shippingFieldStreet = $('#esl_shipping_field_street_field');
+		let shippingFieldBuilding = $('#esl_shipping_field_building_field');
+		let shippingFieldRoom = $('#esl_shipping_field_room_field');
+
 		if( isTerminal ) {
 			if( differentShippingAddress && ( shippingCountry ) ) {
 				if(offAddressCheck.length === 0){
@@ -186,6 +194,13 @@
 					billingAddress2.show();
 					shippingAddress1.hide();
 					shippingAddress2.hide();
+
+					billingFieldStreet.hide();
+					billingFieldBuilding.hide();
+					billingFieldRoom.hide();
+					shippingFieldStreet.hide();
+					shippingFieldBuilding.hide();
+					shippingFieldRoom.hide();
 				}
 
 				billingTerminals.hide().removeClass('show');
@@ -199,11 +214,25 @@
 						billingAddress2.hide();
 						shippingAddress1.hide();
 						shippingAddress2.hide();
+
+						billingFieldStreet.hide();
+						billingFieldBuilding.hide();
+						billingFieldRoom.hide();
+						shippingFieldStreet.hide();
+						shippingFieldBuilding.hide();
+						shippingFieldRoom.hide();
 					}else{
 						billingAddress1.show();
 						billingAddress2.show();
 						shippingAddress1.show();
 						shippingAddress2.show();
+
+						billingFieldStreet.show();
+						billingFieldBuilding.show();
+						billingFieldRoom.show();
+						shippingFieldStreet.show();
+						shippingFieldBuilding.show();
+						shippingFieldRoom.show();
 					}
 				}
 				billingTerminals.show().addClass('show');
@@ -214,6 +243,13 @@
 					billingAddress2.show();
 					shippingAddress1.show();
 					shippingAddress2.show();
+
+					billingFieldStreet.show();
+					billingFieldBuilding.show();
+					billingFieldRoom.show();
+					shippingFieldStreet.show();
+					shippingFieldBuilding.show();
+					shippingFieldRoom.show();
 				}
 
 				billingTerminals.hide().removeClass('show');
@@ -231,6 +267,13 @@
 				billingAddress2.show();
 				shippingAddress1.show();
 				shippingAddress2.show();
+
+				billingFieldStreet.show();
+				billingFieldBuilding.show();
+				billingFieldRoom.show();
+				shippingFieldStreet.show();
+				shippingFieldBuilding.show();
+				shippingFieldRoom.show();
 			}
 
 			billingTerminals.hide().removeClass('show');

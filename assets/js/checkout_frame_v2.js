@@ -207,6 +207,14 @@ function isNumeric(value) {
         let shippingAddress2 = $('#shipping_address_2_field');
         let offAddressCheck = $('#offAddressCheck');
 
+        let billingFieldStreet = $('#esl_billing_field_street_field');
+        let billingFieldBuilding = $('#esl_billing_field_building_field');
+        let billingFieldRoom = $('#esl_billing_field_room_field');
+
+        let shippingFieldStreet = $('#esl_shipping_field_street_field');
+        let shippingFieldBuilding = $('#esl_shipping_field_building_field');
+        let shippingFieldRoom = $('#esl_shipping_field_room_field');
+
         if (isTerminal === 'terminal' && cityMain) {
             if (differentShippingAddress && (shippingCountry)) {
                 if(offAddressCheck.length === 0){
@@ -214,6 +222,13 @@ function isNumeric(value) {
                     billingAddress2.hide();
                     shippingAddress1.hide();
                     shippingAddress2.hide();
+
+                    billingFieldStreet.hide();
+                    billingFieldBuilding.hide();
+                    billingFieldRoom.hide();
+                    shippingFieldStreet.hide();
+                    shippingFieldBuilding.hide();
+                    shippingFieldRoom.hide();
                 }
 
                 billingButton.hide();
@@ -228,6 +243,13 @@ function isNumeric(value) {
                     billingAddress2.hide();
                     shippingAddress1.hide();
                     shippingAddress2.hide();
+
+                    billingFieldStreet.hide();
+                    billingFieldBuilding.hide();
+                    billingFieldRoom.hide();
+                    shippingFieldStreet.hide();
+                    shippingFieldBuilding.hide();
+                    shippingFieldRoom.hide();
                 }
 
                 billingButton.show();
@@ -240,6 +262,13 @@ function isNumeric(value) {
                     billingAddress2.show();
                     shippingAddress1.show();
                     shippingAddress2.show();
+
+                    billingFieldStreet.show();
+                    billingFieldBuilding.show();
+                    billingFieldRoom.show();
+                    shippingFieldStreet.show();
+                    shippingFieldBuilding.show();
+                    shippingFieldRoom.show();
                 }
 
                 billingButton.hide();
@@ -252,10 +281,17 @@ function isNumeric(value) {
             isTerminal === 'door' && cityMain
         ) {
             if(offAddressCheck.length === 0){
-                billingAddress1.show();
-                billingAddress2.show();
-                shippingAddress1.show();
-                shippingAddress2.show();
+                billingAddress1.hide();
+                billingAddress2.hide();
+                shippingAddress1.hide();
+                shippingAddress2.hide();
+
+                billingFieldStreet.show();
+                billingFieldBuilding.show();
+                billingFieldRoom.show();
+                shippingFieldStreet.show();
+                shippingFieldBuilding.show();
+                shippingFieldRoom.show();
             }
 
             billingButton.show();
@@ -274,6 +310,13 @@ function isNumeric(value) {
                 billingAddress2.show();
                 shippingAddress1.show();
                 shippingAddress2.show();
+
+                billingFieldStreet.hide();
+                billingFieldBuilding.hide();
+                billingFieldRoom.hide();
+                shippingFieldStreet.hide();
+                shippingFieldBuilding.hide();
+                shippingFieldRoom.hide();
             }
 
             billingButton.hide();

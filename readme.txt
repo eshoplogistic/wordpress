@@ -3,7 +3,7 @@ Contributors: Moonshine
 Tags: доставка, eshoplogisticru, цена доставки, срок доставки, стоимость доставки, WooCommerce, сдэк, пэк, dostavista, picpoint, деловые линии, iml, boxberry, gtd, байкалсервис, сберлогистика, delivery, яндекс доставка
 Requires at least: 5.3
 Tested up to: 6.6
-Stable tag: 2.1.41
+Stable tag: 2.1.56
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
