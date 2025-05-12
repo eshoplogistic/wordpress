@@ -281,10 +281,10 @@ function isNumeric(value) {
             isTerminal === 'door' && cityMain
         ) {
             if(offAddressCheck.length === 0){
-                billingAddress1.hide();
-                billingAddress2.hide();
-                shippingAddress1.hide();
-                shippingAddress2.hide();
+                billingAddress1.show();
+                billingAddress2.show();
+                shippingAddress1.show();
+                shippingAddress2.show();
 
                 billingFieldStreet.show();
                 billingFieldBuilding.show();
