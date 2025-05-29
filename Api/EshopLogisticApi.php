@@ -126,13 +126,15 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 *
 	 * @return ApiResponseInterface
 	 */
-	public function search($target = '', $currentCountry = '')
+	public function search($target = '', $currentCountry = '', $region = '')
 	{
 		if($this->moduleVersion){
 			$this->generateApiUrl('locality/search');
 			$data['target'] = $target;
 			if($currentCountry)
 				$data['country'] = $currentCountry;
+            if($region)
+                $data['region'] = $region;
 
 			return $this->sendLoadRequest($data);
 		}else{

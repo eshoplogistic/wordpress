@@ -130,9 +130,11 @@ class Shipping implements ModuleInterface
 
 		        if($mode == 'shipping'){
 			        $city = WC()->customer->get_shipping_city();
+			        $region = WC()->customer->get_shipping_state();
 		        }else{
 			        $city = WC()->customer->get_billing_city();
-		        }
+                    $region = WC()->customer->get_billing_state();
+                }
 
 		        $widgetCityEsl = $sessionService->get($mode) ? $sessionService->get($mode) : [];
 		        $widgetCityEslName = isset($widgetCityEsl['name'])?mb_strtolower($widgetCityEsl['name']):'';
@@ -141,7 +143,7 @@ class Shipping implements ModuleInterface
 
 					$searchDefault = '';
 					if($city){
-						$searchDefault = $eshopLogisticApi->search($city);
+						$searchDefault = $eshopLogisticApi->search($city, '', $region);
 						$searchDefault = $searchDefault->data();
 					}
 
