@@ -313,7 +313,7 @@ $eslTable = new Table();
 
                     <section id="content3">
 						<?php
-						$eslTable->prepare_items( $orderItems );
+						$eslTable->prepare_items( $orderItems, $typeMethod );
 						$eslTable->display();
 						?>
                     </section>

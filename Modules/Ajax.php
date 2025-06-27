@@ -909,6 +909,90 @@ class Ajax implements ModuleInterface
 
         }
 
+        $sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery( mb_strtolower( $type ));
+
+        if ( $sttExForOneDelivery ) {
+            foreach ($sttExForOneDelivery as $nameArr => $arr) {
+                foreach ($arr as $key => $value) {
+                    list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
+                    $nameRu = $nameRu ?? $name;
+                    $styleForm = '';
+
+                    if($typeField == 'hr'){
+                        $html .= '<h3>'.$nameRu.'</h3>';
+                        continue;
+                    }
+
+
+                    $html .= '
+                                <div class="form-field_add '.$styleForm.'">
+                                <label class="label" for="'.$name.'">'.$nameRu.'</label>';
+
+                    $nameValue = $nameArr.'['.$name.']';
+                    $nameFiledSaved = $nameArr.'['.$name.']';
+
+                    switch ($typeField) {
+                        case 'text':
+                            $valueSaved = $valueDefault ?? '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
+                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="text" value="'.$valueSaved.'">';
+                            break;
+
+                        case 'checkbox':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on'){
+                                $valueSaved = 'checked';
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="checkbox" '.$valueSaved.'>';
+                            break;
+
+                        case 'date':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
+                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="date" value="'.$valueSaved.'">';
+                            break;
+
+                        case 'number':
+                            $valueSaved = '';
+                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
+                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+                            }
+                            $html .= '<input class="form-value" name="'.$nameValue.'" type="number" value="'.$valueSaved.'">';
+                            break;
+
+                        case 'select':
+                            $html .= '<select class="form-value" name="'.$nameValue.'">';
+
+                            // Цикл по опциям селекта
+                            foreach ($value as $k => $v) {
+                                if (is_array($v) && isset($v['text'])) {
+                                    $valueSaved = '';
+                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
+                                        $valueSaved = 'selected';
+                                    }
+                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v['text'].'</option>';
+                                } else {
+                                    $valueSaved = '';
+                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
+                                        $valueSaved = 'selected';
+                                    }
+                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v.'</option>';
+                                }
+                            }
+
+                            $html .= '</select>';
+                            break;
+                    }
+
+                    $html .= '</div>';
+                }
+            }
+        }
+
         $checkSelf = '';
         $checkTK = '';
         if(isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0){

@@ -526,4 +526,153 @@ class ExportFileds {
 		return $result;
 	}
 
+    public function settingsExportForOneDelivery($name)
+    {
+        $result = array();
+        if($name == 'yandex'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'boxberry'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'sdek'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'fivepost'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'delline'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'baikal'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'magnit'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'kit'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'postrf'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+        if($name == 'dpd'){
+            $result = array(
+                'hr' => array(
+                    'hr||hr||Объединение грузовых мест' => '',
+                ),
+                'export_stt_one_delivery' => array(
+                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
+                    'default_stt_name||text||Название места||Товар' => '',
+                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
+                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
+                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
+                ),
+            );
+        }
+
+
+        return $result;
+
+    }
+
 }
