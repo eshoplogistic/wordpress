@@ -747,6 +747,8 @@ $status_translate             = [
 		                                    $cronStatusTime = '';
 		                                    if ( isset( $add_form['cronStatusTime'] ) ) {
 			                                    $cronStatusTime = $add_form['cronStatusTime'];
+                                                if($cronStatusTime < 60)
+                                                    $cronStatusTime = 60;
 		                                    }
 		                                    ?>
                                             <input
@@ -754,6 +756,7 @@ $status_translate             = [
                                                     placeholder="<?php echo __( 'Период обновления планировщика (в минутах)', WC_ESL_DOMAIN ) ?>"
                                                     name="cronStatusTime"
                                                     class="col-sm-8 form-control"
+                                                    min="60"
                                                     value="<?php echo esc_attr( $cronStatusTime ) ?>"
                                             />
                                         </div>

@@ -70,12 +70,40 @@ class UnloadingCron
 			if(!$checkName['name'])
 				continue;
 
+            $orderShippings = $order->get_shipping_methods();
+            $shippingMethod = array();
+            $shippingId = false;
+            foreach ($orderShippings as $key=>$item){
+                $shippingId = $item->get_id();
+                $shippingMethod = wc_get_order_item_meta( $shippingId , 'esl_shipping_methods', $single = true );
+                $shippingMethod = json_decode($shippingMethod, true);
+            }
+
+            $tracking = false;
+            if(isset($shippingMethod['answer']['state']['number'])){
+                $trackId = $shippingMethod['answer']['state']['number'];
+                $tracking = $unloading->infoOrder($orderId, $checkName['name'], 'tracking', ['track' => $trackId]);
+            }
+
 			$status = $unloading->infoOrder($orderId, $checkName['name']);
+
 			if(isset($status['success']) && $status['success'] === false){
 				$result = $status['data']['messages'] ?? 'Ошибка при получении данных';
 			}else{
 				$result = $unloading->updateStatusById($status, $orderId);
 			}
+            if(isset($tracking['success']) && $tracking['success'] === false){
+                $resultTrack = $tracking['data']['messages'] ?? 'Ошибка при получении данных';
+            }else{
+                if(isset($tracking['status']['name']) && $shippingId){
+                    wc_update_order_item_meta($shippingId, 'Статус заказа', $tracking['status']['name']);
+                    if($shippingMethod){
+                        $shippingMethod['tracking'] = $tracking;
+                        $jsonArr = json_encode($shippingMethod, JSON_UNESCAPED_UNICODE);
+                        wc_update_order_item_meta($shippingId, 'esl_shipping_methods', $jsonArr);
+                    }
+                }
+            }
 
 			$logger = wc_get_logger();
 			$context = array( 'source' => 'esl-info-cron-status' );
@@ -89,6 +117,8 @@ class UnloadingCron
 		if(isset($this->addForm['cronStatusTime'])){
 			$timeMin = (int)$this->addForm['cronStatusTime'];
 		}
+        if($timeMin < 60)
+            $timeMin = 60;
 
 		$schedules['esl_custom_min'] = array(
 			'interval' => 60 * $timeMin,

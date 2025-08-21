@@ -370,3 +370,22 @@ if ( ! function_exists( 'shortcode_widget_email_time_delivery' ) ) {
 		}
 	}
 }
+
+if ( ! function_exists( 'shortcode_widget_email_status_delivery' ) ) {
+    function shortcode_widget_email_status_delivery( $atts, $content = null, $code = "" ) {
+        if(!isset($atts['id']))
+            return false;
+
+        $order = wc_get_order( $atts['id'] );
+        if($order){
+            $orderShippings = $order->get_shipping_methods();
+            foreach ($orderShippings as $key=>$item){
+                $shippingMethod = wc_get_order_item_meta( $item->get_id() , 'esl_shipping_methods', $single = true );
+            }
+            $shippingMethods = json_decode($shippingMethod, true);
+            if(isset($shippingMethods['tracking']['status']['name'])){
+                echo $shippingMethods['tracking']['status']['name'];
+            }
+        }
+    }
+}

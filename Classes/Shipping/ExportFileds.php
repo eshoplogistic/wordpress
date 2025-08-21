@@ -511,9 +511,9 @@ class ExportFileds {
 					'costly||checkbox||Флаг «Ценный груз»' => '',
 				),
 				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+					'apply||checkbox||Объединить все грузовые места в одно' => (isset($exportFormSettings['combine-places-apply']) && $exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => (isset($exportFormSettings['combine-places-dimensions']) && $exportFormSettings['combine-places-dimensions'])??'',
+					'weight||text||Вес итогового грузового места в кг' => (isset($exportFormSettings['combine-places-weight']) && $exportFormSettings['combine-places-weight'])??''
 				),
 				'delivery' => array(
 					'produce_date||date||Дата приёма груза' => $produce_date,
