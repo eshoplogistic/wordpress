@@ -43,7 +43,7 @@ class OptionsPage implements ModuleInterface
 	public function registerOptionsPage()
 	{
 		add_menu_page(
-			__( 'Настройки WC eShopLogistic', WC_ESL_DOMAIN ),
+			__( 'Настройки WC eShopLogistic', 'eshoplogisticru' ),
 			'WC eShopLogistic',
 			'manage_options',
 			'wc_esl_options',

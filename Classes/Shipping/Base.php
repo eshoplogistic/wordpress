@@ -79,9 +79,9 @@ class Base extends \WC_Shipping_Method
 
 		$formFields = array(
 			'title' => array(
-				'title' => __('Название', WC_ESL_DOMAIN),
+				'title' => __('Название', 'eshoplogisticru'),
 				'type' => 'text',
-				'description' => __('Вы можете изменить название метода доставки, которое будет отображаться пользователям', WC_ESL_DOMAIN),
+				'description' => __('Вы можете изменить название метода доставки, которое будет отображаться пользователям', 'eshoplogisticru'),
 				'default' => $defaultTitle
 			),
 		);
@@ -98,10 +98,10 @@ class Base extends \WC_Shipping_Method
 				}
 			}
 			$formFields['custom'] = array(
-				'title' => __('Кастомная доставка', WC_ESL_DOMAIN),
+				'title' => __('Кастомная доставка', 'eshoplogisticru'),
 				'type' => 'select',
 				'options' => $optionCustom,
-				'description' => __('Выберите тип кастомной доставки, которую вы создали в кабинете eShopLogistic', WC_ESL_DOMAIN),
+				'description' => __('Выберите тип кастомной доставки, которую вы создали в кабинете eShopLogistic', 'eshoplogisticru'),
 			);
 		}
 
@@ -196,10 +196,10 @@ class Base extends \WC_Shipping_Method
 		$logger = new \WC_Logger();
 
 		try {
-			if(!$apiKey) throw new \Exception(__("API ключ не установлен", WC_ESL_DOMAIN));
-			//if(!$payment) throw new \Exception(__("Метод оплаты не установлен", WC_ESL_DOMAIN));
-			//if(!$cityFrom) throw new \Exception(__("Город отправки не установлен", WC_ESL_DOMAIN));
-			if(!$cityTo) throw new \Exception(__("Город доставки не установлен", WC_ESL_DOMAIN));
+			if(!$apiKey) throw new \Exception(__("API ключ не установлен", 'eshoplogisticru'));
+			//if(!$payment) throw new \Exception(__("Метод оплаты не установлен", 'eshoplogisticru'));
+			//if(!$cityFrom) throw new \Exception(__("Город отправки не установлен", 'eshoplogisticru'));
+			if(!$cityTo) throw new \Exception(__("Город доставки не установлен", 'eshoplogisticru'));
 
 			$data = new CheckoutOrderData($package['contents']);
 

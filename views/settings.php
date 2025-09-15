@@ -58,7 +58,7 @@ $status_translate             = [
             <div class="row">
                 <div class="col-md-12">
                     <h1 class="wc-esl-settings__title">
-						<?php echo __( 'Настройки eShop<span>Logistic</span> Shipping', WC_ESL_DOMAIN ) ?>
+						<?php esc_html_e( 'Настройки eShopLogistic Shipping', 'eshoplogisticru' ) ?>
                     </h1>
 					<?php if ( $moduleVersion ): ?>
                         <h4><a href="https://wp-v2.eshoplogistic.ru/documentation-v2/" target="_blank">Документация по
@@ -79,17 +79,17 @@ $status_translate             = [
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
-							<?php echo __( 'Основные настройки', WC_ESL_DOMAIN ) ?>
+							<?php esc_html_e('Основные настройки', 'eshoplogisticru' ) ?>
 
                             <button class="btn btn-primary" id="updateCache">
-								<?php echo __( 'Сбросить кэш', WC_ESL_DOMAIN ) ?>
+								<?php esc_html_e( 'Сбросить кэш', 'eshoplogisticru' ) ?>
                             </button>
                         </div>
                         <div class="card-body">
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Включить / выключить', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Включить / выключить', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -107,7 +107,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Включить / выключить корзинный виджет', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Включить / выключить корзинный виджет', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -133,7 +133,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Включить / выключить стоимость доставки в сумме заказа', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Включить / выключить стоимость доставки в сумме заказа', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -151,7 +151,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Включить / выключить логирование запросов', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Включить / выключить логирование запросов', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -167,9 +167,9 @@ $status_translate             = [
                                                 <p>
                                                     Если включен данный параметр, все запросы будут записываться в
                                                     текстовый файл.<br>
-                                                    Путь к файлу: <a
-                                                            href="<?php echo get_site_url(); ?>/wp-content/plugins/eshoplogisticru/esl.log"><?php echo get_site_url(); ?>
-                                                        /wp-content/plugins/eshoplogisticru/esl.log</a>
+                                                    Путь к файлу: 
+                                                    <a href="<?php echo esc_url(get_site_url()); ?>/wp-content/plugins/eshoplogisticru/esl.log">
+                                                        <?php echo esc_html(get_site_url()); ?>/wp-content/plugins/eshoplogisticru/esl.log</a>
                                                 </p>
                                             </div>
                                         </label>
@@ -179,7 +179,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Включить / выключить новую версию api', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Включить / выключить новую версию api', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -204,7 +204,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php echo __( 'Единица измерения габаритов ', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e('Единица измерения габаритов ', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <select id="dimensionMeasurement" name="dimension_measurement">
@@ -224,7 +224,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'API Ключ', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'API Ключ', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyForm">
@@ -232,14 +232,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'API Ключ', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'API Ключ', 'eshoplogisticru' ) ?>"
                                                     id="apiKeyInput"
                                                     name="api_key"
                                                     value="<?php echo esc_attr( $api_key ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -253,9 +253,9 @@ $status_translate             = [
 								$style = ' style="display:none;"';
 							}
 							?>
-                            <div class="form-group row align-items-center mb-3" <?php echo $style ?>>
+                            <div class="form-group row align-items-center mb-3" <?php echo esc_attr($style) ?>>
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'Ключ корзинного виджета', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyWCartForm">
@@ -263,14 +263,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'Ключ корзинного виджета', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogisticru' ) ?>"
                                                     id="apiKeyWCartInput"
                                                     name="api_key_wcart"
                                                     value="<?php echo esc_attr( $api_key_wcart ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -280,7 +280,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'API Ключ для яндекс карты', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyYaForm">
@@ -288,14 +288,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'API Ключ для яндекс карты', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogisticru' ) ?>"
                                                     id="apiKeyYaInput"
                                                     name="api_ya_key"
                                                     value="<?php echo esc_attr( $api_key_ya ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -313,7 +313,7 @@ $status_translate             = [
 
                     <div class="card">
                         <div class="card-header">
-							<?php echo __( 'Настройки оплаты', WC_ESL_DOMAIN ) ?>
+							<?php esc_html_e( 'Настройки оплаты', 'eshoplogisticru' ) ?>
                         </div>
 
                         <div class="card-body">
@@ -321,11 +321,11 @@ $status_translate             = [
                                 <table class="table table-striped">
                                     <thead>
                                     <th scope="col">#</th>
-                                    <th scope="col"><?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH_RU ?></th>
-                                    <th scope="col"><?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD_RU ?></th>
-                                    <th scope="col"><?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS_RU ?></th>
-                                    <th scope="col"><?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY_RU ?></th>
-                                    <th scope="col"><?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_RU ?></th>
+                                    <th scope="col"><?php echo esc_html( \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH_RU ) ?></th>
+                                    <th scope="col"><?php echo esc_html( \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD_RU ) ?></th>
+                                    <th scope="col"><?php echo esc_html( \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS_RU ) ?></th>
+                                    <th scope="col"><?php echo esc_html( \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY_RU ) ?></th>
+                                    <th scope="col"><?php echo esc_html( \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_RU ) ?></th>
                                     </thead>
                                     <tbody>
 
@@ -337,7 +337,7 @@ $status_translate             = [
                                                     <input
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
-                                                            value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ?>"
+                                                            value="<?php echo esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH) ?>"
                                                             <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
 														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASH ) ? 'checked' : '' ?>
                                                             <?php endif; ?>
@@ -347,7 +347,7 @@ $status_translate             = [
                                                     <input
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
-                                                            value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ?>"
+                                                            value="<?php echo esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD) ?>"
 	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
                                                                 <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CARD ) ? 'checked' : '' ?>
 	                                                        <?php endif; ?>
@@ -357,7 +357,7 @@ $status_translate             = [
                                                     <input
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
-                                                            value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ?>"
+                                                            value="<?php echo esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS) ?>"
 	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
 														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_CASHLESS ) ? 'checked' : '' ?>
 	                                                        <?php endif; ?>
@@ -367,7 +367,7 @@ $status_translate             = [
                                                     <input
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
-                                                            value="<?php echo \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ?>"
+                                                            value="<?php echo esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY) ?>"
 	                                                        <?php if(isset($paymentMethods[ $paymentGateway->id ])):?>
 														        <?php echo ( $paymentMethods[ $paymentGateway->id ] === \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_PREPAY ) ? 'checked' : '' ?>
 	                                                        <?php endif; ?>
@@ -377,7 +377,7 @@ $status_translate             = [
                                                     <input
                                                             type="radio"
                                                             name="esl_pay_type[<?php echo esc_attr( $paymentGateway->id ) ?>]"
-                                                            value="<?php echo ( $moduleVersion ) ? \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_V2 : \eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON ?>"
+                                                            value="<?php echo ( $moduleVersion ) ? esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON_V2) : esc_attr(\eshoplogistic\WCEshopLogistic\DB\PaymentGatewaysRepository::PAYTYPE_UPON) ?>"
 														<?php
 														if(isset($paymentMethods[ $paymentGateway->id ])){
                                                             if ( $moduleVersion ) {
@@ -397,7 +397,7 @@ $status_translate             = [
                                 </table>
 
                                 <button class="btn btn-primary" type="submit">
-									<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                 </button>
                             </form>
                         </div>
@@ -407,9 +407,9 @@ $status_translate             = [
                         <div class="card-header">
 							<?php
 							if ( $moduleVersion ) {
-								echo __( 'Виджет в карточку товара', WC_ESL_DOMAIN );
+								esc_html_e( 'Виджет в карточку товара', 'eshoplogisticru' );
 							} else {
-								echo __( 'Виджет', WC_ESL_DOMAIN );
+								esc_html_e( 'Виджет', 'eshoplogisticru' );
 							}
 							?>
                         </div>
@@ -417,7 +417,7 @@ $status_translate             = [
                         <div class="card-body" id="eslWidgetFormWrap">
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'Ключ виджета', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Ключ виджета', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetKeyForm">
@@ -425,14 +425,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'Ключ виджета', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Ключ виджета', 'eshoplogisticru' ) ?>"
                                                     id="eslWidgetKey"
                                                     name="esl_widget_key"
                                                     value="<?php echo esc_attr( $widget_key ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e('Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -442,7 +442,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'Секретный код', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Секретный код', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetSecretCodeForm">
@@ -450,14 +450,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'Секретный код', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Секретный код', 'eshoplogisticru' ) ?>"
                                                     id="eslWidgetSecretCode"
                                                     name="esl_widget_secret_code"
                                                     value="<?php echo esc_attr( $secret_code ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -467,7 +467,7 @@ $status_translate             = [
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php echo __( 'Название для кнопки виджета', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogisticru' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetButForm">
@@ -475,14 +475,14 @@ $status_translate             = [
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php echo __( 'Название для кнопки виджета', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogisticru' ) ?>"
                                                     id="eslWidgetBut"
                                                     name="esl_widget_but"
                                                     value="<?php echo esc_attr( $widget_but ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -494,7 +494,7 @@ $status_translate             = [
 
                     <div class="card wc-esl-settings-others">
                         <div class="card-header">
-							<?php echo __( 'Дополнительные настройки eShopLogistic', WC_ESL_DOMAIN ) ?>
+							<?php esc_html_e( 'Дополнительные настройки eShopLogistic', 'eshoplogisticru' ) ?>
                         </div>
 
                         <div class="card-body" id="eslOthersFormWrap">
@@ -503,7 +503,7 @@ $status_translate             = [
                                     <form action="/" method="post" id="eslAddForm">
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-												<?php echo __( 'Описание подсказки для списка городов', WC_ESL_DOMAIN ) ?>
+												<?php esc_html_e( 'Описание подсказки для списка городов', 'eshoplogisticru' ) ?>
                                             </label>
 											<?php
 											$citiesTips = '';
@@ -513,7 +513,7 @@ $status_translate             = [
 											?>
                                             <input
                                                     type="text"
-                                                    placeholder="<?php echo __( 'Подсказка для выбора города', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Подсказка для выбора города', 'eshoplogisticru' ) ?>"
                                                     name="citiesTips"
                                                     class="form-control col-sm-8"
                                                     value="<?php echo esc_attr( $citiesTips ) ?>"
@@ -522,7 +522,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Название кнопки для выбора ПВЗ', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $pvzName = '';
@@ -532,7 +532,7 @@ $status_translate             = [
 		                                    ?>
                                             <input
                                                     type="text"
-                                                    placeholder="<?php echo __( 'Название кнопки для выбора ПВЗ', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogisticru' ) ?>"
                                                     name="pvzName"
                                                     class="form-control col-sm-8"
                                                     value="<?php echo esc_attr( $pvzName ) ?>"
@@ -541,7 +541,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-												<?php echo __( 'Контролировать способ оплаты', WC_ESL_DOMAIN ) ?>
+												<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogisticru' ) ?>
                                             </label>
 											<?php
 											$paymentCalc = '';
@@ -551,7 +551,7 @@ $status_translate             = [
 											?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php echo __( 'Контролировать способ оплаты', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogisticru' ) ?>"
                                                     name="paymentCalc"
                                                     class="col-sm-8 form-control checkbox"
 											<?php echo ( $paymentCalc == 'true' ) ? 'checked=checked' : ''; ?>"
@@ -561,7 +561,7 @@ $status_translate             = [
 										<?php if ( $moduleVersion ): ?>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e('Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogisticru' ) ?>
                                                 </label>
 												<?php
 												$checkDelivery = '';
@@ -571,7 +571,7 @@ $status_translate             = [
 												?>
                                                 <input
                                                         type="checkbox"
-                                                        placeholder="<?php echo __( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogisticru' ) ?>"
                                                         name="checkDelivery"
                                                         class="col-sm-8 form-control checkbox"
 												<?php echo ( $checkDelivery == 'true' ) ? 'checked=checked' : ''; ?>"
@@ -580,7 +580,7 @@ $status_translate             = [
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Изменить способ выбора города', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogisticru' ) ?>
                                                 </label>
 												<?php
 												$citySelectModal = '';
@@ -590,7 +590,7 @@ $status_translate             = [
 												?>
                                                 <input
                                                         type="checkbox"
-                                                        placeholder="<?php echo __( 'Изменить способ выбора города', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogisticru' ) ?>"
                                                         name="citySelectModal"
                                                         class="col-sm-8 form-control checkbox"
 												<?php echo ( $citySelectModal == 'true' ) ? 'checked=checked' : ''; ?>"
@@ -607,11 +607,11 @@ $status_translate             = [
 											?>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-		                                            <?php echo __( 'Изображение для загрузки', WC_ESL_DOMAIN ) ?>
+		                                            <?php esc_html_e( 'Изображение для загрузки', 'eshoplogisticru' ) ?>
                                                 </label>
-                                                <img src="<?php echo $eslLodaerImg?>" width="150"/>
+                                                <img src="<?php echo esc_url( $eslLodaerImg )?>" width="150"/>
                                                 <div class="ml-1">
-                                                    <input type="hidden" name="eslLoader" value="<?php echo $eslLoader?>"/>
+                                                    <input type="hidden" name="eslLoader" value="<?php echo esc_attr($eslLoader)?>"/>
                                                     <button type="submit" class="upload_image_button button">Загрузить
                                                     </button>
                                                     <button type="submit" class="remove_image_button button">×</button>
@@ -621,7 +621,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Поле адреса доставки (Billing)', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Поле адреса доставки (Billing)', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $billingList = array();
@@ -637,7 +637,7 @@ $status_translate             = [
 			                                    <?php
 			                                    foreach ( $list_fields['billing'] as $value => $label ) {
 				                                    $selected = ( in_array( $value, $billingList ) ) ? 'selected' : '';
-				                                    echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label['label'] . ' - '.$value.'</option>';
+				                                    echo '<option value="' . esc_attr( $value ) . '"' . esc_attr($selected) . '>' . esc_attr($label['label']) . ' - '.esc_attr($value).'</option>';
 			                                    }
 			                                    ?>
                                             </select>
@@ -646,7 +646,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Поле другого адреса доставки (Shipping)', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Поле другого адреса доставки (Shipping)', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $billingList = array();
@@ -662,7 +662,7 @@ $status_translate             = [
 			                                    <?php
 			                                    foreach ( $list_fields['shipping'] as $value => $label ) {
 				                                    $selected = ( in_array( $value, $billingList ) ) ? 'selected' : '';
-				                                    echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label['label'] . ' - '.$value.'</option>';
+				                                    echo '<option value="' . esc_attr( $value ) . '"' . esc_attr($selected) . '>' . esc_attr($label['label']) . ' - '.esc_attr($value).'</option>';
 			                                    }
 			                                    ?>
                                             </select>
@@ -671,7 +671,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Отключить скрытие полей адреса при выборе ПВЗ', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $offAddressCheck = '';
@@ -681,7 +681,7 @@ $status_translate             = [
 		                                    ?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php echo __( 'Отключить скрытие полей адреса при выборе ПВЗ', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogisticru' ) ?>"
                                                     name="offAddressCheck"
                                                     class="col-sm-8 form-control checkbox"
 		                                    <?php echo ( $offAddressCheck == 'true' ) ? 'checked=checked' : ''; ?>"
@@ -690,12 +690,12 @@ $status_translate             = [
 
 
                                         <div class="card-header">
-		                                    <?php echo __( 'Планировщик выгрузки заказов', WC_ESL_DOMAIN ) ?>
+		                                    <?php esc_html_e( 'Планировщик выгрузки заказов', 'eshoplogisticru' ) ?>
                                         </div>
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Включить планировщик обновления статусов заказа', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $cronStatusEnable = '';
@@ -705,7 +705,7 @@ $status_translate             = [
 		                                    ?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php echo __( 'Включить планировщик обновления статусов заказа', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogisticru' ) ?>"
                                                     name="cronStatusEnable"
                                                     class="col-sm-8 form-control checkbox"
 		                                    <?php echo ( $cronStatusEnable == 'true' ) ? 'checked=checked' : ''; ?>"
@@ -714,7 +714,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Статусы заказов для работы планировщика', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Статусы заказов для работы планировщика', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $statusEnd = array();
@@ -732,7 +732,7 @@ $status_translate             = [
                                                         continue;
 
 			                                        $selected = ( in_array( $value, $statusEnd ) ) ? 'selected' : '';
-			                                        echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label . '</option>';
+			                                        echo '<option value="' . esc_attr( $value ) . '"' . esc_attr($selected) . '>' . esc_attr($label) . '</option>';
 		                                        }
 		                                        ?>
                                             </select>
@@ -741,7 +741,7 @@ $status_translate             = [
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php echo __( 'Период обновления планировщика (в минутах)', WC_ESL_DOMAIN ) ?>
+			                                    <?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogisticru' ) ?>
                                             </label>
 		                                    <?php
 		                                    $cronStatusTime = '';
@@ -753,7 +753,7 @@ $status_translate             = [
 		                                    ?>
                                             <input
                                                     type="number"
-                                                    placeholder="<?php echo __( 'Период обновления планировщика (в минутах)', WC_ESL_DOMAIN ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogisticru' ) ?>"
                                                     name="cronStatusTime"
                                                     class="col-sm-8 form-control"
                                                     min="60"
@@ -762,7 +762,7 @@ $status_translate             = [
                                         </div>
 
                                         <button class="btn btn-primary float-end" type="submit">
-											<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+											<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                         </button>
                                     </form>
                                 </div>
@@ -773,7 +773,7 @@ $status_translate             = [
 					<?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-export">
                             <div class="card-header">
-								<?php echo __( 'Настройки выгрузки заказов', WC_ESL_DOMAIN ) ?>
+								<?php esc_html_e( 'Настройки выгрузки заказов', 'eshoplogisticru' ) ?>
                             </div>
 
                             <div class="card-body" id="eslExportFormWrap">
@@ -783,7 +783,7 @@ $status_translate             = [
                                             <p>Адрес отправителя</p>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Код терминала (СДЭК)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Код терминала (СДЭК)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -803,7 +803,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-sdek"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -811,7 +811,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Код терминала (Boxberry)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Код терминала (Boxberry)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -831,7 +831,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-boxberry"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -839,7 +839,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Код терминала (Яндекс)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Код терминала (Яндекс)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -859,7 +859,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-yandex"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -867,7 +867,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Код терминала (5POST)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Код терминала (5POST)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -887,7 +887,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-fivepost"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -895,7 +895,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Код терминала (KIT)', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Код терминала (KIT)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -915,7 +915,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-kit"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -923,7 +923,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Код терминала (Почта России)', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Код терминала (Почта России)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -943,7 +943,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-postrf"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -951,7 +951,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Код терминала (ПЭК)', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Код терминала (ПЭК)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -971,7 +971,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-pecom"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -979,7 +979,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Код терминала (Магнит Пост)', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Код терминала (Магнит Пост)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -999,7 +999,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-magnit"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -1007,7 +1007,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Код терминала (Деловые линии)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Код терминала (Деловые линии)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1027,7 +1027,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Код терминала', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
                                                         name="sender-terminal-delline"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_terminal ) ?>"
@@ -1036,7 +1036,7 @@ $status_translate             = [
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Заказчик перевозки (Деловые линии)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Заказчик перевозки (Деловые линии)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1063,8 +1063,8 @@ $status_translate             = [
 												<?php if ( isset( $counterparties['counterparties'] ) ): ?>
                                                     <select id="senderUidDelline" name="sender-uid-delline">
 														<?php foreach ( $counterparties['counterparties'] as $key => $value ): ?>
-                                                            <option value="<?php echo $value['uid'] ?>" <?php echo $sender_uid == $value['uid'] ? 'selected' : '' ?>>
-																<?php echo $value['name'] ?>
+                                                            <option value="<?php echo esc_attr($value['uid']); ?>" <?php echo $sender_uid == $value['uid'] ? 'selected' : '' ?>>
+																<?php echo esc_html($value['name']) ?>
                                                             </option>
 														<?php endforeach; ?>
                                                     </select>
@@ -1072,7 +1072,7 @@ $status_translate             = [
                                                     <input
                                                             type="text"
                                                             class="form-control"
-                                                            placeholder="<?php echo __( 'UID', WC_ESL_DOMAIN ) ?>"
+                                                            placeholder="<?php esc_html_e( 'UID', 'eshoplogisticru' ) ?>"
                                                             name="sender-uid-delline"
                                                             class="col-sm-8"
                                                             value="<?php echo esc_attr( $sender_uid ) ?>"
@@ -1082,7 +1082,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Отправитель (Деловые линии)', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Отправитель (Деловые линии)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1105,7 +1105,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'ID контрагента', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'ID контрагента', 'eshoplogisticru' ) ?>"
                                                         name="sender-counter-delline"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_counter ) ?>"
@@ -1113,7 +1113,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Название профиля отправителя (Kit)', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Название профиля отправителя (Kit)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1131,7 +1131,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Название профиля отправителя', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Название профиля отправителя', 'eshoplogisticru' ) ?>"
                                                         name="sender-uid-kit"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_uid ) ?>"
@@ -1142,7 +1142,7 @@ $status_translate             = [
                                             <hr>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Имя', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Имя', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1160,7 +1160,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Имя', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e('Имя', 'eshoplogisticru' ) ?>"
                                                         name="sender-name"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_name ) ?>"
@@ -1168,7 +1168,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Телефон', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Телефон', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1186,7 +1186,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Телефон', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Телефон', 'eshoplogisticru' ) ?>"
                                                         name="sender-phone"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_phone ) ?>"
@@ -1194,7 +1194,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Название компании', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1212,7 +1212,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Название компании', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>"
                                                         name="sender-company"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_company ) ?>"
@@ -1220,7 +1220,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php echo __( 'Электронная почта', WC_ESL_DOMAIN ) ?>
+			                                        <?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1238,7 +1238,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Электронная почта', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>"
                                                         name="sender-email"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_email ) ?>"
@@ -1246,7 +1246,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Регион', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1264,7 +1264,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Регион', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>"
                                                         name="sender-region"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_region ) ?>"
@@ -1272,7 +1272,7 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Населённый пункт', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Населённый пункт', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1291,7 +1291,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Населённый пункт:', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Населённый пункт:', 'eshoplogisticru' ) ?>"
                                                         name="sender-city"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_city ) ?>"
@@ -1300,7 +1300,7 @@ $status_translate             = [
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Улица', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Улица', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1319,7 +1319,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Улица', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Улица', 'eshoplogisticru' ) ?>"
                                                         name="sender-street"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_street ) ?>"
@@ -1328,7 +1328,7 @@ $status_translate             = [
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Здание', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Здание', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1347,7 +1347,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Здание', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Здание', 'eshoplogisticru' ) ?>"
                                                         name="sender-house"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_house ) ?>"
@@ -1356,7 +1356,7 @@ $status_translate             = [
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php echo __( 'Квартира / офис', WC_ESL_DOMAIN ) ?>
+													<?php esc_html_e( 'Квартира / офис', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1375,7 +1375,7 @@ $status_translate             = [
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php echo __( 'Квартира / офис', WC_ESL_DOMAIN ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Квартира / офис', 'eshoplogisticru' ) ?>"
                                                         name="sender-room"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_house ) ?>"
@@ -1384,7 +1384,7 @@ $status_translate             = [
 
 
                                             <button class="btn btn-primary float-end" type="submit">
-												<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+												<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                             </button>
                                         </form>
                                     </div>
@@ -1396,7 +1396,7 @@ $status_translate             = [
 					<?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-status esl-section_drag">
                             <div class="card-header">
-								<?php echo __( 'Настройка статусов', WC_ESL_DOMAIN ) ?>
+								<?php esc_html_e( 'Настройка статусов', 'eshoplogisticru' ) ?>
                                 <label>
                                     <div class="help-tip">
                                         <p>
@@ -1421,19 +1421,19 @@ $status_translate             = [
 													?>
                                                     <div class="esl-inner_item">
                                                         <div class="esl-status_api">
-															<?php echo $name ?>
+															<?php echo esc_html( $name ); ?>
                                                         </div>
                                                         <ul class="js-inner-connected sortable"
-                                                            name="<?php echo $key ?>"
+                                                            name="<?php echo esc_attr($key); ?>"
                                                             aria-dropeffect="move">
 															<?php if ( isset( $status_form[ $key ] ) && $status_form[ $key ] ): ?>
 																<?php foreach ( $status_form[ $key ] as $item ): ?>
-                                                                    <li name="<?php echo $item['name'] ?>"
-                                                                        data-desc="<?php echo $item['desc'] ?>"
+                                                                    <li name="<?php echo esc_attr($item['name']); ?>"
+                                                                        data-desc="<?php echo esc_attr($item['desc']); ?>"
                                                                         class="esl-status__wp"
                                                                         role="option" aria-grabbed="false">
                                                                         <span class=""
-                                                                              draggable="true"><?php echo $item['desc'] ?></span>
+                                                                              draggable="true"><?php echo esc_attr($item['desc']); ?></span>
                                                                         <span class="sortable-delete"
                                                                               onclick="sortableDelete(this)">х</span>
                                                                     </li>
@@ -1448,9 +1448,9 @@ $status_translate             = [
 
                                                 <ul class="js-connected sortable-copy" aria-dropeffect="move">
 													<?php foreach ( $status_wp as $key => $value ): ?>
-                                                        <li name="<?php echo $key ?>" data-desc="<?php echo $value ?>"
+                                                        <li name="<?php echo esc_attr($key); ?>" data-desc="<?php echo esc_attr($value); ?>"
                                                             class="esl-status__wp" role="option" aria-grabbed="false">
-                                                            <span class="" draggable="true"><?php echo $value ?></span>
+                                                            <span class="" draggable="true"><?php echo esc_html($value); ?></span>
                                                         </li>
 													<?php endforeach; ?>
                                                 </ul>
@@ -1460,7 +1460,7 @@ $status_translate             = [
                                     </div>
                                 </div>
                                 <button class="btn btn-primary float-end" id="statusSave">
-									<?php echo __( 'Сохранить', WC_ESL_DOMAIN ) ?>
+									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
                                 </button>
                             </div>
                         </div>
@@ -1469,7 +1469,7 @@ $status_translate             = [
 	                <?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-status esl-section_add_field">
                             <div class="card-header">
-				                <?php echo __( 'Дополнительные услуги', WC_ESL_DOMAIN ) ?>
+				                <?php esc_html_e( 'Дополнительные услуги', 'eshoplogisticru' ) ?>
                             </div>
 
                             <div class="card-body" id="eslAddFormField">

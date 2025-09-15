@@ -189,6 +189,6 @@ class CheckoutValidator implements ModuleInterface
 
     private function addErrorNotice($msg)
     {
-        wc_add_notice(__($msg, WC_ESL_DOMAIN), 'error');
+        wc_add_notice($msg, 'error');
     }
 }

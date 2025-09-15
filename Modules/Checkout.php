@@ -67,14 +67,15 @@ class Checkout implements ModuleInterface
             if(isset($addOption['pvzName']) && $addOption['pvzName']){
                 $pvzName = $addOption['pvzName'];
             }else{
-	            $pvzName = 'Выбрать пункт <br> выдачи';
+	            $pvzName = 'Выбрать пункт';
+                $pvzName2 = 'выдачи';
             }
 
 		    echo '<button
                     class="wc-esl-terminals__button_under"
                     type="button"
                     onclick="terminalButtonClick()">
-                		'.$pvzName.'
+                		'.esc_html($pvzName).'<br>'.esc_html($pvzName2).'
                     </button>
                     <script>
 	                    for (const elem of document.querySelectorAll(".wc-esl-terminals__button"))
@@ -228,7 +229,7 @@ class Checkout implements ModuleInterface
 
         <div id="tips-city-container" style="display: none;">
             <i class="ico">☓</i>
-            <?php echo $tipsCities ?>
+            <?php echo esc_html($tipsCities) ?>
         </div>
         <div id="wc-esl-terminals-wrap-<?php echo esc_attr($type) ?>" class="wc-esl-terminals__container">
 		    <?php
@@ -239,14 +240,14 @@ class Checkout implements ModuleInterface
                     type="button"
                     data-mode="<?php echo esc_attr($type) ?>"
             >
-			    <?php echo $sessionService->get('terminal_location') ? __('Выбрать другой пункт выдачи', WC_ESL_DOMAIN) : __('Выбрать пункт выдачи', WC_ESL_DOMAIN) ?>
+			    <?php echo $sessionService->get('terminal_location') ? esc_html('Выбрать другой пункт выдачи', 'eshoplogisticru') : esc_html('Выбрать пункт выдачи', 'eshoplogisticru') ?>
             </button>
 
 		    <?php
 		    woocommerce_form_field(
 			    "wc_esl_{$type}_terminal",
 			    array(
-				    'label' => __('Пункт выдачи', WC_ESL_DOMAIN),
+				    'label' => __('Пункт выдачи', 'eshoplogisticru'),
 				    'required' => true,
 				    'custom_attributes' => array(
 					    'readonly' => true
@@ -308,13 +309,13 @@ class Checkout implements ModuleInterface
 		?>
         <div id="tips-city-container" style="display: none;">
             <i class="ico">☓</i>
-			<?php echo $tipsCities ?>
+			<?php echo esc_html($tipsCities) ?>
         </div>
 
         <div id="wc-esl-terminals-wrap-button-<?php echo esc_attr($type) ?>" class="wc-esl-terminals__container wc-esl-terminals__frame">
             <div class="esl_desct_delivery" style="display: none;">
-                <p>Всего доступно <span class="count"><?php echo $count; ?></span>
-                <span class="countText"><?php echo $countText; ?></span> доставки.
+                <p>Всего доступно <span class="count"><?php echo esc_html($count); ?></span>
+                <span class="countText"><?php echo esc_html($countText); ?></span> доставки.
                     <br><span class="addText">Выбран самый дешевый вариант.</span></p>
             </div>
             <button
@@ -322,7 +323,7 @@ class Checkout implements ModuleInterface
                     type="button"
                     data-mode="<?php echo esc_attr($type) ?>"
             >
-		        <?php echo __($pvzName, WC_ESL_DOMAIN) ?>
+		        <?php echo esc_html($pvzName) ?>
             </button>
         </div>
 
@@ -332,9 +333,9 @@ class Checkout implements ModuleInterface
                     <span class="close_modal_window">×</span>
                 </div>
                 <?php if(isset($moduleVersion) && $moduleVersion == '1'):?>
-                    <div id="eShopLogisticWidgetCart" data-key="<?php echo $apiKeyWCart ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
+                    <div id="eShopLogisticWidgetCart" data-key="<?php echo esc_attr($apiKeyWCart) ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
                 <?php else: ?>
-                    <div id="eShopLogisticStatic" data-key="<?php echo $widgetKey ?>"></div>
+                    <div id="eShopLogisticStatic" data-key="<?php echo esc_attr($widgetKey) ?>"></div>
                 <?php endif; ?>
                 <div class="footer">
                     <input id="buttonModalDoor" type="button"  value="Выбрать">
@@ -347,9 +348,9 @@ class Checkout implements ModuleInterface
 			woocommerce_form_field(
 				"wc_esl_{$type}_terminal",
 				array(
-					'label' => __('Пункт выдачи', WC_ESL_DOMAIN),
+					'label' => esc_html('Пункт выдачи', 'eshoplogisticru'),
 					'required' => true,
-					'description' => __( 'Выберите на карте', 'woocommerce' ),
+					'description' => esc_html( 'Выберите на карте', 'eshoplogisticru' ),
 					'custom_attributes' => array(
 						'readonly' => true
 					)
@@ -363,7 +364,7 @@ class Checkout implements ModuleInterface
         <div class="preloader">
             <?php if($eslLoader): ?>
                 <div class="preloader__img">
-                    <img src="<?php echo $eslLoader ?>" width="150" height="150">
+                    <img src="<?php echo esc_html($eslLoader) ?>" width="150" height="150">
                 </div>
             <?php else: ?>
                 <div class="preloader__row">

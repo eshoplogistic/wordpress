@@ -28,15 +28,15 @@ class Table extends WP_List_Table {
 
 	function get_columns() {
 		return array(
-			'product_id'     => __( 'ID' ),
-			'name'   => __( 'Имя' ),
-			'quantity'  => __( 'Кол-во' ),
-			'price'  => __( 'Цена' ),
-			'weight' => __( 'Вес' ),
-			'width'  => __( 'Ширина' ),
-			'length' => __( 'Длина' ),
-			'height' => __( 'Высота' ),
-			'delete' => __( 'Удалить' ),
+			'product_id'     => __( 'ID', 'eshoplogisticru' ),
+			'name'   => __( 'Имя', 'eshoplogisticru' ),
+			'quantity'  => __( 'Кол-во', 'eshoplogisticru' ),
+			'price'  => __( 'Цена', 'eshoplogisticru' ),
+			'weight' => __( 'Вес', 'eshoplogisticru' ),
+			'width'  => __( 'Ширина', 'eshoplogisticru' ),
+			'length' => __( 'Длина', 'eshoplogisticru' ),
+			'height' => __( 'Высота', 'eshoplogisticru' ),
+			'delete' => __( 'Удалить', 'eshoplogisticru' ),
 		);
 	}
 
@@ -200,7 +200,9 @@ class Table extends WP_List_Table {
 		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
 		$columns = $this->get_columns();
 
-		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$http_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field($_SERVER['HTTP_HOST']) : '';
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field($_SERVER['REQUEST_URI']) : '';
+		$current_url = set_url_scheme( 'http://' . $http_host . $request_uri );
 		$current_url = remove_query_arg( 'paged', $current_url );
 
 		// When users click on a column header to sort by other columns.
@@ -225,7 +227,7 @@ class Table extends WP_List_Table {
 			<label for="cb-select-all-' . $cb_counter . '">' .
 			                     '<span class="screen-reader-text">' .
 			                     /* translators: Hidden accessibility text. */
-			                     __( 'Select All' ) .
+			                     __( 'Select All', 'eshoplogisticru' ) .
 			                     '</span>' .
 			                     '</label>';
 			++$cb_counter;
@@ -297,9 +299,9 @@ class Table extends WP_List_Table {
 					$class[] = 'desc' === $order ? 'asc' : 'desc';
 
 					/* translators: Hidden accessibility text. */
-					$asc_text = __( 'Sort ascending.' );
+					$asc_text = __( 'Sort ascending.', 'eshoplogisticru' );
 					/* translators: Hidden accessibility text. */
-					$desc_text  = __( 'Sort descending.' );
+					$desc_text  = __( 'Sort descending.', 'eshoplogisticru' );
 					$order_text = 'asc' === $order ? $asc_text : $desc_text;
 				}
 
@@ -349,7 +351,7 @@ class Table extends WP_List_Table {
 				if(!$rec)
 					continue;
 
-				echo '<tr id="record_' . $rec['id'] . '">';
+				echo '<tr id="record_' . esc_attr($rec['id']) . '">';
 				foreach ( $columns as $column_name => $column_display_name ) {
 
 					$class = "class='column-$column_name' name='$column_name'";

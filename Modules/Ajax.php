@@ -386,7 +386,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $transients,
-			'msg' => __("Кэш успешно очищен", WC_ESL_DOMAIN)
+			'msg' => __("Кэш успешно очищен", 'eshoplogisticru')
 		]);
 	}
 
@@ -397,7 +397,7 @@ class Ajax implements ModuleInterface
 		if(is_null($formData)) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", WC_ESL_DOMAIN)
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
 			]);
 		}
 
@@ -407,7 +407,7 @@ class Ajax implements ModuleInterface
 		if(!isset($params['esl_pay_type'])) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", WC_ESL_DOMAIN)
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
 			]);
 		}
 
@@ -420,7 +420,7 @@ class Ajax implements ModuleInterface
 		if(empty($payTypes)) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", WC_ESL_DOMAIN)
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
 			]);
 		}
 
@@ -434,7 +434,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $payTypes,
-			'msg' => __("Методы оплаты успешно сохранены", WC_ESL_DOMAIN)
+			'msg' => __("Методы оплаты успешно сохранены", 'eshoplogisticru')
 		]);
 	}
 
@@ -443,7 +443,7 @@ class Ajax implements ModuleInterface
 		$terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
 		$terminal_code = isset($_POST['terminal_code']) ? wc_clean($_POST['terminal_code']) : '';
 
-		if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", WC_ESL_DOMAIN)]);
+		if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogisticru')]);
 
 		$sessionService = new SessionService();
 		$sessionService->set('terminal_location', $terminal. '. Код пункта: '.$terminal_code);
@@ -451,7 +451,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $terminal. '. Код пункта: '.$terminal_code,
-			'msg' => __("Aдрес пункта выдачи успешно сохранён", WC_ESL_DOMAIN)
+			'msg' => __("Aдрес пункта выдачи успешно сохранён", 'eshoplogisticru')
 		]);
 	}
 
@@ -479,7 +479,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $terminals,
-			'msg' => __("Адрес скорректирован", WC_ESL_DOMAIN)
+			'msg' => __("Адрес скорректирован", 'eshoplogisticru')
 		]);
 	}
 
@@ -541,12 +541,12 @@ class Ajax implements ModuleInterface
 			wp_send_json([
 				'success' => true,
 				'data' => $sessionService->getAll(),
-				'msg' => __("Сессия успешно сброшена", WC_ESL_DOMAIN)
+				'msg' => __("Сессия успешно сброшена", 'eshoplogisticru')
 			]);
 		} catch(\Exception $e) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сброса кэша", WC_ESL_DOMAIN)
+				'msg' => __("Ошибка сброса кэша", 'eshoplogisticru')
 			]);
 		}
 	}
@@ -623,12 +623,12 @@ class Ajax implements ModuleInterface
 
 			wp_send_json([
 				'success' => 'error',
-				'msg' => __($error, WC_ESL_DOMAIN)
+				'msg' => $error
 			]);
 		}else{
 			wp_send_json([
 				'success' => true,
-				'msg' => __("Заказ создан", WC_ESL_DOMAIN)
+				'msg' => __("Заказ создан", 'eshoplogisticru')
 			]);
 		}
 
@@ -648,7 +648,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $result,
-			'msg' => __("Удаление заказа для выгрузки", WC_ESL_DOMAIN)
+			'msg' => __("Удаление заказа для выгрузки", 'eshoplogisticru')
 		]);
 	}
 
@@ -691,13 +691,18 @@ class Ajax implements ModuleInterface
 			$html .= '<br><div class="esl-status_info">Описание: '.$result['state']['service_status']['description'].'</div>';
 		}
 
-		if(!$html)
+        $print = $unloading->returnPrint();
+        if($print)
+            $html .= $print;
+
+        if(!$html)
 			$html = '<div class="esl-status_infoTitle">Ошибка при загрузке данных.</div>';
+
 
 		wp_send_json([
 			'success' => true,
 			'data' => $html,
-			'msg' => __("", WC_ESL_DOMAIN)
+			'msg' => ''
 		]);
 	}
 
@@ -721,7 +726,7 @@ class Ajax implements ModuleInterface
 
 		wp_send_json([
 			'success' => true,
-			'msg' => __("Заказ создан", WC_ESL_DOMAIN)
+			'msg' => __("Заказ создан", 'eshoplogisticru')
 		]);
 	}
 
@@ -745,7 +750,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $result,
-			'msg' => __("", WC_ESL_DOMAIN)
+			'msg' => ""
 		]);
 	}
 
@@ -1017,7 +1022,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $html,
-			'msg' => __("", WC_ESL_DOMAIN)
+			'msg' => ""
 		]);
 	}
 

@@ -5,19 +5,19 @@
  *
  *
  * @link              https://wp.eshoplogistic.ru/
- * @since             2.1.56
+ * @since             2.1.60
  * @package           WC_Eshop_Logistic
  *
  * @wordpress-plugin
  * Plugin Name:       Калькулятор доставки для интернет-магазинов eShopLogisticRu
  * Plugin URI:        https://wp.eshoplogistic.ru/
  * Description:       Несколько служб доставки в одной интеграции: CDEK, DPD, Boxberry, IML, Почта России, Деловые Линии, ПЭК, Dostavista, GTD, Байкал Сервис и др.
- * Version:           2.1.56
+ * Version:           2.1.60
  * Author:            eShopLogistic
  * Author URI:        https://eshoplogistic.ru/p747575
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       wc-esl
+ * Text Domain:       eshoplogisticru
  * Domain Path:       /languages
  */
 
@@ -40,9 +40,9 @@ define( 'WC_ESL_PLUGIN_ENTRY', __FILE__ );
 
 define( 'WC_ESL_PLUGIN_DIR', plugin_dir_path(__FILE__) );
 
-define( 'WC_ESL_VERSION', '2.1.56' );
+define( 'WC_ESL_VERSION', '2.1.60' );
 
-define( 'WC_ESL_DOMAIN', 'wc-esl' );
+define( 'WC_ESL_DOMAIN', 'eshoplogisticru' );
 
 define( 'WC_ESL_PREFIX', 'wc_esl_' );
 

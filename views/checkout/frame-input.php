@@ -16,10 +16,10 @@ if ( ! $widgetKey && ! $widgetCityEsl ) {
 ?>
 
 <div id="boxEshoplogistic" class="boxEshoplogistic">
-    <div id='eShopLogisticWidgetKey' data-key='<?php echo $widgetKey?>'></div>
-    <input id='widgetOffersEsl' value='<?php echo $widgetOffersEsl?>' type='hidden'>
-    <input id='widgetCityEsl' value='<?php echo $widgetCityEsl?>' type='hidden'>
-    <input id='widgetPaymentEsl' value='<?php echo $paymentMethods?>' type='hidden'>
+    <div id='eShopLogisticWidgetKey' data-key='<?php echo esc_attr($widgetKey)?>'></div>
+    <input id='widgetOffersEsl' value='<?php echo esc_attr($widgetOffersEsl)?>' type='hidden'>
+    <input id='widgetCityEsl' value='<?php echo esc_attr($widgetCityEsl)?>' type='hidden'>
+    <input id='widgetPaymentEsl' value='<?php echo esc_attr($paymentMethods)?>' type='hidden'>
     <?php if($paymentCalc): ?>
         <input id='paymentCalc' value='true' type='hidden'>
     <?php endif;?>

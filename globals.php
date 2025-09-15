@@ -365,7 +365,7 @@ if ( ! function_exists( 'shortcode_widget_email_time_delivery' ) ) {
 			}
 			$shippingMethods = json_decode($shippingMethod, true);
 			if(isset($shippingMethods['time'])){
-				echo $shippingMethods['time']['value'].' '.$shippingMethods['time']['unit'];
+				echo esc_html($shippingMethods['time']['value']).' '.esc_html($shippingMethods['time']['unit']);
 			}
 		}
 	}
@@ -384,7 +384,7 @@ if ( ! function_exists( 'shortcode_widget_email_status_delivery' ) ) {
             }
             $shippingMethods = json_decode($shippingMethod, true);
             if(isset($shippingMethods['tracking']['status']['name'])){
-                echo $shippingMethods['tracking']['status']['name'];
+                echo esc_html($shippingMethods['tracking']['status']['name']);
             }
         }
     }

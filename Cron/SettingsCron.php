@@ -34,7 +34,7 @@ class SettingsCron implements ModuleInterface
 
 		} catch(\Exception $e) {
 			$logger = new \WC_Logger();
-            $logger->debug(__("WC eShopLogistic Cron Error: ", WC_ESL_DOMAIN) . $e->getMessage());
+            $logger->debug(__("WC eShopLogistic Cron Error: ", 'eshoplogisticru') . $e->getMessage());
 		}
 	}
 }

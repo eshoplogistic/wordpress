@@ -33,7 +33,6 @@ class Footer implements ModuleInterface
         ?>
 
         <div id="eShopLogisticApp" data-key="<?php echo esc_attr($widgetKey) ?>"></div>
-        <!-- <script src="https://api.eshoplogistic.ru/widget/modal/v1/app.js"></script> -->
 
         <?php
 

@@ -43,16 +43,16 @@ class OrderController extends Controller {
 			$this->listRequestParamsV1( $request );
 		}
 
-		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', WC_ESL_DOMAIN)]);
+		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogisticru')]);
 
-		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', WC_ESL_DOMAIN)]);
+		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', 'eshoplogisticru')]);
 
-		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', WC_ESL_DOMAIN)]);
+		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', 'eshoplogisticru')]);
 
 		if ( empty( $this->offers ) || !is_array( $this->offers ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Товары в заказе не найдены', WC_ESL_DOMAIN )
+				'message' => __( 'Товары в заказе не найдены', 'eshoplogisticru' )
 			] );
 		}
 
@@ -66,64 +66,64 @@ class OrderController extends Controller {
 		}
 
 		if ( empty( $this->name ) ) {
-			return $this->json( [ 'success' => false, 'message' => __( 'Имя не определено', WC_ESL_DOMAIN ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Имя не определено', 'eshoplogisticru' ) ] );
 		}
 
 		if ( empty( $this->email ) || ! is_email( $this->email ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Email не определён или некорректен', WC_ESL_DOMAIN )
+				'message' => __( 'Email не определён или некорректен', 'eshoplogisticru' )
 			] );
 		}
 
 		//if ( ! \WC_Validation::is_phone( $this->phone ) ) {
-		//	return $this->json( [ 'success' => false, 'message' => __( 'Телефон некорректен', WC_ESL_DOMAIN ) ] );
+		//	return $this->json( [ 'success' => false, 'message' => __( 'Телефон некорректен', 'eshoplogisticru' ) ] );
 		//}
 
 		if ( empty( $this->city ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Город доставки не установлен', WC_ESL_DOMAIN )
+				'message' => __( 'Город доставки не установлен', 'eshoplogisticru' )
 			] );
 		}
 
 		if ( empty( $this->addressForDelivery ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Адрес доставки не установлен', WC_ESL_DOMAIN )
+				'message' => __( 'Адрес доставки не установлен', 'eshoplogisticru' )
 			] );
 		}
 
 		if ( empty( $this->selectedDelivery ) || empty( $this->idShipper ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Метод доставки не установлен', WC_ESL_DOMAIN )
+				'message' => __( 'Метод доставки не установлен', 'eshoplogisticru' )
 			] );
 		}
 
 		if ( empty( $this->selectedPayment ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Метод оплаты не установлен', WC_ESL_DOMAIN )
+				'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' )
 			] );
 		}
 
 		if ( ! isset( $this->costDelivery ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Цена за доставку не установлена', WC_ESL_DOMAIN )
+				'message' => __( 'Цена за доставку не установлена', 'eshoplogisticru' )
 			] );
 		}
 
 		if ( ! isset( $paymentMethodOptions ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', WC_ESL_DOMAIN ) ] );
+			$this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
 		}
 
 		if ( ! isset( $this->selectedPayment['key'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', WC_ESL_DOMAIN ) ] );
+			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
 		}
 
-		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', WC_ESL_DOMAIN ) . $this->addressForDelivery : $this->addressForDelivery;
+		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $this->addressForDelivery : $this->addressForDelivery;
 
 		$data['address']['billing'] = [
 			'first_name' => $this->name,
@@ -167,7 +167,7 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $data['payment_method']['id'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', WC_ESL_DOMAIN ) ] );
+			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
 		}
 
 		$orderData = new OrderData( $data );
@@ -176,13 +176,13 @@ class OrderController extends Controller {
 		if ( ! $orderId ) {
 			$this->json( [
 				'success' => false,
-				'message' => __( 'При создании заказа произошла ошибка', WC_ESL_DOMAIN )
+				'message' => __( 'При создании заказа произошла ошибка', 'eshoplogisticru' )
 			] );
 		}
 
 		return $this->json( [
 			'success' => true,
-			'message'     => __( 'Заказ успешно создан', WC_ESL_DOMAIN ),
+			'message'     => __( 'Заказ успешно создан', 'eshoplogisticru' ),
 			'data'    => $orderId
 		] );
 	}

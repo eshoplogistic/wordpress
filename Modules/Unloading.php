@@ -141,7 +141,7 @@ class Unloading implements ModuleInterface
 
             add_meta_box(
                 'woocommerce-order-esl-unloading',
-                __('Параметры выгрузки'),
+                __('Параметры выгрузки', 'eshoplogisticru'),
                 [$this, 'order_meta_box_start_button'],
                 $screen,
                 'side',
@@ -191,7 +191,7 @@ class Unloading implements ModuleInterface
 
             add_meta_box(
                 'woocommerce-order-esl-unloading',
-                __('Параметры выгрузки'),
+                __('Параметры выгрузки', 'eshoplogisticru'),
                 [$this, 'order_meta_box_start_button'],
                 'shop_order',
                 'side',
@@ -664,6 +664,13 @@ class Unloading implements ModuleInterface
         return $result;
     }
 
+    public function returnPrint()
+    {
+        return View::render('unloading/print', [
+
+        ]);
+    }
+
     public function infoOrder($id, $type, $action = 'get', $dataAdd = [])
     {
 
@@ -687,6 +694,7 @@ class Unloading implements ModuleInterface
             'action' => $action,
             'order_id' => $id,
             'service' => $type,
+            //'fake' => 1
         );
 
         if($dataAdd){
