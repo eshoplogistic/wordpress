@@ -53,13 +53,19 @@ class Table extends WP_List_Table {
 		$screen = get_current_screen();
 
 		$query = "SELECT * FROM $wpdb->links";
-		$orderby = ! empty( $_GET["orderby"] ) ? $_GET["orderby"] : 'ASC';
-		$order   = ! empty( $_GET["order"] ) ? $_GET["order"] : '';
+		$orderby = ! empty( $_GET["orderby"] ) ? sanitize_key($_GET["orderby"]) : 'ASC';
+		$order   = ! empty( $_GET["order"] ) ? sanitize_key($_GET["order"]) : '';
+		$paged   = ! empty( $_GET["paged"] ) ? $_GET["paged"] : 1;
 		if ( ! empty( $orderby ) & ! empty( $order ) ) {
 			$query .= ' ORDER BY ' . $orderby . ' ' . $order;
 		}
 
-		$totalitems = $wpdb->query( $query );
+		$cache_key = 'wc_esl_table_totalitems_' . md5($query);
+		$totalitems = wp_cache_get($cache_key, 'eshoplogisticru');
+		if ($totalitems === false) {
+			$totalitems = $wpdb->query( $query );
+			wp_cache_set($cache_key, $totalitems, 'eshoplogisticru', 60); // кэш на 60 секунд
+		}
 		$perpage = 5;
 		$paged = ! empty( $_GET["paged"] ) ? $_GET["paged"] : '';
 		if ( empty( $paged ) || ! is_numeric( $paged ) || $paged <= 0 ) {
@@ -200,21 +206,21 @@ class Table extends WP_List_Table {
 		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
 		$columns = $this->get_columns();
 
-		$http_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field($_SERVER['HTTP_HOST']) : '';
-		$request_uri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field($_SERVER['REQUEST_URI']) : '';
-		$current_url = set_url_scheme( 'http://' . $http_host . $request_uri );
-		$current_url = remove_query_arg( 'paged', $current_url );
+	$http_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
+	$request_uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '';
+	$current_url = set_url_scheme( 'http://' . $http_host . $request_uri );
+	$current_url = remove_query_arg( 'paged', $current_url );
 
 		// When users click on a column header to sort by other columns.
 		if ( isset( $_GET['orderby'] ) ) {
-			$current_orderby = $_GET['orderby'];
+			$current_orderby = sanitize_key(wp_unslash($_GET['orderby']));
 			// In the initial view there's no orderby parameter.
 		} else {
 			$current_orderby = '';
 		}
 
 		// Not in the initial view and descending order.
-		if ( isset( $_GET['order'] ) && 'desc' === $_GET['order'] ) {
+		if ( isset( $_GET['order'] ) && 'desc' === sanitize_key(wp_unslash($_GET['order'])) ) {
 			$current_order = 'desc';
 		} else {
 			// The initial view is not always 'asc', we'll take care of this below.
@@ -335,7 +341,15 @@ class Table extends WP_List_Table {
 				$class = "class='" . implode( ' ', $class ) . "'";
 			}
 
-			echo "<$tag $scope $id $class $aria_sort_attr $abbr_attr>$column_display_name</$tag>";
+			printf('<%1$s %2$s %3$s %4$s %5$s %6$s>%7$s</%1$s>',
+				esc_html($tag),
+				esc_attr($scope),
+				esc_attr($id),
+				esc_attr($class),
+				esc_attr($aria_sort_attr),
+				esc_attr($abbr_attr),
+				esc_html($column_display_name)
+			);
 		}
 	}
 
@@ -351,24 +365,37 @@ class Table extends WP_List_Table {
 				if(!$rec)
 					continue;
 
-				echo '<tr id="record_' . esc_attr($rec['id']) . '">';
+
+
+
+
+				$row_id = isset($rec['id']) ? esc_attr($rec['id']) : '';
+				echo '<tr id="record_' . esc_attr($row_id) . '">';
 				foreach ( $columns as $column_name => $column_display_name ) {
-
-					$class = "class='column-$column_name' name='$column_name'";
+					$class = "class='column-" . esc_attr($column_name) . "' name='" . esc_attr($column_name) . "'";
 					$style = "";
-
-					$attributes = $class . $style;
-					$editlink = '/wp-admin/link.php?action=edit&link_id=' . (int) $rec['id'];
+					$attributes = esc_attr($class . $style);
+					$editlink = '/wp-admin/link.php?action=edit&link_id=' . (isset($rec['id']) ? (int) $rec['id'] : 0);
 
 					if($column_name == 'delete'){
 						if($i != 0){
-							echo '<td ' . $attributes . '><div class="esl-delete_table_elem">&#65794;</div></td>';
+							echo '<td ' . esc_attr($attributes) . '><div class="esl-delete_table_elem">&#65794;</div></td>';
 						}
 					}else{
-						echo '<td ' . $attributes . '><input type="text" data-count="'.$i.'" name="products['.$i.']['.$column_name.']" value="'.stripslashes( $rec[$column_name] ).'"/></td>';
+						$value = isset($rec[$column_name]) ? $rec[$column_name] : '';
+						// Экранируем значение для безопасного вывода
+						if (is_array($value) || is_object($value)) {
+							$value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+						}
+						$value = esc_attr(stripslashes($value));
+						printf('<td %1$s><input type="text" data-count="%2$s" name="products[%2$s][%3$s]" value="%4$s"/></td>',
+							esc_attr($attributes),
+							esc_attr($i),
+							esc_attr($column_name),
+							esc_attr($value)
+						);
 					}
 				}
-
 				echo '</tr>';
 				$i++;
 			}

@@ -47,7 +47,7 @@ class WpHttpClient implements HttpClient
 			if($response->get_error_message() == 'cURL error 60: SSL certificate problem: certificate has expired'){
 				return $this->alternativeCurlPost($url, $body);
 			}
-			throw new ApiServiceException( $response->get_error_message() );
+			   throw new ApiServiceException( esc_html($response->get_error_message()) );
 		}
 
 		return $response['body'];

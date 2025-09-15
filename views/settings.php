@@ -98,7 +98,7 @@ $status_translate             = [
                                                 class="custom-control-input"
                                                 id="enablePlugin"
                                                 name="enable_plugin"
-											<?php echo $plugin_enable === '1' ? 'checked' : '' ?>
+                                            <?php echo esc_attr($plugin_enable === '1' ? 'checked' : '') ?>
                                         >
                                         <label class="custom-control-label" for="enablePlugin"></label>
                                     </div>
@@ -116,7 +116,7 @@ $status_translate             = [
                                                 class="custom-control-input"
                                                 id="enableFrame"
                                                 name="enable_frame"
-											<?php echo $frame_enable === '1' ? 'checked' : '' ?>
+                                            <?php echo esc_attr($frame_enable === '1' ? 'checked' : '') ?>
                                         >
                                         <label class="custom-control-label" for="enableFrame">
                                             <div class="help-tip">
@@ -142,7 +142,7 @@ $status_translate             = [
                                                 class="custom-control-input"
                                                 id="enablePluginPriceShipping"
                                                 name="enable_plugin_price_shipping"
-											<?php echo $plugin_enable_price_shipping === '1' ? 'checked' : '' ?>
+                                            <?php echo esc_attr($plugin_enable_price_shipping === '1' ? 'checked' : '') ?>
                                         >
                                         <label class="custom-control-label" for="enablePluginPriceShipping"></label>
                                     </div>
@@ -160,7 +160,7 @@ $status_translate             = [
                                                 class="custom-control-input"
                                                 id="enablePluginLog"
                                                 name="enable_plugin_log"
-											<?php echo $plugin_enable_log === '1' ? 'checked' : '' ?>
+                                            <?php echo esc_attr($plugin_enable_log === '1' ? 'checked' : '') ?>
                                         >
                                         <label class="custom-control-label" for="enablePluginLog">
                                             <div class="help-tip">
@@ -168,8 +168,8 @@ $status_translate             = [
                                                     Если включен данный параметр, все запросы будут записываться в
                                                     текстовый файл.<br>
                                                     Путь к файлу: 
-                                                    <a href="<?php echo esc_url(get_site_url()); ?>/wp-content/plugins/eshoplogisticru/esl.log">
-                                                        <?php echo esc_html(get_site_url()); ?>/wp-content/plugins/eshoplogisticru/esl.log</a>
+                                                    <a href="<?php echo esc_url(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?>">
+                                                        <?php echo esc_html(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?></a>
                                                 </p>
                                             </div>
                                         </label>
@@ -188,7 +188,7 @@ $status_translate             = [
                                                 class="custom-control-input"
                                                 id="enablePluginApiV2"
                                                 name="enable_plugin_api_v2"
-											<?php echo $plugin_enable_api_v2 === '1' ? 'checked' : '' ?>
+                                            <?php echo esc_attr($plugin_enable_api_v2 === '1' ? 'checked' : '') ?>
                                         >
                                         <label class="custom-control-label" for="enablePluginApiV2">
                                             <div class="help-tip">
@@ -208,13 +208,13 @@ $status_translate             = [
                                 </label>
                                 <div class="col-sm-5">
                                     <select id="dimensionMeasurement" name="dimension_measurement">
-                                        <option value="mm" <?php echo $dimension_measurement === 'mm' ? 'selected' : '' ?>>
+                                        <option value="mm" <?php echo esc_attr($dimension_measurement === 'mm' ? 'selected' : '') ?>>
                                             Миллиметры
                                         </option>
-                                        <option value="cm" <?php echo $dimension_measurement === 'cm' ? 'selected' : '' ?>>
+                                        <option value="cm" <?php echo esc_attr($dimension_measurement === 'cm' ? 'selected' : '') ?>>
                                             Сантиметры
                                         </option>
-                                        <option value="m" <?php echo $dimension_measurement === 'm' ? 'selected' : '' ?>>
+                                        <option value="m" <?php echo esc_attr($dimension_measurement === 'm' ? 'selected' : '') ?>>
                                             Метры
                                         </option>
                                     </select>

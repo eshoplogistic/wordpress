@@ -70,9 +70,9 @@ $eslTable = new Table();
                             class="dashicons dashicons-screenoptions"></span>Дополнительные услуги</label>
 
                 <form action="#" id="unloading_form" class="unloading-form unloading-grid">
-                    <input type="hidden" name="delivery_id" value="<?php echo esc_attr(mb_strtolower( $typeMethod['name'] )); ?>">
-                    <input type="hidden" name="order_id" value="<?php echo esc_attr($orderData['id']); ?>">
-                    <input type="hidden" name="order_status" value="<?php echo esc_attr($orderData['status']); ?>">
+                    <input type="hidden" name="delivery_id" value="<?php echo esc_attr(mb_strtolower( isset($typeMethod['name']) ? $typeMethod['name'] : '' )); ?>">
+                    <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($orderData['id']) ? $orderData['id'] : ''); ?>">
+                    <input type="hidden" name="order_status" value="<?php echo esc_attr(isset($orderData['status']) ? $orderData['status'] : ''); ?>">
                     <input type="hidden" name="order_shipping_id" value="<?php echo esc_attr($orderShippingId); ?>">
 
                     <section id="content1">
@@ -88,10 +88,10 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label">Тип доставки:</label>
                                 <select name="delivery_type" form="unloading_form" class="form-value">
-                                    <option value="door" <?php echo ( $typeMethod['type'] === 'door' ) ? 'selected' : '' ?>>
+                                    <option value="door" <?php echo esc_attr($typeMethod['type'] === 'door' ? 'selected' : '') ?>>
                                         Курьер
                                     </option>
-                                    <option value="terminal" <?php echo ( $typeMethod['type'] === 'terminal' ) ? 'selected' : '' ?>>
+                                    <option value="terminal" <?php echo esc_attr($typeMethod['type'] === 'terminal' ? 'selected' : '') ?>>
                                         Пункт самовывоза
                                     </option>
                                 </select>

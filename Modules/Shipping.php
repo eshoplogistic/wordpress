@@ -101,11 +101,11 @@ class Shipping implements ModuleInterface
 		if(isset($addForm['offAddressCheck']))
 			$offAddressCheck = $addForm['offAddressCheck'];
 
-	    echo View::render('checkout/add-fields', [
-		    'eslBillingCityFields' => $eslBillingCityFields,
-		    'eslShippingCityFields' => $eslShippingCityFields,
-		    'offAddressCheck' =>  $offAddressCheck
-	    ]);
+		echo View::render('checkout/add-fields', [
+			'eslBillingCityFields' => $eslBillingCityFields,
+			'eslShippingCityFields' => $eslShippingCityFields,
+			'offAddressCheck' => $offAddressCheck
+		]);
 
 	    if(isset($paymentCalcTmp['paymentCalc']) && $paymentCalcTmp['paymentCalc'] == 'true')
 		    $paymentCalc = $paymentCalcTmp['paymentCalc'];
@@ -119,7 +119,7 @@ class Shipping implements ModuleInterface
                 $terminals = isset($stateShippingMethods[$chosenShippingMethods[0]]['terminals']) ? $stateShippingMethods[$chosenShippingMethods[0]]['terminals'] : null;
 
                 if(!is_null($terminals)) {
-                    echo View::render('checkout/terminals-input', ['terminals' => json_encode($terminals), 'key_ya' => $apiKeyYa]);
+					echo View::render('checkout/terminals-input', ['terminals' => json_encode($terminals), 'key_ya' => $apiKeyYa]);
                 }
             }
 	        if($typeMethod === 'mixed') {
@@ -167,11 +167,13 @@ class Shipping implements ModuleInterface
 		        $widgetOffersEsl = self::infoCart();
 		        $paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 
-		        echo View::render('checkout/frame-input', [
-					'widgetKey' => $apiWidgetKey, 'widgetOffersEsl' => $widgetOffersEsl,
-					'paymentMethods' => $paymentMethods, 'widgetCityEsl' => $widgetCityEsl,
-			        'paymentCalc' => $paymentCalc
-		        ]);
+				echo View::render('checkout/frame-input', [
+					'widgetKey' => $apiWidgetKey,
+					'widgetOffersEsl' => $widgetOffersEsl,
+					'paymentMethods' => $paymentMethods,
+					'widgetCityEsl' => $widgetCityEsl,
+					'paymentCalc' => $paymentCalc
+				]);
 	        }
         }
     }
@@ -211,31 +213,31 @@ class Shipping implements ModuleInterface
         $stateShippingMethods = $sessionService->get('shipping_methods');
         $accountInitServices = $optionsRepository->getOption('wc_esl_shipping_account_init_services');
 
-        if(
-            isset($stateShippingMethods[$item->method_id]['price']) &&
-            $stateShippingMethods[$item->method_id]['price'] === 0
-        ) echo ': ' . wc_price(0);
+		if(
+			isset($stateShippingMethods[$item->method_id]['price']) &&
+			$stateShippingMethods[$item->method_id]['price'] === 0
+		) echo ': ' . esc_html(wc_price(0));
 
         //if(isset($stateShippingMethods[$item->method_id]['time'])) {
             //echo View::render('checkout/time', ['time' => $stateShippingMethods[$item->method_id]['time']]);
         //}
 
-        if(isset($accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment'])) {
-            echo View::render(
-                'checkout/general-comment',
-                [
-                    'comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
-                ]
-            );
-        }
+		if(isset($accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment'])) {
+			echo View::render(
+				'checkout/general-comment',
+				[
+					'comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
+				]
+			);
+		}
 
-        if(isset($stateShippingMethods[$item->method_id]['comment'])) {
-            echo View::render(
-                'checkout/comment',
-                [
-                    'comment' => $stateShippingMethods[$item->method_id]['comment']
-                ]
-            );
-        }
+		if(isset($stateShippingMethods[$item->method_id]['comment'])) {
+			echo View::render(
+				'checkout/comment',
+				[
+					'comment' => $stateShippingMethods[$item->method_id]['comment']
+				]
+			);
+		}
     }
 }

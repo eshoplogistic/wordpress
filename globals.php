@@ -19,7 +19,7 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
 		$widgetBut         = $optionsRepository->getOption( 'wc_esl_shipping_widget_but' );
-		$widgetKey = isset($atts['key']) ? wc_clean($atts['key']) : $widgetKey;
+		$widgetKey = isset($atts['key']) ? sanitize_text_field(wc_clean($atts['key'])) : $widgetKey;
 
 		if ( ! $widgetKey ) {
 			return '';
@@ -38,11 +38,11 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 		$wc_product = $wc_product->get_data();
 
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 		} else {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
 		}
 
 		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
@@ -60,15 +60,15 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 				'weight'  => $wc_product['weight'],
 				'dimensions' => $length.'*'.$width.'*'.$height
 			);
-			$jsonItem = htmlspecialchars( json_encode( $item ) );
+			$jsonItem = esc_attr( wp_json_encode( $item ) );
 
-			$block_content = '<button data-esl-widget data-title="Быстрый заказ с доставкой">Быстрый заказ с доставкой</button>';
+			$block_content = '<button data-esl-widget data-title="' . esc_attr('Быстрый заказ с доставкой') . '">' . esc_html('Быстрый заказ с доставкой') . '</button>';
 			$block_content .= '<div id="eShopLogisticWidgetModal"
-                        data-lazy-load="true"
-                        data-debug="1"
-                        data-ip="' . apply_filters( 'edd_get_ip', $ip ) . '"
-                        data-key="' . $widgetKey . '"
-                        data-offers="' . $jsonItem . '">
+						data-lazy-load="true"
+						data-debug="1"
+						data-ip="' . esc_attr(apply_filters( 'edd_get_ip', $ip )) . '"
+						data-key="' . esc_attr($widgetKey) . '"
+						data-offers="' . esc_attr($jsonItem) . '">
 						</div>';
 
 			wp_enqueue_script(
@@ -128,7 +128,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 
 	function shortcode_widget_button_tab_handler($atts) {
 		if(isset($atts['key']))
-			$_POST['esl_key'] = $atts['key'];
+			$_POST['esl_key'] = sanitize_text_field(wp_unslash($atts['key']));
 
 		add_filter( 'woocommerce_product_tabs', 'esl_product_widget_tab', 25 );
 	}
@@ -151,7 +151,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 	function esl_product_widget_tab_content() {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
-		$widgetKey = isset($_POST['esl_key']) ? wc_clean($_POST['esl_key']) : $widgetKey;
+	$widgetKey = isset($_POST['esl_key']) ? sanitize_text_field(wp_unslash($_POST['esl_key'])) : $widgetKey;
 
 		if ( ! $widgetKey ) {
 			return '';
@@ -170,11 +170,11 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 		$wc_product = $wc_product->get_data();
 
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 		} else {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
 		}
 
 		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );

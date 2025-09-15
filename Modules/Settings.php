@@ -15,8 +15,11 @@ class Settings implements ModuleInterface
 		add_action('init', [$this, 'setWoocommerceCurrency']);
 	}
 
-	public function setWoocommerceCurrency()
-	{
-		update_option('woocommerce_currency', 'RUB');
-	}
+	   public function setWoocommerceCurrency()
+	   {
+		   if (!current_user_can('manage_options')) {
+			   return;
+		   }
+		   update_option('woocommerce_currency', 'RUB');
+	   }
 }

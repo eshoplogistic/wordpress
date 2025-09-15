@@ -13,7 +13,7 @@ use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
-if ( ! defined('ABSPATH') ) {
+if (! defined('ABSPATH')) {
 	exit;
 }
 
@@ -79,7 +79,7 @@ class Ajax implements ModuleInterface
 	}
 
 	public function changeEnablePlugin()
-	{
+	{		
 		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
 
 		$options = [];
@@ -213,22 +213,21 @@ class Ajax implements ModuleInterface
 
 	public function saveAddForm()
 	{
-		$addFrom = !empty($_POST['add_form']) ? wc_clean($_POST['add_form']) : [];
+		$addFrom = !empty($_POST['add_form']) ? $this->sanitize_array($_POST['add_form']) : [];
 		$addFrom = stripslashes(html_entity_decode($addFrom));
 		$addFrom = json_decode($addFrom, true);
 		$result = array();
 
-		foreach ($addFrom as $value){
-			if(isset($result[$value['name']])){
-				if(is_array($result[$value['name']])){
+		foreach ($addFrom as $value) {
+			if (isset($result[$value['name']])) {
+				if (is_array($result[$value['name']])) {
 					$result[$value['name']][] = $value['value'];
-				}else{
+				} else {
 					$result[$value['name']] = array($result[$value['name']], $value['value']);
 				}
-			}elseif(isset($value['name'])){
+			} elseif (isset($value['name'])) {
 				$result[$value['name']] = $value['value'];
 			}
-
 		}
 
 		$optionsController = new OptionsController();
@@ -239,13 +238,13 @@ class Ajax implements ModuleInterface
 
 	public function saveExportForm()
 	{
-		$exportFrom = !empty($_POST['export_form']) ? wc_clean($_POST['export_form']) : [];
+		$exportFrom = !empty($_POST['export_form']) ? $this->sanitize_array($_POST['export_form']) : [];
 		$exportFrom = stripslashes(html_entity_decode($exportFrom));
 		$exportFrom = json_decode($exportFrom, true);
 		$result = array();
 
-		foreach ($exportFrom as $value){
-			if(isset($value['name']))
+		foreach ($exportFrom as $value) {
+			if (isset($value['name']))
 				$result[$value['name']] = $value['value'];
 		}
 
@@ -257,17 +256,17 @@ class Ajax implements ModuleInterface
 
 	public function saveAddField()
 	{
-		$addField = !empty($_POST['result']) ? wc_clean($_POST['result']) : [];
-		$type = !empty($_POST['type']) ? wc_clean($_POST['type']) : [];
+		$addField = !empty($_POST['result']) ? $this->sanitize_array($_POST['result']) : [];
+		$type = !empty($_POST['type']) ? $this->sanitize_array($_POST['type']) : [];
 		$addField = stripslashes(html_entity_decode($addField));
 		$addField = json_decode($addField, true);
 
 		$optionsRepository = new OptionsRepository();
 		$result = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
 
-        $result[$type] = [];
-		foreach ($addField as $value){
-			if(isset($value['name']))
+		$result[$type] = [];
+		foreach ($addField as $value) {
+			if (isset($value['name']))
 				$result[$type][$value['name']] = $value['value'];
 		}
 
@@ -280,20 +279,20 @@ class Ajax implements ModuleInterface
 
 	public function searchCities()
 	{
-		$target = isset($_POST['target']) ? wc_clean($_POST['target']) : '';
+		$target = isset($_POST['target']) ? esc_url_raw(wc_clean($_POST['target'])) : '';
 		$currentCountry = isset($_POST['currentCountry']) ? wc_clean($_POST['currentCountry']) : '';
 		$typeFilter = isset($_POST['typeFilter']) ? wc_clean($_POST['typeFilter']) : 'false';
 
 		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
 		$result = $eshopLogisticApi->search($target, $currentCountry);
 
-		if($result->hasErrors()) wp_send_json(['success' => false]);
+		if ($result->hasErrors()) wp_send_json(['success' => false]);
 
 		$result = $result->data();
-		if($typeFilter != 'false'){
+		if ($typeFilter != 'false') {
 			$resultTmp = array();
-			foreach ($result as $key=>$value){
-				if(!isset($value[$typeFilter]))
+			foreach ($result as $key => $value) {
+				if (!isset($value[$typeFilter]))
 					continue;
 
 				$resultTmp[$value[$typeFilter]][] = $value;
@@ -314,7 +313,7 @@ class Ajax implements ModuleInterface
 		$adress = isset($_POST['adress']) ? wc_clean($_POST['adress']) : '';
 		$region = isset($_POST['region']) ? wc_clean($_POST['region']) : '';
 		$postcode = isset($_POST['postcode']) ? wc_clean($_POST['postcode']) : '';
-		$services = isset($_POST['services']) ? wc_clean($_POST['services']) : [];
+		$services = isset($_POST['services']) ? $this->sanitize_array($_POST['services']) : [];
 		$mode = isset($_POST['mode']) ? wc_clean($_POST['mode']) : 'billing';
 
 		$data = [
@@ -365,12 +364,17 @@ class Ajax implements ModuleInterface
 	{
 		global $wpdb;
 
-		$like = '%transient_'. WC_ESL_PREFIX .'%';
+		$like = '%transient_' . WC_ESL_PREFIX . '%';
 		$query = "SELECT `option_name` AS `name` FROM $wpdb->options WHERE `option_name` LIKE '$like' ORDER BY `option_name`";
-		$transients = $wpdb->get_results($query);
+		$cache_key = 'wc_esl_transients_list';
+		$transients = wp_cache_get($cache_key, 'eshoplogisticru');
+		if ($transients === false) {
+			$transients = $wpdb->get_results($query);
+			wp_cache_set($cache_key, $transients, 'eshoplogisticru', 60); // кэш на 60 секунд
+		}
 
-		if($transients) {
-			foreach($transients as $transient) {
+		if ($transients) {
+			foreach ($transients as $transient) {
 				delete_transient(explode('_transient_', $transient->name)[1]);
 			}
 		}
@@ -378,7 +382,7 @@ class Ajax implements ModuleInterface
 		$optionsRepository = new OptionsRepository();
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 
-		if($apiKey) {
+		if ($apiKey) {
 			$optionsController = new OptionsController();
 			$response = $optionsController->saveApiKey($apiKey);
 		}
@@ -394,7 +398,7 @@ class Ajax implements ModuleInterface
 	{
 		$formData = isset($_POST['formData']) ? $_POST['formData'] : null;
 
-		if(is_null($formData)) {
+		if (is_null($formData)) {
 			wp_send_json([
 				'success' => false,
 				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
@@ -404,7 +408,7 @@ class Ajax implements ModuleInterface
 		$params = array();
 		parse_str($formData, $params);
 
-		if(!isset($params['esl_pay_type'])) {
+		if (!isset($params['esl_pay_type'])) {
 			wp_send_json([
 				'success' => false,
 				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
@@ -413,11 +417,11 @@ class Ajax implements ModuleInterface
 
 		$payTypes = [];
 
-		foreach($params['esl_pay_type'] as $key => $value) {
+		foreach ($params['esl_pay_type'] as $key => $value) {
 			$payTypes[$key] = $value;
 		}
 
-		if(empty($payTypes)) {
+		if (empty($payTypes)) {
 			wp_send_json([
 				'success' => false,
 				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
@@ -443,14 +447,14 @@ class Ajax implements ModuleInterface
 		$terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
 		$terminal_code = isset($_POST['terminal_code']) ? wc_clean($_POST['terminal_code']) : '';
 
-		if(!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogisticru')]);
+		if (!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogisticru')]);
 
 		$sessionService = new SessionService();
-		$sessionService->set('terminal_location', $terminal. '. Код пункта: '.$terminal_code);
+		$sessionService->set('terminal_location', $terminal . '. Код пункта: ' . $terminal_code);
 
 		wp_send_json([
 			'success' => true,
-			'data' => $terminal. '. Код пункта: '.$terminal_code,
+			'data' => $terminal . '. Код пункта: ' . $terminal_code,
 			'msg' => __("Aдрес пункта выдачи успешно сохранён", 'eshoplogisticru')
 		]);
 	}
@@ -462,18 +466,17 @@ class Ajax implements ModuleInterface
 		$terminals = array();
 
 		$shippingHelper = new ShippingHelper();
-		$chosenShippingMethods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosenShippingMethods = WC()->session->get('chosen_shipping_methods');
 		$sessionService = new SessionService();
 
-		if(isset($chosenShippingMethods[0])) {
-			$typeMethod           = $shippingHelper->getTypeMethod( $chosenShippingMethods[0] );
-			$stateShippingMethods = $sessionService->get( 'shipping_methods' );
-			$terminals            = isset( $stateShippingMethods[ $chosenShippingMethods[0] ]['terminals'] ) ? $stateShippingMethods[ $chosenShippingMethods[0] ]['terminals'] : null;
+		if (isset($chosenShippingMethods[0])) {
+			$typeMethod           = $shippingHelper->getTypeMethod($chosenShippingMethods[0]);
+			$stateShippingMethods = $sessionService->get('shipping_methods');
+			$terminals            = isset($stateShippingMethods[$chosenShippingMethods[0]]['terminals']) ? $stateShippingMethods[$chosenShippingMethods[0]]['terminals'] : null;
 
-			if(!is_null($terminals)) {
+			if (!is_null($terminals)) {
 				$terminals = $this->terminalFilterInit($filters, $terminals);
 			}
-
 		}
 
 		wp_send_json([
@@ -483,47 +486,48 @@ class Ajax implements ModuleInterface
 		]);
 	}
 
-	public function terminalFilterInit($filters, $terminals){
+	public function terminalFilterInit($filters, $terminals)
+	{
 		$result = $terminals;
-		foreach ($filters as $key=>$value){
+		foreach ($filters as $key => $value) {
 			$value = trim(mb_strtolower($value));
-			if($key == 'search-filter-esl' && $value){
-				foreach ($result as $k=>$v){
+			if ($key == 'search-filter-esl' && $value) {
+				foreach ($result as $k => $v) {
 					$lastPos = 0;
 					$positions = array();
 					$check = false;
-					while (($lastPos = strpos(mb_strtolower($v['address']), $value, $lastPos))!== false) {
+					while (($lastPos = strpos(mb_strtolower($v['address']), $value, $lastPos)) !== false) {
 						$positions[] = $lastPos;
 						$lastPos = $lastPos + strlen($value);
 						$check = true;
 					}
-					if(!$check)
+					if (!$check)
 						unset($result[$k]);
 				}
 			}
-			if($key == 'metro-filter-esl' && $value){
-				foreach ($result as $k=>$v){
+			if ($key == 'metro-filter-esl' && $value) {
+				foreach ($result as $k => $v) {
 					$lastPos = 0;
 					$positions = array();
 					$check = false;
-					while (($lastPos = strpos(mb_strtolower($v['note']), $value, $lastPos))!== false) {
+					while (($lastPos = strpos(mb_strtolower($v['note']), $value, $lastPos)) !== false) {
 						$positions[] = $lastPos;
 						$lastPos = $lastPos + strlen($value);
 						$check = true;
 					}
-					if(!$check)
+					if (!$check)
 						unset($result[$k]);
 				}
 			}
-			if($key == 'automat-filter-esl' && $value && $filters['pvz-filter-esl'] === false){
-				foreach ($result as $k=>$v){
-					if(!$v['is_postamat'])
+			if ($key == 'automat-filter-esl' && $value && $filters['pvz-filter-esl'] === false) {
+				foreach ($result as $k => $v) {
+					if (!$v['is_postamat'])
 						unset($result[$k]);
 				}
 			}
-			if($key == 'pvz-filter-esl' && $value && $filters['automat-filter-esl'] === false){
-				foreach ($result as $k=>$v){
-					if($v['is_postamat'])
+			if ($key == 'pvz-filter-esl' && $value && $filters['automat-filter-esl'] === false) {
+				foreach ($result as $k => $v) {
+					if ($v['is_postamat'])
 						unset($result[$k]);
 				}
 			}
@@ -543,7 +547,7 @@ class Ajax implements ModuleInterface
 				'data' => $sessionService->getAll(),
 				'msg' => __("Сессия успешно сброшена", 'eshoplogisticru')
 			]);
-		} catch(\Exception $e) {
+		} catch (\Exception $e) {
 			wp_send_json([
 				'success' => false,
 				'msg' => __("Ошибка сброса кэша", 'eshoplogisticru')
@@ -572,14 +576,13 @@ class Ajax implements ModuleInterface
 
 	public function updateShipping()
 	{
-		$data = isset($_POST['data']) ? wc_clean($_POST['data']) : '';
+		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : '';
 		$data =  json_decode(stripslashes($data), true);
 		$data['city'] = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
-		if(!isset($data['address']) || !$data['address'])
+		if (!isset($data['address']) || !$data['address'])
 			$sessionService->drop('terminal_location');
-
 	}
 
 	public function changeEnableFrame()
@@ -602,102 +605,116 @@ class Ajax implements ModuleInterface
 
 	public function unloadingEnable()
 	{
-		$data = isset($_POST['data']) ? wc_clean($_POST['data']) : null;
+		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : null;
 
 		$unloading = new Unloading();
 		$resultParams = $unloading->params_delivery_init($data);
 
-		if($resultParams->hasErrors()){
+		if ($resultParams->hasErrors()) {
 			$error = $resultParams->jsonSerialize();
 
 			$logger = wc_get_logger();
-			$context = array( 'source' => 'esl-error-load-unloading' );
-			$logger->info( print_r($error, true),  $context);
+			$context = array('source' => 'esl-error-load-unloading');
+			$logger->info(print_r($error, true),  $context);
 
-			if(isset($error['data']['errors'])){
+			if (isset($error['data']['errors'])) {
 				$this->iteratorError($error['data']['errors']);
 				$error = $this->errorString;
 			}
-			if(!$error)
+			if (!$error)
 				$error = 'Ошибка при выгрузке заказа';
 
 			wp_send_json([
 				'success' => 'error',
 				'msg' => $error
 			]);
-		}else{
+		} else {
 			wp_send_json([
 				'success' => true,
 				'msg' => __("Заказ создан", 'eshoplogisticru')
 			]);
 		}
-
 	}
 
 	public function unloadingDelete()
 	{
-		if(!isset($_POST['order_id']))
-			return false;
-		if(!isset($_POST['order_type']))
-			return false;
+		if (
+			!isset($_POST['order_id']) ||
+			!isset($_POST['order_type']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
 
+		$order_id = $_POST['order_id'];
+		$order_type = sanitize_text_field($_POST['order_type']);
 
 		$unloading = new Unloading();
-		$result = $unloading->infoOrder($_POST['order_id'], $_POST['order_type'], 'delete');
+		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
 
 		wp_send_json([
 			'success' => true,
 			'data' => $result,
-			'msg' => __("Удаление заказа для выгрузки", 'eshoplogisticru')
+			'msg' => esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
 		]);
 	}
 
 	public function unloadingInfo()
 	{
-		if(!isset($_POST['order_id']))
-			return false;
-		if(!isset($_POST['order_type']))
-			return false;
+		if (
+			!isset($_POST['order_id']) ||
+			!isset($_POST['order_type']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
+
+		$order_id = $_POST['order_id'];
+		$order_type = sanitize_text_field($_POST['order_type']);
 
 		$unloading = new Unloading();
-		$result = $unloading->infoOrder($_POST['order_id'], $_POST['order_type']);
+		$result = $unloading->infoOrder($order_id, $order_type);
 		$html = '';
 
-		$order = wc_get_order($_POST['order_id']);
-		$orderShippings = $order->get_shipping_methods();
-		foreach ($orderShippings as $key=>$item){
-			$shippingMethod = wc_get_order_item_meta( $item->get_id() , 'esl_shipping_methods', $single = true );
+		$order = wc_get_order($order_id);
+		$orderShippings = $order ? $order->get_shipping_methods() : [];
+		$shippingMethod = '';
+		foreach ($orderShippings as $key => $item) {
+			$shippingMethod = wc_get_order_item_meta($item->get_id(), 'esl_shipping_methods', $single = true);
 		}
 
-		if(isset($result['data']['messages'])){
-			$html = '<div class="esl-status_infoTitle">'.$result['data']['messages'].'</div>';
+		if (isset($result['data']['messages'])) {
+			$html = '<div class="esl-status_infoTitle">' . esc_html($result['data']['messages']) . '</div>';
 		}
-		if(isset($result['state']['number'])){
-			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="'.$result['state']['number'].'" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
+		if (isset($result['state']['number'])) {
+			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
 		}
-		if(isset($shippingMethod) && $shippingMethod){
+		if (isset($shippingMethod) && $shippingMethod) {
 			$shippingMethods = json_decode($shippingMethod, true);
-			if(isset($shippingMethods['answer']['order']['id'])){
-				$html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "'.$_POST['order_type'].'": '.$shippingMethods['answer']['order']['id'].'</div>';
+			if (isset($shippingMethods['answer']['order']['id'])) {
+				$html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "' . esc_html($order_type) . '": ' . esc_html($shippingMethods['answer']['order']['id']) . '</div>';
 			}
 		}
-		if(isset($result['order']['orderId'])){
-			$html .= '<div class="esl-status_infoTitle">Идентификатор заказа: '.$result['order']['orderId'].'</div>';
+		if (isset($result['order']['orderId'])) {
+			$html .= '<div class="esl-status_infoTitle">Идентификатор заказа: ' . esc_html($result['order']['orderId']) . '</div>';
 		}
-		if(isset($result['state'])){
-			$html .= '<div class="esl-status_info">Текущий статус: '.$result['state']['status']['description'].'</div>';
+		if (isset($result['state'])) {
+			$html .= '<div class="esl-status_info">Текущий статус: ' . esc_html($result['state']['status']['description']) . '</div>';
 		}
-		if(isset($result['state']['service_status']['description'])){
-			$html .= '<br><div class="esl-status_info">Описание: '.$result['state']['service_status']['description'].'</div>';
+		if (isset($result['state']['service_status']['description'])) {
+			$html .= '<br><div class="esl-status_info">Описание: ' . esc_html($result['state']['service_status']['description']) . '</div>';
 		}
 
-        $print = $unloading->returnPrint();
-        if($print)
-            $html .= $print;
+		$print = $unloading->returnPrint();
+		if ($print)
+			$html .= $print;
 
-        if(!$html)
+		if (!$html)
 			$html = '<div class="esl-status_infoTitle">Ошибка при загрузке данных.</div>';
-
 
 		wp_send_json([
 			'success' => true,
@@ -708,13 +725,22 @@ class Ajax implements ModuleInterface
 
 	public function unloadingStatus()
 	{
-		if(!isset($_POST['export_form']))
-			return false;
+		if (
+			!isset($_POST['export_form']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
 
-		$data =  json_decode(stripslashes($_POST['export_form']), true);
+		$export_form_raw = sanitize_text_field(wp_unslash($_POST['export_form']));
+		$data = json_decode(stripslashes($export_form_raw), true);
+		if (is_array($data)) {
+			$data = $this->sanitize_array($data);
+		}
 
 		$options = [];
-
 		$options['data']['wc_esl_shipping'] = array(
 			'plugin_status_form' => $data
 		);
@@ -726,25 +752,31 @@ class Ajax implements ModuleInterface
 
 		wp_send_json([
 			'success' => true,
-			'msg' => __("Заказ создан", 'eshoplogisticru')
+			'msg' => esc_html__("Заказ создан", 'eshoplogisticru')
 		]);
 	}
 
 	public function unloadingStatusUpdate()
 	{
-		if(!isset($_POST['order_id']))
-			return false;
+		if (
+			!isset($_POST['order_id']) ||
+			!isset($_POST['order_type']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
 
-		if(!isset($_POST['order_type']))
-			return false;
-
+		$order_id = $_POST['order_id'];
+		$order_type = sanitize_text_field($_POST['order_type']);
 
 		$unloading = new Unloading();
-		$status = $unloading->infoOrder($_POST['order_id'], $_POST['order_type']);
-		if(isset($status['success']) && $status['success'] === false){
-			$result = $status['data']['messages'] ?? 'Ошибка при получении данных';
-		}else{
-			$result = $unloading->updateStatusById($status, $_POST['order_id']);
+		$status = $unloading->infoOrder($order_id, $order_type);
+		if (isset($status['success']) && $status['success'] === false) {
+			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';
+		} else {
+			$result = $unloading->updateStatusById($status, $order_id);
 		}
 
 		wp_send_json([
@@ -754,270 +786,272 @@ class Ajax implements ModuleInterface
 		]);
 	}
 
-	public function iteratorError($arr){
+	public function iteratorError($arr)
+	{
 
-		foreach($arr as $key => $val){
+		foreach ($arr as $key => $val) {
 
-			if(is_array($val)){
+			if (is_array($val)) {
 				$this->iteratorError($val);
-			}else{
-				$this->errorString .= $this->errorString.'<span>'.$val.'</span><br>';
+			} else {
+				$this->errorString .= $this->errorString . '<span>' . $val . '</span><br>';
 			}
 		}
 	}
 
 	public function getAddField()
 	{
-		$type = isset($_POST['type']) ? wc_clean($_POST['type']) : null;
+	$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : null;
 
 		$optionsRepository = new OptionsRepository();
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 
 		$additional = array(
 			'key'     => $apiKey,
-			'service' => mb_strtolower( $type ),
+			'service' => mb_strtolower($type),
 			'detail'  => true
 		);
 
-		$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
-		$additionalFields = $eshopLogisticApi->apiExportAdditional( $additional );
-        $addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
-        $methodDelivery = new ExportFileds();
-        $fieldDelivery  = $methodDelivery->exportFields( mb_strtolower( $type ));
+		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+		$additionalFields = $eshopLogisticApi->apiExportAdditional($additional);
+		$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+		$methodDelivery = new ExportFileds();
+		$fieldDelivery  = $methodDelivery->exportFields(mb_strtolower($type));
 
-        $html = '<form action="/" method="post" id="eslAddFieldForm" data-type="'.$type.'">';
-		if ( $additionalFields->hasErrors() ) {
+		$html = '<form action="/" method="post" id="eslAddFieldForm" data-type="' . esc_attr($type) . '">';
+		if (is_object($additionalFields) && method_exists($additionalFields, 'hasErrors') && $additionalFields->hasErrors()) {
 			$html .= '<p>Ошибка при получении дополнительных услуг</p>';
 		} else {
-			$additionalFields = $additionalFields->data();
-			if ( $additionalFields ){
+			if (is_object($additionalFields) && method_exists($additionalFields, 'data')) {
+				$additionalFields = $additionalFields->data();
+			}
+			// Если $additionalFields уже массив, ничего не делаем
+			if (is_array($additionalFields)) {
 				$additionalFieldsRu = array(
 					'packages'  => 'Упаковка',
 					'cargo'     => 'Груз',
 					'recipient' => 'Получатель',
 					'other'     => 'Другие услуги',
-
 				);
-				$type = mb_strtolower( $type );
-
+				$type = mb_strtolower($type);
 				$html .= '<div class="esl-box_add">';
-				foreach ( $additionalFields as $key => $value) {
-					$title = ( $additionalFieldsRu[ $key ] ) ?? $key;
-					$html .= '<p>'. $title. '</p>';
-					foreach ( $value as $k => $v ){
-						if(!isset($v['name']))
-							continue;
-
-						$valueSaved = '0';
-						if(isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0'){
-							$valueSaved = $addFieldSaved[$type][$k];
+				foreach ($additionalFields as $key => $value) {
+					$title = ($additionalFieldsRu[$key]) ?? $key;
+					$html .= '<p>' . esc_html($title) . '</p>';
+					if (is_array($value)) {
+						foreach ($value as $k => $v) {
+							if (!isset($v['name']))
+								continue;
+							$valueSaved = '0';
+							if (isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0') {
+								$valueSaved = $addFieldSaved[$type][$k];
+							}
+							$html .= '<div class="form-field_add">';
+							$html .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
+							if ($v['type'] === 'integer') {
+								$html .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
+							} else {
+								$check = '';
+								if ($valueSaved != '0')
+									$check = 'checked="checked"';
+								$html .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
+							}
+							$html .= '</div>';
 						}
-						$html .= '<div class="form-field_add">';
-						$html .= '<label class="label" for="'.$k.'">'.$v['name'].'</label>';
-						if ( $v['type'] === 'integer' ){
-							$html .= '<input class="form-value_add" type="number" name="'.$k.'" value="'.$valueSaved.'" max="'.$v['max_value'].'">';
-						}else{
-							$check = '';
-							if($valueSaved != '0')
-								$check = 'checked="checked"';
-
-							$html .= '<input class="form-value_add" name="'.$k.'" type="checkbox" '.$check.'>';
-						}
-						$html .= '</div>';
-					}
+					} // если $value не массив, ничего не делаем
 				}
 				$html .= '</div>';
-			}else{
+			} else {
 				$html .= '<p>Дополнительные услуги отсутствуют.</p>';
 			}
-
 		}
 
-        if ( $fieldDelivery ) {
-            $html .= ' <h4>Дополнительные настройки выгрузки ТК.</h4>';
-            // Внешний цикл по массиву полей
-            foreach ($fieldDelivery as $nameArr => $arr) {
-                // Внутренний цикл по каждому полю
-                foreach ($arr as $key => $value) {
-                    // Разбиваем ключ на части
-                    list($name, $typeField, $nameRu) = explode('||', $key);
-                    $nameRu = $nameRu ?? $name;
-                    $styleForm = '';
+		if ($fieldDelivery) {
+			$html .= ' <h4>Дополнительные настройки выгрузки ТК.</h4>';
+			// Внешний цикл по массиву полей
+			foreach ($fieldDelivery as $nameArr => $arr) {
+				// Внутренний цикл по каждому полю
+				foreach ($arr as $key => $value) {
+					// Разбиваем ключ на части
+					list($name, $typeField, $nameRu) = explode('||', $key);
+					$nameRu = $nameRu ?? $name;
+					$styleForm = '';
 
-                    // Устанавливаем специальный класс для чекбоксов
-                    if ($typeField === 'checkbox') {
-                        $styleForm = 'checkbox-area';
-                    }
+					// Устанавливаем специальный класс для чекбоксов
+					if ($typeField === 'checkbox') {
+						$styleForm = 'checkbox-area';
+					}
 
-                    // Выводим контейнер поля формы
-                    $html .= '
-                                <div class="form-field_add '.$styleForm.'">
-                                <label class="label" for="'.$name.'">'.$nameRu.'</label>
+					// Выводим контейнер поля формы
+					$html .= '
+                                <div class="form-field_add ' . $styleForm . '">
+                                <label class="label" for="' . $name . '">' . $nameRu . '</label>
                                 ';
 
 
-                    $nameValue = $nameArr.'['.$name.']';
-                    $nameFiledSaved = $nameArr.'['.$name.']';
-                    // Генерируем соответствующее поле ввода
-                    switch ($typeField) {
-                        case 'text':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
-                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="text" value="'.$valueSaved.'">';
-                            break;
+					$nameValue = $nameArr . '[' . $name . ']';
+					$nameFiledSaved = $nameArr . '[' . $name . ']';
+					// Генерируем соответствующее поле ввода
+					switch ($typeField) {
+						case 'text':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="text" value="' . $valueSaved . '">';
+							break;
 
-                        case 'checkbox':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on'){
-                                $valueSaved = 'checked';
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="checkbox" '.$valueSaved.'>';
-                            break;
+						case 'checkbox':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
+								$valueSaved = 'checked';
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="checkbox" ' . $valueSaved . '>';
+							break;
 
-                        case 'date':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
-                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="date" value="'.$valueSaved.'">';
-                            break;
+						case 'date':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="date" value="' . $valueSaved . '">';
+							break;
 
-                        case 'select':
-                            $html .= '<select class="form-value" name="'.$nameValue.'">';
+						case 'select':
+							$html .= '<select class="form-value" name="' . $nameValue . '">';
 
-                            // Цикл по опциям селекта
-                            foreach ($value as $k => $v) {
-                                if (is_array($v) && isset($v['text'])) {
-                                    $valueSaved = '';
-                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
-                                        $valueSaved = 'selected';
-                                    }
-                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v['text'].'</option>';
-                                } else {
-                                    $valueSaved = '';
-                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
-                                        $valueSaved = 'selected';
-                                    }
-                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v.'</option>';
-                                }
-                            }
+							// Цикл по опциям селекта
+							if (is_array($value)) {
+								foreach ($value as $k => $v) {
+									if (is_array($v) && isset($v['text'])) {
+										$valueSaved = '';
+										if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+											$valueSaved = 'selected';
+										}
+										$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v['text'] . '</option>';
+									} else {
+										$valueSaved = '';
+										if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+											$valueSaved = 'selected';
+										}
+										$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v . '</option>';
+									}
+								}
+							}
 
-                            $html .= '</select>';
-                            break;
-                    }
+							$html .= '</select>';
+							break;
+					}
 
-                    $html .= '</div>';
-                }
-            }
+					$html .= '</div>';
+				}
+			}
+		}
 
-        }
+		$sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery(mb_strtolower($type));
 
-        $sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery( mb_strtolower( $type ));
+		if ($sttExForOneDelivery) {
+			foreach ($sttExForOneDelivery as $nameArr => $arr) {
+				foreach ($arr as $key => $value) {
+					list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
+					$nameRu = $nameRu ?? $name;
+					$styleForm = '';
 
-        if ( $sttExForOneDelivery ) {
-            foreach ($sttExForOneDelivery as $nameArr => $arr) {
-                foreach ($arr as $key => $value) {
-                    list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
-                    $nameRu = $nameRu ?? $name;
-                    $styleForm = '';
-
-                    if($typeField == 'hr'){
-                        $html .= '<h3>'.$nameRu.'</h3>';
-                        continue;
-                    }
+					if ($typeField == 'hr') {
+						$html .= '<h3>' . $nameRu . '</h3>';
+						continue;
+					}
 
 
-                    $html .= '
-                                <div class="form-field_add '.$styleForm.'">
-                                <label class="label" for="'.$name.'">'.$nameRu.'</label>';
+					$html .= '
+                                <div class="form-field_add ' . $styleForm . '">
+                                <label class="label" for="' . $name . '">' . $nameRu . '</label>';
 
-                    $nameValue = $nameArr.'['.$name.']';
-                    $nameFiledSaved = $nameArr.'['.$name.']';
+					$nameValue = $nameArr . '[' . $name . ']';
+					$nameFiledSaved = $nameArr . '[' . $name . ']';
 
-                    switch ($typeField) {
-                        case 'text':
-                            $valueSaved = $valueDefault ?? '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
-                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="text" value="'.$valueSaved.'">';
-                            break;
+					switch ($typeField) {
+						case 'text':
+							$valueSaved = $valueDefault ?? '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="text" value="' . $valueSaved . '">';
+							break;
 
-                        case 'checkbox':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on'){
-                                $valueSaved = 'checked';
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="checkbox" '.$valueSaved.'>';
-                            break;
+						case 'checkbox':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
+								$valueSaved = 'checked';
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="checkbox" ' . $valueSaved . '>';
+							break;
 
-                        case 'date':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
-                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="date" value="'.$valueSaved.'">';
-                            break;
+						case 'date':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="date" value="' . $valueSaved . '">';
+							break;
 
-                        case 'number':
-                            $valueSaved = '';
-                            if(isset($addFieldSaved[$type][$nameFiledSaved])){
-                                $valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-                            }
-                            $html .= '<input class="form-value" name="'.$nameValue.'" type="number" value="'.$valueSaved.'">';
-                            break;
+						case 'number':
+							$valueSaved = '';
+							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+							}
+							$html .= '<input class="form-value" name="' . $nameValue . '" type="number" value="' . $valueSaved . '">';
+							break;
 
-                        case 'select':
-                            $html .= '<select class="form-value" name="'.$nameValue.'">';
+						case 'select':
+							$html .= '<select class="form-value" name="' . $nameValue . '">';
 
-                            // Цикл по опциям селекта
-                            foreach ($value as $k => $v) {
-                                if (is_array($v) && isset($v['text'])) {
-                                    $valueSaved = '';
-                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
-                                        $valueSaved = 'selected';
-                                    }
-                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v['text'].'</option>';
-                                } else {
-                                    $valueSaved = '';
-                                    if(isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]){
-                                        $valueSaved = 'selected';
-                                    }
-                                    $html .= '<option value="'.$k.'" '.$valueSaved.'>'.$v.'</option>';
-                                }
-                            }
+							// Цикл по опциям селекта
+							foreach ($value as $k => $v) {
+								if (is_array($v) && isset($v['text'])) {
+									$valueSaved = '';
+									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+										$valueSaved = 'selected';
+									}
+									$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v['text'] . '</option>';
+								} else {
+									$valueSaved = '';
+									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+										$valueSaved = 'selected';
+									}
+									$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v . '</option>';
+								}
+							}
 
-                            $html .= '</select>';
-                            break;
-                    }
+							$html .= '</select>';
+							break;
+					}
 
-                    $html .= '</div>';
-                }
-            }
-        }
+					$html .= '</div>';
+				}
+			}
+		}
 
-        $checkSelf = '';
-        $checkTK = '';
-        if(isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0){
-            $checkSelf = 'selected';
-        }
-        if(isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 1){
-            $checkTK = 'selected';
-        }
-        $html .= '
+		$checkSelf = '';
+		$checkTK = '';
+		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0) {
+			$checkSelf = 'selected';
+		}
+		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 1) {
+			$checkTK = 'selected';
+		}
+		$html .= '
             <h4>Дополнительные настройки ТК.</h4>
             <div class="form-field_add">
                 <label class="label">Способ доставки до терминала ТК</label>
                  <select name="pick_up" class="form-value">
-                    <option value="0" '.$checkSelf.'>Сами привезём на терминал транспортной компании</option>
-                    <option value="1" '.$checkTK.'>Груз заберёт транспортная компания</option>
+                    <option value="0" ' . $checkSelf . '>Сами привезём на терминал транспортной компании</option>
+                    <option value="1" ' . $checkTK . '>Груз заберёт транспортная компания</option>
                  </select>
             </div>
         ';
 
-        $html .= '</form>';
+		$html .= '</form>';
 
 		wp_send_json([
 			'success' => true,
@@ -1026,4 +1060,16 @@ class Ajax implements ModuleInterface
 		]);
 	}
 
+	private function sanitize_array($array)
+	{
+		foreach ($array as $key => $value) {
+			if (is_array($value)) {
+				$array[$key] = $this->sanitize_array($value);
+			} else {
+				// Если ожидается строка, очищаем, иначе оставляем как есть
+				$array[$key] = is_string($value) ? sanitize_text_field($value) : $value;
+			}
+		}
+		return $array;
+	}
 }
