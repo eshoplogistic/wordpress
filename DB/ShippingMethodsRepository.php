@@ -29,4 +29,12 @@ class ShippingMethodsRepository
 		}
 		return $results;
 	}
+
+	public function getById($id)
+	{
+		global $wpdb;
+		$query = $wpdb->prepare("SELECT * FROM {$this->table} WHERE id = %d", absint($id));
+		$result = $wpdb->get_row($query);
+		return $result;
+	}
 }

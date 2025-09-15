@@ -52,30 +52,23 @@ class Table extends WP_List_Table {
 		global $wpdb, $_wp_column_headers;
 		$screen = get_current_screen();
 
-		$query = "SELECT * FROM $wpdb->links";
-		$orderby = ! empty( $_GET["orderby"] ) ? sanitize_key($_GET["orderby"]) : 'ASC';
-		$order   = ! empty( $_GET["order"] ) ? sanitize_key($_GET["order"]) : '';
-		$paged   = ! empty( $_GET["paged"] ) ? $_GET["paged"] : 1;
-		if ( ! empty( $orderby ) & ! empty( $order ) ) {
-			$query .= ' ORDER BY ' . $orderby . ' ' . $order;
-		}
+		$allowed_orderby = array('product_id', 'name', 'quantity', 'price', 'weight', 'width', 'length', 'height');
+		$orderby = !empty($_GET['orderby']) && in_array($_GET['orderby'], $allowed_orderby) ? sanitize_key($_GET['orderby']) : 'product_id';
+		$order = !empty($_GET['order']) && in_array(strtolower($_GET['order']), array('asc', 'desc')) ? strtoupper($_GET['order']) : 'ASC';
+		$perpage = 5;
+		$paged = !empty($_GET['paged']) && is_numeric($_GET['paged']) && $_GET['paged'] > 0 ? intval($_GET['paged']) : 1;
+		$offset = ($paged - 1) * $perpage;
 
-		$cache_key = 'wc_esl_table_totalitems_' . md5($query);
+		$query = "SELECT * FROM $wpdb->links ORDER BY $orderby $order LIMIT %d, %d";
+
+		$cache_key = 'wc_esl_table_totalitems_' . md5($query . $offset . $perpage);
 		$totalitems = wp_cache_get($cache_key, 'eshoplogisticru');
 		if ($totalitems === false) {
-			$totalitems = $wpdb->query( $query );
+			$totalitems = $wpdb->query($wpdb->prepare("SELECT COUNT(*) FROM $wpdb->links"));
 			wp_cache_set($cache_key, $totalitems, 'eshoplogisticru', 60); // кэш на 60 секунд
 		}
-		$perpage = 5;
-		$paged = ! empty( $_GET["paged"] ) ? $_GET["paged"] : '';
-		if ( empty( $paged ) || ! is_numeric( $paged ) || $paged <= 0 ) {
-			$paged = 1;
-		}
-		$totalpages = ceil( $totalitems / $perpage );
-		if ( ! empty( $paged ) && ! empty( $perpage ) ) {
-			$offset = ( $paged - 1 ) * $perpage;
-			$query  .= ' LIMIT ' . (int) $offset . ',' . (int) $perpage;
-		}
+		$totalpages = ceil($totalitems / $perpage);
+		$query = $wpdb->prepare($query, $offset, $perpage);
 		$this->set_pagination_args( array(
 			"total_items" => $totalitems,
 			"total_pages" => $totalpages,

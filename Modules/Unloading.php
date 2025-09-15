@@ -108,7 +108,7 @@ class Unloading implements ModuleInterface
             $postId = $post->ID;
         }
         if (isset($_GET['id'])) {
-            $postId = $_GET['id'];
+            $postId = absint($_GET['id']);
         }
         if (!$postId) {
             return false;
@@ -161,7 +161,7 @@ class Unloading implements ModuleInterface
             $postId = $post->ID;
         }
         if (isset($_GET['id'])) {
-            $postId = $_GET['id'];
+            $postId = absint($_GET['id']);
         }
         if (!$postId) {
             return false;
@@ -211,7 +211,7 @@ class Unloading implements ModuleInterface
             $postId = $post->ID;
         }
         if (isset($_GET['id'])) {
-            $postId = $_GET['id'];
+            $postId = absint($_GET['id']);
         }
         if (!$postId) {
             return false;
