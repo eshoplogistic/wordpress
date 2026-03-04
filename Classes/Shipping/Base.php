@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Classes\Shipping;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
@@ -145,12 +147,14 @@ class Base extends \WC_Shipping_Method
 		$payment = isset($paymentMethods[WC()->session->chosen_payment_method]) ? $paymentMethods[WC()->session->chosen_payment_method] : '';
 
 		$postRequest = [];
-		$postData = isset($_POST['post_data']) ? wc_clean($_POST['post_data']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce checkout request context, sanitized via sanitize_text_field
+		$postData = isset($_POST['post_data']) ? sanitize_text_field(wp_unslash($_POST['post_data'])) : '';
 		parse_str($postData, $postRequest);
 
 		$mode = 'billing';
 		if(isset($postRequest['ship_to_different_address'])) $mode = 'shipping';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout request context.
 		if(isset($_POST['calc_shipping'])) $mode = 'billing';
 
 		$modeState = $sessionService->get($mode) ? $sessionService->get($mode) : [];
@@ -315,12 +319,14 @@ class Base extends \WC_Shipping_Method
 		$optionsRepository = new OptionsRepository();
 
 		$postRequest = [];
-		$postData = isset($_POST['post_data']) ? wc_clean($_POST['post_data']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce checkout request context, sanitized via sanitize_text_field
+		$postData = isset($_POST['post_data']) ? sanitize_text_field(wp_unslash($_POST['post_data'])) : '';
 		parse_str($postData, $postRequest);
 
 		$mode = 'billing';
 		if(isset($postRequest['ship_to_different_address'])) $mode = 'shipping';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout request context.
 		if(isset($_POST['calc_shipping'])) $mode = 'billing';
 
 		$sessionService->set('mode_shipping', $mode);

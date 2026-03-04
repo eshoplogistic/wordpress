@@ -27,25 +27,21 @@ class Checkout implements ModuleInterface
 
 
     function addSaveField( $order_id ){
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow validates nonce before order meta hooks.
+        $posted = wp_unslash( $_POST );
+        $fields = array(
+            'esl_billing_field_street',
+            'esl_billing_field_building',
+            'esl_billing_field_room',
+            'esl_shipping_field_street',
+            'esl_shipping_field_building',
+            'esl_shipping_field_room',
+        );
 
-        if( ! empty( $_POST[ 'esl_billing_field_street' ] ) ) {
-            update_post_meta( $order_id, 'esl_billing_field_street', sanitize_text_field( $_POST[ 'esl_billing_field_street' ] ) );
-        }
-        if( ! empty( $_POST[ 'esl_billing_field_building' ] ) ) {
-            update_post_meta( $order_id, 'esl_billing_field_building', sanitize_text_field( $_POST[ 'esl_billing_field_building' ] ) );
-        }
-        if( ! empty( $_POST[ 'esl_billing_field_room' ] ) ) {
-            update_post_meta( $order_id, 'esl_billing_field_room', sanitize_text_field( $_POST[ 'esl_billing_field_room' ] ) );
-        }
-
-        if( ! empty( $_POST[ 'esl_shipping_field_street' ] ) ) {
-            update_post_meta( $order_id, 'esl_shipping_field_street', sanitize_text_field( $_POST[ 'esl_shipping_field_street' ] ) );
-        }
-        if( ! empty( $_POST[ 'esl_shipping_field_building' ] ) ) {
-            update_post_meta( $order_id, 'esl_shipping_field_building', sanitize_text_field( $_POST[ 'esl_shipping_field_building' ] ) );
-        }
-        if( ! empty( $_POST[ 'esl_shipping_field_room' ] ) ) {
-            update_post_meta( $order_id, 'esl_shipping_field_room', sanitize_text_field( $_POST[ 'esl_shipping_field_room' ] ) );
+        foreach ( $fields as $field ) {
+            if ( ! empty( $posted[ $field ] ) ) {
+                update_post_meta( $order_id, $field, sanitize_text_field( $posted[ $field ] ) );
+            }
         }
 
     }
@@ -272,6 +268,12 @@ class Checkout implements ModuleInterface
 		$widgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
 		$apiKeyWCart = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
         $shippingEsl = $sessionService->get('esl_shipping_frame');
+		
+		// Get widget data for static display
+		$widgetOffersEsl = array();
+		$paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
+		$widgetCityEsl = array();
+		
 		$count = 0;
         $countText = 'служб';
 		$tipsCities = 'Для расчёта доставки укажите населённый пункт';
@@ -336,6 +338,12 @@ class Checkout implements ModuleInterface
                     <div id="eShopLogisticWidgetCart" data-key="<?php echo esc_attr($apiKeyWCart) ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
                 <?php else: ?>
                     <div id="eShopLogisticStatic" data-key="<?php echo esc_attr($widgetKey) ?>"></div>
+                    <div id="boxEshoplogistic" class="boxEshoplogistic" style="display:none;">
+                        <div id='eShopLogisticWidgetKey' data-key='<?php echo esc_attr($widgetKey)?>'></div>
+                        <input id='widgetOffersEsl' value='<?php echo esc_attr(json_encode($widgetOffersEsl)); ?>' type='hidden'>
+                        <input id='widgetCityEsl' value='<?php echo esc_attr(json_encode($widgetCityEsl)); ?>' type='hidden'>
+                        <input id='widgetPaymentEsl' value='<?php echo esc_attr(json_encode($paymentMethods ? $paymentMethods : array())); ?>' type='hidden'>
+                    </div>
                 <?php endif; ?>
                 <div class="footer">
                     <input id="buttonModalDoor" type="button"  value="Выбрать">

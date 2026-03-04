@@ -101,10 +101,14 @@ class Shipping implements ModuleInterface
 		if(isset($addForm['offAddressCheck']))
 			$offAddressCheck = $addForm['offAddressCheck'];
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 		echo View::render('checkout/add-fields', [
-			'eslBillingCityFields' => $eslBillingCityFields,
-			'eslShippingCityFields' => $eslShippingCityFields,
-			'offAddressCheck' => $offAddressCheck
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_eslBillingCityFields' => $eslBillingCityFields,
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_eslShippingCityFields' => $eslShippingCityFields,
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_offAddressCheck' => $offAddressCheck
 		]);
 
 	    if(isset($paymentCalcTmp['paymentCalc']) && $paymentCalcTmp['paymentCalc'] == 'true')
@@ -119,7 +123,13 @@ class Shipping implements ModuleInterface
                 $terminals = isset($stateShippingMethods[$chosenShippingMethods[0]]['terminals']) ? $stateShippingMethods[$chosenShippingMethods[0]]['terminals'] : null;
 
                 if(!is_null($terminals)) {
-					echo View::render('checkout/terminals-input', ['terminals' => json_encode($terminals), 'key_ya' => $apiKeyYa]);
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
+					echo View::render('checkout/terminals-input', [
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_terminals' => json_encode($terminals),
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_key_ya' => $apiKeyYa
+					]);
                 }
             }
 	        if($typeMethod === 'mixed') {
@@ -167,12 +177,18 @@ class Shipping implements ModuleInterface
 		        $widgetOffersEsl = self::infoCart();
 		        $paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 				echo View::render('checkout/frame-input', [
-					'widgetKey' => $apiWidgetKey,
-					'widgetOffersEsl' => $widgetOffersEsl,
-					'paymentMethods' => $paymentMethods,
-					'widgetCityEsl' => $widgetCityEsl,
-					'paymentCalc' => $paymentCalc
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetKey' => $apiWidgetKey,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetOffersEsl' => $widgetOffersEsl,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_paymentMethods' => $paymentMethods,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetCityEsl' => $widgetCityEsl,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_paymentCalc' => $paymentCalc
 				]);
 	        }
         }
@@ -197,6 +213,7 @@ class Shipping implements ModuleInterface
 			}
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name retained for backwards compatibility.
 		$offers = apply_filters( 'esl_offers_filter', $offers );
 
 		return $offers;
@@ -223,19 +240,23 @@ class Shipping implements ModuleInterface
         //}
 
 		if(isset($accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment'])) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 			echo View::render(
 				'checkout/general-comment',
 				[
-					'comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
 				]
 			);
 		}
 
 		if(isset($stateShippingMethods[$item->method_id]['comment'])) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 			echo View::render(
 				'checkout/comment',
 				[
-					'comment' => $stateShippingMethods[$item->method_id]['comment']
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_comment' => $stateShippingMethods[$item->method_id]['comment']
 				]
 			);
 		}

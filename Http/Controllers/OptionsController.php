@@ -45,7 +45,7 @@ class OptionsController extends Controller
 		}
 
 		$this->options->save($data);
-
+		
 		return $this->json([
 			'status' => 'success',
 			'msg'    => __('Настройки успешно сохранены', 'eshoplogisticru'),

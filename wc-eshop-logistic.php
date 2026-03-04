@@ -9,10 +9,10 @@
  * @package           WC_Eshop_Logistic
  *
  * @wordpress-plugin
- * Plugin Name:       Калькулятор доставки для интернет-магазинов eShopLogisticRu
+ * Plugin Name:       eShopLogistic Shipping Calculator
  * Plugin URI:        https://wp.eshoplogistic.ru/
- * Description:       Несколько служб доставки в одной интеграции: CDEK, DPD, Boxberry, IML, Почта России, Деловые Линии, ПЭК, Dostavista, GTD, Байкал Сервис и др.
- * Version:           2.1.60
+ * Description:       Integration with eShopLogistic service for shipping calculation with multiple carriers: CDEK, DPD, Boxberry, IML, Post Russia, Delovye Linii, PEC, Dostavista, GTD, Baikal Service and others. Calculates delivery cost and time in cart and product card.
+ * Version:           2.1.61
  * Author:            eShopLogistic
  * Author URI:        https://eshoplogistic.ru/p747575
  * License:           GPL-2.0+
@@ -27,6 +27,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core filter, cannot be renamed.
 if ( !in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 	echo '<h1>Для работы плагина, должен быть установлен плагин WooCommerce!</h1>';
 	return [];
@@ -40,7 +41,7 @@ define( 'WC_ESL_PLUGIN_ENTRY', __FILE__ );
 
 define( 'WC_ESL_PLUGIN_DIR', plugin_dir_path(__FILE__) );
 
-define( 'WC_ESL_VERSION', '2.1.60' );
+define( 'WC_ESL_VERSION', '2.1.61' );
 
 define( 'WC_ESL_DOMAIN', 'eshoplogisticru' );
 

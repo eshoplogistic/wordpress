@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 
@@ -19,7 +21,7 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
 		$widgetBut         = $optionsRepository->getOption( 'wc_esl_shipping_widget_but' );
-		$widgetKey = isset($atts['key']) ? sanitize_text_field(wc_clean($atts['key'])) : $widgetKey;
+		$widgetKey = isset($atts['key']) ? sanitize_text_field($atts['key']) : $widgetKey;
 
 		if ( ! $widgetKey ) {
 			return '';
@@ -42,7 +44,7 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 		} else {
-			$ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
+			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
 		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
@@ -66,7 +68,7 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 			$block_content .= '<div id="eShopLogisticWidgetModal"
 						data-lazy-load="true"
 						data-debug="1"
-						data-ip="' . esc_attr(apply_filters( 'edd_get_ip', $ip )) . '"
+						data-ip="' . esc_attr(apply_filters( 'wc_esl_get_ip', $ip )) . '"
 						data-key="' . esc_attr($widgetKey) . '"
 						data-offers="' . esc_attr($jsonItem) . '">
 						</div>';
@@ -90,16 +92,16 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
             data-ip="%5$s">
             %6$s
             </button>',
-				$wc_product['id'],
-				$wc_product['name'],
-				$wc_product['price'],
-				$wc_product['weight'],
-				apply_filters( 'edd_get_ip', $ip ),
-				$widgetBut
+				esc_attr($wc_product['id']),
+				esc_attr($wc_product['name']),
+				esc_attr($wc_product['price']),
+				esc_attr($wc_product['weight']),
+				esc_attr(apply_filters( 'wc_esl_get_ip', $ip )),
+				esc_html($widgetBut)
 			);
 			$block_content .= sprintf(
 				'<div id="eShopLogisticApp" data-key="%1$s"></div>',
-				$widgetKey
+				esc_attr($widgetKey)
 			);
 
 			wp_enqueue_script(
@@ -118,6 +120,7 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
 		echo $block_content;
 	}
 
@@ -128,11 +131,12 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 
 	function shortcode_widget_button_tab_handler($atts) {
 		if(isset($atts['key']))
-			$_POST['esl_key'] = sanitize_text_field(wp_unslash($atts['key']));
+			$GLOBALS['wc_esl_widget_tab_key'] = sanitize_text_field(wp_unslash($atts['key']));
 
 		add_filter( 'woocommerce_product_tabs', 'esl_product_widget_tab', 25 );
 	}
 
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name retained for backwards compatibility.
 	function esl_product_widget_tab( $tabs ) {
 
 		$optionsRepository = new OptionsRepository();
@@ -148,10 +152,11 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 
 	}
 
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name retained for backwards compatibility.
 	function esl_product_widget_tab_content() {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
-	$widgetKey = isset($_POST['esl_key']) ? sanitize_text_field(wp_unslash($_POST['esl_key'])) : $widgetKey;
+		$widgetKey = isset($GLOBALS['wc_esl_widget_tab_key']) ? sanitize_text_field($GLOBALS['wc_esl_widget_tab_key']) : $widgetKey;
 
 		if ( ! $widgetKey ) {
 			return '';
@@ -174,7 +179,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 		} else {
-			$ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
+			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
 		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
@@ -197,9 +202,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 
 			$block_content = '<div id="eShopLogisticWidgetBlock"
 							    data-lazy-load="true"
-							    data-ip="' . apply_filters( 'edd_get_ip', $ip ) . '"
-							    data-key="'.$widgetKey.'"
-							    data-offers="'.$jsonItem.'">
+					    data-ip="' . esc_attr(apply_filters( 'wc_esl_get_ip', $ip )) . '"
 							</div>';
 
 			$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
@@ -233,32 +236,31 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
             data-weight="%5$s"
             data-ip="%6$s">
             </div>',
-				$widgetKey,
-				$wc_product['id'],
-				$wc_product['name'],
-				$wc_product['price'],
-				$wc_product['weight'],
-				apply_filters( 'edd_get_ip', $ip ),
-			);
+				esc_attr($widgetKey),
+				esc_attr($wc_product['id']),
+				esc_attr($wc_product['name']),
+				esc_attr($wc_product['price']),
+				esc_attr($wc_product['weight']),
+				esc_attr(apply_filters( 'wc_esl_get_ip', $ip ))		);
 
-			$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
+		$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
 
-			wp_enqueue_script(
-				'wc_esl_app_tab_js',
-				WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-		}
-
-		wp_enqueue_style(
-			'wc_esl_style_frame_css',
-			WC_ESL_PLUGIN_URL . 'assets/css/style-frame.css',
+		wp_enqueue_script(
+			'wc_esl_app_tab_js',
+			WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js',
 			[],
-			WC_ESL_VERSION
+			WC_ESL_VERSION,
+			true
 		);
+	}
 
+	wp_enqueue_style(
+		'wc_esl_style_frame_css',
+		WC_ESL_PLUGIN_URL . 'assets/css/style-frame.css',
+		[],
+		WC_ESL_VERSION
+	);
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
 		echo $block_content;
 	}
 
@@ -270,7 +272,7 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 	function shortcode_widget_static_handler( $atts, $content = null, $code = "" ) {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
-		$widgetKey = isset($atts['key']) ? wc_clean($atts['key']) : $widgetKey;
+		$widgetKey = isset($atts['key']) ? sanitize_text_field($atts['key']) : $widgetKey;
 
 		if ( ! $widgetKey ) {
 			return '';
@@ -289,11 +291,11 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 		$wc_product = $wc_product->get_data();
 
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 		} else {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
 		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
@@ -317,7 +319,7 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 
 			$block_content = '<div id="eShopLogisticWidgetBlock"
 							    data-lazy-load="true"
-							    data-ip="' . apply_filters( 'edd_get_ip', $ip ) . '"
+							    data-ip="' . apply_filters( 'wc_esl_get_ip', $ip ) . '"
 							    data-key="'.$widgetKey.'"
 							    data-offers="'.$jsonItem.'">
 							</div>';
@@ -347,6 +349,7 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
 		echo $block_content;
 	}
 

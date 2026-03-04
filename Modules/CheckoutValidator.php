@@ -47,15 +47,21 @@ class CheckoutValidator implements ModuleInterface
     }
 
     private function validateTerminalField($mode) {
-	    $check = $_POST['shipping_method'][0] ?? false;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+        $shippingMethodPosted = isset($_POST['shipping_method'][0]) ? sanitize_text_field(wp_unslash($_POST['shipping_method'][0])) : '';
+        $check = $shippingMethodPosted ?: false;
 
 	    $optionsRepository = new OptionsRepository();
 	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-	    if($check === 'wc_esl_postrf_terminal' && !$moduleVersion){
+        if($check === 'wc_esl_postrf_terminal' && !$moduleVersion){
 		    return;
 	    }
 
-        if(empty($_POST['wc_esl_'. $mode .'_terminal'])) {
+        $terminalFieldKey = 'wc_esl_' . $mode . '_terminal';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+        $terminalPosted = isset($_POST[$terminalFieldKey]) ? sanitize_text_field(wp_unslash($_POST[$terminalFieldKey])) : '';
+
+        if('' === $terminalPosted) {
             $message = "<strong>Пункт выдачи доставки</strong> является обязательным полем.";
 
             $this->addErrorNotice($message);
@@ -68,6 +74,7 @@ class CheckoutValidator implements ModuleInterface
      */
     public function removeDefaultFieldsFromValidation($fields)
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
         if ( ! wp_doing_ajax() || empty($_POST)) {
             return $fields;
         }
@@ -180,7 +187,9 @@ class CheckoutValidator implements ModuleInterface
      */
     private function getTypeToValidate()
     {
-        if (isset($_POST['ship_to_different_address']) && 1 === (int)$_POST['ship_to_different_address']) {
+	    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+	    $shipToDifferent = isset($_POST['ship_to_different_address']) ? absint(wp_unslash($_POST['ship_to_different_address'])) : 0;
+	    if (1 === $shipToDifferent) {
             return 'shipping';
         }
 

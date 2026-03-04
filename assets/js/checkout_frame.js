@@ -80,13 +80,20 @@ function isNumeric(value) {
     }
 
     function searchCity( target, renderFunc, currentCountry ) {
+        const query = String(target || '').trim();
+
+        if (query.length < 2) {
+            renderFunc([]);
+            return;
+        }
+
         $.ajax({
             method: 'POST',
             url: wc_esl_shipping_global.ajaxUrl,
             async: true,
             data: {
                 action : 'wc_esl_search_cities',
-                target,
+                target: query,
                 currentCountry
             },
             dataType: 'json',

@@ -2,13 +2,20 @@
 	'use strict';
 
 	function searchCity( target, renderFunc ) {
+		const query = String(target || '').trim();
+
+		if (query.length < 2) {
+			renderFunc([]);
+			return;
+		}
+
 		$.ajax({
 			method: 'POST',
 			url: wc_esl_shipping_global.ajaxUrl,
 			async: true,
 			data: {
 				action : 'wc_esl_search_cities',
-				target
+				target: query
 			},
 			dataType: 'json',
 			success: function( response ) {

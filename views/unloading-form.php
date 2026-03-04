@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Variables passed via View::render extract are prefixed
+
 use eshoplogistic\WCEshopLogistic\Classes\Table;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,30 +12,30 @@ if ( class_exists( 'WP_List_Table' ) == false ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
-$orderData          = isset( $orderData ) ? $orderData : array();
-$orderItems         = isset( $orderItems ) ? $orderItems : array();
-$orderShipping      = isset( $orderShipping ) ? $orderShipping : array();
-$address            = isset( $address ) ? $address : array();
-$addressShipping    = isset( $addressShipping ) ? $addressShipping : array();
-$typeMethod         = isset( $typeMethod ) ? $typeMethod : array();
-$additionalFields   = isset( $additionalFields ) ? $additionalFields : array();
-$exportFormSettings = isset( $exportFormSettings ) ? $exportFormSettings : array();
-$shippingMethods    = isset( $shippingMethods ) ? $shippingMethods : array();
-$fieldDelivery      = isset( $fieldDelivery ) ? $fieldDelivery : array();
-$orderShippingId    = isset( $orderShippingId ) ? $orderShippingId : '';
-$infoApi            = isset( $infoApi ) ? $infoApi : '';
-$addFieldSaved      = isset( $addFieldSaved ) ? $addFieldSaved : array();
-$street             = isset( $street ) ? $street : '';
-$building           = isset( $building ) ? $building : '';
-$room               = isset( $room ) ? $room : '';
+$wc_esl_orderData          = isset( $wc_esl_orderData ) ? $wc_esl_orderData : array();
+$wc_esl_orderItems         = isset( $wc_esl_orderItems ) ? $wc_esl_orderItems : array();
+$wc_esl_orderShipping      = isset( $wc_esl_orderShipping ) ? $wc_esl_orderShipping : array();
+$wc_esl_address            = isset( $wc_esl_address ) ? $wc_esl_address : array();
+$wc_esl_addressShipping    = isset( $wc_esl_addressShipping ) ? $wc_esl_addressShipping : array();
+$wc_esl_typeMethod         = isset( $wc_esl_typeMethod ) ? $wc_esl_typeMethod : array();
+$wc_esl_additionalFields   = isset( $wc_esl_additionalFields ) ? $wc_esl_additionalFields : array();
+$wc_esl_exportFormSettings = isset( $wc_esl_exportFormSettings ) ? $wc_esl_exportFormSettings : array();
+$wc_esl_shippingMethods    = isset( $wc_esl_shippingMethods ) ? $wc_esl_shippingMethods : array();
+$wc_esl_fieldDelivery      = isset( $wc_esl_fieldDelivery ) ? $wc_esl_fieldDelivery : array();
+$wc_esl_orderShippingId    = isset( $wc_esl_orderShippingId ) ? $wc_esl_orderShippingId : '';
+$wc_esl_infoApi            = isset( $wc_esl_infoApi ) ? $wc_esl_infoApi : '';
+$wc_esl_addFieldSaved      = isset( $wc_esl_addFieldSaved ) ? $wc_esl_addFieldSaved : array();
+$wc_esl_street             = isset( $wc_esl_street ) ? $wc_esl_street : '';
+$wc_esl_building           = isset( $wc_esl_building ) ? $wc_esl_building : '';
+$wc_esl_room               = isset( $wc_esl_room ) ? $wc_esl_room : '';
 
-$fulfillment = false;
-if(isset($infoApi['services']['pochtalion'])){
-    if($typeMethod['name'] == 'sdek' || $typeMethod['name'] == 'boxberry' || $typeMethod['name'] == 'postrf')
-	    $fulfillment = $infoApi['services']['pochtalion'];
+$wc_esl_fulfillment = false;
+if(isset($wc_esl_infoApi['services']['pochtalion'])){
+    if($wc_esl_typeMethod['name'] == 'sdek' || $wc_esl_typeMethod['name'] == 'boxberry' || $wc_esl_typeMethod['name'] == 'postrf')
+	    $wc_esl_fulfillment = $wc_esl_infoApi['services']['pochtalion'];
 }
 
-$additionalFieldsRu = array(
+$wc_esl_additionalFieldsRu = array(
 	'packages'  => 'Упаковка',
 	'cargo'     => 'Груз',
 	'recipient' => 'Получатель',
@@ -41,7 +43,7 @@ $additionalFieldsRu = array(
 
 );
 
-$eslTable = new Table();
+$wc_esl_eslTable = new Table();
 ?>
 
 <div id="modal-esl" class="modal-esl">
@@ -70,15 +72,15 @@ $eslTable = new Table();
                             class="dashicons dashicons-screenoptions"></span>Дополнительные услуги</label>
 
                 <form action="#" id="unloading_form" class="unloading-form unloading-grid">
-                    <input type="hidden" name="delivery_id" value="<?php echo esc_attr(mb_strtolower( isset($typeMethod['name']) ? $typeMethod['name'] : '' )); ?>">
-                    <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($orderData['id']) ? $orderData['id'] : ''); ?>">
-                    <input type="hidden" name="order_status" value="<?php echo esc_attr(isset($orderData['status']) ? $orderData['status'] : ''); ?>">
-                    <input type="hidden" name="order_shipping_id" value="<?php echo esc_attr($orderShippingId); ?>">
+                    <input type="hidden" name="delivery_id" value="<?php echo esc_attr(mb_strtolower( isset($wc_esl_typeMethod['name']) ? $wc_esl_typeMethod['name'] : '' )); ?>">
+                    <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($wc_esl_orderData['id']) ? $wc_esl_orderData['id'] : ''); ?>">
+                    <input type="hidden" name="order_status" value="<?php echo esc_attr(isset($wc_esl_orderData['status']) ? $wc_esl_orderData['status'] : ''); ?>">
+                    <input type="hidden" name="order_shipping_id" value="<?php echo esc_attr($wc_esl_orderShippingId); ?>">
 
                     <section id="content1">
 
                         <div class="form-box">
-                            <?php if($fulfillment): ?>
+                            <?php if($wc_esl_fulfillment): ?>
                                 <div class="form-field checkbox-area">
                                     <label class="label" for="terminal-code">Выгружать заявки в фулфилмент «Почтальон»:</label>
                                     <input class="form-value" name="fulfillment" type="checkbox">
@@ -88,10 +90,10 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label">Тип доставки:</label>
                                 <select name="delivery_type" form="unloading_form" class="form-value">
-                                    <option value="door" <?php echo esc_attr($typeMethod['type'] === 'door' ? 'selected' : '') ?>>
+                                    <option value="door" <?php echo esc_attr($wc_esl_typeMethod['type'] === 'door' ? 'selected' : '') ?>>
                                         Курьер
                                     </option>
-                                    <option value="terminal" <?php echo esc_attr($typeMethod['type'] === 'terminal' ? 'selected' : '') ?>>
+                                    <option value="terminal" <?php echo esc_attr($wc_esl_typeMethod['type'] === 'terminal' ? 'selected' : '') ?>>
                                         Пункт самовывоза
                                     </option>
                                 </select>
@@ -100,13 +102,13 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="terminal-code">Код ПВЗ:</label>
                                 <input class="form-value" name="terminal-code" type="text"
-                                       value="<?php echo (esc_attr($addressShipping['terminal']))??'' ?>">
+                                       value="<?php echo (esc_attr($wc_esl_addressShipping['terminal']))??'' ?>">
                             </div>
 
                             <div class="form-field">
                                 <label class="label" for="terminal-address">Адрес ПВЗ:</label>
                                 <input class="form-value" name="terminal-address" type="text"
-                                       value="<?php echo (esc_attr($addressShipping['terminal_address']))??'' ?>">
+                                       value="<?php echo (esc_attr($wc_esl_addressShipping['terminal_address']))??'' ?>">
                             </div>
 
                             <div class="form-field">
@@ -122,7 +124,7 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="esl-unload-price">Стоимость доставки:</label>
                                 <input class="form-value" name="esl-unload-price" type="text"
-                                       value="<?php echo esc_attr($orderData['shipping_total']); ?>">
+                                       value="<?php echo esc_attr($wc_esl_orderData['shipping_total']); ?>">
                             </div>
 
                             <div class="form-field">
@@ -132,68 +134,68 @@ $eslTable = new Table();
                         </div>
 
                         <div class="form-box">
-							<?php foreach ( $fieldDelivery as $nameArr => $arr ):
+							<?php foreach ( $wc_esl_fieldDelivery as $wc_esl_nameArr => $wc_esl_arr ):
 								?>
 
-								<?php foreach ( $arr as $key => $value ):
-								$explodeKey = explode( '||', $key );
-								$name = $explodeKey[0];
-								$type = $explodeKey[1];
-								$nameRu = $explodeKey[2] ?? $name;
-                                $styleForm = '';
-                                $typeDelivery = mb_strtolower( $typeMethod['name']);
-                                $nameFiledSaved = $nameArr.'['.$name.']';
+								<?php foreach ( $wc_esl_arr as $wc_esl_key => $wc_esl_value ):
+								$wc_esl_explodeKey = explode( '||', $wc_esl_key );
+								$wc_esl_name = $wc_esl_explodeKey[0];
+								$wc_esl_type = $wc_esl_explodeKey[1];
+								$wc_esl_nameRu = $wc_esl_explodeKey[2] ?? $wc_esl_name;
+                                $wc_esl_styleForm = '';
+                                $wc_esl_typeDelivery = mb_strtolower( $wc_esl_typeMethod['name']);
+                                $wc_esl_nameFiledSaved = $wc_esl_nameArr.'['.$wc_esl_name.']';
 
-                                if($type === 'checkbox')
-	                                $styleForm = 'checkbox-area';
+                                if($wc_esl_type === 'checkbox')
+	                                $wc_esl_styleForm = 'checkbox-area';
 								?>
 
-                                <div class="form-field <?php echo esc_attr($styleForm); ?>">
-                                    <label class="label" for="<?php echo esc_attr($name); ?>"><?php echo esc_html($nameRu); ?></label>
-									<?php if ( $type === 'text' ):
-                                        $valueSaved = '';
-                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved])){
-                                            $valueSaved = $addFieldSaved[$typeDelivery][$nameFiledSaved];
+                                <div class="form-field <?php echo esc_attr($wc_esl_styleForm); ?>">
+                                    <label class="label" for="<?php echo esc_attr($wc_esl_name); ?>"><?php echo esc_html($wc_esl_nameRu); ?></label>
+									<?php if ( $wc_esl_type === 'text' ):
+                                        $wc_esl_valueSaved = '';
+                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
+                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
                                         }
                                         ?>
-                                        <input class="form-value" name="<?php echo esc_attr($nameArr)?>[<?php echo esc_attr($name) ?>]" type="text"
-                                               value="<?php echo esc_attr($valueSaved)?>">
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
+                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>">
 									<?php endif; ?>
-	                                <?php if ( $type === 'checkbox' ):
-                                        $valueSaved = '';
-                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $addFieldSaved[$typeDelivery][$nameFiledSaved] == 'on'){
-                                            $valueSaved = 'checked';
+	                                <?php if ( $wc_esl_type === 'checkbox' ):
+                                        $wc_esl_valueSaved = '';
+                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved] == 'on'){
+                                            $wc_esl_valueSaved = 'checked';
                                         }
                                         ?>
-                                        <input class="form-value" name="<?php echo esc_attr($nameArr)?>[<?php echo esc_attr($name) ?>]" type="checkbox" <?php echo esc_attr($valueSaved) ?>>
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="checkbox" <?php echo esc_attr($wc_esl_valueSaved) ?>>
 	                                <?php endif; ?>
-	                                <?php if ( $type === 'date' ):
-                                        $valueSaved = '';
-                                        if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved])){
-                                            $valueSaved = $addFieldSaved[$typeDelivery][$nameFiledSaved];
+	                                <?php if ( $wc_esl_type === 'date' ):
+                                        $wc_esl_valueSaved = '';
+                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
+                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
                                         }
                                         ?>
-                                        <input class="form-value" name="<?php echo esc_attr($nameArr)?>[<?php echo esc_attr($name) ?>]" type="date"
-                                               value="<?php echo esc_attr($value)?>">
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="date"
+                                               value="<?php echo esc_attr($wc_esl_value)?>">
 	                                <?php endif; ?>
-									<?php if ( $type === 'select' ): ?>
-                                        <select name="<?php echo esc_attr($nameArr)?>[<?php echo esc_attr($name) ?>]" form="unloading_form"
+									<?php if ( $wc_esl_type === 'select' ): ?>
+                                        <select name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" form="unloading_form"
                                                 class="form-value">
-											<?php foreach ( $value as $k => $v ):?>
-                                                <?php if(is_array($v) && isset($v['text'])):
-                                                    $valueSaved = '';
-                                                    if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $k == $addFieldSaved[$typeDelivery][$nameFiledSaved]){
-                                                        $valueSaved = 'selected';
+											<?php foreach ( $wc_esl_value as $wc_esl_k => $wc_esl_v ):?>
+                                                <?php if(is_array($wc_esl_v) && isset($wc_esl_v['text'])):
+                                                    $wc_esl_valueSaved = '';
+                                                    if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_k == $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]){
+                                                        $wc_esl_valueSaved = 'selected';
                                                     }
                                                     ?>
-                                                    <option value="<?php echo esc_attr($k) ?>" <?php echo esc_html($valueSaved) ?>><?php echo esc_html($v['text']) ?></option>
+                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>" <?php echo esc_html($wc_esl_valueSaved) ?>><?php echo esc_html($wc_esl_v['text']) ?></option>
                                                 <?php else:
-                                                    $valueSaved = '';
-                                                    if(isset($addFieldSaved[$typeDelivery][$nameFiledSaved]) && $k == $addFieldSaved[$typeDelivery][$nameFiledSaved]){
-                                                        $valueSaved = 'selected';
+                                                    $wc_esl_valueSaved = '';
+                                                    if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_k == $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]){
+                                                        $wc_esl_valueSaved = 'selected';
                                                     }
                                                     ?>
-                                                    <option value="<?php echo esc_attr($k) ?>" <?php echo esc_html($valueSaved) ?>><?php echo esc_html($v) ?></option>
+                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>" <?php echo esc_html($wc_esl_valueSaved) ?>><?php echo esc_html($wc_esl_v) ?></option>
                                                 <?php endif; ?>
 											<?php endforeach; ?>
                                         </select>
@@ -210,40 +212,40 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="receiver-name">Имя:</label>
                                 <input class="form-value" name="receiver-name" type="text"
-                                       value="<?php echo esc_attr($address['first_name']) . ' ' . esc_attr($address['last_name']) ?>">
+                                       value="<?php echo esc_attr($wc_esl_address['first_name']) . ' ' . esc_attr($wc_esl_address['last_name']) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-phone">Телефон:</label>
                                 <input class="form-value" name="receiver-phone" type="text"
-                                       value="<?php echo esc_attr($address['phone']) ?>">
+                                       value="<?php echo esc_attr($wc_esl_address['phone']) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-email">Электронная почта:</label>
                                 <input class="form-value" name="receiver-email" type="text"
-                                       value="<?php echo esc_attr($address['email']) ?>">
+                                       value="<?php echo esc_attr($wc_esl_address['email']) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-region">Регион:</label>
                                 <input class="form-value" name="receiver-region" type="text"
-                                       value="<?php echo( esc_attr($shippingMethods['debug']['shipping_route']['to']['region']) ?? '' ) ?>">
+                                       value="<?php echo( esc_attr($wc_esl_shippingMethods['debug']['shipping_route']['to']['region']) ?? '' ) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-city">Населённый пункт:</label>
                                 <input class="form-value" name="receiver-city" type="text"
-                                       value="<?php echo esc_attr($address['city']) ?>">
+                                       value="<?php echo esc_attr($wc_esl_address['city']) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-street">Улица:</label>
                                 <input class="form-value" name="receiver-street" type="text"
-                                       value="<?php echo esc_attr($street) ?>">
+                                       value="<?php echo esc_attr($wc_esl_street) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-house">Здание:</label>
-                                <input class="form-value" name="receiver-house" type="text" value="<?php echo esc_attr($building) ?>">
+                                <input class="form-value" name="receiver-house" type="text" value="<?php echo esc_attr($wc_esl_building) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-room">Квартира / офис:</label>
-                                <input class="form-value" name="receiver-room" type="text" value="<?php echo esc_attr($room) ?>">
+                                <input class="form-value" name="receiver-room" type="text" value="<?php echo esc_attr($wc_esl_room) ?>">
                             </div>
                         </div>
 
@@ -251,61 +253,61 @@ $eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="sender-name">Имя:</label>
                                 <input class="form-value" name="sender-name" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-name'] ) ) ? esc_attr($exportFormSettings['sender-name']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-name'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-name']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-phone">Телефон:</label>
                                 <input class="form-value" name="sender-phone" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-phone'] ) ) ? esc_attr($exportFormSettings['sender-phone']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-phone'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-phone']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-company">Название компании:</label>
                                 <input class="form-value" name="sender-company" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-company'] ) ) ? esc_attr($exportFormSettings['sender-company']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-company'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-company']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-email">Электронная почта:</label>
                                 <input class="form-value" name="sender-email" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-email'] ) ) ? esc_attr($exportFormSettings['sender-email']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-email'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-email']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label">Способ доставки до терминала ТК:</label>
                                 <select name="pick_up" form="unloading_form" class="form-value">
-                                    <?php if($typeMethod['name'] != 'halva'): ?>
-                                    <option value="0" <?php echo ( isset( $addFieldSaved[$typeMethod['name']]['pick_up'] ) && $addFieldSaved[$typeMethod['name']]['pick_up']  == 0 ) ? 'selected' : ''?>>Сами привезём на терминал транспортной компании</option>
+                                    <?php if($wc_esl_typeMethod['name'] != 'halva'): ?>
+                                    <option value="0" <?php echo ( isset( $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up'] ) && $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up']  == 0 ) ? 'selected' : ''?>>Сами привезём на терминал транспортной компании</option>
                                     <?php endif; ?>
-                                    <option value="1" <?php echo ( isset( $addFieldSaved[$typeMethod['name']]['pick_up'] ) && $addFieldSaved[$typeMethod['name']]['pick_up']  == 1 ) ? 'selected' : ''?>>Груз заберёт транспортная компания</option>
+                                    <option value="1" <?php echo ( isset( $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up'] ) && $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up']  == 1 ) ? 'selected' : ''?>>Груз заберёт транспортная компания</option>
                                 </select>
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-terminal">Код терминала:</label>
                                 <input class="form-value" name="sender-terminal" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings[ 'sender-terminal-' . $typeMethod['name'] ] ) ) ? esc_attr($exportFormSettings[ 'sender-terminal-' . $typeMethod['name'] ]) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings[ 'sender-terminal-' . $wc_esl_typeMethod['name'] ] ) ) ? esc_attr($wc_esl_exportFormSettings[ 'sender-terminal-' . $wc_esl_typeMethod['name'] ]) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-region">Регион:</label>
                                 <input class="form-value" name="sender-region" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-region'] ) ) ? esc_attr($exportFormSettings['sender-region']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-region'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-region']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-city">Населённый пункт:</label>
                                 <input class="form-value" name="sender-city" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-city'] ) ) ? esc_attr($exportFormSettings['sender-city']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-city'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-city']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-street">Улица:</label>
                                 <input class="form-value" name="sender-street" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-street'] ) ) ? esc_attr($exportFormSettings['sender-street']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-street'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-street']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-house">Здание:</label>
                                 <input class="form-value" name="sender-house" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-house'] ) ) ? esc_attr($exportFormSettings['sender-house']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-house'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-house']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-room">Квартира / офис:</label>
                                 <input class="form-value" name="sender-room" type="text"
-                                       value="<?php echo ( isset( $exportFormSettings['sender-room'] ) ) ? esc_attr($exportFormSettings['sender-room']) : '' ?>">
+                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-room'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-room']) : '' ?>">
                             </div>
                         </div>
 
@@ -313,37 +315,37 @@ $eslTable = new Table();
 
                     <section id="content3">
 						<?php
-						$eslTable->prepare_items( $orderItems, $typeMethod );
-						$eslTable->display();
+						$wc_esl_eslTable->prepare_items( $wc_esl_orderItems, $wc_esl_typeMethod );
+						$wc_esl_eslTable->display();
 						?>
                     </section>
 
                     <section id="content4">
-						<?php if ( isset( $additionalFields ) && $additionalFields ): ?>
+						<?php if ( isset( $wc_esl_additionalFields ) && $wc_esl_additionalFields ): ?>
                             <div class="esl-box_add">
-								<?php foreach ( $additionalFields as $key => $value ):?>
-                                    <p><?php echo ( esc_html($additionalFieldsRu[ $key ]) ) ?? esc_html($key) ?></p>
-									<?php foreach ( $value as $k => $v ):
-										if(!isset($v['name']))
+								<?php foreach ( $wc_esl_additionalFields as $wc_esl_key => $wc_esl_value ):?>
+                                    <p><?php echo ( esc_html($wc_esl_additionalFieldsRu[ $wc_esl_key ]) ) ?? esc_html($wc_esl_key) ?></p>
+									<?php foreach ( $wc_esl_value as $wc_esl_k => $wc_esl_v ):
+										if(!isset($wc_esl_v['name']))
 											continue;
 
-                                        $type = mb_strtolower( $typeMethod['name']);
-										$valueSaved = '0';
-										if(isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0'){
-											$valueSaved = $addFieldSaved[$type][$k];
+                                        $wc_esl_type = mb_strtolower( $wc_esl_typeMethod['name']);
+										$wc_esl_valueSaved = '0';
+										if(isset($wc_esl_addFieldSaved[$wc_esl_type][$wc_esl_k]) && $wc_esl_addFieldSaved[$wc_esl_type][$wc_esl_k] != '0'){
+											$wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_type][$wc_esl_k];
 										}
                                         ?>
                                         <div class="form-field_add">
-                                            <label class="label" for="<?php echo esc_attr($k) ?>"><?php echo esc_html($v['name']) ?></label>
-											<?php if ( $v['type'] === 'integer' ): ?>
-                                                <input class="form-value_add" name="<?php echo esc_attr($k) ?>" type="number"
-                                                       value="<?php echo esc_attr($valueSaved) ?>" max="<?php echo esc_attr($v['max_value']) ?>">
+                                            <label class="label" for="<?php echo esc_attr($wc_esl_k) ?>"><?php echo esc_html($wc_esl_v['name']) ?></label>
+											<?php if ( $wc_esl_v['type'] === 'integer' ): ?>
+                                                <input class="form-value_add" name="<?php echo esc_attr($wc_esl_k) ?>" type="number"
+                                                       value="<?php echo esc_attr($wc_esl_valueSaved) ?>" max="<?php echo esc_attr($wc_esl_v['max_value']) ?>">
 											<?php else:
-												$check = '';
-												if($valueSaved != '0')
-													$check = 'checked="checked"';
+												$wc_esl_check = '';
+												if($wc_esl_valueSaved != '0')
+													$wc_esl_check = 'checked="checked"';
                                                 ?>
-                                                <input class="form-value_add" name="<?php echo esc_attr($k) ?>" type="checkbox" <?php echo esc_attr($check) ?>>
+                                                <input class="form-value_add" name="<?php echo esc_attr($wc_esl_k) ?>" type="checkbox" <?php echo esc_attr($wc_esl_check) ?>>
 											<?php endif; ?>
                                         </div>
 									<?php endforeach; ?>
@@ -381,5 +383,5 @@ $eslTable = new Table();
     </div>
 </div>
 
-<input type="hidden" id="order_info_id" name="order_id" value="<?php echo esc_attr($orderData['id']) ?>">
-<input type="hidden" id="order_info_type" name="order_type" value="<?php echo esc_attr($typeMethod['name']) ?>">
+<input type="hidden" id="order_info_id" name="order_id" value="<?php echo esc_attr($wc_esl_orderData['id']) ?>">
+<input type="hidden" id="order_info_type" name="order_type" value="<?php echo esc_attr($wc_esl_typeMethod['name']) ?>">

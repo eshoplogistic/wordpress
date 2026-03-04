@@ -19,6 +19,7 @@ class WidgetController extends Controller {
 		$method = $request->get_param( 'method' );
 
 		if ( ! empty( $method ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- REST API endpoint, nonce not required
 			$query_data = @$_POST;
 			unset( $query_data['method'] );
 			$cache_key  = md5( $method . json_encode( $query_data ) );
@@ -64,6 +65,11 @@ class WidgetController extends Controller {
 			$apiUrl .= '/';
 		}
 
+		// Direct cURL for widget API communication
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close
 		$curl = curl_init();
 		curl_setopt( $curl, CURLOPT_URL, $apiUrl . $method );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
@@ -107,7 +113,7 @@ class WidgetController extends Controller {
 
 		$result = curl_exec( $curl );
 		curl_close( $curl );
-
+		// phpcs:enable WordPress.WP.AlternativeFunctions
 
 		if ( $result = json_decode( $result, 1 ) ) {
 			if ( is_array( $result ) ) {

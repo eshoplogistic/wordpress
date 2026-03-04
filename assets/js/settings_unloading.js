@@ -42,7 +42,7 @@ function eslRun() {
             let order_type = document.getElementById("order_info_type").value
             const xhr = new XMLHttpRequest()
             xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
-            let params = 'action=wc_esl_shipping_unloading_info&order_id='+order_id+'&order_type='+order_type;
+            let params = 'action=wc_esl_shipping_unloading_info&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
             xhr.send(params)
             xhr.onload = () => {
@@ -56,7 +56,7 @@ function eslRun() {
             let order_type = document.getElementById("order_info_type").value
             const xhr = new XMLHttpRequest()
             xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
-            let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type;
+            let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
             xhr.send(params)
             xhr.onload = () => {
@@ -71,7 +71,7 @@ function eslRun() {
             PreloaderEsl.show('#woocommerce-order-esl-unloading');
             const xhr = new XMLHttpRequest()
             xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
-            let params = 'action=wc_esl_shipping_unloading_status_update&order_id='+order_id+'&order_type='+order_type;
+            let params = 'action=wc_esl_shipping_unloading_status_update&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
             xhr.send(params)
             xhr.onload = () => {
@@ -119,6 +119,7 @@ function eslRun() {
                 async: true,
                 data: {
                     action : 'wc_esl_shipping_unloading_enable',
+                    nonce : wc_esl_shipping_global.nonce,
                     data : data
                 },
                 dataType: 'json',

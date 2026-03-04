@@ -107,9 +107,11 @@ class Unloading implements ModuleInterface
         if (isset($post->ID)) {
             $postId = $post->ID;
         }
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin order page parameter.
         if (isset($_GET['id'])) {
-            $postId = absint($_GET['id']);
+            $postId = absint(wp_unslash($_GET['id']));
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if (!$postId) {
             return false;
         }
@@ -160,9 +162,11 @@ class Unloading implements ModuleInterface
         if (isset($post->ID)) {
             $postId = $post->ID;
         }
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin order page parameter.
         if (isset($_GET['id'])) {
-            $postId = absint($_GET['id']);
+            $postId = absint(wp_unslash($_GET['id']));
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if (!$postId) {
             return false;
         }
@@ -210,9 +214,11 @@ class Unloading implements ModuleInterface
         if (isset($post->ID)) {
             $postId = $post->ID;
         }
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin order page parameter.
         if (isset($_GET['id'])) {
-            $postId = absint($_GET['id']);
+            $postId = absint(wp_unslash($_GET['id']));
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if (!$postId) {
             return false;
         }
@@ -344,23 +350,40 @@ class Unloading implements ModuleInterface
                 if (!$room)
                     $room = get_post_meta($order->get_id(), 'esl_shipping_field_room', true);
 
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
                 echo View::render('unloading-form', [
-                    'orderData' => $orderData,
-                    'orderItems' => $orderItems,
-                    'orderShipping' => $orderShipping,
-                    'address' => $address,
-                    'addressShipping' => $cutAddressShipping,
-                    'typeMethod' => $typeMethod,
-                    'additionalFields' => $additionalFields,
-                    'exportFormSettings' => $exportFormSettings,
-                    'shippingMethods' => $this->shippingMethods,
-                    'fieldDelivery' => $fieldDelivery,
-                    'orderShippingId' => $orderShippingId,
-                    'infoApi' => $infoApi,
-                    'addFieldSaved' => $addFieldSaved,
-                    'street' => $street,
-                    'building' => $building,
-                    'room' => $room
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_orderData' => $orderData,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_orderItems' => $orderItems,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_orderShipping' => $orderShipping,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_address' => $address,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_addressShipping' => $cutAddressShipping,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_typeMethod' => $typeMethod,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_additionalFields' => $additionalFields,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_exportFormSettings' => $exportFormSettings,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_shippingMethods' => $this->shippingMethods,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_fieldDelivery' => $fieldDelivery,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_orderShippingId' => $orderShippingId,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_infoApi' => $infoApi,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_addFieldSaved' => $addFieldSaved,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_street' => $street,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_building' => $building,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_room' => $room
                 ]);
             }
         }
@@ -385,8 +408,10 @@ class Unloading implements ModuleInterface
 
     public function order_meta_box_start_button()
     {
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
         echo View::render('unloading-button', [
-            'shippingMethods' => $this->shippingMethods,
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            'wc_esl_shippingMethods' => $this->shippingMethods,
         ]);
     }
 
@@ -666,6 +691,7 @@ class Unloading implements ModuleInterface
 
     public function returnPrint()
     {
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
         return View::render('unloading/print', [
 
         ]);

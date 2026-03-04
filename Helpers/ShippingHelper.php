@@ -62,14 +62,14 @@ class ShippingHelper
 	public function get_the_user_ip() {
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
 			//check ip from share internet
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			//to check ip is pass from proxy
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
 		} else {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		}
-		return apply_filters( 'edd_get_ip', $ip );
+		return apply_filters( 'wc_esl_get_ip', $ip );
 	}
 
 	public function dimensionsOption($dimension)
@@ -148,11 +148,14 @@ class ShippingHelper
 		if(empty($post_type) && !empty($typenow))
 			$post_type = $typenow;
 
-		if(empty($post_type) && isset($_REQUEST['post']) && !empty($_REQUEST['post']) && function_exists('get_post_type') && $get_post_type = get_post_type((int)$_REQUEST['post']))
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Read-only admin screen context detection, cast to int.
+		if(empty($post_type) && isset($_REQUEST['post']) && !empty($_REQUEST['post']) && function_exists('get_post_type') && $get_post_type = get_post_type((int) wp_unslash($_REQUEST['post'])))
 			$post_type = $get_post_type;
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin screen context detection.
 		if(empty($post_type) && isset($_REQUEST['post_type']) && !empty($_REQUEST['post_type']))
-			$post_type = sanitize_key($_REQUEST['post_type']);
+			$post_type = sanitize_key(wp_unslash($_REQUEST['post_type']));
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if(empty($post_type) && 'edit.php' == $pagenow)
 			$post_type = 'post';

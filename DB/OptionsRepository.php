@@ -44,10 +44,11 @@ class OptionsRepository
 	 */
 	public function getOption(string $key)
 	{
-		return get_option(
+		$value = get_option(
 			$key,
 			isset($this->defaults[$key]) ? $this->defaults[$key] : null
 		);
+		return $value;
 	}
 
 	/**
@@ -66,8 +67,13 @@ class OptionsRepository
 
 	public function save($data)
 	{
+		if (!isset($data['wc_esl_shipping'])) {
+			return;
+		}
+		
 		foreach ($data['wc_esl_shipping'] as $key => $value) {
-			update_option('wc_esl_shipping_' . $key, $value);
+			$option_name = 'wc_esl_shipping_' . $key;
+			update_option($option_name, $value);
 		}
 
 		// Flush WooCommerce Shipping Cache

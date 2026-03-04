@@ -286,9 +286,10 @@ class AssetsLoader implements ModuleInterface
 	private function injectGlobals( $scriptId )
 	{
 		$data = [
-			'ajaxUrl'  => admin_url('admin-ajax.php'),
-			'homeUrl'  => home_url(),
-			'nonce'    => wp_create_nonce('wc-esl-shipping')
+			'ajaxUrl'         => admin_url('admin-ajax.php'),
+			'homeUrl'         => home_url(),
+			'nonce'           => wp_create_nonce('wc-esl-shipping'),
+			'eslNonce'        => wp_create_nonce('esl_unloading_action')
 		];
 
 		wp_localize_script($scriptId, 'wc_esl_shipping_global', $data);

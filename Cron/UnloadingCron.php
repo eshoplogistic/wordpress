@@ -107,7 +107,8 @@ class UnloadingCron
 
 			$logger = wc_get_logger();
 			$context = array( 'source' => 'esl-info-cron-status' );
-			$logger->info( print_r($status, true),  $context);
+			$statusLog = wp_json_encode($status, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			$logger->info( false !== $statusLog ? $statusLog : 'Failed to encode status log',  $context);
 		}
 
 	}

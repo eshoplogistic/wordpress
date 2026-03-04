@@ -15,7 +15,7 @@ if ( ! defined('ABSPATH') ) {
 }
 
 
-class EshopLogisticApi extends EshopLogisticApiV2
+class EshopLogisticApi
 {
 
 	/**
@@ -254,7 +254,7 @@ class EshopLogisticApi extends EshopLogisticApiV2
 		if(isset($type['target']))
 			return false;
 
-		$d = date("j-M-Y H:i:s e");
+		$d = gmdate("j-M-Y H:i:s") . ' UTC';
 		$header = ' ####################### ';
 		$plugin = WP_PLUGIN_DIR . '/eshoplogisticru';
 		if(is_dir( $plugin )){
@@ -268,15 +268,22 @@ class EshopLogisticApi extends EshopLogisticApiV2
 			}
 
 			if (is_array($log) || is_object($log)) {
+				if (is_object($log)) {
+					$log = (array) $log;
+				}
 				if($type){
 					$urlRequest = $this->apiUrl;
 					$tmp['sendRequest'] = $type;
 					$tmp['sendRequest']['url'] = $urlRequest;
 					array_unshift($log, $tmp);
 				}
-				error_log($header.$d.$header.print_r($log, true), 3, $path);
+				$encodedLog = wp_json_encode($log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+				if (false === $encodedLog) {
+					$encodedLog = 'Failed to encode log payload';
+				}
+				file_put_contents($path, $header . $d . $header . $encodedLog . PHP_EOL, FILE_APPEND);
 			} else {
-				error_log($header.$d.$header.$log,3, $path);
+				file_put_contents($path, $header . $d . $header . (string) $log . PHP_EOL, FILE_APPEND);
 			}
 		}
 	}

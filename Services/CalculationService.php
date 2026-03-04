@@ -36,6 +36,7 @@ class CalculationService
             }
         }
 
+	    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name retained for backwards compatibility.
 	    $offers = apply_filters( 'esl_offers_filter', $offers );
 
 	    if($service === 'dostavista'){
@@ -43,13 +44,14 @@ class CalculationService
 		}
 
         $logger = new \WC_Logger();
-        $logger->debug(print_r([
+        $payload = [
             'service' => $service,
             'from' => $cityFrom,
             'to' => $cityTo,
             'payment' => $payment,
-            'offers' => json_encode($offers)
-        ], true));
+            'offers' => $offers,
+        ];
+        $logger->debug( wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 
         $response = $this->api->calculateDelivery($service, [
             'from' => $cityFrom,

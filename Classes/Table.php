@@ -53,21 +53,30 @@ class Table extends WP_List_Table {
 		$screen = get_current_screen();
 
 		$allowed_orderby = array('product_id', 'name', 'quantity', 'price', 'weight', 'width', 'length', 'height');
-		$orderby = !empty($_GET['orderby']) && in_array($_GET['orderby'], $allowed_orderby) ? sanitize_key($_GET['orderby']) : 'product_id';
-		$order = !empty($_GET['order']) && in_array(strtolower($_GET['order']), array('asc', 'desc')) ? strtoupper($_GET['order']) : 'ASC';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only sorting params in admin table UI.
+		$orderbyRaw = isset($_GET['orderby']) ? sanitize_key(wp_unslash($_GET['orderby'])) : '';
+		$orderby = in_array($orderbyRaw, $allowed_orderby, true) ? $orderbyRaw : 'product_id';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only sorting params in admin table UI.
+		$orderRaw = isset($_GET['order']) ? strtolower(sanitize_key(wp_unslash($_GET['order']))) : 'asc';
+		$order = in_array($orderRaw, array('asc', 'desc'), true) ? strtoupper($orderRaw) : 'ASC';
 		$perpage = 5;
-		$paged = !empty($_GET['paged']) && is_numeric($_GET['paged']) && $_GET['paged'] > 0 ? intval($_GET['paged']) : 1;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only pagination param in admin table UI.
+		$pagedRaw = isset($_GET['paged']) ? absint(wp_unslash($_GET['paged'])) : 1;
+		$paged = $pagedRaw > 0 ? $pagedRaw : 1;
 		$offset = ($paged - 1) * $perpage;
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- ORDER BY identifiers are allow-listed above.
 		$query = "SELECT * FROM $wpdb->links ORDER BY $orderby $order LIMIT %d, %d";
 
 		$cache_key = 'wc_esl_table_totalitems_' . md5($query . $offset . $perpage);
 		$totalitems = wp_cache_get($cache_key, 'eshoplogisticru');
 		if ($totalitems === false) {
-			$totalitems = $wpdb->query($wpdb->prepare("SELECT COUNT(*) FROM $wpdb->links"));
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Core links table count in admin list context, uses core $wpdb table name.
+			$totalitems = (int) $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->links");
 			wp_cache_set($cache_key, $totalitems, 'eshoplogisticru', 60); // кэш на 60 секунд
 		}
 		$totalpages = ceil($totalitems / $perpage);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is built from static column/table names and class constants, not user input.
 		$query = $wpdb->prepare($query, $offset, $perpage);
 		$this->set_pagination_args( array(
 			"total_items" => $totalitems,
@@ -76,6 +85,7 @@ class Table extends WP_List_Table {
 		) );
 
 		$columns                           = $this->get_columns();
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WordPress core global, must use this exact name.
 		$_wp_column_headers[ $screen->id ] = $columns;
 
 		$records = array();
@@ -204,15 +214,17 @@ class Table extends WP_List_Table {
 	$current_url = set_url_scheme( 'http://' . $http_host . $request_uri );
 	$current_url = remove_query_arg( 'paged', $current_url );
 
-		// When users click on a column header to sort by other columns.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only sorting params in admin table UI.
 		if ( isset( $_GET['orderby'] ) ) {
 			$current_orderby = sanitize_key(wp_unslash($_GET['orderby']));
 			// In the initial view there's no orderby parameter.
 		} else {
 			$current_orderby = '';
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		// Not in the initial view and descending order.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only sorting params in admin table UI.
 		if ( isset( $_GET['order'] ) && 'desc' === sanitize_key(wp_unslash($_GET['order'])) ) {
 			$current_order = 'desc';
 		} else {

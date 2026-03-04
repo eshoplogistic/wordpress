@@ -53,6 +53,14 @@ class WpHttpClient implements HttpClient
 		return $response['body'];
 	}
 
+	/**
+	 * Fallback method for SSL certificate errors when wp_remote_post() fails.
+	 * Uses cURL directly to bypass SSL verification issues.
+	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init
+	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec
+	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close
+	 */
 	public function alternativeCurlPost( $url, $body = null ){
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
@@ -67,4 +75,5 @@ class WpHttpClient implements HttpClient
 
 		return $result;
 	}
+	// phpcs:enable WordPress.WP.AlternativeFunctions
 }

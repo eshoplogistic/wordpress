@@ -22,13 +22,13 @@ class Routes implements ModuleInterface
         register_rest_route( 'wc-esl/v1', '/order', array(
             'methods'  => 'POST',
             'callback' => [$this, 'createOrder'],
-            'permission_callback' => '__return_true'
+            'permission_callback' => '__return_true' // Public endpoint for checkout
         ));
 
 	    register_rest_route( 'wc-esl/v2', '/widget-data', array(
 		    'methods'  => 'POST',
 		    'callback' => [$this, 'widgetLogData'],
-		    'permission_callback' => '__return_true'
+		    'permission_callback' => '__return_true' // Public endpoint for widget logging
 	    ));
     }
 

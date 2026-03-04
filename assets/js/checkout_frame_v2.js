@@ -93,13 +93,20 @@ function isNumeric(value) {
     }
 
     function searchCity(target, renderFunc, currentCountry, typeFilter = false) {
+        const query = String(target || '').trim();
+
+        if (query.length < 2) {
+            renderFunc([]);
+            return;
+        }
+
         $.ajax({
             method: 'POST',
             url: wc_esl_shipping_global.ajaxUrl,
             async: true,
             data: {
                 action: 'wc_esl_search_cities',
-                target,
+                target: query,
                 currentCountry,
                 typeFilter
             },
@@ -935,6 +942,10 @@ function isNumeric(value) {
     document.addEventListener('DOMContentLoaded', () => {
         const root = document.getElementById('eShopLogisticWidgetCart');
 
+        if (!root) {
+            return;
+        }
+
         root.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
             const widget = document.getElementById(esl.items.widget_id)
 
@@ -1129,7 +1140,7 @@ function isNumeric(value) {
                 currentShippingCountry
             );
         })
-    })
+    });
 
     function errorGetMessage(error){
 

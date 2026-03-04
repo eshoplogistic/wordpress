@@ -8,6 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- View template local variables.
+
 $optionsRepository = new OptionsRepository();
 $moduleVersion     = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
 $eshopLogisticApi  = new EshopLogisticApi( new WpHttpClient() );
@@ -18,23 +20,26 @@ if ( ! did_action( 'wp_enqueue_media' ) ) {
 $WC_Checkout = new WC_Checkout();
 $list_fields = $WC_Checkout->get_checkout_fields();
 
-$plugin_enable                = isset( $plugin_enable ) ? $plugin_enable : '0';
-$plugin_enable_price_shipping = isset( $plugin_enable_price_shipping ) ? $plugin_enable_price_shipping : '1';
-$plugin_enable_log            = isset( $plugin_enable_log ) ? $plugin_enable_log : '0';
-$plugin_enable_api_v2         = isset( $plugin_enable_api_v2 ) ? $plugin_enable_api_v2 : '0';
-$api_key                      = ! empty( $api_key ) ? $api_key : '';
-$api_key_wcart                = ! empty( $api_key_wcart ) ? $api_key_wcart : '';
-$api_key_ya                   = ! empty( $api_key_ya ) ? $api_key_ya : '';
-$paymentMethods               = isset( $paymentMethods ) ? $paymentMethods : [];
-$secret_code                  = ! empty( $secret_code ) ? $secret_code : '';
-$widget_key                   = ! empty( $widget_key ) ? $widget_key : '';
-$widget_but                   = ! empty( $widget_but ) ? $widget_but : 'Рассчитать доставку';
-$dimension_measurement        = ! empty( $dimension_measurement ) ? $dimension_measurement : 'cm';
-$add_form                     = ! empty( $add_form ) ? $add_form : [];
-$export_form                  = ! empty( $export_form ) ? $export_form : [];
-$frame_enable                 = isset( $frame_enable ) ? $frame_enable : '0';
-$status_form                  = isset( $status_form ) ? $status_form : [];
-$status_wp                    = isset( $status_wp ) ? $status_wp : [];
+$plugin_enable                = isset( $wc_esl_plugin_enable ) ? $wc_esl_plugin_enable : '0';
+$plugin_enable_price_shipping = isset( $wc_esl_plugin_enable_price_shipping ) ? $wc_esl_plugin_enable_price_shipping : '1';
+$plugin_enable_log            = isset( $wc_esl_plugin_enable_log ) ? $wc_esl_plugin_enable_log : '0';
+$plugin_enable_api_v2         = isset( $wc_esl_plugin_enable_api_v2 ) ? $wc_esl_plugin_enable_api_v2 : '0';
+$api_key                      = ! empty( $wc_esl_api_key ) ? $wc_esl_api_key : '';
+$api_key_wcart                = ! empty( $wc_esl_api_key_wcart ) ? $wc_esl_api_key_wcart : '';
+$api_key_ya                   = ! empty( $wc_esl_api_key_ya ) ? $wc_esl_api_key_ya : '';
+$paymentMethods               = isset( $wc_esl_paymentMethods ) ? $wc_esl_paymentMethods : [];
+$secret_code                  = ! empty( $wc_esl_secret_code ) ? $wc_esl_secret_code : '';
+$widget_key                   = ! empty( $wc_esl_widget_key ) ? $wc_esl_widget_key : '';
+$widget_but                   = ! empty( $wc_esl_widget_but ) ? $wc_esl_widget_but : 'Рассчитать доставку';
+$dimension_measurement        = ! empty( $wc_esl_dimension_measurement ) ? $wc_esl_dimension_measurement : 'cm';
+$add_form                     = ! empty( $wc_esl_add_form ) ? $wc_esl_add_form : [];
+$export_form                  = ! empty( $wc_esl_export_form ) ? $wc_esl_export_form : [];
+$frame_enable                 = isset( $wc_esl_frame_enable ) ? $wc_esl_frame_enable : '0';
+$status_form                  = isset( $wc_esl_status_form ) ? $wc_esl_status_form : [];
+$status_wp                    = isset( $wc_esl_status_wp ) ? $wc_esl_status_wp : [];
+$paymentGateways              = isset( $wc_esl_paymentGateways ) ? $wc_esl_paymentGateways : [];
+$add_field_form               = isset( $wc_esl_add_field_form ) ? $wc_esl_add_field_form : [];
+
 $status_translate             = [
 	'accepted'   => 'Загружен в ЛК перевозчика',
 	'need_check' => 'Загружен в ЛК перевозчика, но требуется уточнения',

@@ -55,31 +55,44 @@ class OptionsPage implements ModuleInterface
 
 	public function html()
 	{
-		echo View::render('settings', $this->options());
+		$options = $this->options();
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
+		echo View::render('settings', $options);
 	}
 
 	private function options(): array
 	{
+		$plugin_enable = $this->option->getOption('wc_esl_shipping_plugin_enable');
+		$plugin_enable_price_shipping = $this->option->getOption('wc_esl_shipping_plugin_enable_price_shipping');
+		$plugin_enable_log = $this->option->getOption('wc_esl_shipping_plugin_enable_log');
+		$plugin_enable_api_v2 = $this->option->getOption('wc_esl_shipping_plugin_enable_api_v2');
+		$api_key = $this->option->getOption('wc_esl_shipping_api_key');
+		$api_key_wcart = $this->option->getOption('wc_esl_shipping_api_key_wcart');
+		$api_key_ya = $this->option->getOption('wc_esl_shipping_api_key_ya');
+		$widget_but = $this->option->getOption('wc_esl_shipping_widget_but');
+		$dimension_measurement = $this->option->getOption('wc_esl_shipping_dimension_measurement');
+		$frame_enable = $this->option->getOption('wc_esl_shipping_frame_enable');
+		
 		return array(
-			'plugin_enable'     => $this->option->getOption('wc_esl_shipping_plugin_enable'),
-			'plugin_enable_price_shipping' => $this->option->getOption('wc_esl_shipping_plugin_enable_price_shipping'),
-			'plugin_enable_log' => $this->option->getOption('wc_esl_shipping_plugin_enable_log'),
-			'plugin_enable_api_v2' => $this->option->getOption('wc_esl_shipping_plugin_enable_api_v2'),
-			'api_key'           => $this->option->getOption('wc_esl_shipping_api_key'),
-			'api_key_wcart'           => $this->option->getOption('wc_esl_shipping_api_key_wcart'),
-			'api_key_ya'           => $this->option->getOption('wc_esl_shipping_api_key_ya'),
-			'secret_code'       => $this->option->getOption('wc_esl_shipping_widget_secret_code'),
-			'widget_key'        => $this->option->getOption('wc_esl_shipping_widget_key'),
-			'widget_but'        => $this->option->getOption('wc_esl_shipping_widget_but'),
-			'paymentGateways'   => $this->paymentGateways->getAvailablePaymentGateways(),
-			'paymentMethods'    => $this->option->getOption('wc_esl_shipping_payment_methods'),
-			'dimension_measurement'     => $this->option->getOption('wc_esl_shipping_dimension_measurement'),
-			'add_form'     => $this->option->getOption('wc_esl_shipping_add_form'),
-			'export_form'     => $this->option->getOption('wc_esl_shipping_export_form'),
-			'frame_enable'     => $this->option->getOption('wc_esl_shipping_frame_enable'),
-			'status_form'     => $this->option->getOption('wc_esl_shipping_plugin_status_form'),
-			'status_wp'     => $this->unloading->getStatusWp(),
-			'add_field_form'     => $this->option->getOption('wc_esl_shipping_add_field_form'),
+			'wc_esl_plugin_enable'     => $plugin_enable,
+			'wc_esl_plugin_enable_price_shipping' => $plugin_enable_price_shipping,
+			'wc_esl_plugin_enable_log' => $plugin_enable_log,
+			'wc_esl_plugin_enable_api_v2' => $plugin_enable_api_v2,
+			'wc_esl_api_key'           => $api_key,
+			'wc_esl_api_key_wcart'           => $api_key_wcart,
+			'wc_esl_api_key_ya'           => $api_key_ya,
+			'wc_esl_secret_code'       => $this->option->getOption('wc_esl_shipping_widget_secret_code'),
+			'wc_esl_widget_key'        => $this->option->getOption('wc_esl_shipping_widget_key'),
+			'wc_esl_widget_but'        => $widget_but,
+			'wc_esl_paymentGateways'   => $this->paymentGateways->getAvailablePaymentGateways(),
+			'wc_esl_paymentMethods'    => $this->option->getOption('wc_esl_shipping_payment_methods'),
+			'wc_esl_dimension_measurement'     => $dimension_measurement,
+			'wc_esl_add_form'     => $this->option->getOption('wc_esl_shipping_add_form'),
+			'wc_esl_export_form'     => $this->option->getOption('wc_esl_shipping_export_form'),
+			'wc_esl_frame_enable'     => $frame_enable,
+			'wc_esl_status_form'     => $this->option->getOption('wc_esl_shipping_plugin_status_form'),
+			'wc_esl_status_wp'     => $this->unloading->getStatusWp(),
+			'wc_esl_add_field_form'     => $this->option->getOption('wc_esl_shipping_add_field_form'),
 		);
 	}
 }

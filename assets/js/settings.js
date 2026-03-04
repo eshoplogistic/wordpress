@@ -17,9 +17,10 @@ window.addEventListener('load', function(event) {
 
 	let bindEvents = {
 		clickOnAddField: function (event) {
-			let data = [];
-			data['action'] = 'wc_esl_shipping_get_add_field';
-			data['type'] = event.target.getAttribute('data-mode');
+			let data = {};
+			data.action = 'wc_esl_shipping_get_add_field';
+			data.type = event.target.getAttribute('data-mode');
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, function(result){
 				if(result.success === true){
@@ -166,11 +167,12 @@ function eslRun() {
 		},
 
 		changeAddField: function (result, type) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_add_field';
-			data['result'] = JSON.stringify(result);
-			data['type'] = type;
+			data.action = 'wc_esl_shipping_save_add_field';
+			data.result = JSON.stringify(result);
+			data.type = type;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeAddField.bind({
 				_self: this
@@ -186,7 +188,8 @@ function eslRun() {
 
 		changeEnablePluginCheckbox: function (event) {
 			let _self = this._self;
-			let status = _self.enablePluginCheckbox.checked;
+			console.log('changeEnablePluginCheckbox - event.target.checked:', event.target.checked);
+			let status = event.target.checked;
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -194,10 +197,13 @@ function eslRun() {
 		},
 
 		changePluginStatus: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_enable_plugin';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_enable_plugin';
+			data.status = status ? 'true' : 'false';
+			data.nonce = wc_esl_shipping_global.nonce;
+
+			console.log('Отправляем данные:', data);
 
 			HttpClientEsl.post(data, this.callbackChangePluginStatus.bind({
 				_self: this
@@ -206,14 +212,35 @@ function eslRun() {
 
 		callbackChangePluginStatus: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('Ответ от сервера:', response);
+			console.log('Тип ответа:', typeof response);
+			console.log('status:', response?.status);
+			console.log('msg:', response?.msg);
+			
+			if (!response) {
+				PushEsl.addItem('error', 'Нет ответа от сервера');
+				PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
+				return;
+			}
+			
+			if (response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				// После успешного сохранения обновляем состояние чекбокса в соответствии с ответом
+				if (response.data && response.data.wc_esl_shipping_plugin_enable) {
+					const newValue = response.data.wc_esl_shipping_plugin_enable === 1 || response.data.wc_esl_shipping_plugin_enable === '1';
+					console.log('Обновляем enablePluginCheckbox на:', newValue);
+					_self.enablePluginCheckbox.checked = newValue;
+				}
+			} else {
+				PushEsl.addItem(response.status, response.msg);
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			console.log(response);
 		},
 
 		changeEnablePluginPriceShippingCheckbox: function (event) {
 			let _self = this._self;
-			let status = _self.enablePluginPriceShippingCheckbox.checked;
+			let status = event.target.checked;
+			console.log('changeEnablePluginPriceShippingCheckbox - event.target.checked:', status);
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -221,10 +248,13 @@ function eslRun() {
 		},
 
 		changePluginPriceShippingStatus: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_enable_plugin_price_shipping';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_enable_plugin_price_shipping';
+			data.status = status ? 'true' : 'false';
+			data.nonce = wc_esl_shipping_global.nonce;
+
+			console.log('Отправляем данные changePluginPriceShippingStatus:', data);
 
 			HttpClientEsl.post(data, this.callbackChangePluginPriceShippingStatus.bind({
 				_self: this
@@ -233,15 +263,27 @@ function eslRun() {
 
 		callbackChangePluginPriceShippingStatus: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('Ответ changePluginPriceShippingStatus:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				// После успешного сохранения обновляем состояние чекбокса в соответствии с ответом
+				if (response.data && response.data.wc_esl_shipping_plugin_enable_price_shipping) {
+					const newValue = response.data.wc_esl_shipping_plugin_enable_price_shipping === 1 || response.data.wc_esl_shipping_plugin_enable_price_shipping === '1';
+					console.log('Обновляем чекбокс на:', newValue);
+					_self.enablePluginPriceShippingCheckbox.checked = newValue;
+				}
+			} else {
+				console.error('Ответ не содержит status');
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			console.log(response);
 		},
 
 
 		changeEnablePluginLogCheckbox: function (event) {
 			let _self = this._self;
-			let status = _self.enablePluginLogCheckbox.checked;
+			let status = event.target.checked;
+			console.log('changeEnablePluginLogCheckbox - event.target.checked:', status);
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -249,10 +291,14 @@ function eslRun() {
 		},
 
 		changePluginLogStatus: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_enable_plugin_log';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_enable_plugin_log';
+			data.status = status ? 'true' : 'false';
+			data.nonce = wc_esl_shipping_global.nonce;
+
+			console.log('Отправляем данные changePluginLogStatus:', data);
+
 			HttpClientEsl.post(data, this.callbackChangePluginLogStatus.bind({
 				_self: this
 			}));
@@ -260,14 +306,25 @@ function eslRun() {
 
 		callbackChangePluginLogStatus: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('Ответ changePluginLogStatus:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data && response.data.wc_esl_shipping_plugin_enable_log) {
+					const newValue = response.data.wc_esl_shipping_plugin_enable_log === 1 || response.data.wc_esl_shipping_plugin_enable_log === '1';
+					console.log('Обновляем чекбокс на:', newValue);
+					_self.enablePluginLogCheckbox.checked = newValue;
+				}
+			} else {
+				console.error('Ответ не содержит status');
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			console.log(response);
 		},
 
 		changeEnablePluginApiV2Checkbox: function (event) {
 			let _self = this._self;
-			let status = _self.enablePluginApiV2Checkbox.checked;
+			let status = event.target.checked;
+			console.log('changeEnablePluginApiV2Checkbox - event.target.checked:', status);
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -275,10 +332,14 @@ function eslRun() {
 		},
 
 		changePluginApiV2Status: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_enable_plugin_api_v2';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_enable_plugin_api_v2';
+			data.status = status ? 'true' : 'false';
+			data.nonce = wc_esl_shipping_global.nonce;
+
+			console.log('Отправляем данные changePluginApiV2Status:', data);
+
 			HttpClientEsl.post(data, this.callbackChangePluginApiV2Status.bind({
 				_self: this
 			}));
@@ -286,9 +347,19 @@ function eslRun() {
 
 		callbackChangePluginApiV2Status: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('Ответ changePluginApiV2Status:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data && response.data.wc_esl_shipping_plugin_enable_api_v2) {
+					const newValue = response.data.wc_esl_shipping_plugin_enable_api_v2 === 1 || response.data.wc_esl_shipping_plugin_enable_api_v2 === '1';
+					console.log('Обновляем чекбокс на:', newValue);
+					_self.enablePluginApiV2Checkbox.checked = newValue;
+				}
+			} else {
+				console.error('Ответ не содержит status');
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			console.log(response);
 			window.location.reload();
 		},
 
@@ -304,10 +375,11 @@ function eslRun() {
 		},
 
 		changeApiKey: function (apiKey) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_api_key';
-			data['api_key'] = apiKey;
+			data.action = 'wc_esl_shipping_save_api_key';
+			data.api_key = apiKey;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeApiKey.bind({
 				_self: this
@@ -316,7 +388,17 @@ function eslRun() {
 
 		callbackChangeApiKey: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeApiKey - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				// Обновляем значение в форме
+				if (response.data) {
+					console.log('callbackChangeApiKey - обновляем apiKeyInput на:', response.data);
+					_self.apiKeyInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
 			console.log(response);
 		},
@@ -333,10 +415,11 @@ function eslRun() {
 		},
 
 		changeApiKeyWCart: function (apiKey) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_api_key_wcart';
-			data['api_key'] = apiKey;
+			data.action = 'wc_esl_shipping_save_api_key_wcart';
+			data.api_key = apiKey;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeApiKeyWCart.bind({
 				_self: this
@@ -345,7 +428,17 @@ function eslRun() {
 
 		callbackChangeApiKeyWCart: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeApiKeyWCart - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				// Обновляем значение в форме
+				if (response.data) {
+					console.log('callbackChangeApiKeyWCart - обновляем apiKeyWCartInput на:', response.data);
+					_self.apiKeyWCartInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
 			console.log(response);
 		},
@@ -362,10 +455,11 @@ function eslRun() {
 		},
 
 		changeApiKeyYa: function (apiKeyYa) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_api_key_ya';
-			data['api_key_ya'] = apiKeyYa;
+			data.action = 'wc_esl_shipping_save_api_key_ya';
+			data.api_key_ya = apiKeyYa;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeApiKey.bind({
 				_self: this
@@ -374,7 +468,16 @@ function eslRun() {
 
 		callbackChangeApiKeyYa: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeApiKeyYa - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data) {
+					console.log('callbackChangeApiKeyYa - обновляем apiKeyYaInput на:', response.data);
+					_self.apiKeyYaInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
 			console.log(response);
 		},
@@ -391,10 +494,11 @@ function eslRun() {
 		},
 
 		changeWidgetSecretCode: function (secretCode) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_widget_secret_code';
-			data['secret_code'] = secretCode;
+			data.action = 'wc_esl_shipping_save_widget_secret_code';
+			data.secret_code = secretCode;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeWidgetSecretCode.bind({
 				_self: this
@@ -403,7 +507,16 @@ function eslRun() {
 
 		callbackChangeWidgetSecretCode: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeWidgetSecretCode - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data) {
+					console.log('callbackChangeWidgetSecretCode - обновляем widgetSecretCodeInput на:', response.data);
+					_self.widgetSecretCodeInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.widgetWrapperSelector);
 			console.log(response);
 		},
@@ -420,10 +533,11 @@ function eslRun() {
 		},
 
 		changeWidgetKey: function (widgetKey) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_widget_key';
-			data['widget_key'] = widgetKey;
+			data.action = 'wc_esl_shipping_save_widget_key';
+			data.widget_key = widgetKey;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeWidgetKey.bind({
 				_self: this
@@ -432,7 +546,16 @@ function eslRun() {
 
 		callbackChangeWidgetKey: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeWidgetKey - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data) {
+					console.log('callbackChangeWidgetKey - обновляем widgetKeyInput на:', response.data);
+					_self.widgetKeyInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.widgetWrapperSelector);
 			console.log(response);
 		},
@@ -449,10 +572,11 @@ function eslRun() {
 		},
 
 		changeWidgetBut: function (widgetBut) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_widget_but';
-			data['widget_but'] = widgetBut;
+			data.action = 'wc_esl_shipping_save_widget_but';
+			data.widget_but = widgetBut;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeWidgetBut.bind({
 				_self: this
@@ -461,7 +585,16 @@ function eslRun() {
 
 		callbackChangeWidgetBut: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackChangeWidgetBut - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data) {
+					console.log('callbackChangeWidgetBut - обновляем widgetButInput на:', response.data);
+					_self.widgetButInput.value = response.data;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.widgetWrapperSelector);
 			console.log(response);
 		},
@@ -484,7 +617,8 @@ function eslRun() {
 
 		changeDimensionMeasurementSelect: function (event) {
 			let _self = this._self;
-			let status = _self.dimensionMeasurement.value;
+			let status = event.target.value;
+			console.log('changeDimensionMeasurementSelect - event.target.value:', status);
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -492,10 +626,11 @@ function eslRun() {
 		},
 
 		changeDimensionMeasurementStatus: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_dimension_measurement';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_dimension_measurement';
+			data.status = status;
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			console.log(data)
 
@@ -506,7 +641,16 @@ function eslRun() {
 
 		callbackDimensionMeasurementStatus: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('callbackDimensionMeasurementStatus - response:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data && response.data.wc_esl_shipping_dimension_measurement) {
+					console.log('callbackDimensionMeasurementStatus - обновляем dimensionMeasurement на:', response.data.wc_esl_shipping_dimension_measurement);
+					_self.dimensionMeasurement.value = response.data.wc_esl_shipping_dimension_measurement;
+				}
+			} else {
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
 			console.log(response);
 		},
@@ -533,10 +677,11 @@ function eslRun() {
 		},
 
 		changeAddForm: function (addForm) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_add_form';
-			data['add_form'] = JSON.stringify(addForm);
+			data.action = 'wc_esl_shipping_save_add_form';
+			data.add_form = JSON.stringify(addForm);
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeAddForm.bind({
 				_self: this
@@ -567,10 +712,11 @@ function eslRun() {
 		},
 
 		changeExportForm: function (exportForm) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_export_form';
-			data['export_form'] = JSON.stringify(exportForm);
+			data.action = 'wc_esl_shipping_save_export_form';
+			data.export_form = JSON.stringify(exportForm);
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeExportForm.bind({
 				_self: this
@@ -622,10 +768,11 @@ function eslRun() {
 		},
 
 		changeStatusSaveForm: function (statusForm) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_save_status_form';
-			data['export_form'] = JSON.stringify(statusForm);
+			data.action = 'wc_esl_shipping_save_status_form';
+			data.export_form = JSON.stringify(statusForm);
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeStatusSaveForm.bind({
 				_self: this
@@ -641,7 +788,8 @@ function eslRun() {
 
 		changeEnableFrameCheckbox: function (event) {
 			let _self = this._self;
-			let status = _self.enableFrameCheckbox.checked;
+			let status = event.target.checked;
+			console.log('changeEnableFrameCheckbox - event.target.checked:', status);
 
 			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
 
@@ -649,10 +797,11 @@ function eslRun() {
 		},
 
 		changeFrameStatus: function (status) {
-			let data = [];
+			let data = {};
 
-			data['action'] = 'wc_esl_shipping_change_enable_frame';
-			data['status'] = status;
+			data.action = 'wc_esl_shipping_change_enable_frame';
+			data.status = status ? 'true' : 'false';
+			data.nonce = wc_esl_shipping_global.nonce;
 
 			HttpClientEsl.post(data, this.callbackChangeFrameStatus.bind({
 				_self: this
@@ -661,9 +810,19 @@ function eslRun() {
 
 		callbackChangeFrameStatus: function (response) {
 			let _self = this._self;
-			PushEsl.addItem(response.status, response.msg);
+			console.log('Ответ changeFrameStatus:', response);
+			if (response && response.status === 'success') {
+				PushEsl.addItem(response.status, response.msg);
+				if (response.data && response.data.wc_esl_shipping_frame_enable) {
+					const newValue = response.data.wc_esl_shipping_frame_enable === 1 || response.data.wc_esl_shipping_frame_enable === '1';
+					console.log('Обновляем чекбокс на:', newValue);
+					_self.enableFrameCheckbox.checked = newValue;
+				}
+			} else {
+				console.error('Ответ не содержит status');
+				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
+			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			console.log(response);
 		},
 
 
@@ -691,6 +850,7 @@ function sortableDelete(elem){
 				async: true,
 				data: {
 					action : 'wc_esl_update_cache',
+					nonce : wc_esl_shipping_global.nonce,
 				},
 				dataType: 'json',
 				success: function( response ) {
@@ -718,6 +878,7 @@ function sortableDelete(elem){
 				async: true,
 				data: {
 					action : 'wc_esl_save_payment_method',
+					nonce : wc_esl_shipping_global.nonce,
 					formData
 				},
 				dataType: 'json',

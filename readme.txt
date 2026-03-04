@@ -1,66 +1,52 @@
-=== Расчет доставки в корзине и карточке товара: СДЭК, DPD, Boxberry, Яндекс доставка, Энергия, Возовоз, Почта России, Деловые Линии, ПЭК, Dostavista, GTD, Байкал Сервис, ЖелДорЭкспедиция и др. ===
+=== eShopLogistic Shipping Calculator ===
 Contributors: Moonshine
-Tags: доставка, eshoplogistic, стоимость доставки, сдэк, яндекс доставка
-Tested up to: 6.8
-Stable tag: 2.1.60
+Tags: shipping,eshoplogistic,delivery,woocommerce
+Tested up to: 6.9
+Stable tag: 2.1.61
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Стоимость и срок доставки 18 службами доставки, карта выбора ПВЗ. Выгрузка заявок в кабинет службы доставки.
-Используется сервис [eshoplogistic.ru](https://eshoplogistic.ru/).
+Integration with eShopLogistic service for WooCommerce. Supports 18+ delivery services with real-time shipping calculations.
 
 == Description ==
-На данный момент блочный режим находится в разработке.
-Для работы плагина вам нужно переключиться на старый тип страницы оформления заказа описанный в [документации](https://wp-v2.eshoplogistic.ru/documentation-v2/).
 
-Официальный модуль eShopLogistic для WordPress.
+**English Description**
 
-Модуль проверен на версиях: 6.8. Совместим с CheckoutWC.
+eShopLogistic is the official WordPress plugin for integrating your WooCommerce store with the eShopLogistic service ([eshoplogistic.ru](https://eshoplogistic.ru/)).
 
-Плагин предназначен для интеграции woocommerce c сервисом [eshoplogistic.ru](https://eshoplogistic.ru/):
+This plugin offers comprehensive shipping integration with support for multiple Russian and international delivery services:
+- Display real-time shipping cost and delivery time calculations in shopping cart and product pages
+- Support for 18+ delivery carriers (CDEK, DPD, Post Russia, Dostavista, Boxberry, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and more)
+- Pickup point (PVZ) selection with interactive map
+- Automatic order export to carrier systems
+- Flexible shipping rules and adjustments
+- Support for custom shipping methods
+- Shipping calculator in product card, shopping cart, and custom pages via widgets
+- Order tracking with status updates
+- Comprehensive settings management panel
 
-1. Добавляет расчёт стоимости и срока доставки в корзине и карточке товара популярными службами доставки + вашей собственной, если она настроена в личном кабинете [my.eshoplogistic.ru](https:/my.eshoplogistic.ru/).
-2. Позволяет выгружать заказы в кабинеты транспортных компаний и получать их статусы в процессе доставки.
+**Feature Highlights:**
 
-Подробная документация и демо сайт: [wp-v2.eshoplogistic.ru](https://wp-v2.eshoplogistic.ru/).
+* Real-time shipping rate calculation for multiple carriers
+* Single unified pickup point selector across all carriers
+* One control panel for all delivery services with advanced customization
+* Shipping rate rules based on payment method, delivery type, destination, order amount, weight and more
+* Dynamic cost and delivery time adjustments per rule
+* Custom delivery methods support
+* Full order export and tracking capabilities
 
-### Основные возможности сервиса eShopLogistic:
+**Requirements:**
+- WordPress 6.0+
+- WooCommerce 4.0+
+- PHP 7.4+
 
-* Показывает сразу все варианты доставки нужными вам службами: Яндекс Доставка, СДЭК, Почта России, DPD, Деловые Линии, ПЭК, Dostavista, КИТ, Байкал Сервис, Желдорэкспедиция, Возовоз, Энергия, Магнит Пост, Постаматы «Халва Экспресс», Grastin, Logsis, 5POST(магазины «Пятёрочка» и «Перекрёсток») (по запросу подключим другие службы).
-* Легко подключаемые виджеты для отображения доставки в корзине, карточке товара или на любой другой странице сайта
-* Выгрузка заявок на доставку в кабинеты транспортных компаний
-* Настройка вашей собственной службы доставки
-* Гибкие правила корректировки стоимости и сроков доставки
-* Расчет доставки по России и СНГ
-* Удобный кабинет управления без привлечения программистов
+**Plugin Status:**
+Currently compatible with traditional checkout. Block-based checkout support is in development.
 
-Вес и габариты товаров для расчета могут быть указаны в карточках товаров на сайте, в коде вызова виджета или прописаны в настройках сервиса.
-В личном кабинете вы самостоятельно выбираете какие службы доставки вам нужны, а также настраиваете правила обработки тарифов.
-Правила могут быть составлены в зависимости от способа оплаты, типа доставки, направления доставки (конкретный город или область), суммы заказа, количества товаров в заказе, веса товаров в заказе. В зависимости от разных условий возможно скорректировать стоимость или срок доставки, а также вывести комментарий к службе доставки.
-Пример правила: для СДЕК в случае оплаты при получении добавить в стоимость доставки 3% от суммы чека, и добавить 1 день к сроку доставки.
-Еще пример правила: для Москвы адресную доставку оставить только своей службой доставки, отключив доставку сторонними службами, но самовывоз разрешить как со своего склада так и из ПВЗ служб доставки.
-
-### Преимущества eShopLogistic перед отдельными модулями для каждой службы доставки:
-
-* Расчет доставки в карточке товара.
-
-* Единая карта с ПВЗ для всех служб доставки.
-
-* Единый кабинет управления всеми службами доставки, с широкими возможностями настройки.
-
-* Установка и настройка всего одного модуля для CMS.
-
-* Единая техническая поддержка по всем вопросам, касаемых работы нашего сервиса со всеми транспортными компаниями.
-
-* Выгрузка заказов в кабинеты всех транспортных компаний в рамках одного решения.
-
-Модуль гарантированно работает правильно только на стандартной версии CMS, без кастомизаций.
-Если ваш сайт имеет какие-то кастомизации, не позволяющие установить модуль «как есть», вы можете сделать доработки своими силами.
-
-Для веб студий — выгодная реферальная система.
+For detailed documentation and demo: [wp-v2.eshoplogistic.ru](https://wp-v2.eshoplogistic.ru/)
 
 == Installation ==
 
-1. После активации плагина в главном меню админ-панели появится пункт меню «WC eShopLogistic». Для настройки работы плагина перейдите в этот пункт меню.
-2. Для начала вам нужно указать API ключ для сайта, который вы можете найти в своём личном аккаунте в системе eShopLogistic (см. документацию eShopLogistic).
-3. В настройках вам нужно указать (ассоциировать) какой метод оплаты eShopLogistic соответствует доступным на данный момент методам оплаты Woocommerce.
+1. After activating the plugin, go to "WC eShopLogistic" in the WordPress admin menu.
+2. Enter your API key from your eShopLogistic account ([my.eshoplogistic.ru](https://my.eshoplogistic.ru/)).
+3. Map your WooCommerce payment methods to eShopLogistic payment methods in the plugin settings.

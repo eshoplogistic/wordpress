@@ -18,11 +18,14 @@ let HttpClientEsl = {
         request.setRequestHeader( 'X-Requested-With', 'XMLHttpRequest' );
         request.setRequestHeader( "Content-type", "application/x-www-form-urlencoded" );
 
-        request.send( this.serialize( data ) );
+        let serialized = this.serialize( data );
+        console.log('Отправляем HTTP запрос:', method, wc_esl_shipping_global.ajaxUrl, serialized);
+        request.send( serialized );
 
         request.addEventListener( "readystatechange", () => {
 
             if( request.readyState === 4 ) {
+                console.log('Ответ пришёл:', request.status, request.response);
 
                 if(!callback_func) return;
 

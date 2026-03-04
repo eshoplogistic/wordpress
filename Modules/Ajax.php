@@ -80,7 +80,19 @@ class Ajax implements ModuleInterface
 
 	public function changeEnablePlugin()
 	{		
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -98,7 +110,19 @@ class Ajax implements ModuleInterface
 
 	public function changeEnablePluginPriceShipping()
 	{
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -116,7 +140,19 @@ class Ajax implements ModuleInterface
 
 	public function changeEnablePluginLog()
 	{
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -134,7 +170,19 @@ class Ajax implements ModuleInterface
 
 	public function changeEnablePluginApiV2()
 	{
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -152,7 +200,19 @@ class Ajax implements ModuleInterface
 
 	public function saveApiKey()
 	{
-		$api_key = !empty($_POST['api_key']) ? wc_clean($_POST['api_key']) : '';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$api_key = !empty($_POST['api_key']) ? sanitize_text_field(wp_unslash($_POST['api_key'])) : '';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveApiKey($api_key);
@@ -162,7 +222,19 @@ class Ajax implements ModuleInterface
 
 	public function saveApiKeyWCart()
 	{
-		$api_key = !empty($_POST['api_key']) ? wc_clean($_POST['api_key']) : '';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$api_key = !empty($_POST['api_key']) ? sanitize_text_field(wp_unslash($_POST['api_key'])) : '';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveApiKeyWCart($api_key);
@@ -173,7 +245,19 @@ class Ajax implements ModuleInterface
 
 	public function saveApiKeyYa()
 	{
-		$api_key_ya = !empty($_POST['api_key_ya']) ? wc_clean($_POST['api_key_ya']) : '';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$api_key_ya = !empty($_POST['api_key_ya']) ? sanitize_text_field(wp_unslash($_POST['api_key_ya'])) : '';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveApiKeyYa($api_key_ya);
@@ -183,7 +267,19 @@ class Ajax implements ModuleInterface
 
 	public function saveWidgetSecretCode()
 	{
-		$secretCode = !empty($_POST['secret_code']) ? wc_clean($_POST['secret_code']) : '';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$secretCode = !empty($_POST['secret_code']) ? sanitize_text_field(wp_unslash($_POST['secret_code'])) : '';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveWidgetSecretCode($secretCode);
@@ -193,7 +289,19 @@ class Ajax implements ModuleInterface
 
 	public function saveWidgetKey()
 	{
-		$widgetKey = !empty($_POST['widget_key']) ? wc_clean($_POST['widget_key']) : '';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$widgetKey = !empty($_POST['widget_key']) ? sanitize_text_field(wp_unslash($_POST['widget_key'])) : '';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveWidgetKey($widgetKey);
@@ -203,7 +311,19 @@ class Ajax implements ModuleInterface
 
 	public function saveWidgetBut()
 	{
-		$widgetBut = !empty($_POST['widget_but']) ? wc_clean($_POST['widget_but']) : 'Рассчитать доставку';
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$widgetBut = !empty($_POST['widget_but']) ? sanitize_text_field(wp_unslash($_POST['widget_but'])) : 'Рассчитать доставку';
 
 		$optionsController = new OptionsController();
 		$response = $optionsController->saveWidgetBut($widgetBut);
@@ -213,7 +333,20 @@ class Ajax implements ModuleInterface
 
 	public function saveAddForm()
 	{
-		$addFrom = !empty($_POST['add_form']) ? $this->sanitize_array($_POST['add_form']) : [];
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
+		$addFrom = !empty($_POST['add_form']) ? $this->sanitize_array(wp_unslash($_POST['add_form'])) : [];
 		$addFrom = stripslashes(html_entity_decode($addFrom));
 		$addFrom = json_decode($addFrom, true);
 		$result = array();
@@ -238,7 +371,20 @@ class Ajax implements ModuleInterface
 
 	public function saveExportForm()
 	{
-		$exportFrom = !empty($_POST['export_form']) ? $this->sanitize_array($_POST['export_form']) : [];
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
+		$exportFrom = !empty($_POST['export_form']) ? $this->sanitize_array(wp_unslash($_POST['export_form'])) : [];
 		$exportFrom = stripslashes(html_entity_decode($exportFrom));
 		$exportFrom = json_decode($exportFrom, true);
 		$result = array();
@@ -256,8 +402,22 @@ class Ajax implements ModuleInterface
 
 	public function saveAddField()
 	{
-		$addField = !empty($_POST['result']) ? $this->sanitize_array($_POST['result']) : [];
-		$type = !empty($_POST['type']) ? $this->sanitize_array($_POST['type']) : [];
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
+		$addField = !empty($_POST['result']) ? $this->sanitize_array(wp_unslash($_POST['result'])) : [];
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
+		$type = !empty($_POST['type']) ? $this->sanitize_array(wp_unslash($_POST['type'])) : [];
 		$addField = stripslashes(html_entity_decode($addField));
 		$addField = json_decode($addField, true);
 
@@ -279,9 +439,21 @@ class Ajax implements ModuleInterface
 
 	public function searchCities()
 	{
-		$target = isset($_POST['target']) ? esc_url_raw(wc_clean($_POST['target'])) : '';
-		$currentCountry = isset($_POST['currentCountry']) ? wc_clean($_POST['currentCountry']) : '';
-		$typeFilter = isset($_POST['typeFilter']) ? wc_clean($_POST['typeFilter']) : 'false';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$target = isset($_POST['target']) ? sanitize_text_field(wp_unslash($_POST['target'])) : '';
+		$target = trim($target);
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$currentCountry = isset($_POST['currentCountry']) ? sanitize_text_field(wp_unslash($_POST['currentCountry'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$typeFilter = isset($_POST['typeFilter']) ? sanitize_text_field(wp_unslash($_POST['typeFilter'])) : 'false';
+
+		$targetLength = function_exists('mb_strlen') ? mb_strlen($target) : strlen($target);
+		if ($targetLength < 2) {
+			wp_send_json([
+				'success' => true,
+				'data' => []
+			]);
+		}
 
 		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
 		$result = $eshopLogisticApi->search($target, $currentCountry);
@@ -308,13 +480,20 @@ class Ajax implements ModuleInterface
 
 	public function updateShippingAddress()
 	{
-		$fias = isset($_POST['fias']) ? wc_clean($_POST['fias']) : '';
-		$city = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
-		$adress = isset($_POST['adress']) ? wc_clean($_POST['adress']) : '';
-		$region = isset($_POST['region']) ? wc_clean($_POST['region']) : '';
-		$postcode = isset($_POST['postcode']) ? wc_clean($_POST['postcode']) : '';
-		$services = isset($_POST['services']) ? $this->sanitize_array($_POST['services']) : [];
-		$mode = isset($_POST['mode']) ? wc_clean($_POST['mode']) : 'billing';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$fias = isset($_POST['fias']) ? sanitize_text_field(wp_unslash($_POST['fias'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$city = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$adress = isset($_POST['adress']) ? sanitize_text_field(wp_unslash($_POST['adress'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$region = isset($_POST['region']) ? sanitize_text_field(wp_unslash($_POST['region'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$postcode = isset($_POST['postcode']) ? sanitize_text_field(wp_unslash($_POST['postcode'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_array
+		$services = isset($_POST['services']) ? $this->sanitize_array(wp_unslash($_POST['services'])) : [];
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : 'billing';
 
 		$data = [
 			'shipping_city' => $city,
@@ -362,13 +541,27 @@ class Ajax implements ModuleInterface
 
 	public function updateCache()
 	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
 		global $wpdb;
 
 		$like = '%transient_' . WC_ESL_PREFIX . '%';
-		$query = "SELECT `option_name` AS `name` FROM $wpdb->options WHERE `option_name` LIKE '$like' ORDER BY `option_name`";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is variable from wpdb object
+		$query = $wpdb->prepare("SELECT `option_name` AS `name` FROM " . $wpdb->options . " WHERE `option_name` LIKE %s ORDER BY `option_name`", $like);
 		$cache_key = 'wc_esl_transients_list';
 		$transients = wp_cache_get($cache_key, 'eshoplogisticru');
 		if ($transients === false) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared -- Intentional options table query for transient cleanup, query is prepared above.
 			$transients = $wpdb->get_results($query);
 			wp_cache_set($cache_key, $transients, 'eshoplogisticru', 60); // кэш на 60 секунд
 		}
@@ -396,7 +589,19 @@ class Ajax implements ModuleInterface
 
 	public function savePaymentMethod()
 	{
-		$formData = isset($_POST['formData']) ? $_POST['formData'] : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$formData = isset($_POST['formData']) ? sanitize_text_field(wp_unslash($_POST['formData'])) : null;
 
 		if (is_null($formData)) {
 			wp_send_json([
@@ -444,8 +649,10 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalAddress()
 	{
-		$terminal = isset($_POST['terminal']) ? wc_clean($_POST['terminal']) : '';
-		$terminal_code = isset($_POST['terminal_code']) ? wc_clean($_POST['terminal_code']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$terminal = isset($_POST['terminal']) ? sanitize_text_field(wp_unslash($_POST['terminal'])) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$terminal_code = isset($_POST['terminal_code']) ? sanitize_text_field(wp_unslash($_POST['terminal_code'])) : '';
 
 		if (!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogisticru')]);
 
@@ -461,7 +668,8 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalFilter()
 	{
-		$filters = isset($_POST['filters']) ? wc_clean($_POST['filters']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$filters = isset($_POST['filters']) ? sanitize_text_field(wp_unslash($_POST['filters'])) : '';
 		$filters =  json_decode(stripslashes($filters), true);
 		$terminals = array();
 
@@ -538,6 +746,7 @@ class Ajax implements ModuleInterface
 
 	public function resetShippingAddress()
 	{
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Public AJAX endpoint for session reset functionality
 		try {
 			$sessionService = new SessionService();
 			$sessionService->dropAll();
@@ -557,7 +766,19 @@ class Ajax implements ModuleInterface
 
 	public function changeDimensionMeasurement()
 	{
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -576,9 +797,11 @@ class Ajax implements ModuleInterface
 
 	public function updateShipping()
 	{
-		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_array
+		$data = isset($_POST['data']) ? $this->sanitize_array(wp_unslash($_POST['data'])) : '';
 		$data =  json_decode(stripslashes($data), true);
-		$data['city'] = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		$data['city'] = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
 		if (!isset($data['address']) || !$data['address'])
@@ -587,7 +810,19 @@ class Ajax implements ModuleInterface
 
 	public function changeEnableFrame()
 	{
-		$status = isset($_POST['status']) ? wc_clean($_POST['status']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
 
 		$options = [];
 
@@ -605,7 +840,20 @@ class Ajax implements ModuleInterface
 
 	public function unloadingEnable()
 	{
-		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
+		$data = isset($_POST['data']) ? $this->sanitize_array(wp_unslash($_POST['data'])) : null;
 
 		$unloading = new Unloading();
 		$resultParams = $unloading->params_delivery_init($data);
@@ -615,6 +863,7 @@ class Ajax implements ModuleInterface
 
 			$logger = wc_get_logger();
 			$context = array('source' => 'esl-error-load-unloading');
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Debug logging for error tracking
 			$logger->info(print_r($error, true),  $context);
 
 			if (isset($error['data']['errors'])) {
@@ -638,6 +887,7 @@ class Ajax implements ModuleInterface
 
 	public function unloadingDelete()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
 		if (
 			!isset($_POST['order_id']) ||
 			!isset($_POST['order_type']) ||
@@ -648,8 +898,9 @@ class Ajax implements ModuleInterface
 			wp_send_json_error('Недостаточно прав или неверный nonce');
 		}
 
-		$order_id = $_POST['order_id'];
-		$order_type = sanitize_text_field($_POST['order_type']);
+		$order_id = absint(wp_unslash($_POST['order_id']));
+		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$unloading = new Unloading();
 		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
@@ -663,6 +914,7 @@ class Ajax implements ModuleInterface
 
 	public function unloadingInfo()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
 		if (
 			!isset($_POST['order_id']) ||
 			!isset($_POST['order_type']) ||
@@ -673,8 +925,9 @@ class Ajax implements ModuleInterface
 			wp_send_json_error('Недостаточно прав или неверный nonce');
 		}
 
-		$order_id = $_POST['order_id'];
-		$order_type = sanitize_text_field($_POST['order_type']);
+		$order_id = absint(wp_unslash($_POST['order_id']));
+		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$unloading = new Unloading();
 		$result = $unloading->infoOrder($order_id, $order_type);
@@ -725,16 +978,18 @@ class Ajax implements ModuleInterface
 
 	public function unloadingStatus()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
 		if (
 			!isset($_POST['export_form']) ||
-			!isset($_POST['esl_nonce']) ||
-			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!isset($_POST['nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ||
 			!current_user_can('manage_woocommerce')
 		) {
 			wp_send_json_error('Недостаточно прав или неверный nonce');
 		}
 
 		$export_form_raw = sanitize_text_field(wp_unslash($_POST['export_form']));
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$data = json_decode(stripslashes($export_form_raw), true);
 		if (is_array($data)) {
 			$data = $this->sanitize_array($data);
@@ -758,6 +1013,7 @@ class Ajax implements ModuleInterface
 
 	public function unloadingStatusUpdate()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
 		if (
 			!isset($_POST['order_id']) ||
 			!isset($_POST['order_type']) ||
@@ -768,8 +1024,9 @@ class Ajax implements ModuleInterface
 			wp_send_json_error('Недостаточно прав или неверный nonce');
 		}
 
-		$order_id = $_POST['order_id'];
-		$order_type = sanitize_text_field($_POST['order_type']);
+		$order_id = absint(wp_unslash($_POST['order_id']));
+		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$unloading = new Unloading();
 		$status = $unloading->infoOrder($order_id, $order_type);
@@ -801,7 +1058,19 @@ class Ajax implements ModuleInterface
 
 	public function getAddField()
 	{
-	$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : null;
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : null;
 
 		$optionsRepository = new OptionsRepository();
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
@@ -884,8 +1153,8 @@ class Ajax implements ModuleInterface
 
 					// Выводим контейнер поля формы
 					$html .= '
-                                <div class="form-field_add ' . $styleForm . '">
-                                <label class="label" for="' . $name . '">' . $nameRu . '</label>
+                                <div class="form-field_add ' . esc_attr($styleForm) . '">
+                                <label class="label" for="' . esc_attr($name) . '">' . esc_html($nameRu) . '</label>
                                 ';
 
 
@@ -898,61 +1167,59 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
 								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
 							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="text" value="' . $valueSaved . '">';
-							break;
+						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
+						break;
 
-						case 'checkbox':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
-								$valueSaved = 'checked';
-							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="checkbox" ' . $valueSaved . '>';
-							break;
+					case 'checkbox':
+						$valueSaved = '';
+						if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
+							$valueSaved = 'checked';
+						}
+						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
+						break;
 
-						case 'date':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="date" value="' . $valueSaved . '">';
-							break;
+					case 'date':
+						$valueSaved = '';
+						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
+							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
+						}
+						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
+						break;
 
-						case 'select':
-							$html .= '<select class="form-value" name="' . $nameValue . '">';
-
-							// Цикл по опциям селекта
-							if (is_array($value)) {
-								foreach ($value as $k => $v) {
-									if (is_array($v) && isset($v['text'])) {
-										$valueSaved = '';
-										if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-											$valueSaved = 'selected';
-										}
-										$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v['text'] . '</option>';
-									} else {
-										$valueSaved = '';
-										if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-											$valueSaved = 'selected';
-										}
-										$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v . '</option>';
+					case 'select':
+						$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
+						// Цикл по опциям селекта
+						if (is_array($value)) {
+							foreach ($value as $k => $v) {
+								if (is_array($v) && isset($v['text'])) {
+									$valueSaved = '';
+									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+										$valueSaved = 'selected';
 									}
+									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
+								} else {
+									$valueSaved = '';
+									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
+										$valueSaved = 'selected';
+									}
+									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
 								}
 							}
-
-							$html .= '</select>';
-							break;
-					}
-
-					$html .= '</div>';
+						}
+						$html .= '</select>';
+						break;
 				}
+
+				$html .= '</div>';
 			}
 		}
+	}
 
-		$sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery(mb_strtolower($type));
+	$sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery(mb_strtolower($type));
 
-		if ($sttExForOneDelivery) {
-			foreach ($sttExForOneDelivery as $nameArr => $arr) {
-				foreach ($arr as $key => $value) {
+	if ($sttExForOneDelivery) {
+		foreach ($sttExForOneDelivery as $nameArr => $arr) {
+			foreach ($arr as $key => $value) {
 					list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
 					$nameRu = $nameRu ?? $name;
 					$styleForm = '';
@@ -976,7 +1243,7 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
 								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
 							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="text" value="' . $valueSaved . '">';
+							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
 							break;
 
 						case 'checkbox':
@@ -984,7 +1251,7 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
 								$valueSaved = 'checked';
 							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="checkbox" ' . $valueSaved . '>';
+							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
 							break;
 
 						case 'date':
@@ -992,7 +1259,7 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
 								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
 							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="date" value="' . $valueSaved . '">';
+							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
 							break;
 
 						case 'number':
@@ -1000,29 +1267,26 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
 								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
 							}
-							$html .= '<input class="form-value" name="' . $nameValue . '" type="number" value="' . $valueSaved . '">';
+							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="number" value="' . esc_attr($valueSaved) . '">';
 							break;
 
 						case 'select':
-							$html .= '<select class="form-value" name="' . $nameValue . '">';
-
-							// Цикл по опциям селекта
+							$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
 							foreach ($value as $k => $v) {
 								if (is_array($v) && isset($v['text'])) {
 									$valueSaved = '';
 									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
 										$valueSaved = 'selected';
 									}
-									$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v['text'] . '</option>';
+									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
 								} else {
 									$valueSaved = '';
 									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
 										$valueSaved = 'selected';
 									}
-									$html .= '<option value="' . $k . '" ' . $valueSaved . '>' . $v . '</option>';
+									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
 								}
 							}
-
 							$html .= '</select>';
 							break;
 					}
@@ -1045,8 +1309,8 @@ class Ajax implements ModuleInterface
             <div class="form-field_add">
                 <label class="label">Способ доставки до терминала ТК</label>
                  <select name="pick_up" class="form-value">
-                    <option value="0" ' . $checkSelf . '>Сами привезём на терминал транспортной компании</option>
-                    <option value="1" ' . $checkTK . '>Груз заберёт транспортная компания</option>
+                    <option value="0" ' . esc_attr($checkSelf) . '>Сами привезём на терминал транспортной компании</option>
+                    <option value="1" ' . esc_attr($checkTK) . '>Груз заберёт транспортная компания</option>
                  </select>
             </div>
         ';
