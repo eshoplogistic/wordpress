@@ -118,13 +118,8 @@ class OrderCreator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-
 		if($typeServiceShipping === 'mixed') return true;
         if($typeServiceShipping !== 'terminal') return false;
-		if(!$moduleVersion)
-	        if($serviceShipping === 'postrf') return false;
 
         return true;
     }

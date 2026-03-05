@@ -65,7 +65,6 @@ class OptionsPage implements ModuleInterface
 		$plugin_enable = $this->option->getOption('wc_esl_shipping_plugin_enable');
 		$plugin_enable_price_shipping = $this->option->getOption('wc_esl_shipping_plugin_enable_price_shipping');
 		$plugin_enable_log = $this->option->getOption('wc_esl_shipping_plugin_enable_log');
-		$plugin_enable_api_v2 = $this->option->getOption('wc_esl_shipping_plugin_enable_api_v2');
 		$api_key = $this->option->getOption('wc_esl_shipping_api_key');
 		$api_key_wcart = $this->option->getOption('wc_esl_shipping_api_key_wcart');
 		$api_key_ya = $this->option->getOption('wc_esl_shipping_api_key_ya');
@@ -77,7 +76,6 @@ class OptionsPage implements ModuleInterface
 			'wc_esl_plugin_enable'     => $plugin_enable,
 			'wc_esl_plugin_enable_price_shipping' => $plugin_enable_price_shipping,
 			'wc_esl_plugin_enable_log' => $plugin_enable_log,
-			'wc_esl_plugin_enable_api_v2' => $plugin_enable_api_v2,
 			'wc_esl_api_key'           => $api_key,
 			'wc_esl_api_key_wcart'           => $api_key_wcart,
 			'wc_esl_api_key_ya'           => $api_key_ya,

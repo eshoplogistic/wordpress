@@ -101,42 +101,29 @@ class AssetsLoader implements ModuleInterface
 				WC_ESL_VERSION,
 				true
 			);
-			$moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-
-			if(isset($moduleVersion) && $moduleVersion == '1'){
-				wp_enqueue_script(
-					'wc_esl_app_frame_js_v2',
-					'https://api.esplc.ru/widgets/cart/app.js',
-					[],
-					WC_ESL_VERSION,
-					true
-				);
-				wp_enqueue_script(
-					'wc_esl_object_hash',
-					WC_ESL_PLUGIN_URL . 'assets/js/object_hash.js',
-					[],
-					WC_ESL_VERSION,
-					true
-				);
-				wp_enqueue_script(
-					'wc_esl_checkout_frame_js_v2',
-					WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
-					[ 'jquery' ],
-					WC_ESL_VERSION,
-					true
-				);
-				$this->injectGlobals('wc_esl_object_hash');
-				$this->injectGlobals('wc_esl_checkout_frame_js_v2');
-			}else{
-				wp_enqueue_script(
-					'wc_esl_checkout_frame_js',
-					WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame.js',
-					[ 'jquery' ],
-					WC_ESL_VERSION,
-					true
-				);
-				$this->injectGlobals('wc_esl_checkout_frame_js');
-			}
+			wp_enqueue_script(
+				'wc_esl_app_frame_js_v2',
+				'https://api.esplc.ru/widgets/cart/app.js',
+				[],
+				WC_ESL_VERSION,
+				true
+			);
+			wp_enqueue_script(
+				'wc_esl_object_hash',
+				WC_ESL_PLUGIN_URL . 'assets/js/object_hash.js',
+				[],
+				WC_ESL_VERSION,
+				true
+			);
+			wp_enqueue_script(
+				'wc_esl_checkout_frame_js_v2',
+				WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
+				[ 'jquery' ],
+				WC_ESL_VERSION,
+				true
+			);
+			$this->injectGlobals('wc_esl_object_hash');
+			$this->injectGlobals('wc_esl_checkout_frame_js_v2');
 
 		}
 
@@ -239,11 +226,10 @@ class AssetsLoader implements ModuleInterface
 		}
 
 		$optionsRepository = new OptionsRepository();
-		$moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
 		$shippingHelper = new ShippingHelper();
 		$pageType = $shippingHelper->admin_post_type();
 
-		if( $pageType === 'shop_order' && $moduleVersion){
+		if( $pageType === 'shop_order' ){
 			wp_enqueue_style(
 				'wc_esl_unloading_css',
 				WC_ESL_PLUGIN_URL . 'assets/css/unloading.css',

@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- View template local variables.
 
 $optionsRepository = new OptionsRepository();
-$moduleVersion     = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
 $eshopLogisticApi  = new EshopLogisticApi( new WpHttpClient() );
 if ( ! did_action( 'wp_enqueue_media' ) ) {
 	wp_enqueue_media();
@@ -23,8 +22,8 @@ $list_fields = $WC_Checkout->get_checkout_fields();
 $plugin_enable                = isset( $wc_esl_plugin_enable ) ? $wc_esl_plugin_enable : '0';
 $plugin_enable_price_shipping = isset( $wc_esl_plugin_enable_price_shipping ) ? $wc_esl_plugin_enable_price_shipping : '1';
 $plugin_enable_log            = isset( $wc_esl_plugin_enable_log ) ? $wc_esl_plugin_enable_log : '0';
-$plugin_enable_api_v2         = isset( $wc_esl_plugin_enable_api_v2 ) ? $wc_esl_plugin_enable_api_v2 : '0';
-$api_key                      = ! empty( $wc_esl_api_key ) ? $wc_esl_api_key : '';
+    $moduleVersion                = '1';
+    $api_key                      = ! empty( $wc_esl_api_key ) ? $wc_esl_api_key : '';
 $api_key_wcart                = ! empty( $wc_esl_api_key_wcart ) ? $wc_esl_api_key_wcart : '';
 $api_key_ya                   = ! empty( $wc_esl_api_key_ya ) ? $wc_esl_api_key_ya : '';
 $paymentMethods               = isset( $wc_esl_paymentMethods ) ? $wc_esl_paymentMethods : [];
@@ -175,31 +174,6 @@ $status_translate             = [
                                                     Путь к файлу: 
                                                     <a href="<?php echo esc_url(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?>">
                                                         <?php echo esc_html(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?></a>
-                                                </p>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group row align-items-center mb-3">
-                                <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e( 'Включить / выключить новую версию api', 'eshoplogisticru' ) ?>
-                                </label>
-                                <div class="col-sm-5">
-                                    <div class="custom-control custom-switch">
-                                        <input
-                                                type="checkbox"
-                                                class="custom-control-input"
-                                                id="enablePluginApiV2"
-                                                name="enable_plugin_api_v2"
-                                            <?php echo esc_attr($plugin_enable_api_v2 === '1' ? 'checked' : '') ?>
-                                        >
-                                        <label class="custom-control-label" for="enablePluginApiV2">
-                                            <div class="help-tip">
-                                                <p>
-                                                    Данный параметр включает новую версию API. (личный кабинет <a
-                                                            href="https://my.eshoplogistic.ru" target="_blank">my.eshoplogistic.ru</a>)
                                                 </p>
                                             </div>
                                         </label>

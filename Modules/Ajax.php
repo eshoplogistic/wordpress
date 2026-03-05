@@ -49,6 +49,9 @@ class Ajax implements ModuleInterface
 
 		add_action('wp_ajax_nopriv_wc_esl_update_shipping', [$this, 'updateShipping']);
 		add_action('wp_ajax_wc_esl_update_shipping', [$this, 'updateShipping']);
+
+		add_action('wp_ajax_nopriv_wc_esl_get_shipping_data', [$this, 'getShippingData']);
+		add_action('wp_ajax_wc_esl_get_shipping_data', [$this, 'getShippingData']);
 	}
 
 	public function initAdminRoutes()
@@ -56,7 +59,6 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin', [$this, 'changeEnablePlugin']);
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin_price_shipping', [$this, 'changeEnablePluginPriceShipping']);
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin_log', [$this, 'changeEnablePluginLog']);
-		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin_api_v2', [$this, 'changeEnablePluginApiV2']);
 		add_action('wp_ajax_wc_esl_shipping_save_api_key', [$this, 'saveApiKey']);
 		add_action('wp_ajax_wc_esl_shipping_save_api_key_wcart', [$this, 'saveApiKeyWCart']);
 		add_action('wp_ajax_wc_esl_shipping_save_api_key_ya', [$this, 'saveApiKeyYa']);
@@ -158,36 +160,6 @@ class Ajax implements ModuleInterface
 
 		$options['data']['wc_esl_shipping'] = array(
 			'plugin_enable_log' => $status === 'true' ? 1 : 0
-		);
-
-		$request = new Request($options);
-
-		$optionsController = new OptionsController();
-		$response = $optionsController->save($request);
-
-		$response->send();
-	}
-
-	public function changeEnablePluginApiV2()
-	{
-		// Nonce verification
-		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
-			wp_send_json_error('Security check failed');
-			return;
-		}
-
-		// Permission check
-		if( !current_user_can('manage_woocommerce') ) {
-			wp_send_json_error('Insufficient permissions');
-			return;
-		}
-
-		$status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : null;
-
-		$options = [];
-
-		$options['data']['wc_esl_shipping'] = array(
-			'plugin_enable_api_v2' => $status === 'true' ? 1 : 0
 		);
 
 		$request = new Request($options);
@@ -495,6 +467,8 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : 'billing';
 
+		error_log('🔔 [Ajax] updateShippingAddress called with mode: ' . $mode . ', city: ' . $city . ', fias: ' . $fias);
+
 		$data = [
 			'shipping_city' => $city,
 			'shipping_adress' => $adress,
@@ -512,6 +486,8 @@ class Ajax implements ModuleInterface
 			'services' => $services,
 			'postcode' => $postcode,
 		];
+
+		error_log('📦 [Ajax] Data to save: ' . json_encode($data));
 
 		switch ($mode) {
 			case 'billing':
@@ -535,6 +511,8 @@ class Ajax implements ModuleInterface
 		]);
 		$sessionController = new SessionController();
 		$response = $sessionController->saveShippingAddress($request);
+
+		error_log('✅ [Ajax] updateShippingAddress response sent');
 
 		$response->send();
 	}
@@ -806,6 +784,19 @@ class Ajax implements ModuleInterface
 		$sessionService->set('esl_shipping_frame', $data);
 		if (!isset($data['address']) || !$data['address'])
 			$sessionService->drop('terminal_location');
+	}
+
+	public function getShippingData()
+	{
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint
+		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : 'billing';
+
+		$request = new Request(['mode' => $mode]);
+
+		$sessionController = new SessionController();
+		$response = $sessionController->getShippingData($request);
+
+		$response->send();
 	}
 
 	public function changeEnableFrame()

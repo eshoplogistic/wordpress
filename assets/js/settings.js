@@ -48,7 +48,6 @@ function eslRun() {
 		enablePluginCheckbox: document.getElementById('enablePlugin'),
 		enablePluginPriceShippingCheckbox: document.getElementById('enablePluginPriceShipping'),
 		enablePluginLogCheckbox: document.getElementById('enablePluginLog'),
-		enablePluginApiV2Checkbox: document.getElementById('enablePluginApiV2'),
 		apiKeyInput: document.getElementById('apiKeyInput'),
 		apiKeyForm: document.getElementById('apiKeyForm'),
 		apiKeyWCartInput: document.getElementById('apiKeyWCartInput'),
@@ -86,10 +85,6 @@ function eslRun() {
 			}));
 
 			this.enablePluginLogCheckbox.addEventListener('change', this.changeEnablePluginLogCheckbox.bind({
-				_self: this
-			}));
-
-			this.enablePluginApiV2Checkbox.addEventListener('change', this.changeEnablePluginApiV2Checkbox.bind({
 				_self: this
 			}));
 
@@ -319,48 +314,6 @@ function eslRun() {
 				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
 			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-		},
-
-		changeEnablePluginApiV2Checkbox: function (event) {
-			let _self = this._self;
-			let status = event.target.checked;
-			console.log('changeEnablePluginApiV2Checkbox - event.target.checked:', status);
-
-			PreloaderEsl.show(_self.generalOptionsWrapperSelector);
-
-			_self.changePluginApiV2Status(status);
-		},
-
-		changePluginApiV2Status: function (status) {
-			let data = {};
-
-			data.action = 'wc_esl_shipping_change_enable_plugin_api_v2';
-			data.status = status ? 'true' : 'false';
-			data.nonce = wc_esl_shipping_global.nonce;
-
-			console.log('Отправляем данные changePluginApiV2Status:', data);
-
-			HttpClientEsl.post(data, this.callbackChangePluginApiV2Status.bind({
-				_self: this
-			}));
-		},
-
-		callbackChangePluginApiV2Status: function (response) {
-			let _self = this._self;
-			console.log('Ответ changePluginApiV2Status:', response);
-			if (response && response.status === 'success') {
-				PushEsl.addItem(response.status, response.msg);
-				if (response.data && response.data.wc_esl_shipping_plugin_enable_api_v2) {
-					const newValue = response.data.wc_esl_shipping_plugin_enable_api_v2 === 1 || response.data.wc_esl_shipping_plugin_enable_api_v2 === '1';
-					console.log('Обновляем чекбокс на:', newValue);
-					_self.enablePluginApiV2Checkbox.checked = newValue;
-				}
-			} else {
-				console.error('Ответ не содержит status');
-				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка');
-			}
-			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
-			window.location.reload();
 		},
 
 		submitApiKeyForm: function (event) {

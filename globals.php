@@ -47,71 +47,36 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
-		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
+		$shippingHelper = new ShippingHelper();
+		$length = $shippingHelper->dimensionsOption($wc_product['length']);
+		$width = $shippingHelper->dimensionsOption($wc_product['width']);
+		$height = $shippingHelper->dimensionsOption($wc_product['height']);
+		$item[]   = array(
+			'article' => $wc_product['id'],
+			'name'    => $wc_product['name'],
+			'count'   => 1,
+			'price'   => $wc_product['price'],
+			'weight'  => $wc_product['weight'],
+			'dimensions' => $length.'*'.$width.'*'.$height
+		);
+		$jsonItem = esc_attr( wp_json_encode( $item ) );
 
-		if ( $moduleVersion ) {
-			$shippingHelper = new ShippingHelper();
-			$length = $shippingHelper->dimensionsOption($wc_product['length']);
-			$width = $shippingHelper->dimensionsOption($wc_product['width']);
-			$height = $shippingHelper->dimensionsOption($wc_product['height']);
-			$item[]   = array(
-				'article' => $wc_product['id'],
-				'name'    => $wc_product['name'],
-				'count'   => 1,
-				'price'   => $wc_product['price'],
-				'weight'  => $wc_product['weight'],
-				'dimensions' => $length.'*'.$width.'*'.$height
-			);
-			$jsonItem = esc_attr( wp_json_encode( $item ) );
+		$block_content = '<button data-esl-widget data-title="' . esc_attr('Быстрый заказ с доставкой') . '">' . esc_html('Быстрый заказ с доставкой') . '</button>';
+		$block_content .= '<div id="eShopLogisticWidgetModal"
+					data-lazy-load="true"
+					data-debug="1"
+					data-ip="' . esc_attr(apply_filters( 'wc_esl_get_ip', $ip )) . '"
+					data-key="' . esc_attr($widgetKey) . '"
+					data-offers="' . esc_attr($jsonItem) . '">
+					</div>';
 
-			$block_content = '<button data-esl-widget data-title="' . esc_attr('Быстрый заказ с доставкой') . '">' . esc_html('Быстрый заказ с доставкой') . '</button>';
-			$block_content .= '<div id="eShopLogisticWidgetModal"
-						data-lazy-load="true"
-						data-debug="1"
-						data-ip="' . esc_attr(apply_filters( 'wc_esl_get_ip', $ip )) . '"
-						data-key="' . esc_attr($widgetKey) . '"
-						data-offers="' . esc_attr($jsonItem) . '">
-						</div>';
-
-			wp_enqueue_script(
-				'wc_esl_app_v2_js',
-				'https://api.esplc.ru/widgets/modal/app.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-		} else {
-			$block_content = sprintf(
-				'<button type="button" 
-            data-widget-button="" 
-            data-article="%1$s" 
-            data-name="%2$s" 
-            data-price="%3$s" 
-            data-unit="" 
-            data-weight="%4$s"
-            data-ip="%5$s">
-            %6$s
-            </button>',
-				esc_attr($wc_product['id']),
-				esc_attr($wc_product['name']),
-				esc_attr($wc_product['price']),
-				esc_attr($wc_product['weight']),
-				esc_attr(apply_filters( 'wc_esl_get_ip', $ip )),
-				esc_html($widgetBut)
-			);
-			$block_content .= sprintf(
-				'<div id="eShopLogisticApp" data-key="%1$s"></div>',
-				esc_attr($widgetKey)
-			);
-
-			wp_enqueue_script(
-				'wc_esl_app_js',
-				WC_ESL_PLUGIN_URL . 'assets/js/app.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-		}
+		wp_enqueue_script(
+			'wc_esl_app_v2_js',
+			'https://api.esplc.ru/widgets/modal/app.js',
+			[],
+			WC_ESL_VERSION,
+			true
+		);
 
 		wp_enqueue_style(
 			'wc_esl_style_frame_css',
@@ -182,10 +147,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
-		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
-
-		if ( $moduleVersion ) {
-			$shippingHelper = new ShippingHelper();
+		$shippingHelper = new ShippingHelper();
 			$length = $shippingHelper->dimensionsOption($wc_product['length']);
 			$width = $shippingHelper->dimensionsOption($wc_product['width']);
 			$height = $shippingHelper->dimensionsOption($wc_product['height']);
@@ -221,38 +183,6 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 				WC_ESL_VERSION,
 				true
 			);
-		} else {
-			$block_content = sprintf(
-				'<div
-			id="eShopLogisticStatic"
-			class="eShopLogisticStatic__block"
-			data-no-form="0"
-			data-v-app
-            data-key="%1$s"
-            data-article="%2$s" 
-            data-name="%3$s" 
-            data-price="%4$s" 
-            data-unit="" 
-            data-weight="%5$s"
-            data-ip="%6$s">
-            </div>',
-				esc_attr($widgetKey),
-				esc_attr($wc_product['id']),
-				esc_attr($wc_product['name']),
-				esc_attr($wc_product['price']),
-				esc_attr($wc_product['weight']),
-				esc_attr(apply_filters( 'wc_esl_get_ip', $ip ))		);
-
-		$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
-
-		wp_enqueue_script(
-			'wc_esl_app_tab_js',
-			WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js',
-			[],
-			WC_ESL_VERSION,
-			true
-		);
-	}
 
 	wp_enqueue_style(
 		'wc_esl_style_frame_css',
@@ -298,49 +228,44 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
-		$moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
+		$shippingHelper = new ShippingHelper();
+		$length = $shippingHelper->dimensionsOption($wc_product['length']);
+		$width = $shippingHelper->dimensionsOption($wc_product['width']);
+		$height = $shippingHelper->dimensionsOption($wc_product['height']);
+		$item[]   = array(
+			'article' => $wc_product['id'],
+			'name'    => $wc_product['name'],
+			'count'   => 1,
+			'price'   => $wc_product['price'],
+			'weight'  => $wc_product['weight'],
+			'dimensions' => $length.'*'.$width.'*'.$height
+		);
+		$jsonItem = htmlspecialchars( json_encode( $item ) );
 
 
-		if ( $moduleVersion ) {
-			$shippingHelper = new ShippingHelper();
-			$length = $shippingHelper->dimensionsOption($wc_product['length']);
-			$width = $shippingHelper->dimensionsOption($wc_product['width']);
-			$height = $shippingHelper->dimensionsOption($wc_product['height']);
-			$item[]   = array(
-				'article' => $wc_product['id'],
-				'name'    => $wc_product['name'],
-				'count'   => 1,
-				'price'   => $wc_product['price'],
-				'weight'  => $wc_product['weight'],
-				'dimensions' => $length.'*'.$width.'*'.$height
-			);
-			$jsonItem = htmlspecialchars( json_encode( $item ) );
+		$block_content = '<div id="eShopLogisticWidgetBlock"
+						    data-lazy-load="true"
+						    data-ip="' . apply_filters( 'wc_esl_get_ip', $ip ) . '"
+						    data-key="'.$widgetKey.'"
+						    data-offers="'.$jsonItem.'">
+						</div>';
 
+		$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
 
-			$block_content = '<div id="eShopLogisticWidgetBlock"
-							    data-lazy-load="true"
-							    data-ip="' . apply_filters( 'wc_esl_get_ip', $ip ) . '"
-							    data-key="'.$widgetKey.'"
-							    data-offers="'.$jsonItem.'">
-							</div>';
-
-			$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
-
-			wp_enqueue_script(
-				'wc_esl_app_tab_v2_js',
-				'https://api.esplc.ru/widgets/block/app.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-			wp_enqueue_script(
-				'wc_esl_app_tab_js',
-				WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-		}
+		wp_enqueue_script(
+			'wc_esl_app_tab_v2_js',
+			'https://api.esplc.ru/widgets/block/app.js',
+			[],
+			WC_ESL_VERSION,
+			true
+		);
+		wp_enqueue_script(
+			'wc_esl_app_tab_js',
+			WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js',
+			[],
+			WC_ESL_VERSION,
+			true
+		);
 
 		wp_enqueue_style(
 			'wc_esl_style_frame_css',

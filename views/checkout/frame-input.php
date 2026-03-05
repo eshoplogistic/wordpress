@@ -17,7 +17,7 @@ if ( ! $wc_esl_widgetKey && ! $wc_esl_widgetCityEsl ) {
 
 ?>
 
-<div id="boxEshoplogistic" class="boxEshoplogistic">
+<div id="boxEshoplogistic" class="boxEshoplogistic" data-esl-source="shipping-frame-input">
     <div id='eShopLogisticWidgetKey' data-key='<?php echo esc_attr($wc_esl_widgetKey)?>'></div>
     <input id='widgetOffersEsl' value='<?php echo esc_attr($wc_esl_widgetOffersEsl)?>' type='hidden'>
     <input id='widgetCityEsl' value='<?php echo esc_attr($wc_esl_widgetCityEsl)?>' type='hidden'>

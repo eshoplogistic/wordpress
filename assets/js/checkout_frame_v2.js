@@ -704,7 +704,6 @@ function isNumeric(value) {
     let esl = {
         items: {
             widget_id: 'eShopLogisticWidgetCart',
-            esldata_field_id: 'widgetCityEsl',
             esldata_offers_id: 'widgetOffersEsl',
             esldata_payments_id: 'widgetPaymentEsl',
             esldata_to_id: 'widgetCityEsl',
@@ -822,6 +821,7 @@ function isNumeric(value) {
                 payment: this.widget_payment
             }
 
+            console.log(this.widget_city)
             if (reload.length !== 0 && window.widgetInit) {
                 switch (reload) {
                     case 'offers':
@@ -1000,8 +1000,6 @@ function isNumeric(value) {
             let data = event.detail
             console.log('Событие onSelectedService', data)
             let hash = objectHash.sha1(event.detail);
-            console.log(hash)
-            console.log(hashSelectService)
 
             if (typeof data.terminal == 'object') {
                 esl.setTerminal(data.terminal)
@@ -1203,12 +1201,22 @@ function isNumeric(value) {
     }
 
     function duplicateBoxClear() {
-        let box = document.querySelectorAll('.' + esl.items.esl_box);
-        let last = box[box.length - 1];
+        let boxes = document.querySelectorAll('.' + esl.items.esl_box);
 
-        for (let i = 0; i < box.length; i++) {
-            if (box[i] !== last) {
-                box[i].parentNode.removeChild(box[i]);
+        if (!boxes || boxes.length <= 1) {
+            return;
+        }
+
+        let preferredBoxes = document.querySelectorAll(
+            '.' + esl.items.esl_box + '[data-esl-source="shipping-frame-input"]'
+        );
+        let keep = preferredBoxes.length
+            ? preferredBoxes[preferredBoxes.length - 1]
+            : boxes[boxes.length - 1];
+
+        for (let i = 0; i < boxes.length; i++) {
+            if (boxes[i] !== keep && boxes[i].parentNode) {
+                boxes[i].parentNode.removeChild(boxes[i]);
             }
         }
     }

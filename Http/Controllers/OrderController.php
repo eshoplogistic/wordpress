@@ -36,12 +36,7 @@ class OrderController extends Controller {
 		$data                 = [];
 		$optionsRepository    = new OptionsRepository();
 		$paymentMethodOptions = $optionsRepository->getOption( 'wc_esl_shipping_payment_methods' );
-		$moduleVersion        = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
-		if ( $moduleVersion ) {
-			$this->listRequestParamsV2( $request );
-		} else {
-			$this->listRequestParamsV1( $request );
-		}
+		$this->listRequestParamsV2( $request );
 
 		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogisticru')]);
 

@@ -29,11 +29,6 @@ class EshopLogisticApi
 	/**
 	 * @var string
 	 */
-	private $moduleVersion;
-
-	/**
-	 * @var string
-	 */
 	private $apiUrl = '';
 
 	/**
@@ -71,7 +66,6 @@ class EshopLogisticApi
 		$this->client = $client;
 		$this->apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 		$this->eslLog = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_log');
-		$this->moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
 	}
 
 	/**
@@ -89,22 +83,16 @@ class EshopLogisticApi
 		if($apiKey !== $this->apiKey)
 			$this->setApiKey($apiKey);
 
-		if($this->moduleVersion){
-			$this->generateApiUrl('client/state');
-			$result = $this->sendLoadRequest(array());
-			if($result->hasErrors())
-				return $result;
-
-			$resultAccount = $result->data();
-
-			$this->initAccount = (isset($resultAccount['services']))?$resultAccount['services']:'';
-
+		$this->generateApiUrl('client/state');
+		$result = $this->sendLoadRequest(array());
+		if($result->hasErrors())
 			return $result;
-		}else{
-			$this->generateApiUrl('site');
 
-			return $this->sendLoadRequest(array());
-		}
+		$resultAccount = $result->data();
+
+		$this->initAccount = (isset($resultAccount['services']))?$resultAccount['services']:'';
+
+		return $result;
 	}
 
 	/**
@@ -112,13 +100,7 @@ class EshopLogisticApi
 	 */
 	public function initAccount()
 	{
-		if($this->moduleVersion){
-			return new CollectionResponse( $this->initAccount );
-		}else{
-			$this->generateApiUrl('init');
-
-			return $this->sendLoadRequest(array());
-		}
+		return new CollectionResponse( $this->initAccount );
 	}
 
 	/**
@@ -128,23 +110,14 @@ class EshopLogisticApi
 	 */
 	public function search($target = '', $currentCountry = '', $region = '')
 	{
-		if($this->moduleVersion){
-			$this->generateApiUrl('locality/search');
-			$data['target'] = $target;
-			if($currentCountry)
-				$data['country'] = $currentCountry;
+		$this->generateApiUrl('locality/search');
+		$data['target'] = $target;
+		if($currentCountry)
+			$data['country'] = $currentCountry;
             if($region)
                 $data['region'] = $region;
 
-			return $this->sendLoadRequest($data);
-		}else{
-			$this->generateApiUrl('search');
-			$data['target'] = $target;
-			if($currentCountry)
-				$data['country'] = $currentCountry;
-
-			return $this->sendLoadRequest($data);
-		}
+		return $this->sendLoadRequest($data);
 	}
 
 	/**
@@ -155,17 +128,11 @@ class EshopLogisticApi
 	 */
 	public function calculateDelivery($delivery, $data)
 	{
-		if($this->moduleVersion){
-			$this->generateApiUrl( 'delivery/calculation' );
-			$data['service'] = $delivery;
-			unset($data['from']);
+		$this->generateApiUrl( 'delivery/calculation' );
+		$data['service'] = $delivery;
+		unset($data['from']);
 
-			return $this->sendLoadRequest( $data );
-		}else {
-			$this->generateApiUrl( 'delivery/' . $delivery );
-
-			return $this->sendLoadRequest( $data );
-		}
+		return $this->sendLoadRequest( $data );
 	}
 
 	/**
@@ -173,13 +140,7 @@ class EshopLogisticApi
 	 */
 	public function allServices()
 	{
-		if($this->moduleVersion){
-			return new CollectionResponse( $this->initAccount );
-		}else{
-			$this->generateApiUrl('info');
-
-			return $this->sendLoadRequest(array());
-		}
+		return new CollectionResponse( $this->initAccount );
 	}
 
 	/**
@@ -219,8 +180,7 @@ class EshopLogisticApi
 	{
 		$data['key'] = $this->apiKey;
 
-		if($this->moduleVersion)
-			$data['partner_key'] = $this->partnerKey;
+		$data['partner_key'] = $this->partnerKey;
 
 		$result = $this->client->post(
 			$this->apiUrl,
@@ -236,18 +196,11 @@ class EshopLogisticApi
 	 */
 	private function generateApiUrl($path = '')
 	{
-		$this->apiUrl = $this->apiBaseUrl['v1'] . $path;
-
-		if($this->moduleVersion)
-			$this->apiUrl = $this->apiBaseUrl['v2'] . $path;
+		$this->apiUrl = $this->apiBaseUrl['v2'] . $path;
 	}
 
 	public function getApiUrl(){
-		if($this->moduleVersion){
-			return $this->apiBaseUrl['v2'];
-		}else{
-			return $this->apiBaseUrl['v1'];
-		}
+		return $this->apiBaseUrl['v2'];
 	}
 
 	public function eslWriteLog($log, $type = '') {
@@ -290,28 +243,8 @@ class EshopLogisticApi
 
 	public function geo($ip = '')
 	{
-		if($this->moduleVersion){
-
-		}else{
-			$this->generateApiUrl('geo');
-			$data['ip'] = $ip;
-
-			$result = false;
-			$resultRequest = $this->sendLoadRequest($data);
-			if($resultRequest instanceof CollectionResponse && $resultRequest->data()){
-				$result = $resultRequest->data();
-				if(isset($result[0]))
-					$result = $resultRequest->data();
-			}
-			if(!$result){
-				$searchDefault = $this->search('Москва');
-				$searchDefault = $searchDefault->data();
-				if(isset($searchDefault[0]))
-					$result = $searchDefault;
-			}
-
-			return $result;
-		}
+		//v2 has no geo method
+		return null;
 	}
 
 	/**

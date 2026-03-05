@@ -51,12 +51,6 @@ class CheckoutValidator implements ModuleInterface
         $shippingMethodPosted = isset($_POST['shipping_method'][0]) ? sanitize_text_field(wp_unslash($_POST['shipping_method'][0])) : '';
         $check = $shippingMethodPosted ?: false;
 
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-        if($check === 'wc_esl_postrf_terminal' && !$moduleVersion){
-		    return;
-	    }
-
         $terminalFieldKey = 'wc_esl_' . $mode . '_terminal';
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
         $terminalPosted = isset($_POST[$terminalFieldKey]) ? sanitize_text_field(wp_unslash($_POST[$terminalFieldKey])) : '';
@@ -161,10 +155,6 @@ class CheckoutValidator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-
 	    if($typeServiceShipping === 'mixed'){
 		    $sessionService = new SessionService();
 		    $shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
@@ -175,9 +165,6 @@ class CheckoutValidator implements ModuleInterface
 	    }
 	    if($typeServiceShipping !== 'terminal') return false;
 	    if($serviceShipping === 'postrf') return false;
-	    if(!$moduleVersion)
-		    if($serviceShipping === 'postrf') return false;
-
 
 	    return true;
     }

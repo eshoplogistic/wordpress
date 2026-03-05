@@ -4,6 +4,7 @@ namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
+use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 
@@ -51,12 +52,6 @@ class Checkout implements ModuleInterface
 	    $shippingHelper = new ShippingHelper();
 	    $typeMethod = $shippingHelper->getTypeMethod($idDelivery);
 	    $chosenShipping = WC()->session->chosen_shipping_methods;
-
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-        if($idDelivery == 'wc_esl_postrf_terminal' && !$moduleVersion){
-	        $typeMethod = 'door';
-        }
 
 	    if($typeMethod == 'terminal' && in_array($idDelivery, $chosenShipping) && is_checkout()){
 		    $addOption = $optionsRepository->getOption('wc_esl_shipping_add_form');
@@ -184,7 +179,6 @@ class Checkout implements ModuleInterface
 	    $optionsRepository = new OptionsRepository();
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 	    $addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
-	    $moduleVersion = $optionsRepository->getOption( 'wc_esl_shipping_plugin_enable_api_v2' );
 	    $citySelectModal = false;
 	    if(isset($addForm['citySelectModal']) && $addForm['citySelectModal'] == 'true')
 		    $citySelectModal = $addForm['citySelectModal'];
@@ -195,7 +189,7 @@ class Checkout implements ModuleInterface
 	        $this->renderCheckoutFields($type);
         }
 
-        if($citySelectModal && $moduleVersion)
+        if($citySelectModal)
             $this->renderCheckoutCity();
     }
 
@@ -264,15 +258,19 @@ class Checkout implements ModuleInterface
 		<?php
 		$sessionService = new SessionService();
 		$optionsRepository = new OptionsRepository();
-		$moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
 		$widgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
 		$apiKeyWCart = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
         $shippingEsl = $sessionService->get('esl_shipping_frame');
 		
 		// Get widget data for static display
-		$widgetOffersEsl = array();
+        $widgetOffersEsl = $this->infoCart();
 		$paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
-		$widgetCityEsl = array();
+        $modeShipping = $sessionService->get('mode_shipping');
+        if ( ! in_array( $modeShipping, array( 'billing', 'shipping' ), true ) ) {
+            $modeShipping = 'shipping';
+        }
+
+        $widgetCityEsl = $sessionService->get( $modeShipping ) ? $sessionService->get( $modeShipping ) : array();
 		
 		$count = 0;
         $countText = 'служб';
@@ -334,17 +332,13 @@ class Checkout implements ModuleInterface
                 <div class="title">
                     <span class="close_modal_window">×</span>
                 </div>
-                <?php if(isset($moduleVersion) && $moduleVersion == '1'):?>
-                    <div id="eShopLogisticWidgetCart" data-key="<?php echo esc_attr($apiKeyWCart) ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
-                <?php else: ?>
-                    <div id="eShopLogisticStatic" data-key="<?php echo esc_attr($widgetKey) ?>"></div>
-                    <div id="boxEshoplogistic" class="boxEshoplogistic" style="display:none;">
-                        <div id='eShopLogisticWidgetKey' data-key='<?php echo esc_attr($widgetKey)?>'></div>
-                        <input id='widgetOffersEsl' value='<?php echo esc_attr(json_encode($widgetOffersEsl)); ?>' type='hidden'>
-                        <input id='widgetCityEsl' value='<?php echo esc_attr(json_encode($widgetCityEsl)); ?>' type='hidden'>
-                        <input id='widgetPaymentEsl' value='<?php echo esc_attr(json_encode($paymentMethods ? $paymentMethods : array())); ?>' type='hidden'>
-                    </div>
-                <?php endif; ?>
+                <div id="eShopLogisticWidgetCart" data-key="<?php echo esc_attr($apiKeyWCart) ?>" data-lazy-load="false" data-controller="/?rest_route=/wc-esl/v2/widget-data/" data-v-app></div>
+                <div id="boxEshoplogistic" class="boxEshoplogistic" style="display:none;">
+                    <div id='eShopLogisticWidgetKey' data-key='<?php echo esc_attr($widgetKey)?>'></div>
+                    <input id='widgetOffersEsl' value='<?php echo esc_attr(json_encode($widgetOffersEsl)); ?>' type='hidden'>
+                    <input id='widgetCityEsl' value='<?php echo esc_attr(json_encode($widgetCityEsl)); ?>' type='hidden'>
+                    <input id='widgetPaymentEsl' value='<?php echo esc_attr(json_encode($paymentMethods ? $paymentMethods : array())); ?>' type='hidden'>
+                </div>
                 <div class="footer">
                     <input id="buttonModalDoor" type="button"  value="Выбрать">
                 </div>
@@ -385,6 +379,30 @@ class Checkout implements ModuleInterface
 
 		<?php
 	}
+
+    private function infoCart()
+    {
+        $items = WC()->cart->get_cart_contents();
+        $data = new CheckoutOrderData($items);
+        $offers = array();
+
+        if($data->getItems()) {
+            foreach($data->getItems() as $item) {
+                $offers[] = array(
+                    'article' => $item->getArticle(),
+                    'name' => $item->getName(),
+                    'count' => $item->getQuantity(),
+                    'price' => $item->getPrice(),
+                    'weight' => $item->getWeight(),
+                    'dimensions' => $item->getDimensions(),
+                );
+            }
+        }
+
+        $offers = apply_filters( 'esl_offers_filter', $offers );
+
+        return $offers;
+    }
 
 
 	public function infoShippingMethodItem($item)

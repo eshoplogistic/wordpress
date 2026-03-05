@@ -22,7 +22,7 @@ class OptionsRepository
 			'wc_esl_shipping_plugin_enable' => '1',
 			'wc_esl_shipping_plugin_enable_price_shipping' => '1',
 			'wc_esl_shipping_plugin_enable_log' => '0',
-			'wc_esl_shipping_plugin_enable_api_v2' => '0',
+
 			'wc_esl_shipping_account_domain' => '',
 			'wc_esl_shipping_account_enable' => '0',
 			'wc_esl_shipping_account_balance' => '0',

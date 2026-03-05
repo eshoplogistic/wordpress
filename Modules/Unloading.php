@@ -84,13 +84,9 @@ class Unloading implements ModuleInterface
     public function init()
     {
 
-        $optionsRepository = new OptionsRepository();
-        $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-        if ($moduleVersion) {
-            add_action('admin_head', [$this, 'esl_form_in_admin_bar']);
-            add_action('add_meta_boxes', [$this, 'esl_button_start_meta_boxes']);
-            add_action('add_meta_boxes', [$this, 'esl_button_start_meta_boxes_HPOS']);
-        }
+        add_action('admin_head', [$this, 'esl_form_in_admin_bar']);
+        add_action('add_meta_boxes', [$this, 'esl_button_start_meta_boxes']);
+        add_action('add_meta_boxes', [$this, 'esl_button_start_meta_boxes_HPOS']);
     }
 
     public function esl_button_start_meta_boxes_HPOS()
