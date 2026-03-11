@@ -368,7 +368,7 @@
 				if (value.length > 1) {
 					if (currentBillingCountry) {
 						searchCity(value, function (items) {
-							if(Object.getOwnPropertyNames(items).length > 1) {
+							if(Object.getOwnPropertyNames(items).length >= 1) {
 								$this.next('#esl_result-search').html(
 									renderCitiesModal(items, modeInput)
 								);

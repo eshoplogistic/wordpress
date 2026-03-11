@@ -367,7 +367,7 @@ function isNumeric(value) {
                 if (value.length > 1) {
                     if (currentBillingCountry) {
                         searchCity(value, function (items) {
-                            if(Object.getOwnPropertyNames(items).length > 1) {
+                            if(Object.getOwnPropertyNames(items).length >= 1) {
                                 $this.closest('.modal-esl-frame').find('#esl_result-search').html(
                                     renderCitiesModal(items, modeInput)
                                 );
