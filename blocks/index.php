@@ -9,4 +9,8 @@
  * @package eshoplogisticru
  * @version 2.1.61
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 ?>

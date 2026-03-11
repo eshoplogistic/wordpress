@@ -52,12 +52,4 @@ define( 'WC_ESL_MIGRATOR_HISTORY_KEY', 'wc_esl_migrations_history' );
 include_once 'autoload.php';
 include_once 'globals.php';
 
-add_action( 'init', static function() {
-	load_plugin_textdomain(
-		'eshoplogisticru',
-		false,
-		dirname( plugin_basename( __FILE__ ) ) . '/languages'
-	);
-} );
-
 \eshoplogistic\WCEshopLogistic\Classes\WCEshopLogistic::instance()->init();

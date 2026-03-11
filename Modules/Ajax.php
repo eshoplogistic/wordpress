@@ -467,8 +467,6 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : 'billing';
 
-		error_log('🔔 [Ajax] updateShippingAddress called with mode: ' . $mode . ', city: ' . $city . ', fias: ' . $fias);
-
 		$data = [
 			'shipping_city' => $city,
 			'shipping_adress' => $adress,
@@ -486,8 +484,6 @@ class Ajax implements ModuleInterface
 			'services' => $services,
 			'postcode' => $postcode,
 		];
-
-		error_log('📦 [Ajax] Data to save: ' . json_encode($data));
 
 		switch ($mode) {
 			case 'billing':
@@ -511,8 +507,6 @@ class Ajax implements ModuleInterface
 		]);
 		$sessionController = new SessionController();
 		$response = $sessionController->saveShippingAddress($request);
-
-		error_log('✅ [Ajax] updateShippingAddress response sent');
 
 		$response->send();
 	}
@@ -774,9 +768,23 @@ class Ajax implements ModuleInterface
 
 	public function updateShipping()
 	{
-		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : '';
-		$data =  json_decode(stripslashes($data), true);
-		$data['city'] = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
+		if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping')) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitize_array()
+		$rawData = isset($_POST['data']) ? wp_unslash($_POST['data']) : '';
+		$rawData = is_string($rawData) ? $rawData : '';
+
+		$data = $rawData !== '' ? json_decode($rawData, true) : [];
+		if (!is_array($data)) {
+			$data = [];
+		}
+
+		$data = $this->sanitize_array($data);
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via wc_clean()
+		$data['city'] = isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
 		if (!isset($data['address']) || !$data['address'])

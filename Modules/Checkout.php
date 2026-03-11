@@ -399,6 +399,7 @@ class Checkout implements ModuleInterface
             }
         }
 
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name retained for backward compatibility.
         $offers = apply_filters( 'esl_offers_filter', $offers );
 
         return $offers;

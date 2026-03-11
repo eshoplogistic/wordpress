@@ -102,13 +102,13 @@ $wc_esl_eslTable = new Table();
                             <div class="form-field">
                                 <label class="label" for="terminal-code">Код ПВЗ:</label>
                                 <input class="form-value" name="terminal-code" type="text"
-                                       value="<?php echo (esc_attr($wc_esl_addressShipping['terminal']))??'' ?>">
+                                       value="<?php echo esc_attr($wc_esl_addressShipping['terminal'] ?? '') ?>">
                             </div>
 
                             <div class="form-field">
                                 <label class="label" for="terminal-address">Адрес ПВЗ:</label>
                                 <input class="form-value" name="terminal-address" type="text"
-                                       value="<?php echo (esc_attr($wc_esl_addressShipping['terminal_address']))??'' ?>">
+                                       value="<?php echo esc_attr($wc_esl_addressShipping['terminal_address'] ?? '') ?>">
                             </div>
 
                             <div class="form-field">

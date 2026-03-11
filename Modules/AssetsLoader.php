@@ -49,7 +49,7 @@ class AssetsLoader implements ModuleInterface
 							   has_block('eshoplogisticru/checkout-form');
 		}
 
-		// Load block frontend scripts for all pages
+		// Загружаем фронтенд-скрипты блоков для всех страниц
 		wp_enqueue_script(
 			'wc_esl_block_frontend_js',
 			WC_ESL_PLUGIN_URL . 'assets/js/block-frontend.js',
@@ -73,7 +73,7 @@ class AssetsLoader implements ModuleInterface
 				WC_ESL_VERSION
 			);
 
-			// Legacy checkout styles should not override block checkout UI.
+			// Стили legacy-чекаута не должны перекрывать UI блочного чекаута.
 			if (is_cart() || (is_checkout() && !$usingBlocksCheckout)) {
 				wp_enqueue_style(
 					'wc_esl_style_css',
@@ -181,7 +181,7 @@ class AssetsLoader implements ModuleInterface
 	}
 
 	/**
-	 * Inject configuration script inline with frontend script
+	 * Встраивает конфигурационный скрипт inline перед фронтенд-скриптом
 	 */
 	public function injectConfigScript() {
 		if(!$this->plugin->isEnable()) return;
@@ -209,6 +209,7 @@ class AssetsLoader implements ModuleInterface
 		$config_script .= '    "isCart": ' . json_encode(is_cart() ? "1" : "") . ',' . "\n";
 		$config_script .= '    "isProduct": ' . json_encode(is_product() ? "1" : "") . ',' . "\n";
 		$config_script .= '    "nonce": ' . json_encode(wp_create_nonce('wc_esl_block_nonce')) . ',' . "\n";
+		$config_script .= '    "shippingNonce": ' . json_encode(wp_create_nonce('wc-esl-shipping')) . ',' . "\n";
 		$config_script .= '    "checkoutFrameEnabled": ' . json_encode($isFrameEnabled) . ',' . "\n";
 		$config_script .= '    "paymentCalc": ' . json_encode($paymentCalcEnabled) . ',' . "\n";
 		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";

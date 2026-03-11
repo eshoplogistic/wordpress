@@ -7,16 +7,20 @@ function eslRun() {
     //modal
     let modalEsl = document.getElementById("modal-esl")
     let modalEslInfo = document.getElementById("modal-esl-info")
-    let span = modalEsl.getElementsByClassName("close_modal_window")[0]
-    let spanInfo = modalEslInfo.getElementsByClassName("close_modal_window")[0]
-    //let modalDoorButton = document.getElementById("buttonModalUnload")
+    if(modalEsl) { 
+        let span = modalEsl.getElementsByClassName("close_modal_window")[0]
+        span.onclick = function () {
+            modalEsl.style.display = "none"
+        }
 
-    span.onclick = function () {
-        modalEsl.style.display = "none"
     }
-    spanInfo.onclick = function () {
-        modalEslInfo.style.display = "none"
+    if(modalEslInfo) {
+        let spanInfo = modalEslInfo.getElementsByClassName("close_modal_window")[0]
+        spanInfo.onclick = function () {
+            modalEslInfo.style.display = "none"
+        }
     }
+    //let modalDoorButton = document.getElementById("buttonModalUnload")
 
     //modalDoorButton.onclick = function () {
         //modalEsl.style.display = "none"
@@ -84,17 +88,20 @@ function eslRun() {
 
 
     let els_terminals_buttons = document.getElementById('esl_unloading_form')
-    els_terminals_buttons.addEventListener('click', bindEvents.clickOnTerminals, false)
+    if(els_terminals_buttons)
+        els_terminals_buttons.addEventListener('click', bindEvents.clickOnTerminals, false)
 
     let els_terminals_info = document.getElementById('esl_unloading_status')
-    els_terminals_info.addEventListener('click', bindEvents.clickOnInfo, false)
+    if(els_terminals_info)
+        els_terminals_info.addEventListener('click', bindEvents.clickOnInfo, false)
 
     let els_terminals_delete = document.getElementById('esl_unloading_delete')
     if(els_terminals_delete)
         els_terminals_delete.addEventListener('click', bindEvents.clickOnDelete, false)
 
     let els_terminals_status_update = document.getElementById('esl_unloading_status_update')
-    els_terminals_status_update.addEventListener('click', bindEvents.clickOnStatusUpdate, false)
+    if(els_terminals_status_update)
+        els_terminals_status_update.addEventListener('click', bindEvents.clickOnStatusUpdate, false)
 
 }
 

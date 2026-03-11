@@ -14,6 +14,10 @@
  * @subpackage blocks
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 namespace eshoplogistic\WCEshopLogistic\Blocks\Shipping;
 
 /**

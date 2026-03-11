@@ -50,8 +50,16 @@ class BlocksAjax implements ModuleInterface
 	 */
 	public function routeUpdateShipping()
 	{
+		if ( ! check_ajax_referer( 'wc-esl-shipping', 'nonce', false ) ) {
+			return;
+		}
+
+		$checkoutContext = isset( $_POST['checkout_context'] )
+			? sanitize_text_field( wp_unslash( $_POST['checkout_context'] ) )
+			: '';
+
 		// Проверяем, это Blocks запрос?
-		if (!isset($_POST['checkout_context']) || $_POST['checkout_context'] !== 'blocks') {
+		if ( $checkoutContext !== 'blocks' ) {
 			// Это Legacy запрос, пропускаем к Legacy обработчику
 			return;
 		}

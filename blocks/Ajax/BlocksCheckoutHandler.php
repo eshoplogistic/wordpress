@@ -24,21 +24,33 @@ class BlocksCheckoutHandler {
 	 * Сохраняет выбор в сессию + сбрасывает кэш WooCommerce + возвращает JSON.
 	 */
 	public function handleShippingUpdate() {
+		if ( ! check_ajax_referer( 'wc-esl-shipping', 'nonce', false ) ) {
+			wp_send_json_error(['message' => 'Security check failed']);
+			return;
+		}
+
 		// Валидация запроса
 		if ( ! isset($_POST['data']) ) {
 			wp_send_json_error(['message' => 'Missing shipping data']);
 			return;
 		}
 
-		// Извлечение и санитизация
-		$data = isset($_POST['data']) ? $this->sanitizeArray($_POST['data']) : '';
-		$data = json_decode(stripslashes($data), true);
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitizeArray()
+		$rawData = isset($_POST['data']) ? wp_unslash($_POST['data']) : '';
+		$rawData = is_string($rawData) ? $rawData : '';
+
+		$data = $rawData !== '' ? json_decode($rawData, true) : [];
 		if ( ! is_array($data) ) {
 			$data = [];
 		}
-		$data['city'] = isset($_POST['city']) ? sanitize_text_field($_POST['city']) : '';
+		$data = $this->sanitizeArray($data);
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via sanitize_text_field()
+		$data['city'] = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via sanitize_text_field()
+		$forceDoor = isset($_POST['force_door']) && sanitize_text_field(wp_unslash($_POST['force_door'])) === '1';
 
 		$sessionService = new SessionService();
+		$sessionService->set('mode_shipping', 'shipping');
 		$previousFrame = $sessionService->get('esl_shipping_frame');
 		if ( is_string($previousFrame) ) {
 			$decodedPrevious = maybe_unserialize($previousFrame);
@@ -49,11 +61,44 @@ class BlocksCheckoutHandler {
 
 		$frameChanged = $this->hasFrameChanged($previousFrame, $data);
 
+		$mode = isset( $data['mode'] ) ? (string) $data['mode'] : '';
+		if ( $forceDoor ) {
+			$mode = 'door';
+			$data['mode'] = 'door';
+		}
+		if ( $mode === 'door' ) {
+			// Blocks-only: при door не допускаем возврат terminal-адреса из сессии.
+			$data['address'] = '';
+			$data['terminalAddress'] = '';
+			$data['terminalCode'] = '';
+			$data['selectPvz'] = '';
+		}
+
 		// Сохранение в сессию
 		$sessionService->set('esl_shipping_frame', $data);
-		
-		if ( !isset($data['address']) || !$data['address'] ) {
+
+		// Сбрасываем terminal_location только при явном выборе доставки до двери.
+		// terminal_location устанавливается отдельным AJAX-запросом wc_esl_set_terminal_address.
+		// При выборе терминального сервиса (mode = 'terminal') конкретный ПВЗ ещё не выбран —
+		// сохранённый ранее терминал должен оставаться в сессии до явного выбора door-режима.
+		if ( $mode === 'door' ) {
 			$sessionService->drop('terminal_location');
+
+			$shippingState = $sessionService->get('shipping');
+			if ( is_array($shippingState) ) {
+				$shippingState['adress'] = '';
+				$shippingState['address'] = '';
+				$shippingState['terminalAddress'] = '';
+				$shippingState['terminalCode'] = '';
+				$sessionService->set('shipping', $shippingState);
+			}
+
+			$sessionService->set('shipping_adress', '');
+
+			if ( function_exists('WC') && WC()->customer ) {
+				WC()->customer->set_shipping_address_1('');
+				WC()->customer->save();
+			}
 		}
 
 		// В контексте admin-ajax мы только сохраняем frame и сбрасываем кэш доставки.

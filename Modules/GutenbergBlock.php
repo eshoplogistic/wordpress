@@ -96,11 +96,22 @@ class GutenbergBlock implements ModuleInterface
             // Получаем данные сессии
             $sessionService = new SessionService();
             $shippingEsl = $sessionService->get('esl_shipping_frame');
-            $modeShipping = $sessionService->get('mode_shipping');
-            if (!in_array($modeShipping, ['billing', 'shipping'], true)) {
-                $modeShipping = 'shipping';
+
+            // Blocks checkout работает только с shipping-адресом.
+            $widgetCityEsl = $sessionService->get('shipping') ?: [];
+
+            // Мягкая миграция старого состояния: если в shipping пусто,
+            // но в billing есть город, переносим его в shipping для блока.
+            if (empty($widgetCityEsl)) {
+                $legacyBillingCity = $sessionService->get('billing') ?: [];
+                if (!empty($legacyBillingCity)) {
+                    $widgetCityEsl = $legacyBillingCity;
+                    $sessionService->set('shipping', $legacyBillingCity);
+                }
             }
-            $widgetCityEsl = $sessionService->get($modeShipping) ?: [];
+
+            // Для последующих block-рендеров фиксируем mode как shipping.
+            $sessionService->set('mode_shipping', 'shipping');
             $terminalLocation = $sessionService->get('terminal_location') ?: '';
             
             // Получаем данные корзины
@@ -122,6 +133,7 @@ class GutenbergBlock implements ModuleInterface
                 }
             }
             
+            // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name retained for backward compatibility.
             $widgetOffersEsl = apply_filters('esl_offers_filter', $widgetOffersEsl);
             
             // Получаем способы оплаты

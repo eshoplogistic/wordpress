@@ -912,7 +912,7 @@ function isNumeric(value) {
         // Вспомогательная функция для обработки выбора сервиса
         function handleServiceChange(data, shouldSetTerminal = false) {
             if (typeof data.terminal === 'object') {
-                esl.setTerminal(data.terminal, !shouldSetTerminal);
+                esl.setTerminal(data.terminal, shouldSetTerminal);
             } else {
                 jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
                 window.keyDelivery = data.typeDelivery;
@@ -933,7 +933,6 @@ function isNumeric(value) {
         root.addEventListener('eShopLogisticWidgetCart:onBalloonOpen', (event) => {
             console.log('onBalloonOpen', event.detail);
             hashSelectService = objectHash.sha1(event.detail);
-            handleServiceChange(event.detail, false);
         });
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
@@ -1055,7 +1054,8 @@ function isNumeric(value) {
     function sendRequestShipping(action) {
         sendAjaxRequest('wc_esl_update_shipping', {
             data: action,
-            city: esl.widget_city.name
+            city: esl.widget_city.name,
+            nonce: wc_esl_shipping_global.nonce
         }, () => {
             jQuery('body').trigger('update_checkout');
             document.body.classList.add('loaded_hiding');

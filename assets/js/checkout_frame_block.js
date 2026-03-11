@@ -33,6 +33,7 @@
     let widgetInitTries = 0;
     let widgetEventsBound = false;
     let widgetInitInProgress = false;
+    let lastHandledShippingMethod = null;
     // Базовый хеш автоподставленного сервиса в текущей сессии открытия модалки.
     let hashSelectService = '';
     let userInteractedWithWidget = false;
@@ -46,10 +47,9 @@
      * Инициализация типа доставки по умолчанию
      */
     function initDefaultDelivery() {
-        const billingTerminal = document.getElementById('wc_esl_billing_terminal');
         const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
         
-        window.keyDelivery = (billingTerminal?.value || shippingTerminal?.value) ? 'terminal' : 'door';
+        window.keyDelivery = shippingTerminal?.value ? 'terminal' : 'door';
     }
 
     /**
@@ -70,8 +70,17 @@
      * Управление состоянием загрузки
      */
     function setLoadingState(isLoading) {
-        document.body.classList.toggle('load', isLoading);
-        document.body.classList.toggle('loaded_hiding', !isLoading);
+        const blockRoot = document.querySelector('.wc-esl-checkout-shipping-block');
+        if (!blockRoot) {
+            return;
+        }
+
+        const preloader = blockRoot.querySelector('.preloader');
+        if (!preloader) {
+            return;
+        }
+
+        preloader.style.display = isLoading ? 'block' : 'none';
     }
 
     /**
@@ -94,24 +103,11 @@
      */
     function getCurrentCheckoutCityName() {
         try {
-            const billingFieldRef = document.getElementById('eslBillingCityFields');
             const shippingFieldRef = document.getElementById('eslShippingCityFields');
 
-            const billingFieldId = billingFieldRef && billingFieldRef.value ? billingFieldRef.value : 'billing_city';
             const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : 'shipping_city';
 
-            const billingCityEl = document.getElementById(billingFieldId);
             const shippingCityEl = document.getElementById(shippingFieldId);
-
-            // Приоритет как в checkout flow: shipping, если активен иной адрес; иначе billing.
-            const shipToDifferent = document.getElementById('ship-to-different-address-checkbox');
-            if (shipToDifferent && shipToDifferent.checked && shippingCityEl && shippingCityEl.value) {
-                return shippingCityEl.value;
-            }
-
-            if (billingCityEl && billingCityEl.value) {
-                return billingCityEl.value;
-            }
 
             if (shippingCityEl && shippingCityEl.value) {
                 return shippingCityEl.value;
@@ -205,7 +201,6 @@
      */
     function toggleAddressFields(show) {
         const addressFields = document.querySelectorAll(
-            '#billing_address_1_field, #billing_address_2_field, ' +
             '#shipping_address_1_field, #shipping_address_2_field, ' +
             '.wc-block-components-address-form__address_1, ' +
             '.wc-block-components-address-form__address_2'
@@ -213,6 +208,25 @@
         
         addressFields.forEach(field => {
             field.style.display = show ? '' : 'none';
+
+            const controls = field.querySelectorAll('input, select, textarea');
+            controls.forEach((control) => {
+                if (show) {
+                    // Для block checkout при возврате в door поле должно быть редактируемым.
+                    control.disabled = false;
+                    if (control.dataset.eslWasRequired === '1') {
+                        control.required = true;
+                    }
+                    delete control.dataset.eslWasDisabled;
+                    delete control.dataset.eslWasRequired;
+                    return;
+                }
+
+                control.dataset.eslWasDisabled = control.disabled ? '1' : '0';
+                control.dataset.eslWasRequired = control.required ? '1' : '0';
+                control.required = false;
+                control.disabled = true;
+            });
         });
     }
 
@@ -277,61 +291,76 @@
         return null;
     }
 
-    function getCheckoutCityElement(mode) {
-        const customRefId = mode === 'billing' ? 'eslBillingCityFields' : 'eslShippingCityFields';
+    function getCheckoutCityElement() {
+        const customRefId = 'eslShippingCityFields';
         const customRef = document.getElementById(customRefId);
         const customId = customRef && customRef.value ? customRef.value : '';
 
-        const fallbackIds = mode === 'billing'
-            ? ['billing_city', 'billing-city']
-            : ['shipping_city', 'shipping-city'];
+        const fallbackIds = ['shipping_city', 'shipping-city'];
 
         const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
         return getFieldElement(ids);
     }
 
-    function getCheckoutCountryValue(mode) {
-        const countryEl = mode === 'billing'
-            ? getFieldElement(['billing_country', 'billing-country'])
-            : getFieldElement(['shipping_country', 'shipping-country']);
+    function getCheckoutCountryValue() {
+        const countryEl = getFieldElement(['shipping_country', 'shipping-country']);
 
         return (countryEl && countryEl.value) ? countryEl.value : 'RU';
     }
 
-    function setCheckoutAddressValues(mode, cityData) {
-        const fieldMap = mode === 'billing'
-            ? {
-                city: ['billing_city', 'billing-city'],
-                state: ['billing_state', 'billing-state'],
-                postcode: ['billing_postcode', 'billing-postcode']
+    function setInputValue(input, value) {
+        if (!input) {
+            return;
+        }
+
+        const nextValue = value || '';
+        const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+        const setter = descriptor && descriptor.set;
+        if (setter) {
+            setter.call(input, nextValue);
+        } else {
+            input.value = nextValue;
+        }
+
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function clearAddressFieldError() {
+        const wrappers = document.querySelectorAll('#shipping_address_1_field, .wc-block-components-address-form__address_1');
+
+        wrappers.forEach((wrapper) => {
+            wrapper.classList.remove('has-error');
+
+            const validationError = wrapper.querySelector('.wc-block-components-validation-error');
+            if (validationError) {
+                validationError.style.display = 'none';
+                validationError.setAttribute('hidden', 'hidden');
             }
-            : {
-                city: ['shipping_city', 'shipping-city'],
-                state: ['shipping_state', 'shipping-state'],
-                postcode: ['shipping_postcode', 'shipping-postcode']
-            };
+        });
+
+        const addressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+
+        if (addressEl) {
+            addressEl.setAttribute('aria-invalid', 'false');
+            addressEl.removeAttribute('aria-errormessage');
+            addressEl.removeAttribute('title');
+            if (typeof addressEl.setCustomValidity === 'function') {
+                addressEl.setCustomValidity('');
+            }
+        }
+    }
+
+    function setCheckoutAddressValues(cityData) {
+        const fieldMap = {
+            city: ['shipping_city', 'shipping-city'],
+            state: ['shipping_state', 'shipping-state'],
+            postcode: ['shipping_postcode', 'shipping-postcode']
+        };
 
         const cityEl = getFieldElement(fieldMap.city);
         const stateEl = getFieldElement(fieldMap.state);
         const postcodeEl = getFieldElement(fieldMap.postcode);
-
-        const setInputValue = (input, value) => {
-            if (!input) {
-                return;
-            }
-
-            const nextValue = value || '';
-            const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-            const setter = descriptor && descriptor.set;
-            if (setter) {
-                setter.call(input, nextValue);
-            } else {
-                input.value = nextValue;
-            }
-
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-        };
 
         setInputValue(cityEl, cityData.city);
         setInputValue(stateEl, cityData.region);
@@ -386,7 +415,7 @@
         }
     }
 
-    function renderCitiesList(items, mode = 'billing') {
+    function renderCitiesList(items, mode = 'shipping') {
         const listId = `result_wc_esl_search_city_${mode}`;
 
         const escapeAttr = (value) => String(value ?? '')
@@ -484,7 +513,7 @@
                 return;
             }
 
-            const inputEl = getCheckoutCityElement(mode);
+            const inputEl = getCheckoutCityElement();
             if (!inputEl) {
                 return;
             }
@@ -495,7 +524,7 @@
                 return;
             }
 
-            const country = getCheckoutCountryValue(mode);
+            const country = getCheckoutCountryValue();
             searchCity(query, (items) => appendCityResultList(inputEl, mode, items), country);
         };
 
@@ -509,7 +538,7 @@
                 return;
             }
 
-            const shippingCity = getCheckoutCityElement('shipping');
+            const shippingCity = getCheckoutCityElement();
             if (shippingCity && target.id === shippingCity.id) {
                 if (timers.shipping) clearTimeout(timers.shipping);
                 timers.shipping = setTimeout(() => runSearch('shipping'), 350);
@@ -531,7 +560,6 @@
             }
             citySelectionInProgress = true;
 
-            const mode = 'shipping';
             const cityData = {
                 city: item.getAttribute('data-city') || '',
                 region: item.getAttribute('data-region') || '',
@@ -555,7 +583,7 @@
                 cityData.raw = null;
             }
 
-            setCheckoutAddressValues(mode, cityData);
+            setCheckoutAddressValues(cityData);
             updateWidgetCityData(cityData);
             clearCityResultList('shipping');
             hideCityTips();
@@ -613,6 +641,7 @@
     function setTerminalAddress(terminalAddress, terminalCode) {
         return fetch(config.ajaxUrl, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
                 action: 'wc_esl_set_terminal_address',
@@ -663,7 +692,7 @@
                 data: action,
                 city: cityData ? cityData.name : '',
                 checkout_context: 'blocks',
-                nonce: config.nonce
+                nonce: config.shippingNonce || config.nonce
             })
         })
         .then(response => response.json())
@@ -1034,6 +1063,8 @@
             key: deliveryData?.service?.code || '',
             mode: deliveryData?.typeDelivery || '',
             address: '',
+            terminalAddress: '',
+            terminalCode: '',
             comment: '',
             deliveryMethods: '',
             selectPvz: ''
@@ -1068,6 +1099,8 @@
         }
 
         if (deliveryData?.terminal && typeof deliveryData.terminal === 'object') {
+            eslData.terminalCode = deliveryData.terminal.code || '';
+            eslData.terminalAddress = deliveryData.terminal.address || '';
             eslData.address = `${deliveryData.terminal.code || ''} ${deliveryData.terminal.address || ''}`.trim();
         }
 
@@ -1126,19 +1159,16 @@
                 (deliveryData.terminal.code || deliveryData.terminal.address)
             );
 
-            const billingTerminal = document.getElementById('wc_esl_billing_terminal');
             const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
             const shippingTerminalField = document.getElementById('wc_esl_shipping_terminal_field');
             const doorButton = document.getElementById('buttonModalDoor');
 
             if (hasTerminalSelection) {
                 const terminalAddress = deliveryData.terminal.address || '';
-                if (billingTerminal) billingTerminal.value = terminalAddress;
                 if (shippingTerminal) shippingTerminal.value = terminalAddress;
                 if (shippingTerminalField) shippingTerminalField.style.display = '';
             } else {
                 // Legacy flow: для door очищаем ранее выбранный terminal.
-                if (billingTerminal) billingTerminal.value = '';
                 if (shippingTerminal) shippingTerminal.value = '';
                 if (shippingTerminalField) shippingTerminalField.style.display = 'none';
             }
@@ -1150,6 +1180,25 @@
                 if (doorButton) {
                     doorButton.style.display = window.keyDelivery === 'door' ? '' : 'none';
                 }
+            }
+
+            // Для Blocks переключаем состояние адресных полей сразу после выбора
+            // сервиса в виджете, даже если shipping method формально не изменился.
+            const nextDeliveryType = deliveryData?.typeDelivery || (hasTerminalSelection ? 'terminal' : 'door');
+            if (nextDeliveryType === 'terminal') {
+                const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+                const terminalAddressValue = (deliveryData?.terminal?.address || shippingTerminal?.value || '').trim();
+
+                // В Blocks address_1 остаётся обязательным в checkout store,
+                // поэтому для terminal перед отключением проставляем значение.
+                setInputValue(shippingAddressEl, terminalAddressValue || 'Пункт выдачи');
+                clearAddressFieldError();
+                toggleAddressFields(false);
+            } else if (nextDeliveryType === 'door') {
+                toggleAddressFields(true);
+                const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+                setInputValue(shippingAddressEl, '');
+                clearAddressFieldError();
             }
 
             return hasTerminalSelection;
@@ -1236,13 +1285,14 @@
             }
 
             // Legacy flow: сохранить terminal_location в сессию через тот же AJAX что и legacy.
-            if (hasTerminalSelection && deliveryData?.terminal) {
-                const terminalAddress = deliveryData.terminal.address || '';
-                const terminalCode = deliveryData.terminal.code || '';
-                setTerminalAddress(terminalAddress, terminalCode);
-            }
-            
-            updateShippingData(JSON.stringify(frameData), { name: cityName }).then(() => {
+            const persistTerminalSelection = (hasTerminalSelection && deliveryData?.terminal)
+                ? setTerminalAddress(
+                    deliveryData.terminal.address || '',
+                    deliveryData.terminal.code || ''
+                ).catch(() => ({ success: false }))
+                : Promise.resolve({ success: true });
+
+            persistTerminalSelection.then(() => updateShippingData(JSON.stringify(frameData), { name: cityName })).then(() => {
                 setLoadingState(false);
 
                 // Для terminal: закрываем модалку при любом явном выборе (не в suppress-окне).
@@ -1377,6 +1427,20 @@
         const isEshop = isEshopMethod(currentMethod);
         const deliveryType = getDeliveryType(currentMethod);
         const hasEslBlock = document.querySelector('.wc-esl-checkout-shipping-block');
+        const methodChanged = currentMethod !== lastHandledShippingMethod;
+
+        // Очищаем выбранный терминал только при фактической смене метода доставки.
+        // Иначе updated_checkout/перерендеры WooCommerce стирают уже выбранный ПВЗ.
+        if (methodChanged) {
+            const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+            const shippingTerminalField = document.getElementById('wc_esl_shipping_terminal_field');
+            if (shippingTerminal) {
+                shippingTerminal.value = '';
+            }
+            if (shippingTerminalField) {
+                shippingTerminalField.style.display = 'none';
+            }
+        }
 
         // Для Gutenberg блока: по умолчанию кнопка видна (блок специально для eShopLogistic)
         // Скрываем только если явно выбран другой метод доставки
@@ -1397,25 +1461,27 @@
             } else {
                 toggleAddressFields(true);
             }
+            lastHandledShippingMethod = currentMethod;
             return;
         }
 
-        // Логика для случая без блока (legacy)
+        // Fallback без блока: работаем только с shipping-режимом.
         if (!currentMethod) {
             return;
         }
 
         if (isEshop && deliveryType === 'terminal') {
             toggleAddressFields(false);
-            toggleTerminals(true, 'billing');
+            toggleTerminals(true, 'shipping');
         } else if (isEshop && deliveryType === 'door') {
             toggleAddressFields(true);
-            toggleTerminals(false, 'billing');
+            toggleTerminals(false, 'shipping');
         } else {
             toggleAddressFields(true);
-            toggleTerminals(false, 'billing');
             toggleTerminals(false, 'shipping');
         }
+
+        lastHandledShippingMethod = currentMethod;
     }
 
     /**
@@ -1535,10 +1601,8 @@
                     widgetRoot.dataset.paramsLoaded = '';
                     sendWidgetParams(widgetRoot);
 
-                    const billingTerminal = document.getElementById('wc_esl_billing_terminal');
                     const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
                     const shippingTerminalField = document.getElementById('wc_esl_shipping_terminal_field');
-                    if (billingTerminal) billingTerminal.value = '';
                     if (shippingTerminal) shippingTerminal.value = '';
                     if (shippingTerminalField) shippingTerminalField.style.display = 'none';
 

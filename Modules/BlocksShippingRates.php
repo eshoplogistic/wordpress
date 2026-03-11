@@ -57,12 +57,14 @@ class BlocksShippingRates implements ModuleInterface
 			return false;
 		}
 
-		$restRoute = isset($_REQUEST['rest_route']) ? (string) $_REQUEST['rest_route'] : '';
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only route detection for Store API context.
+		$restRoute = isset($_REQUEST['rest_route']) ? sanitize_text_field(wp_unslash($_REQUEST['rest_route'])) : '';
 		if ($restRoute !== '' && strpos($restRoute, '/wc/store/') !== false) {
 			return true;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$requestUri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$requestUri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '';
 		if ($requestUri === '') {
 			return false;
 		}

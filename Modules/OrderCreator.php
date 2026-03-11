@@ -3,7 +3,6 @@
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
-use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
 if ( ! defined('ABSPATH') ) {
@@ -42,7 +41,7 @@ class OrderCreator implements ModuleInterface
 
 		if(!$this->methodsIsEshopTerminal($shippingMethodId)) return;
 
-		$terminal = $sessionService->get('terminal_location');
+		$terminal = $this->getTerminalLocation($sessionService);
 
 		if(!$terminal) return;
 
@@ -57,7 +56,7 @@ class OrderCreator implements ModuleInterface
 
 		try {
 			$sessionService = new SessionService();
-			$terminal = $sessionService->get('terminal_location');
+			$terminal = $this->getTerminalLocation($sessionService);
 
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethodId = $item->get_method_id();
@@ -114,7 +113,7 @@ class OrderCreator implements ModuleInterface
 	 */
 	public function processBlocksOrder( $order ) {
 		$sessionService   = new SessionService();
-		$terminal         = $sessionService->get( 'terminal_location' );
+		$terminal         = $this->getTerminalLocation( $sessionService );
 		$shippingMethods  = $sessionService->get( 'shipping_methods' ) ?: [];
 
 		$shippingMethodId = null;
@@ -153,11 +152,56 @@ class OrderCreator implements ModuleInterface
 		}
 	}
 
+	private function getTerminalLocation(SessionService $sessionService)
+	{
+		$terminal = $sessionService->get('terminal_location');
+		if (is_string($terminal) && '' !== trim($terminal)) {
+			return $terminal;
+		}
+
+		$shippingFrame = $sessionService->get('esl_shipping_frame');
+		if (is_string($shippingFrame)) {
+			$shippingFrame = maybe_unserialize($shippingFrame);
+		}
+
+		if (!is_array($shippingFrame)) {
+			return '';
+		}
+
+		$mode = isset($shippingFrame['mode']) ? (string) $shippingFrame['mode'] : '';
+		if ('terminal' !== $mode) {
+			return '';
+		}
+
+		$terminalAddress = isset($shippingFrame['terminalAddress']) ? trim((string) $shippingFrame['terminalAddress']) : '';
+		$terminalCode = isset($shippingFrame['terminalCode']) ? trim((string) $shippingFrame['terminalCode']) : '';
+
+		if ('' !== $terminalAddress && '' !== $terminalCode) {
+			return $terminalAddress . '. Код пункта: ' . $terminalCode;
+		}
+
+		if ('' !== $terminalAddress) {
+			return $terminalAddress;
+		}
+
+		$frameAddress = isset($shippingFrame['address']) ? trim((string) $shippingFrame['address']) : '';
+		if ('' === $frameAddress) {
+			return '';
+		}
+
+		$addressParts = preg_split('/\s+/', $frameAddress, 2);
+		if (is_array($addressParts) && 2 === count($addressParts) && '' !== trim($addressParts[0]) && '' !== trim($addressParts[1])) {
+			return trim($addressParts[1]) . '. Код пункта: ' . trim($addressParts[0]);
+		}
+
+		return $frameAddress;
+	}
+
 	private function methodsIsEshopTerminal($methodId)
     {
         $explodedAtPrefix = explode(WC_ESL_PREFIX, $methodId);
 
-        if(empty($explodedAtPrefix)) return false;
+		if (!isset($explodedAtPrefix[1]) || '' === $explodedAtPrefix[1]) return false;
 
         $typeServiceShipping = explode('_', $explodedAtPrefix[1]);
 
