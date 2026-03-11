@@ -147,11 +147,28 @@ class GutenbergBlock implements ModuleInterface
 
             $count = 0;
             $countText = __('службы', 'eshoplogisticru');
-            
+
+            $eslLoader = false;
+            if (isset($addOption['eslLoader'])) {
+                $eslLoader = wp_get_attachment_image_url($addOption['eslLoader'], 'full');
+            }
+
             // Запускаем буферизацию вывода
             ob_start();
             ?>
             <div class="wc-esl-checkout-shipping-block" data-block-type="checkout-shipping">
+                <div class="preloader">
+                    <?php if ($eslLoader): ?>
+                        <div class="preloader__img">
+                            <img src="<?php echo esc_attr($eslLoader); ?>" width="150" height="150">
+                        </div>
+                    <?php else: ?>
+                        <div class="preloader__row">
+                            <div class="preloader__item"></div>
+                            <div class="preloader__item"></div>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 <div id="tips-city-container" style="display: none;">
                     <i class="ico">☓</i>
                     <?php echo esc_html__('Укажите город для расчета доставки', 'eshoplogisticru'); ?>

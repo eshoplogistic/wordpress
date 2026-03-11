@@ -70,14 +70,16 @@
      * Управление состоянием загрузки
      */
     function setLoadingState(isLoading) {
-        const blockRoot = document.querySelector('.wc-esl-checkout-shipping-block');
-        if (!blockRoot) {
-            return;
-        }
+        const PRELOADER_ID = 'wc-esl-block-preloader';
+        let preloader = document.getElementById(PRELOADER_ID);
 
-        const preloader = blockRoot.querySelector('.preloader');
         if (!preloader) {
-            return;
+            preloader = document.createElement('div');
+            preloader.id = PRELOADER_ID;
+            preloader.className = 'wc-esl-block-preloader';
+            preloader.innerHTML = '<div class="wc-esl-block-preloader__spinner"></div>';
+            preloader.style.display = 'none';
+            document.body.appendChild(preloader);
         }
 
         preloader.style.display = isLoading ? 'block' : 'none';
@@ -589,6 +591,8 @@
             hideCityTips();
             suppressAutocompleteUntil = Date.now() + 1500;
 
+            setLoadingState(true);
+
             requestShippingAddressUpdate(cityData)
                 .then((response) => {
                     if (!response || response.success !== true) {
@@ -624,6 +628,7 @@
                     console.error('eShopLogistic: failed to update shipping address', error);
                 })
                 .finally(() => {
+                    setLoadingState(false);
                     citySelectionInProgress = false;
                     suppressAutocompleteUntil = Date.now() + 700;
                 });
@@ -813,6 +818,8 @@
             widgetInitInProgress = false;
             return;
         }
+
+        setLoadingState(true);
 
         // Проверяем, виден ли контейнер
         const isVisible = container && container.offsetParent !== null;
@@ -1285,6 +1292,8 @@
             }
 
             // Legacy flow: сохранить terminal_location в сессию через тот же AJAX что и legacy.
+            setLoadingState(true);
+
             const persistTerminalSelection = (hasTerminalSelection && deliveryData?.terminal)
                 ? setTerminalAddress(
                     deliveryData.terminal.address || '',

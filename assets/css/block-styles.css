@@ -123,47 +123,34 @@ body > .modal-esl-frame #buttonModalDoor {
     transform: translate(-50%, 0);
 }
 
-/* Legacy parity: preloader */
-.wc-esl-checkout-shipping-block .preloader {
+/* Preloader overlay — создаётся JS-ом на document.body, вне любого stacking context */
+.wc-esl-block-preloader {
     position: fixed;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.34);
-    z-index: 9999;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 999999;
     display: none;
 }
 
-.wc-esl-checkout-shipping-block .preloader__row {
-    position: relative;
-    top: 50%;
-    left: 50%;
-    width: 70px;
-    height: 70px;
-    margin-top: -35px;
-    margin-left: -35px;
-    text-align: center;
-    animation: preloader-rotate 2s infinite linear;
-}
-
-.wc-esl-checkout-shipping-block .preloader__img {
-    position: relative;
-    top: 50%;
-    left: 50%;
-    width: 150px;
-    height: 150px;
-    margin-top: -35px;
-    margin-left: -35px;
-    text-align: center;
-}
-
-.wc-esl-checkout-shipping-block .preloader__item {
+.wc-esl-block-preloader__spinner {
     position: absolute;
-    display: inline-block;
-    top: 0;
-    background-color: #337ab7;
-    border-radius: 100%;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+    margin-left: -25px;
+    border: 5px solid rgba(51, 122, 183, 0.25);
+    border-top-color: #337ab7;
+    border-radius: 50%;
+    animation: esl-block-spin 0.8s linear infinite;
+}
+
+@keyframes esl-block-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Product Calculator Block */
