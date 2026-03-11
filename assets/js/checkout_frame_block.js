@@ -1365,6 +1365,12 @@
         const modal = document.getElementById('modal-esl-frame');
         if (!modal) return;
 
+        // Move modal to document.body to escape WooCommerce Blocks stacking contexts
+        // that would otherwise render above position:fixed z-index:9999 elements.
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
         // Legacy behavior: modal must stay hidden until user explicitly opens it.
         modal.style.display = 'none';
 

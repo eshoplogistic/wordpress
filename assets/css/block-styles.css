@@ -78,7 +78,9 @@
 }
 
 /* Legacy parity: modal-esl-frame */
-.wc-esl-checkout-shipping-block .modal-esl-frame {
+/* Selector covers both original location and body-appended (z-index fix) */
+.wc-esl-checkout-shipping-block .modal-esl-frame,
+body > .modal-esl-frame {
     display: none;
     position: fixed;
     left: 0;
@@ -90,7 +92,8 @@
     z-index: 9999;
 }
 
-.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content {
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content,
+body > .modal-esl-frame .modal_content {
     background-color: #fefefe;
     margin: 10% auto;
     padding: 20px;
@@ -99,7 +102,8 @@
     z-index: 99999;
 }
 
-.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window {
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window,
+body > .modal-esl-frame .modal_content .close_modal_window {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -107,11 +111,13 @@
     cursor: pointer;
 }
 
-.wc-esl-checkout-shipping-block .modal-esl-frame .title {
+.wc-esl-checkout-shipping-block .modal-esl-frame .title,
+body > .modal-esl-frame .title {
     padding-bottom: 45px;
 }
 
-.wc-esl-checkout-shipping-block .modal-esl-frame #buttonModalDoor {
+.wc-esl-checkout-shipping-block .modal-esl-frame #buttonModalDoor,
+body > .modal-esl-frame #buttonModalDoor {
     position: relative;
     left: 50%;
     transform: translate(-50%, 0);
