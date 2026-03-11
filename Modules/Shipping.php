@@ -58,16 +58,111 @@ class Shipping implements ModuleInterface
 	    $optionsRepository = new OptionsRepository();
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
-	    if($frameEnable)
-			return $rates;
+	    if ($frameEnable) {
+	        return $this->applyFrameRatesForBlocks($rates, $package);
+	    }
 
+	    return $this->filterRatesForLegacy($rates, $package);
+    }
+
+    /**
+     * Apply frame-selected shipping label and cost to rates for Blocks checkout.
+     * 
+     * CONTEXT: WooCommerce Blocks - used when frame_enable is true.
+     * - Reads esl_shipping_frame from session (contains user widget selection)
+     * - Synchronizes frame label/cost to wc_esl_frame_mixed rate object
+     * - Forces rate recalculation with updated label for Blocks UI
+     * 
+     * @param array $rates Current shipping rates
+     * @param array $package Cart package data
+     * @return array Modified rates with frame selection applied
+     */
+    private function applyFrameRatesForBlocks($rates, $package)
+    {
+        $sessionService = new SessionService();
+        $shippingFrame = $sessionService->get('esl_shipping_frame');
+
+        if (is_string($shippingFrame)) {
+            $shippingFrame = maybe_unserialize($shippingFrame);
+        }
+
+        if (!is_array($shippingFrame) || empty($shippingFrame['name'])) {
+            return $rates;
+        }
+
+        $optionsRepository = new OptionsRepository();
+        $nameDelivery = [
+            'terminal' => 'пункт выдачи заказа',
+            'door' => 'курьер',
+        ];
+
+        $labelTitle = (string) $shippingFrame['name'];
+        if (!empty($shippingFrame['mode']) && isset($nameDelivery[$shippingFrame['mode']])) {
+            $labelTitle .= ' - ' . $nameDelivery[$shippingFrame['mode']];
+        }
+
+        if (!empty($shippingFrame['time'])) {
+            $labelTitle .= '. Срок доставки - ' . $shippingFrame['time'];
+        }
+
+        $cost = 0;
+        if (isset($shippingFrame['price']) && is_array($shippingFrame['price']) && isset($shippingFrame['price']['value'])) {
+            $cost = (float) $shippingFrame['price']['value'];
+        }
+
+        $pluginEnableShippingPrice = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_price_shipping');
+        if ($pluginEnableShippingPrice) {
+            if ($cost === 0.0) {
+                $labelTitle .= ': Бесплатно';
+            }
+        } else {
+            $currencyCode = get_woocommerce_currency();
+            $currencySymbol = get_woocommerce_currency_symbol($currencyCode);
+            $labelTitle = str_replace(':', ' -', $labelTitle) . ' - ' . $cost . ' ' . $currencySymbol;
+        }
+
+        foreach ($rates as $rateKey => $rate) {
+            if (strpos((string) $rateKey, WC_ESL_PREFIX . 'frame_mixed') === false) {
+                continue;
+            }
+
+            if (is_object($rate)) {
+                if (method_exists($rate, 'set_label')) {
+                    $rate->set_label($labelTitle);
+                }
+
+                if (method_exists($rate, 'set_cost')) {
+                    $rate->set_cost($pluginEnableShippingPrice ? $cost : 0);
+                }
+
+                $rates[$rateKey] = $rate;
+            }
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Filter shipping rates for legacy checkout flow.
+     * 
+     * CONTEXT: Legacy (non-Blocks) checkout - used when frame_enable is false.
+     * - Keeps only rates that were calculated by this plugin via shipping_methods session
+     * - Also keeps non-eShopLogistic rates (where prefix count < 2) for compatibility
+     * - Legacy checkout handles rate calculations via direct session state
+     * 
+     * @param array $rates Current shipping rates
+     * @param array $package Cart package data
+     * @return array Filtered rates with only relevant methods
+     */
+    private function filterRatesForLegacy($rates, $package)
+    {
         $sessionService = new SessionService();
         $shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 
         $newRates = [];
 
-        foreach($rates as $key => $rate) {
-            if(
+        foreach ($rates as $key => $rate) {
+            if (
                 isset($shippingMethods[$key]) ||
                 (count(explode(WC_ESL_PREFIX, $key)) < 2)
             ) {

@@ -20,6 +20,9 @@ class OrderCreator implements ModuleInterface
 
         add_action('woocommerce_checkout_create_order', [$this, 'createOrder']);
         add_action('woocommerce_before_order_item_object_save', [$this, 'saveOrderShipping']);
+
+		// WooCommerce Blocks / Store API: срабатывает после полного создания заказа и сохранения позиций.
+        add_action('woocommerce_store_api_checkout_order_processed', [$this, 'processBlocksOrder'], 10, 1);
 	}
 
 	public function createOrder($order)
@@ -102,6 +105,51 @@ class OrderCreator implements ModuleInterface
 			$item->update_meta_data(__("Пункт выдачи", 'eshoplogisticru'), $terminal);
 		} catch(\Exception $e) {
 			return;
+		}
+	}
+
+	/**
+	 * Обрабатывает создание заказа через WooCommerce Blocks / Store API.
+	 * Эквивалентно createOrder + saveOrderShipping, но вызывается после сохранения всех позиций.
+	 */
+	public function processBlocksOrder( $order ) {
+		$sessionService   = new SessionService();
+		$terminal         = $sessionService->get( 'terminal_location' );
+		$shippingMethods  = $sessionService->get( 'shipping_methods' ) ?: [];
+
+		$shippingMethodId = null;
+		foreach ( $order->get_items( 'shipping' ) as $item ) {
+			$shippingMethodId = $item->get_method_id();
+
+			// Мета-данные для позиции доставки (Срок доставки, Пункт выдачи).
+			if ( isset( $shippingMethods[ $shippingMethodId ] ) ) {
+				$methodData = $shippingMethods[ $shippingMethodId ];
+				unset( $methodData['terminals'] );
+				$item->update_meta_data( 'esl_shipping_methods', json_encode( $methodData, JSON_UNESCAPED_UNICODE ) );
+
+				$timeKey = $terminal ? 'terminal' : 'door';
+				$timeData = $methodData['data'][ $timeKey ]['time'] ?? $methodData['time'] ?? null;
+				if ( $timeData ) {
+					$timeVal  = $timeData['value'] ?? '';
+					$timeUnit = $timeData['unit']  ?? '';
+					$timeText = $timeData['text']  ?? '';
+					$item->update_meta_data( __( 'Срок доставки', 'eshoplogisticru' ), "{$timeVal} {$timeUnit} - {$timeText}" );
+				}
+			}
+
+			if ( $terminal && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
+				$item->update_meta_data( __( 'Пункт выдачи', 'eshoplogisticru' ), $terminal );
+			}
+
+			$item->save();
+		}
+
+		$sessionService->drop( 'shipping_methods' );
+
+		// Адрес доставки — как в createOrder.
+		if ( $terminal && $shippingMethodId && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
+			$order->set_shipping_address_1( __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $terminal );
+			$order->save();
 		}
 	}
 

@@ -20,7 +20,6 @@ function eslRunMap() {
                 if (request.readyState === 4 && request.status === 200) {
                     jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val(terminal.address);
                     jQuery(".wc-esl-terminals__button").text("Выбрать другой пункт выдачи");
-                    console.log(request.response);
 
                     modalDom.close()
                 }

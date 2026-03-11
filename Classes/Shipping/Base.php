@@ -115,14 +115,14 @@ class Base extends \WC_Shipping_Method
 	 *
 	 * @access public
 	 * @param mixed $package
-	 * @return void
 	 */
 	public function calculate_shipping( $package = array() )
 	{
 		if(is_checkout()){
 			$optionsRepository = new OptionsRepository();
 			$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
-			if($frameEnable){
+			if($frameEnable)
+			{
 				$rate = $this->calculate_shipping_frame($package);
 			}else{
 				$rate = $this->calculate_shipping_basic($package);
@@ -131,8 +131,8 @@ class Base extends \WC_Shipping_Method
 			if($rate)
 				$this->add_rate( $rate );
 		}
-
 	}
+
 
 	public function calculate_shipping_basic($package): array {
 		$cost = 0;
@@ -333,6 +333,15 @@ class Base extends \WC_Shipping_Method
 		$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
 		$widgetCityEsl = $sessionService->get($mode) ? $sessionService->get($mode) : '';
 
+		// В некоторых сценариях данные из сессии могут приходить сериализованной строкой.
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+
+		if ( is_string( $widgetCityEsl ) ) {
+			$widgetCityEsl = maybe_unserialize( $widgetCityEsl );
+		}
+
 		$widgetPaymentSelected = $sessionService->get('esl_shipping_selected_payment') ? $sessionService->get('esl_shipping_selected_payment') : '';
 		$sessionService->set('esl_shipping_selected_payment', ( $postRequest['payment_method'] ?? '' ));
 		$paymentCalc = '';
@@ -353,7 +362,10 @@ class Base extends \WC_Shipping_Method
 		}
 
 		$pluginEnableShippingPrice = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_price_shipping');
-		if($shippingFrame && isset($widgetCityEsl['city']) && $widgetCityEsl['city'] == $shippingFrame['city']){
+
+		$canApplyFrameLabel = $this->canApplyFrameSelectionForContext( $shippingFrame, $widgetCityEsl );
+
+		if( $canApplyFrameLabel ){
 			if(isset($shippingFrame['name']) && isset($shippingFrame['price'])){
 				$labelTitle = $shippingFrame['name'];
 				if($shippingFrame['mode'])
@@ -404,6 +416,22 @@ class Base extends \WC_Shipping_Method
 		);
 
 		return $rate;
+	}
+
+	private function canApplyFrameSelectionForContext( $shippingFrame, $widgetCityEsl ): bool
+	{
+		if ( ! is_array( $shippingFrame ) || ! isset( $shippingFrame['name'], $shippingFrame['price'] ) ) {
+			return false;
+		}
+
+		$frameCityRaw = isset( $shippingFrame['city'] ) ? (string) $shippingFrame['city'] : '';
+		$modeCityRaw  = ( is_array( $widgetCityEsl ) && isset( $widgetCityEsl['city'] ) ) ? (string) $widgetCityEsl['city'] : '';
+		$frameCity    = function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( $frameCityRaw ) ) : strtolower( trim( $frameCityRaw ) );
+		$modeCity     = function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( $modeCityRaw ) ) : strtolower( trim( $modeCityRaw ) );
+
+		// Legacy flow usually has full city context; Blocks recalculation can be triggered
+		// before city fields are fully synced, so empty city on either side is accepted.
+		return $frameCity === '' || $modeCity === '' || $frameCity === $modeCity;
 	}
 
 	public function getSlug()

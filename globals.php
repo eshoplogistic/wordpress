@@ -317,3 +317,140 @@ if ( ! function_exists( 'shortcode_widget_email_status_delivery' ) ) {
         }
     }
 }
+
+/**
+ * AJAX-обработчик получения данных товара для блока калькулятора
+ */
+if ( ! function_exists( 'wc_esl_get_product_data_ajax' ) ) {
+    function wc_esl_get_product_data_ajax() {
+        // Verify nonce
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wc-esl-shipping' ) ) {
+            wp_send_json_error( array( 'message' => 'Nonce verification failed' ) );
+        }
+
+        if ( ! isset( $_POST['product_id'] ) ) {
+            wp_send_json_error( array( 'message' => 'Product ID not provided' ) );
+        }
+
+        $product_id = intval( sanitize_text_field( wp_unslash( $_POST['product_id'] ) ) );
+        $product = wc_get_product( $product_id );
+
+        if ( ! $product ) {
+            wp_send_json_error( array( 'message' => 'Product not found' ) );
+        }
+
+        $shippingHelper = new ShippingHelper();
+        $length = $shippingHelper->dimensionsOption( $product->get_length() );
+        $width = $shippingHelper->dimensionsOption( $product->get_width() );
+        $height = $shippingHelper->dimensionsOption( $product->get_height() );
+
+        wp_send_json_success( array(
+            'id' => $product->get_id(),
+            'name' => $product->get_name(),
+            'price' => $product->get_price(),
+            'weight' => $product->get_weight(),
+            'dimensions' => $length . '*' . $width . '*' . $height,
+            'sku' => $product->get_sku(),
+        ) );
+    }
+
+    add_action( 'wp_ajax_get_product_data', 'wc_esl_get_product_data_ajax' );
+    add_action( 'wp_ajax_nopriv_get_product_data', 'wc_esl_get_product_data_ajax' );
+}
+
+/**
+ * Новый AJAX-обработчик данных товара с проверкой nonce (блоки Gutenberg)
+ */
+if ( ! function_exists( 'wc_esl_get_product_data_for_blocks' ) ) {
+    function wc_esl_get_product_data_for_blocks() {
+        // Verify nonce
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wc_esl_block_nonce' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security verification failed', 'eshoplogisticru' ) ) );
+        }
+
+        if ( ! isset( $_POST['product_id'] ) ) {
+            wp_send_json_error( array( 'message' => __( 'Product ID is required', 'eshoplogisticru' ) ) );
+        }
+
+        $product_id = intval( wp_unslash( $_POST['product_id'] ) );
+        $product = wc_get_product( $product_id );
+
+        if ( ! $product ) {
+            wp_send_json_error( array( 'message' => __( 'Product not found', 'eshoplogisticru' ) ) );
+        }
+
+        $shippingHelper = new ShippingHelper();
+        $product_data = $product->get_data();
+
+        $length = $shippingHelper->dimensionsOption( $product_data['length'] );
+        $width = $shippingHelper->dimensionsOption( $product_data['width'] );
+        $height = $shippingHelper->dimensionsOption( $product_data['height'] );
+
+        wp_send_json_success( array(
+            'id' => $product->get_id(),
+            'name' => $product->get_name(),
+            'price' => $product->get_price(),
+            'weight' => $product->get_weight(),
+            'dimensions' => $length . '*' . $width . '*' . $height,
+            'sku' => $product->get_sku(),
+            'image' => wp_get_attachment_url( $product->get_image_id() ),
+        ) );
+    }
+
+    add_action( 'wp_ajax_wc_esl_get_product_data', 'wc_esl_get_product_data_for_blocks' );
+    add_action( 'wp_ajax_nopriv_wc_esl_get_product_data', 'wc_esl_get_product_data_for_blocks' );
+}
+
+/**
+ * Поддержка оформления заказа на Gutenberg/блоках
+ * Хук для внедрения полей формы доставки в WooCommerce Blocks Checkout
+ */
+if ( ! function_exists( 'wc_esl_blocks_checkout_register_hooks' ) ) {
+    function wc_esl_blocks_checkout_register_hooks() {
+		// Регистрируем хуки для блочного оформления заказа
+        add_filter( 'woocommerce_blocks_checkout_available_block_types', function( $blocks ) {
+            return $blocks;
+        } );
+    }
+
+    add_action( 'init', 'wc_esl_blocks_checkout_register_hooks' );
+}
+
+/**
+ * AJAX-обработчик обновления корзины при блочном оформлении заказа
+ */
+if ( ! function_exists( 'wc_esl_update_cart_ajax' ) ) {
+    function wc_esl_update_cart_ajax() {
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wc-esl-shipping' ) ) {
+            wp_send_json_error( array( 'message' => 'Nonce verification failed' ) );
+        }
+
+		// Возвращаем данные корзины для JavaScript
+        wp_send_json_success( array(
+            'cart_total' => WC()->cart ? WC()->cart->get_total() : 0,
+            'cart_count' => WC()->cart ? WC()->cart->get_cart_contents_count() : 0,
+        ) );
+    }
+
+    add_action( 'wp_ajax_wc_esl_update_cart', 'wc_esl_update_cart_ajax' );
+    add_action( 'wp_ajax_nopriv_wc_esl_update_cart', 'wc_esl_update_cart_ajax' );
+}
+
+/**
+ * Получение информации о доступности блоков
+ * Предоставляет сведения о том, какие блоки доступны
+ */
+if ( ! function_exists( 'wc_esl_get_block_info' ) ) {
+    function wc_esl_get_block_info() {
+        $optionsRepository = new OptionsRepository();
+        
+        return array(
+            'checkoutShippingBlock' => true,
+            'productCalculatorBlock' => true,
+            'cartShippingBlock' => true,
+            'checkoutFormBlock' => true,
+            'widgetKey' => $optionsRepository->getOption( 'wc_esl_shipping_widget_key' ),
+            'frameEnabled' => (bool) $optionsRepository->getOption( 'wc_esl_shipping_frame_enable' ),
+        );
+    }
+}

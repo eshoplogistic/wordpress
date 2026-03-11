@@ -1,0 +1,1627 @@
+/**
+ * eShopLogistic Checkout Frame for Gutenberg Blocks
+ * Адаптированная версия для работы с WooCommerce Blocks
+ */
+
+(function() {
+    'use strict';
+
+    // Глобальные переменные
+    window.widgetInit = false;
+    window.keyDelivery = 'door';
+    let cityMain = false;
+    let errorCity = 0;
+    let eslWidget = null;
+    let widgetSdkRequested = false;
+
+    /**
+     * Запустить инициализацию CDN SDK вручную.
+     * app.js из CDN в обычном режиме вешается на DOMContentLoaded,
+     * поэтому при поздней загрузке (после открытия модалки) нужен явный init().
+     */
+    function triggerCdnWidgetInit() {
+        if (window.eShopLogistic && typeof window.eShopLogistic.init === 'function') {
+            window.eShopLogistic.init();
+            return true;
+        }
+
+        console.warn('eShopLogistic: window.eShopLogistic.init is unavailable');
+        return false;
+    }
+
+    let widgetSdkLoaded = false;
+    let widgetInitTries = 0;
+    let widgetEventsBound = false;
+    let widgetInitInProgress = false;
+    // Базовый хеш автоподставленного сервиса в текущей сессии открытия модалки.
+    let hashSelectService = '';
+    let userInteractedWithWidget = false;
+    let suppressCloseOnAutoSelect = true;
+    const MAX_WIDGET_INIT_TRIES = 3;
+
+    // Конфигурация из WordPress  
+    const config = window.wcEslBlockFrontend || {};
+
+    /**
+     * Инициализация типа доставки по умолчанию
+     */
+    function initDefaultDelivery() {
+        const billingTerminal = document.getElementById('wc_esl_billing_terminal');
+        const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+        
+        window.keyDelivery = (billingTerminal?.value || shippingTerminal?.value) ? 'terminal' : 'door';
+    }
+
+    /**
+     * Проверка, скрыт ли элемент
+     */
+    function isHidden(el) {
+        return window.getComputedStyle(el).display === 'none';
+    }
+
+    /**
+     * Проверка числового значения
+     */
+    function isNumeric(value) {
+        return /^-{0,1}\d+$/.test(value);
+    }
+
+    /**
+     * Управление состоянием загрузки
+     */
+    function setLoadingState(isLoading) {
+        document.body.classList.toggle('load', isLoading);
+        document.body.classList.toggle('loaded_hiding', !isLoading);
+    }
+
+    /**
+     * Получить хеш/подпись события сервиса.
+     * Используем objectHash.sha1 при наличии, иначе безопасный fallback через JSON.
+     */
+    function getServiceSignature(data) {
+        try {
+            if (window.objectHash && typeof window.objectHash.sha1 === 'function') {
+                return window.objectHash.sha1(data);
+            }
+            return JSON.stringify(data || {});
+        } catch (e) {
+            return '';
+        }
+    }
+
+    /**
+     * Получить текущее имя города из checkout-полей (как в legacy).
+     */
+    function getCurrentCheckoutCityName() {
+        try {
+            const billingFieldRef = document.getElementById('eslBillingCityFields');
+            const shippingFieldRef = document.getElementById('eslShippingCityFields');
+
+            const billingFieldId = billingFieldRef && billingFieldRef.value ? billingFieldRef.value : 'billing_city';
+            const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : 'shipping_city';
+
+            const billingCityEl = document.getElementById(billingFieldId);
+            const shippingCityEl = document.getElementById(shippingFieldId);
+
+            // Приоритет как в checkout flow: shipping, если активен иной адрес; иначе billing.
+            const shipToDifferent = document.getElementById('ship-to-different-address-checkbox');
+            if (shipToDifferent && shipToDifferent.checked && shippingCityEl && shippingCityEl.value) {
+                return shippingCityEl.value;
+            }
+
+            if (billingCityEl && billingCityEl.value) {
+                return billingCityEl.value;
+            }
+
+            if (shippingCityEl && shippingCityEl.value) {
+                return shippingCityEl.value;
+            }
+
+            return '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    /**
+     * Получить текущий способ доставки
+     */
+    function getCurrentShippingMethod() {
+        // Classic checkout
+        const methods = document.querySelectorAll('input[name^="shipping_method"]:checked');
+        if (methods.length > 0) {
+            return methods[0].value || methods[0].id || null;
+        }
+
+        const hiddenMethods = document.querySelectorAll('input[name^="shipping_method"][type="hidden"]');
+        if (hiddenMethods.length > 0) {
+            return hiddenMethods[0].value || hiddenMethods[0].id || null;
+        }
+
+        // WooCommerce Blocks checkout fallback
+        const wcBlocksSelected = document.querySelectorAll(
+            '.wc-block-components-shipping-rates-control input[type="radio"]:checked, ' +
+            'input[type="radio"][name*="shipping_method"]:checked, ' +
+            'input[type="radio"][name*="shipping-rate"]:checked'
+        );
+
+        if (wcBlocksSelected.length > 0) {
+            const selected = wcBlocksSelected[0];
+            const label = selected.closest('label');
+            const labelText = label ? label.textContent.trim() : '';
+
+            return selected.value || selected.id || labelText || null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Проверка, является ли метод доставки eShopLogistic
+     */
+    function isEshopMethod(methodName) {
+        if (!methodName) return false;
+
+        const normalized = String(methodName).toLowerCase();
+        return normalized.indexOf('wc_esl_') !== -1 ||
+            normalized.indexOf('eshoplogistic') !== -1 ||
+            normalized.indexOf('yandex') !== -1 ||
+            normalized.indexOf('яндекс') !== -1;
+    }
+
+    /**
+     * Получить тип доставки из названия метода
+     */
+    function getDeliveryType(methodName) {
+        if (!methodName || methodName.indexOf('wc_esl_') === -1) {
+            const normalized = String(methodName).toLowerCase();
+
+            if (normalized.indexOf('terminal') !== -1 ||
+                normalized.indexOf('pickup') !== -1 ||
+                normalized.indexOf('пункт выдачи') !== -1 ||
+                normalized.indexOf('самовывоз') !== -1) {
+                return 'terminal';
+            }
+
+            if (normalized.indexOf('door') !== -1 ||
+                normalized.indexOf('courier') !== -1 ||
+                normalized.indexOf('доставка') !== -1 ||
+                normalized.indexOf('курьер') !== -1) {
+                return 'door';
+            }
+
+            return null;
+        }
+
+        if (methodName.indexOf('_door') !== -1) return 'door';
+        if (methodName.indexOf('_terminal') !== -1) return 'terminal';
+        if (methodName.indexOf('_mixed') !== -1) return window.keyDelivery;
+        
+        return null;
+    }
+
+    /**
+     * Управление видимостью полей адреса
+     */
+    function toggleAddressFields(show) {
+        const addressFields = document.querySelectorAll(
+            '#billing_address_1_field, #billing_address_2_field, ' +
+            '#shipping_address_1_field, #shipping_address_2_field, ' +
+            '.wc-block-components-address-form__address_1, ' +
+            '.wc-block-components-address-form__address_2'
+        );
+        
+        addressFields.forEach(field => {
+            field.style.display = show ? '' : 'none';
+        });
+    }
+
+    /**
+     * Управление видимостью терминалов
+     */
+    function toggleTerminals(show, mode = 'shipping') {
+        const terminalButton = document.getElementById(`wc-esl-terminals-wrap-button-${mode}`);
+        
+        if (terminalButton) {
+            terminalButton.style.display = show ? 'block' : 'none';
+            if (show) {
+                terminalButton.classList.add('show');
+            } else {
+                terminalButton.classList.remove('show');
+            }
+        }
+    }
+
+    /**
+     * Поиск города
+     */
+    function searchCity(query, callback, country = 'RU') {
+        if (!query || query.length < 2) {
+            callback([]);
+            return;
+        }
+
+        fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'wc_esl_search_cities',
+                target: query,
+                currentCountry: country,
+                nonce: config.nonce
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                callback(data.data);
+            } else {
+                callback([]);
+            }
+        })
+        .catch(error => {
+            console.error('City search error:', error);
+            callback([]);
+        });
+    }
+
+    function getFieldElement(candidates) {
+        for (const id of candidates) {
+            const el = document.getElementById(id);
+            if (el) {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function getCheckoutCityElement(mode) {
+        const customRefId = mode === 'billing' ? 'eslBillingCityFields' : 'eslShippingCityFields';
+        const customRef = document.getElementById(customRefId);
+        const customId = customRef && customRef.value ? customRef.value : '';
+
+        const fallbackIds = mode === 'billing'
+            ? ['billing_city', 'billing-city']
+            : ['shipping_city', 'shipping-city'];
+
+        const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
+        return getFieldElement(ids);
+    }
+
+    function getCheckoutCountryValue(mode) {
+        const countryEl = mode === 'billing'
+            ? getFieldElement(['billing_country', 'billing-country'])
+            : getFieldElement(['shipping_country', 'shipping-country']);
+
+        return (countryEl && countryEl.value) ? countryEl.value : 'RU';
+    }
+
+    function setCheckoutAddressValues(mode, cityData) {
+        const fieldMap = mode === 'billing'
+            ? {
+                city: ['billing_city', 'billing-city'],
+                state: ['billing_state', 'billing-state'],
+                postcode: ['billing_postcode', 'billing-postcode']
+            }
+            : {
+                city: ['shipping_city', 'shipping-city'],
+                state: ['shipping_state', 'shipping-state'],
+                postcode: ['shipping_postcode', 'shipping-postcode']
+            };
+
+        const cityEl = getFieldElement(fieldMap.city);
+        const stateEl = getFieldElement(fieldMap.state);
+        const postcodeEl = getFieldElement(fieldMap.postcode);
+
+        const setInputValue = (input, value) => {
+            if (!input) {
+                return;
+            }
+
+            const nextValue = value || '';
+            const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+            const setter = descriptor && descriptor.set;
+            if (setter) {
+                setter.call(input, nextValue);
+            } else {
+                input.value = nextValue;
+            }
+
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+
+        setInputValue(cityEl, cityData.city);
+        setInputValue(stateEl, cityData.region);
+        setInputValue(postcodeEl, cityData.postcode);
+    }
+
+    function updateWidgetCityData(cityData) {
+        const cityInput = document.getElementById('widgetCityEsl');
+        if (!cityInput) {
+            return;
+        }
+
+        let current = {};
+        try {
+            current = cityInput.value ? JSON.parse(cityInput.value) : {};
+        } catch (e) {
+            current = {};
+        }
+
+        const next = {
+            ...current,
+            ...(cityData.raw && typeof cityData.raw === 'object' ? cityData.raw : {}),
+            name: cityData.city || cityData.name || '',
+            city: cityData.city || cityData.name || '',
+            region: cityData.region || '',
+            fias: cityData.fias || '',
+            postcode: cityData.postcode || '',
+            postal_code: cityData.postcode || cityData.postal_code || '',
+            services: cityData.services || []
+        };
+
+        cityInput.value = JSON.stringify(next);
+    }
+
+    function toWidgetSettlement(cityData) {
+        return {
+            ...(cityData.raw && typeof cityData.raw === 'object' ? cityData.raw : {}),
+            name: cityData.city || cityData.name || '',
+            city: cityData.city || cityData.name || '',
+            region: cityData.region || '',
+            fias: cityData.fias || '',
+            postcode: cityData.postcode || '',
+            postal_code: cityData.postcode || cityData.postal_code || '',
+            services: cityData.services || []
+        };
+    }
+
+    function clearCityResultList(mode) {
+        const list = document.getElementById(`result_wc_esl_search_city_${mode}`);
+        if (list) {
+            list.remove();
+        }
+    }
+
+    function renderCitiesList(items, mode = 'billing') {
+        const listId = `result_wc_esl_search_city_${mode}`;
+
+        const escapeAttr = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}"><li class="wc-esl-search-city__empty">Ничего не найдено</li></ul>`;
+        }
+
+        const htmlItems = items.map((item) => {
+            const city = item.name || '';
+            const region = item.region || '';
+            const postcode = item.postal_code || '';
+            const fias = item.fias || '';
+            const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
+            const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
+
+            return `<li class="wc-esl-search-city__item" data-mode="${escapeAttr(mode)}" data-city="${escapeAttr(city)}" data-region="${escapeAttr(region)}" data-postcode="${escapeAttr(postcode)}" data-fias="${escapeAttr(fias)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(city)}${region ? `, ${escapeHtml(region)}` : ''}</li>`;
+        }).join('');
+
+        return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}">${htmlItems}</ul>`;
+    }
+
+    function appendCityResultList(inputEl, mode, items) {
+        clearCityResultList(mode);
+
+        const wrapper = inputEl.closest('.wc-block-components-text-input') || inputEl.parentElement;
+        if (!wrapper) {
+            return;
+        }
+
+        wrapper.insertAdjacentHTML('beforeend', renderCitiesList(items, mode));
+    }
+
+    function requestShippingAddressUpdate(cityData) {
+        const updateMode = 'shipping';
+        const addressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+
+        const body = new URLSearchParams({
+            action: 'wc_esl_update_shipping_address',
+            fias: cityData.fias || '',
+            city: cityData.city || '',
+            adress: addressEl ? addressEl.value : '',
+            region: cityData.region || '',
+            postcode: cityData.postcode || '',
+            mode: updateMode,
+            nonce: config.nonce || ''
+        });
+
+        const services = cityData.services;
+        if (Array.isArray(services)) {
+            services.forEach((service) => {
+                body.append('services[]', String(service));
+            });
+        } else if (services && typeof services === 'object') {
+            Object.keys(services).forEach((key) => {
+                body.append(`services[${key}]`, String(services[key]));
+            });
+        }
+
+        return fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body
+        }).then((response) => response.json())
+          .then((data) => {
+              return data;
+          });
+    }
+
+    function setupAddressSelectionForBlocks() {
+        const timers = { shipping: null };
+        let citySelectionInProgress = false;
+        let suppressAutocompleteUntil = 0;
+
+        const hideCityTips = () => {
+            const tips = document.getElementById('tips-city-container');
+            if (tips) {
+                tips.style.display = 'none';
+            }
+        };
+
+        const runSearch = (mode) => {
+            if (mode !== 'shipping' || Date.now() < suppressAutocompleteUntil) {
+                return;
+            }
+
+            const inputEl = getCheckoutCityElement(mode);
+            if (!inputEl) {
+                return;
+            }
+
+            const query = (inputEl.value || '').trim();
+            if (query.length < 3) {
+                clearCityResultList(mode);
+                return;
+            }
+
+            const country = getCheckoutCountryValue(mode);
+            searchCity(query, (items) => appendCityResultList(inputEl, mode, items), country);
+        };
+
+        document.addEventListener('input', (event) => {
+            if (Date.now() < suppressAutocompleteUntil) {
+                return;
+            }
+
+            const target = event.target;
+            if (!target || !target.id) {
+                return;
+            }
+
+            const shippingCity = getCheckoutCityElement('shipping');
+            if (shippingCity && target.id === shippingCity.id) {
+                if (timers.shipping) clearTimeout(timers.shipping);
+                timers.shipping = setTimeout(() => runSearch('shipping'), 350);
+            }
+        }, true);
+
+        const handleCitySelection = (event) => {
+            const item = event.target && event.target.closest ? event.target.closest('.wc-esl-search-city__item') : null;
+            if (!item) {
+                if (!event.target.closest || !event.target.closest('.wc-esl-search-city__list')) {
+                    clearCityResultList('shipping');
+                }
+                return;
+            }
+
+            event.preventDefault();
+            if (citySelectionInProgress) {
+                return;
+            }
+            citySelectionInProgress = true;
+
+            const mode = 'shipping';
+            const cityData = {
+                city: item.getAttribute('data-city') || '',
+                region: item.getAttribute('data-region') || '',
+                postcode: item.getAttribute('data-postcode') || '',
+                fias: item.getAttribute('data-fias') || '',
+                services: [],
+                raw: null
+            };
+
+            try {
+                const rawServices = item.getAttribute('data-services') || '%5B%5D';
+                cityData.services = JSON.parse(decodeURIComponent(rawServices));
+            } catch (e) {
+                cityData.services = [];
+            }
+
+            try {
+                const rawPayload = item.getAttribute('data-payload') || '%7B%7D';
+                cityData.raw = JSON.parse(decodeURIComponent(rawPayload));
+            } catch (e) {
+                cityData.raw = null;
+            }
+
+            setCheckoutAddressValues(mode, cityData);
+            updateWidgetCityData(cityData);
+            clearCityResultList('shipping');
+            hideCityTips();
+            suppressAutocompleteUntil = Date.now() + 1500;
+
+            requestShippingAddressUpdate(cityData)
+                .then((response) => {
+                    if (!response || response.success !== true) {
+                        throw new Error('updateShippingAddress failed');
+                    }
+
+                    hideCityTips();
+
+                    const runAfterCheckoutRefresh = () => {
+                        const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                        if (widgetRoot) {
+                            widgetRoot.dataset.paramsLoaded = '';
+                            const settlement = toWidgetSettlement(cityData);
+                            sendWidgetParams(widgetRoot, settlement);
+                        }
+                    };
+
+                    if (window.jQuery) {
+                        window.jQuery('body').one('updated_checkout', function() {
+                            runAfterCheckoutRefresh();
+                        });
+                        window.jQuery('body').trigger('update_esl_city');
+                        window.jQuery('body').trigger('update_checkout');
+                    } else {
+                        setTimeout(runAfterCheckoutRefresh, 700);
+                    }
+
+                    refreshCheckoutAfterShippingUpdate();
+
+                    setTimeout(runAfterCheckoutRefresh, 900);
+                })
+                .catch((error) => {
+                    console.error('eShopLogistic: failed to update shipping address', error);
+                })
+                .finally(() => {
+                    citySelectionInProgress = false;
+                    suppressAutocompleteUntil = Date.now() + 700;
+                });
+        };
+
+        // Use mousedown/touchstart to capture selection before input blur rerenders list.
+        document.addEventListener('mousedown', handleCitySelection, true);
+        document.addEventListener('touchstart', handleCitySelection, true);
+        document.addEventListener('click', handleCitySelection, true);
+    }
+
+    /**
+     * Сохранить адрес пункта выдачи в сессию (как в legacy setTerminal).
+     */
+    function setTerminalAddress(terminalAddress, terminalCode) {
+        return fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'wc_esl_set_terminal_address',
+                terminal: terminalAddress,
+                terminal_code: terminalCode || ''
+            })
+        }).then(r => r.json());
+    }
+
+    /**
+     * Принудительно обновить данные checkout для Blocks и legacy.
+     */
+    function refreshCheckoutAfterShippingUpdate() {
+        // Legacy shortcode checkout fallback.
+        if (window.jQuery) {
+            window.jQuery('body').trigger('update_checkout');
+        }
+
+        // WooCommerce Blocks: invalidate cart/checkout stores.
+        try {
+            if (window.wp && window.wp.data && typeof window.wp.data.dispatch === 'function') {
+                const cartStoreDispatch = window.wp.data.dispatch('wc/store/cart');
+                if (cartStoreDispatch && typeof cartStoreDispatch.invalidateResolutionForStore === 'function') {
+                    cartStoreDispatch.invalidateResolutionForStore();
+                }
+
+                const checkoutStoreDispatch = window.wp.data.dispatch('wc/store/checkout');
+                if (checkoutStoreDispatch && typeof checkoutStoreDispatch.invalidateResolutionForStore === 'function') {
+                    checkoutStoreDispatch.invalidateResolutionForStore();
+                }
+            }
+        } catch (e) {
+            console.warn('eShopLogistic: Blocks store invalidation failed', e);
+        }
+    }
+
+    /**
+     * Отправка данных о доставке на сервер.
+     */
+    function updateShippingData(action, cityData) {
+        return fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'wc_esl_update_shipping',
+                data: action,
+                city: cityData ? cityData.name : '',
+                checkout_context: 'blocks',
+                nonce: config.nonce
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('eShopLogistic: Shipping updated successfully', data);
+            }
+            
+            refreshCheckoutAfterShippingUpdate();
+            
+            const event = new CustomEvent('wc-esl-shipping-updated', {
+                detail: { action, cityData, response: data }
+            });
+            document.dispatchEvent(event);
+            
+            return data;
+        })
+        .catch((error) => {
+            console.error('eShopLogistic: updateShippingData request failed', error);
+
+            // Даже при ошибке запроса пробуем синхронизировать checkout.
+            refreshCheckoutAfterShippingUpdate();
+
+            const event = new CustomEvent('wc-esl-shipping-updated', {
+                detail: { action, cityData, error: true }
+            });
+            document.dispatchEvent(event);
+
+            return null;
+        });
+    }
+
+    /**
+     * Перезагрузка виджета для видимого контейнера
+     */
+    function reinitWidget(container) {
+        if (!container) {
+            console.warn('eShopLogistic: Cannot reinit, container is null');
+            return;
+        }
+
+        
+        // Удаляем старый скрипт
+        const oldScript = document.querySelector('script[data-esl-widget-sdk="cart"]');
+        if (oldScript) {
+            oldScript.remove();
+        }
+
+        // Сбрасываем флаги
+        widgetSdkLoaded = false;
+        widgetSdkRequested = false;
+        window.widgetInit = false;
+        eslWidget = null;
+        widgetEventsBound = false;
+
+        // Загружаем SDK заново
+        const script = document.createElement('script');
+        script.src = 'https://api.esplc.ru/widgets/cart/app.js';
+        script.dataset.eslWidgetSdk = 'cart';
+
+            script.onload = () => {
+                widgetSdkLoaded = true;
+                script.dataset.loaded = '1';
+                
+                // Даем больше времени на автомонтирование виджета (SDK + Vue mount + init)
+                setTimeout(() => {
+                    
+                    // Устанавливаем флаги и события
+                    eslWidget = container;
+                    window.widgetInit = true;
+                    setupWidgetEvents(container);
+                    
+                    // Ждем и отправляем параметры
+                    setTimeout(() => {
+                        if (!container.dataset.paramsLoaded) {
+                            sendWidgetParams(container);
+                        }
+                    }, 1000);
+                }, 2000);
+            };
+
+        script.onerror = () => {
+            console.error('❌ eShopLogistic: Failed to load widget SDK');
+        };
+
+        document.head.appendChild(script);
+    }
+
+    /**
+     * Инициализация виджета eShopLogistic
+     */
+    function initWidget(container) {
+        if (widgetInitInProgress) {
+            return;
+        }
+
+        if (window.widgetInit || eslWidget) {
+            return;
+        }
+
+        widgetInitInProgress = true;
+
+        widgetInitTries += 1;
+        if (widgetInitTries > MAX_WIDGET_INIT_TRIES) {
+            console.warn('eShopLogistic: initWidget stopped to avoid infinite loop');
+            widgetInitInProgress = false;
+            return;
+        }
+
+        if (!config.widgetKey) {
+            console.error('eShopLogistic: Widget key is missing in config');
+            widgetInitInProgress = false;
+            return;
+        }
+        
+        if (!config.checkoutFrameEnabled) {
+            console.warn('eShopLogistic: Checkout frame is disabled in settings');
+            widgetInitInProgress = false;
+            return;
+        }
+
+        // Проверяем, виден ли контейнер
+        const isVisible = container && container.offsetParent !== null;
+        
+
+        // Загрузка внешнего скрипта виджета.
+        if (!widgetSdkLoaded) {
+            if (widgetSdkRequested) {
+                widgetInitInProgress = false;
+                return;
+            }
+
+            const existingScript = document.querySelector('script[data-esl-widget-sdk="cart"]');
+
+            if (existingScript && existingScript.dataset.loaded === '1') {
+                widgetSdkLoaded = true;
+            }
+
+            const script = existingScript || document.createElement('script');
+
+            if (!existingScript) {
+                script.src = 'https://api.esplc.ru/widgets/cart/app.js';
+                script.dataset.eslWidgetSdk = 'cart';
+            }
+
+            widgetSdkRequested = true;
+
+            script.onload = () => {
+                widgetSdkRequested = false;
+                widgetSdkLoaded = true;
+                script.dataset.loaded = '1';
+                
+                // После загрузки SDK пробуем инициализировать виджет
+                setTimeout(() => {
+                    widgetInitInProgress = false;
+                    initWidget(container);
+                }, 100);
+            };
+
+            script.onerror = () => {
+                widgetSdkRequested = false;
+                console.error('eShopLogistic: failed to load widget SDK');
+            };
+
+            if (!existingScript) {
+                document.head.appendChild(script);
+            }
+
+            widgetInitInProgress = false;
+            return;
+        }
+
+        // SDK загружен
+        if (widgetSdkLoaded) {
+
+            // Для block checkout повторно запускаем CDN init, так как первичный
+            // DOMContentLoaded-хук в SDK мог уже отработать до открытия модалки.
+            triggerCdnWidgetInit();
+            
+            eslWidget = container;
+            window.widgetInit = true;
+            setupWidgetEvents(container);
+            
+            // Принудительно диспатчим событие onLoadApp через 1 секунду
+            setTimeout(() => {
+                if (!container.dataset.paramsLoaded) {
+                    const event = new CustomEvent('eShopLogisticWidgetCart:onLoadApp', {
+                        bubbles: true
+                    });
+                    container.dispatchEvent(event);
+                }
+            }, 1000);
+        }
+
+        widgetInitInProgress = false;
+    }
+
+    /**
+     * Получить данные виджета из DOM
+     */
+    function getWidgetData() {
+        try {
+            const offersEl = document.getElementById('widgetOffersEsl');
+            const cityEl = document.getElementById('widgetCityEsl');
+            const paymentEl = document.getElementById('widgetPaymentEsl');
+
+            const offers = offersEl ? offersEl.value : '';
+            let city = {};
+            try {
+                const cityValue = cityEl ? cityEl.value : '{}';
+                city = JSON.parse(cityValue || '{}');
+            } catch (e) {
+                console.error('Failed to parse city data:', e);
+            }
+            const payment = paymentEl ? paymentEl.value : '';
+
+            return { offers, city, payment };
+        } catch (e) {
+            console.error('Failed to get widget data:', e);
+            return { offers: '', city: {}, payment: '' };
+        }
+    }
+
+    /**
+     * Получить город для updateShipping как в legacy: приоритет widgetCityEsl.city.
+     */
+    function getLegacyShippingCityName(widgetData) {
+        if (widgetData && widgetData.city) {
+            if (widgetData.city.city) {
+                return widgetData.city.city;
+            }
+
+            if (widgetData.city.name) {
+                return widgetData.city.name;
+            }
+        }
+
+        return getCurrentCheckoutCityName() || '';
+    }
+
+    /**
+     * Отправить параметры виджету
+     */
+    function sendWidgetParams(root, settlementOverride = null) {
+        if (!root) {
+            console.warn('eShopLogistic: Cannot send params, root is null');
+            return;
+        }
+        
+        
+        try {
+            const data = getWidgetData();
+            
+            if (!data.offers) {
+                console.warn('eShopLogistic: missing offers data');
+                return;
+            }
+            
+            if (!data.city || !data.city.fias) {
+                console.warn('eShopLogistic: missing city data - widget cannot initialize without city');
+                return;
+            }
+
+            const paymentId = getCurrentPaymentMethodId();
+            const widgetPayment = mapPaymentToWidget(paymentId);
+
+            const params = {
+                offers: data.offers,
+                payment: widgetPayment
+            };
+
+            const settlement = settlementOverride || toWidgetSettlement(data.city);
+
+            root.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
+                detail: {
+                    settlement,
+                    requestParams: params
+                }
+            }));
+            
+            root.dataset.paramsLoaded = 'true';
+        } catch (e) {
+            console.error('Failed to send widget params:', e);
+        }
+    }
+
+    /**
+     * Get current payment method ID from legacy and Blocks checkout UIs.
+     */
+    function getCurrentPaymentMethodId() {
+        const selectors = [
+            'input[name="payment_method"]:checked',
+            '.wc-block-components-payment-methods input[type="radio"]:checked',
+            '.wc-block-checkout__payment-method input[type="radio"]:checked',
+            'input[name*="payment-method"]:checked',
+            'input[id*="payment-method"]:checked',
+            'input[id*="wc-payment-method"]:checked',
+            'input[id^="radio-control-"]:checked'
+        ];
+
+        for (const selector of selectors) {
+            const input = document.querySelector(selector);
+            if (!input) {
+                continue;
+            }
+
+            const value = input.value || '';
+            if (value) {
+                return value;
+            }
+
+            if (input.id) {
+                return input.id;
+            }
+        }
+
+        return 'card';
+    }
+
+    /**
+     * Map checkout payment method id to widget payment code (legacy-compatible).
+     */
+    function mapPaymentToWidget(paymentId) {
+        const paymentInput = document.getElementById('widgetPaymentEsl');
+        if (!paymentInput || !paymentInput.value) {
+            return paymentId || 'card';
+        }
+
+        try {
+            const paymentMap = JSON.parse(paymentInput.value);
+            if (!paymentMap || typeof paymentMap !== 'object') {
+                return paymentId || 'card';
+            }
+
+            const currentId = String(paymentId || '');
+            for (const [key, mappedValue] of Object.entries(paymentMap)) {
+                if (currentId && key.indexOf(currentId) !== -1) {
+                    return mappedValue;
+                }
+            }
+        } catch (e) {
+            console.warn('eShopLogistic: failed to parse payment map', e);
+        }
+
+        return paymentId || 'card';
+    }
+
+    /**
+     * Check whether payment-based widget recalculation is enabled.
+     */
+    function isPaymentCalcEnabled() {
+        if (config && typeof config.paymentCalc !== 'undefined') {
+            return config.paymentCalc === true || config.paymentCalc === 'true' || config.paymentCalc === 1 || config.paymentCalc === '1';
+        }
+
+        const paymentCalcInput = document.getElementById('paymentCalc');
+        return Boolean(paymentCalcInput);
+    }
+
+    /**
+     * Собрать payload как в legacy confirm() для сохранения в сессию.
+     */
+    function buildLegacyShippingFrameData(deliveryData) {
+        const eslData = {
+            price: 0,
+            time: '',
+            name: deliveryData?.service?.name || '',
+            key: deliveryData?.service?.code || '',
+            mode: deliveryData?.typeDelivery || '',
+            address: '',
+            comment: '',
+            deliveryMethods: '',
+            selectPvz: ''
+        };
+
+        const terminalInput = document.getElementById('terminalEsl');
+        if (terminalInput && terminalInput.value) {
+            eslData.selectPvz = terminalInput.value;
+        }
+
+        if (deliveryData?.service?.comment) {
+            eslData.comment = deliveryData.service.comment;
+        }
+
+        if (deliveryData?.deliveryMethods) {
+            eslData.deliveryMethods = deliveryData.deliveryMethods;
+        }
+
+        const responseData = deliveryData?.service?.responseData?.[deliveryData?.typeDelivery];
+        if (responseData) {
+            if (responseData.price !== undefined) {
+                eslData.price = responseData.price;
+            }
+
+            if (responseData.time && responseData.time.value !== undefined && responseData.time.unit !== undefined) {
+                eslData.time = `${responseData.time.value} ${responseData.time.unit}`;
+            }
+
+            if (responseData.comment) {
+                eslData.comment += (eslData.comment ? '<br>' : '') + responseData.comment;
+            }
+        }
+
+        if (deliveryData?.terminal && typeof deliveryData.terminal === 'object') {
+            eslData.address = `${deliveryData.terminal.code || ''} ${deliveryData.terminal.address || ''}`.trim();
+        }
+
+        return eslData;
+    }
+
+    /**
+     * Настройка обработчиков событий виджета
+     */
+    function setupWidgetEvents(container) {
+        if (widgetEventsBound) {
+            return;
+        }
+
+        const root = container || document.getElementById('eShopLogisticWidgetCart');
+        if (!root) {
+            console.warn('eShopLogistic: Cannot setup events, root not found');
+            return;
+        }
+
+        widgetEventsBound = true;
+
+        // Фиксируем только реальное пользовательское взаимодействие с виджетом.
+        root.addEventListener('pointerdown', () => {
+            userInteractedWithWidget = true;
+        }, true);
+
+        root.addEventListener('eShopLogisticWidgetCart:onReady', () => {
+            setLoadingState(false);
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onLoadApp', () => {
+            setLoadingState(false);
+            sendWidgetParams(root);
+
+            // Пока идет автозагрузка/автовыбор, модалку не закрываем.
+            suppressCloseOnAutoSelect = true;
+        });
+
+        // Дополнительная страховка - если виджет уже инициализирован, попробуем отправить параметры
+        if (window.widgetInit && !root.dataset.paramsLoaded) {
+            sendWidgetParams(root);
+        }
+
+        // Ещё одна страховка с таймаутом
+        setTimeout(() => {
+            if (window.widgetInit && !root.dataset.paramsLoaded) {
+                sendWidgetParams(root);
+            }
+        }, 2000);
+
+        function handleServiceChange(deliveryData) {
+            const hasTerminalSelection = Boolean(
+                deliveryData?.terminal &&
+                typeof deliveryData.terminal === 'object' &&
+                (deliveryData.terminal.code || deliveryData.terminal.address)
+            );
+
+            const billingTerminal = document.getElementById('wc_esl_billing_terminal');
+            const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+            const shippingTerminalField = document.getElementById('wc_esl_shipping_terminal_field');
+            const doorButton = document.getElementById('buttonModalDoor');
+
+            if (hasTerminalSelection) {
+                const terminalAddress = deliveryData.terminal.address || '';
+                if (billingTerminal) billingTerminal.value = terminalAddress;
+                if (shippingTerminal) shippingTerminal.value = terminalAddress;
+                if (shippingTerminalField) shippingTerminalField.style.display = '';
+            } else {
+                // Legacy flow: для door очищаем ранее выбранный terminal.
+                if (billingTerminal) billingTerminal.value = '';
+                if (shippingTerminal) shippingTerminal.value = '';
+                if (shippingTerminalField) shippingTerminalField.style.display = 'none';
+            }
+
+            if (deliveryData?.typeDelivery) {
+                window.keyDelivery = deliveryData.typeDelivery;
+
+                // Legacy flow: кнопка door доступна только для door-режима.
+                if (doorButton) {
+                    doorButton.style.display = window.keyDelivery === 'door' ? '' : 'none';
+                }
+            }
+
+            return hasTerminalSelection;
+        }
+
+        function handleServicesLoadedState(services = [], isNotAvailable = false) {
+            const rootBlock = root.closest('.wc-esl-checkout-shipping-block') || document;
+            const desc = rootBlock.querySelector('.esl_desct_delivery');
+            const countEl = rootBlock.querySelector('.esl_desct_delivery .count');
+            const countTextEl = rootBlock.querySelector('.esl_desct_delivery .countText');
+            const addTextEl = rootBlock.querySelector('.esl_desct_delivery .addText');
+
+            if (!desc || !countEl || !countTextEl || !addTextEl) {
+                return;
+            }
+
+            if (isNotAvailable) {
+                countEl.textContent = '0';
+                countTextEl.textContent = 'служб';
+                addTextEl.textContent = 'Нет доступных вариантов доставки.';
+                desc.style.display = '';
+                return;
+            }
+
+            if (!Array.isArray(services) || services.length === 0) {
+                return;
+            }
+
+            const count = services.length;
+            const countText = count <= 1 ? 'служба' : (count < 5 ? 'службы' : 'служб');
+            const nameDelivery = services
+                .map((service) => (service && service.name ? service.name : ''))
+                .filter(Boolean)
+                .join(', ');
+
+            countEl.textContent = String(count);
+            countTextEl.textContent = countText;
+            addTextEl.textContent = nameDelivery || 'Выбран самый дешевый вариант.';
+            desc.style.display = '';
+        }
+
+        // Как в legacy: фиксируем хеш карточки из onBalloonOpen.
+        root.addEventListener('eShopLogisticWidgetCart:onBalloonOpen', (event) => {
+            const balloonHash = getServiceSignature(event.detail);
+
+            // Legacy flow: обновляем UI (включая buttonModalDoor)
+            // уже на этапе открытия карточки сервиса.
+            handleServiceChange(event.detail);
+
+            // В фазе автоинициализации фиксируем первый baseline-хеш.
+            if (suppressCloseOnAutoSelect && !hashSelectService) {
+                hashSelectService = balloonHash;
+            }
+        });
+
+        // Когда список сервисов загружен, считаем фазу авто-инициализации завершенной.
+        root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {
+            suppressCloseOnAutoSelect = false;
+            handleServicesLoadedState(event.detail, false);
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', () => {
+            handleServicesLoadedState([], true);
+        });
+
+        // Если это событие не приходит у конкретной версии SDK - fallback.
+        setTimeout(() => {
+            suppressCloseOnAutoSelect = false;
+        }, 3000);
+
+        root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
+            const deliveryData = event.detail;
+            const selectedHash = getServiceSignature(deliveryData);
+            const frameData = buildLegacyShippingFrameData(deliveryData);
+            const hasTerminalSelection = handleServiceChange(deliveryData);
+
+            const widgetData = getWidgetData();
+            const cityName = getLegacyShippingCityName(widgetData);
+
+            // Если baseline ещё не зафиксирован, делаем это при первом выборе
+            // (типично это авто-выбор единственного доступного варианта).
+            if (!hashSelectService) {
+                hashSelectService = selectedHash;
+            }
+
+            // Legacy flow: сохранить terminal_location в сессию через тот же AJAX что и legacy.
+            if (hasTerminalSelection && deliveryData?.terminal) {
+                const terminalAddress = deliveryData.terminal.address || '';
+                const terminalCode = deliveryData.terminal.code || '';
+                setTerminalAddress(terminalAddress, terminalCode);
+            }
+            
+            updateShippingData(JSON.stringify(frameData), { name: cityName }).then(() => {
+                setLoadingState(false);
+
+                // Для terminal: закрываем модалку при любом явном выборе (не в suppress-окне).
+                // Хеш-сравнение использовалось только для door, но для terminal пользователь
+                // всегда явно нажимает "Забрать отсюда" — закрываем безусловно.
+                const canCloseModal = !suppressCloseOnAutoSelect && hasTerminalSelection;
+
+                if (canCloseModal) {
+                    const modal = document.getElementById('modal-esl-frame');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+
+                // Обновляем baseline при каждом выборе.
+                hashSelectService = selectedHash;
+            });
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onError', (event) => {
+            console.error('❌ Widget error:', event.detail);
+            showError('Ошибка загрузки данных о доставке');
+            setLoadingState(false);
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidName', () => {
+            console.error('❌ Invalid city name');
+            showError('Неверное название города');
+            setLoadingState(false);
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidCity', () => {
+            console.error('❌ Invalid city');
+            errorCity++;
+            if (errorCity < 2 && eslWidget && eslWidget.run) {
+                setTimeout(() => eslWidget.run('city'), 2000);
+            } else {
+                showError('Неверно указан город');
+            }
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
+            console.error('❌ Invalid services');
+            showError('Невозможна доставка по указанному адресу');
+        });
+    }
+
+    /**
+     * Показать сообщение об ошибке
+     */
+    function showError(message) {
+        setLoadingState(false);
+        
+        const errorContainer = document.getElementById('tips-city-container');
+        if (errorContainer) {
+            errorContainer.innerHTML = message;
+            errorContainer.style.display = 'block';
+        }
+
+        // Скрыть терминалы
+        toggleTerminals(false, 'shipping');
+    }
+
+    /**
+     * Инициализация модального окна
+     */
+    function initModal() {
+        const modal = document.getElementById('modal-esl-frame');
+        if (!modal) return;
+
+        // Legacy behavior: modal must stay hidden until user explicitly opens it.
+        modal.style.display = 'none';
+
+        const closeButton = modal.querySelector('.close_modal_window');
+        const doorButton = document.getElementById('buttonModalDoor');
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+        };
+
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
+
+        if (doorButton) {
+            doorButton.addEventListener('click', closeModal);
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Кнопки открытия модального окна
+        const triggerButtons = document.querySelectorAll('.wc-esl-terminals__button');
+        triggerButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.style.display = 'block';
+
+                // При открытии модалки сразу синхронизируем видимость door-кнопки
+                // с текущим режимом, чтобы она не ждала следующего события виджета.
+                if (doorButton) {
+                    doorButton.style.display = window.keyDelivery === 'door' ? '' : 'none';
+                }
+
+                userInteractedWithWidget = false;
+                suppressCloseOnAutoSelect = true;
+                hashSelectService = '';
+                
+                // После открытия модального окна инициализируем виджет
+                if (config.checkoutFrameEnabled) {
+                    const widgetContainer = document.getElementById('eShopLogisticWidgetCart');
+                    if (widgetContainer) {
+                        // Даём время на отрисовку модального окна
+                        setTimeout(() => {
+                            reinitWidget(widgetContainer);
+                        }, 100);
+                    }
+                }
+            });
+        });
+
+        // No auto-open in Blocks.
+    }
+
+    /**
+     * Обработка изменения способа доставки
+     */
+    function handleShippingMethodChange() {
+        const currentMethod = getCurrentShippingMethod();
+        const isEshop = isEshopMethod(currentMethod);
+        const deliveryType = getDeliveryType(currentMethod);
+        const hasEslBlock = document.querySelector('.wc-esl-checkout-shipping-block');
+
+        // Для Gutenberg блока: по умолчанию кнопка видна (блок специально для eShopLogistic)
+        // Скрываем только если явно выбран другой метод доставки
+        if (hasEslBlock) {
+            // Если метод определён и это не eShop — скрываем
+            const shouldHideTerminals = currentMethod && !isEshop;
+            const shouldShowTerminals = !shouldHideTerminals;
+
+            toggleTerminals(shouldShowTerminals, 'shipping');
+
+            if (shouldShowTerminals) {
+                // Управление видимостью полей адреса в зависимости от типа доставки
+                if (deliveryType === 'terminal') {
+                    toggleAddressFields(false);
+                } else {
+                    toggleAddressFields(true);
+                }
+            } else {
+                toggleAddressFields(true);
+            }
+            return;
+        }
+
+        // Логика для случая без блока (legacy)
+        if (!currentMethod) {
+            return;
+        }
+
+        if (isEshop && deliveryType === 'terminal') {
+            toggleAddressFields(false);
+            toggleTerminals(true, 'billing');
+        } else if (isEshop && deliveryType === 'door') {
+            toggleAddressFields(true);
+            toggleTerminals(false, 'billing');
+        } else {
+            toggleAddressFields(true);
+            toggleTerminals(false, 'billing');
+            toggleTerminals(false, 'shipping');
+        }
+    }
+
+    /**
+     * Инициализация блока checkout shipping
+     */
+    function initCheckoutShippingBlock() {
+        const blocks = document.querySelectorAll('.wc-esl-checkout-shipping-block');
+        
+        blocks.forEach(block => {
+            if (block.dataset.initialized) return;
+            block.dataset.initialized = 'true';
+
+            // Используем контейнер, отрисованный PHP (совместимо с legacy-разметкой).
+            const widgetContainer = block.querySelector('#eShopLogisticWidgetCart');
+            if (!widgetContainer) {
+                console.warn('eShopLogistic: Widget container #eShopLogisticWidgetCart not found');
+                return;
+            }
+
+            // Legacy-поведение: инициализация виджета сразу при загрузке страницы.
+            initWidget(widgetContainer);
+
+            // Инициализировать модальное окно
+            initModal();
+        });
+    }
+
+    function ensureCheckoutShippingBlockInit() {
+        let attempts = 0;
+        const maxAttempts = 10;
+        const retryMs = 500;
+
+        const retry = () => {
+            initCheckoutShippingBlock();
+            attempts += 1;
+
+            if (attempts < maxAttempts) {
+                setTimeout(retry, retryMs);
+            }
+        };
+
+        retry();
+    }
+
+    /**
+     * Отслеживание изменений методов доставки (для WooCommerce Blocks)
+     */
+    function setupShippingMethodObserver() {
+        // Отслеживание изменений через нативные события
+        document.addEventListener('change', function(e) {
+            const target = e.target;
+            if (target && target.matches && (
+                target.matches('input[name^="shipping_method"]') ||
+                target.matches('input[name*="shipping-rate"]') ||
+                target.matches('input[name*="radio-control"]') ||
+                target.matches('.wc-block-components-radio-control__input')
+            )) {
+                setTimeout(() => handleShippingMethodChange(), 100);
+            }
+        }, true);
+
+        // MutationObserver для отслеживания изменений в DOM (для React-компонентов)
+        const observer = new MutationObserver(function(mutations) {
+            let shouldUpdate = false;
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'checked' &&
+                    mutation.target.matches &&
+                    mutation.target.matches('input[type="radio"]')) {
+                    shouldUpdate = true;
+                }
+            });
+            
+            if (shouldUpdate) {
+                setTimeout(() => handleShippingMethodChange(), 100);
+            }
+        });
+
+        // Наблюдаем за контейнером способов доставки
+        const shippingContainer = document.querySelector('.wc-block-components-shipping-rates-control') ||
+                                  document.querySelector('.wc-block-checkout__shipping-option') ||
+                                  document.querySelector('[data-block-name="woocommerce/checkout-shipping-methods-block"]') ||
+                                  document.querySelector('.wp-block-woocommerce-checkout-shipping-method-block');
+        
+        if (shippingContainer) {
+            observer.observe(shippingContainer, {
+                attributes: true,
+                attributeFilter: ['checked'],
+                subtree: true
+            });
+        }
+    }
+
+    /**
+     * Подписка на события WooCommerce
+     */
+    function subscribeToWooEvents() {
+        if (window.jQuery) {
+            const $ = window.jQuery;
+            let paymentRefreshLock = false;
+
+            const handlePaymentChangeForWidget = () => {
+                if (!isPaymentCalcEnabled() || paymentRefreshLock) {
+                    return;
+                }
+
+                paymentRefreshLock = true;
+
+                const applyPaymentUpdate = () => {
+                    const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                    if (!widgetRoot) {
+                        paymentRefreshLock = false;
+                        return;
+                    }
+
+                    widgetRoot.dataset.paramsLoaded = '';
+                    sendWidgetParams(widgetRoot);
+
+                    const billingTerminal = document.getElementById('wc_esl_billing_terminal');
+                    const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+                    const shippingTerminalField = document.getElementById('wc_esl_shipping_terminal_field');
+                    if (billingTerminal) billingTerminal.value = '';
+                    if (shippingTerminal) shippingTerminal.value = '';
+                    if (shippingTerminalField) shippingTerminalField.style.display = 'none';
+
+                    const desc = document.querySelector('.esl_desct_delivery');
+                    if (desc) {
+                        desc.innerHTML = '<p>Информация о доставке была обновлена, пожалуйста, выберите подходящий вариант доставки.</p>';
+                        desc.style.display = '';
+                    }
+
+                    paymentRefreshLock = false;
+                };
+
+                // Legacy flow: wait until checkout refresh completes.
+                $('body').one('updated_checkout', function() {
+                    applyPaymentUpdate();
+                });
+
+                // Blocks fallback where updated_checkout may not fire.
+                setTimeout(() => {
+                    applyPaymentUpdate();
+                }, 700);
+            };
+
+            // Обновление чекаута
+            $('body').on('updated_checkout', function() {
+                handleShippingMethodChange();
+            });
+
+            // Изменение способа доставки
+            $(document).on('change', 'input[name^="shipping_method"]', function() {
+                handleShippingMethodChange();
+            });
+
+            // Изменение способа оплаты
+            $(document).on('change', 'input[name="payment_method"]', function() {
+                handlePaymentChangeForWidget();
+            });
+
+            // Blocks checkout payment radios.
+            document.addEventListener('change', function(e) {
+                const target = e.target;
+                if (!target || !target.matches) {
+                    return;
+                }
+
+                if (
+                    target.matches('.wc-block-components-payment-methods input[type="radio"]') ||
+                    target.matches('.wc-block-checkout__payment-method input[type="radio"]') ||
+                    target.matches('input[name*="payment-method"]') ||
+                    target.matches('input[id*="wc-payment-method"]') ||
+                    target.matches('input[id^="radio-control-wc-payment-method"]')
+                ) {
+                    handlePaymentChangeForWidget();
+                }
+            }, true);
+        }
+    }
+
+    /**
+     * Основная инициализация
+     */
+    function init() {
+        initDefaultDelivery();
+        ensureCheckoutShippingBlockInit();
+        setupAddressSelectionForBlocks();
+        setupShippingMethodObserver();
+        subscribeToWooEvents();
+        handleShippingMethodChange();
+    }
+
+    // Инициализация при загрузке DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Экспорт функций для глобального доступа
+    window.wcEslCheckoutBlock = {
+        initWidget,
+        searchCity,
+        updateShippingData,
+        handleShippingMethodChange
+    };
+
+})();

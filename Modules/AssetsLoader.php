@@ -24,6 +24,8 @@ class AssetsLoader implements ModuleInterface
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'loadFrontendAssets' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'loadAdminAssets' ] );
+		// Используем wp_enqueue_scripts для инъекции конфига вместе со скриптами
+		add_action( 'wp_enqueue_scripts', [ $this, 'injectConfigScript' ], 999 );
 
 		add_action( 'before_woocommerce_init', function() {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
@@ -38,6 +40,30 @@ class AssetsLoader implements ModuleInterface
 
 		$optionsRepository = new OptionsRepository();
 		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
+		$widgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
+		$usingBlocksCheckout = false;
+
+		if (is_checkout() && !is_wc_endpoint_url('order-received')) {
+			$usingBlocksCheckout = has_block('woocommerce/checkout') ||
+							   has_block('eshoplogisticru/checkout-shipping') ||
+							   has_block('eshoplogisticru/checkout-form');
+		}
+
+		// Load block frontend scripts for all pages
+		wp_enqueue_script(
+			'wc_esl_block_frontend_js',
+			WC_ESL_PLUGIN_URL . 'assets/js/block-frontend.js',
+			[ 'jquery' ],
+			WC_ESL_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'wc_esl_block_styles_css',
+			WC_ESL_PLUGIN_URL . 'assets/css/block-styles.css',
+			[],
+			WC_ESL_VERSION
+		);
 
 		if(is_checkout() || is_cart()) {
 			wp_enqueue_style(
@@ -47,12 +73,15 @@ class AssetsLoader implements ModuleInterface
 				WC_ESL_VERSION
 			);
 
-			wp_enqueue_style(
-				'wc_esl_style_css',
-				WC_ESL_PLUGIN_URL . 'assets/css/style.css',
-				[],
-				WC_ESL_VERSION
-			);
+			// Legacy checkout styles should not override block checkout UI.
+			if (is_cart() || (is_checkout() && !$usingBlocksCheckout)) {
+				wp_enqueue_style(
+					'wc_esl_style_css',
+					WC_ESL_PLUGIN_URL . 'assets/css/style.css',
+					[],
+					WC_ESL_VERSION
+				);
+			}
 		}
 
 		if(is_checkout()) {
@@ -94,13 +123,11 @@ class AssetsLoader implements ModuleInterface
 		}
 
 		if(is_checkout() && $frameEnable && empty( is_wc_endpoint_url('order-received'))) {
-			wp_enqueue_script(
-				'wc_esl_modal_js',
-				WC_ESL_PLUGIN_URL . 'assets/js/modal.js',
-				[ 'jquery' ],
-				WC_ESL_VERSION,
-				true
-			);
+			// Проверяем, используются ли блоки Gutenberg для доставки
+			$usingBlocks = has_block('eshoplogisticru/checkout-shipping') || 
+			               has_block('eshoplogisticru/checkout-form');
+
+			// SDK cart виджета должен быть подключен и для legacy, и для block checkout.
 			wp_enqueue_script(
 				'wc_esl_app_frame_js_v2',
 				'https://api.esplc.ru/widgets/cart/app.js',
@@ -108,22 +135,33 @@ class AssetsLoader implements ModuleInterface
 				WC_ESL_VERSION,
 				true
 			);
-			wp_enqueue_script(
-				'wc_esl_object_hash',
-				WC_ESL_PLUGIN_URL . 'assets/js/object_hash.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
-			wp_enqueue_script(
-				'wc_esl_checkout_frame_js_v2',
-				WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
-				[ 'jquery' ],
-				WC_ESL_VERSION,
-				true
-			);
-			$this->injectGlobals('wc_esl_object_hash');
-			$this->injectGlobals('wc_esl_checkout_frame_js_v2');
+			
+			// Загружаем checkout_frame_v2.js только если НЕ используются блоки
+			if (!$usingBlocks) {
+				wp_enqueue_script(
+					'wc_esl_modal_js',
+					WC_ESL_PLUGIN_URL . 'assets/js/modal.js',
+					[ 'jquery' ],
+					WC_ESL_VERSION,
+					true
+				);
+				wp_enqueue_script(
+					'wc_esl_object_hash',
+					WC_ESL_PLUGIN_URL . 'assets/js/object_hash.js',
+					[],
+					WC_ESL_VERSION,
+					true
+				);
+				wp_enqueue_script(
+					'wc_esl_checkout_frame_js_v2',
+					WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
+					[ 'jquery' ],
+					WC_ESL_VERSION,
+					true
+				);
+				$this->injectGlobals('wc_esl_object_hash');
+				$this->injectGlobals('wc_esl_checkout_frame_js_v2');
+			}
 
 		}
 
@@ -140,6 +178,47 @@ class AssetsLoader implements ModuleInterface
 		}
 
 		$this->injectGlobals('wc_esl_checkout_js');
+	}
+
+	/**
+	 * Inject configuration script inline with frontend script
+	 */
+	public function injectConfigScript() {
+		if(!$this->plugin->isEnable()) return;
+
+		$optionsRepository = new OptionsRepository();
+		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
+		$widgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
+		$apiKeyWCart = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
+		$addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
+		$paymentCalcEnabled = isset($addForm['paymentCalc']) && $addForm['paymentCalc'] === 'true';
+
+		// Проверяем наличие опции
+		$isFrameEnabled = false;
+		if ( !empty($frameEnable) ) {
+			$isFrameEnabled = in_array($frameEnable, ['yes', 'on', '1', 1, true], true);
+		}
+
+		// Строим конфиг объект как JavaScript
+		$config_script = 'window.wcEslBlockFrontend = {' . "\n";
+		$config_script .= '    "widgetKey": ' . json_encode($widgetKey) . ',' . "\n";
+		$config_script .= '    "apiKeyWCart": ' . json_encode($apiKeyWCart) . ',' . "\n";
+		$config_script .= '    "pluginUrl": ' . json_encode(WC_ESL_PLUGIN_URL) . ',' . "\n";
+		$config_script .= '    "ajaxUrl": ' . json_encode(admin_url('admin-ajax.php')) . ',' . "\n";
+		$config_script .= '    "isCheckout": ' . json_encode(is_checkout() ? "1" : "") . ',' . "\n";
+		$config_script .= '    "isCart": ' . json_encode(is_cart() ? "1" : "") . ',' . "\n";
+		$config_script .= '    "isProduct": ' . json_encode(is_product() ? "1" : "") . ',' . "\n";
+		$config_script .= '    "nonce": ' . json_encode(wp_create_nonce('wc_esl_block_nonce')) . ',' . "\n";
+		$config_script .= '    "checkoutFrameEnabled": ' . json_encode($isFrameEnabled) . ',' . "\n";
+		$config_script .= '    "paymentCalc": ' . json_encode($paymentCalcEnabled) . ',' . "\n";
+		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";
+		$config_script .= '};' . "\n";
+		$config_script .= 'console.log("✓ wcEslBlockFrontend injected:", window.wcEslBlockFrontend);' . "\n";
+		$config_script .= 'console.log("  - checkoutFrameEnabled:", window.wcEslBlockFrontend.checkoutFrameEnabled);' . "\n";
+		$config_script .= 'console.log("  - widgetKey:", window.wcEslBlockFrontend.widgetKey);' . "\n";
+
+		// Добавляем inline скрипт ПЕРЕД загрузкой block-frontend.js
+		wp_add_inline_script('wc_esl_block_frontend_js', $config_script, 'before');
 	}
 
 	public function loadAdminAssets($hook_suffix)

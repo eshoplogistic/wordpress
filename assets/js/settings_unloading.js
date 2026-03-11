@@ -46,7 +46,6 @@ function eslRun() {
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
             xhr.send(params)
             xhr.onload = () => {
-                console.log(xhr.responseText)
                 let obj = JSON.parse(xhr.responseText);
                 modalEslInfo.querySelector('main').innerHTML = obj.data;
             }
@@ -61,7 +60,6 @@ function eslRun() {
             xhr.send(params)
             xhr.onload = () => {
                 let obj = JSON.parse(xhr.responseText);
-                console.log(obj)
             }
         },
         clickOnStatusUpdate: function (event) {
@@ -75,14 +73,12 @@ function eslRun() {
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
             xhr.send(params)
             xhr.onload = () => {
-                console.log(xhr.responseText)
                 let obj = JSON.parse(xhr.responseText);
                 PreloaderEsl.hide('#woocommerce-order-esl-unloading');
                 PushEsl.addItem(obj.success ? 'success' : 'error', obj.data);
             }
         },
         onCloseModal: function () {
-            console.log('closeModal')
         },
     }
 
@@ -110,7 +106,6 @@ function eslRun() {
             e.preventDefault();
 
             let data = JSON.stringify($('#unloading_form').serializeControls(), null, 2);
-            console.log(data)
             PreloaderEsl.show('#unloading_form');
 
             $.ajax({
@@ -125,7 +120,6 @@ function eslRun() {
                 dataType: 'json',
                 success: function( response ) {
                     PreloaderEsl.hide('#unloading_form');
-                    console.log(response);
 
                     if(response.success === true)
                         document.getElementById("modal-esl").style.display = "none";
@@ -184,7 +178,6 @@ function eslRun() {
                     arr.shift();
                     result[objkey] = buildInputObject(arr, val);
                 }
-                console.log(arr)
                 return result;
             }
             $.each(this.serializeArray(), function() {
@@ -217,6 +210,5 @@ function copyToClipboard(containerid, e) {
     }).on('success', function(e) {
         let button = document.getElementById(elemBut);
         button.textContent = 'Скопировано'
-        console.log('Текст успешно скопирован в буфер обмена')
     });
 }

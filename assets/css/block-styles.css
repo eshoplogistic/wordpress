@@ -1,0 +1,363 @@
+/* eShopLogistic Blocks Frontend Styles */
+
+/* Checkout Shipping Block */
+.wc-esl-checkout-shipping-block {
+    margin: 20px 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* Legacy parity: city search UI */
+.wc-esl-checkout-shipping-block .wc-block-components-text-input {
+    position: relative;
+}
+
+.wc-block-components-address-form .wc-block-components-text-input,
+.wc-block-components-address-form .wc-block-components-address-form__city {
+    position: relative;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__list,
+.wc-block-components-address-form .wc-esl-search-city__list {
+    display: block !important;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid #f2f2f2;
+    border-top: 1px solid #f2f2f2;
+    border-right: 1px solid #f2f2f2;
+    border-bottom: 1px solid #f2f2f2;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    width: 100%;
+    z-index: 200;
+    max-height: 220px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__item,
+.wc-esl-checkout-shipping-block .wc-esl-search-city__empty,
+.wc-block-components-address-form .wc-esl-search-city__item,
+.wc-block-components-address-form .wc-esl-search-city__empty {
+    display: block;
+    cursor: pointer;
+    padding: 4px 9px;
+    border-bottom: 1px solid #f2f2f2;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    box-sizing: border-box;
+    color: #1e1e1e;
+    background: #fff;
+    list-style: none;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__item:hover {
+    background: #fafafa;
+}
+
+.wc-esl-checkout-shipping-block #tips-city-container i.ico {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.wc-esl-checkout-shipping-block #tips-city-container {
+    color: #ba3939;
+    background: #ffe0e0;
+    border: 1px solid #a33a3a;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+/* Legacy parity: modal-esl-frame */
+.wc-esl-checkout-shipping-block .modal-esl-frame {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    z-index: 99999;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .title {
+    padding-bottom: 45px;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame #buttonModalDoor {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+/* Legacy parity: preloader */
+.wc-esl-checkout-shipping-block .preloader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.34);
+    z-index: 9999;
+    display: none;
+}
+
+.wc-esl-checkout-shipping-block .preloader__row {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+    margin-top: -35px;
+    margin-left: -35px;
+    text-align: center;
+    animation: preloader-rotate 2s infinite linear;
+}
+
+.wc-esl-checkout-shipping-block .preloader__img {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    margin-top: -35px;
+    margin-left: -35px;
+    text-align: center;
+}
+
+.wc-esl-checkout-shipping-block .preloader__item {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    background-color: #337ab7;
+    border-radius: 100%;
+}
+
+/* Product Calculator Block */
+.wc-esl-product-calculator-block {
+    margin: 20px 0;
+    display: inline-block;
+    width: auto;
+}
+
+.wc-esl-product-calculator-block.aligncenter {
+    display: flex;
+    justify-content: center;
+}
+
+.wc-esl-product-calculator-block.alignright {
+    float: right;
+    margin-left: 20px;
+}
+
+.wc-esl-product-calculator-block.alignleft {
+    float: left;
+    margin-right: 20px;
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    background-color: #007baa;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:hover {
+    background-color: #005f87;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Inline widget in product calculator */
+.wc-esl-product-calculator-block #eShopLogisticWidgetBlock {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+/* Cart Shipping Block */
+.wc-esl-cart-shipping-block {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.wc-esl-cart-shipping-block.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wc-esl-cart-shipping-block .wc-esl-loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007baa;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Checkout Form Block */
+.wc-esl-checkout-form-block {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #fbfbfb;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.wc-esl-checkout-form-block form {
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wc-esl-product-calculator-block,
+    .wc-esl-product-calculator-block.alignleft,
+    .wc-esl-product-calculator-block.alignright {
+        display: block;
+        width: 100%;
+        float: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .wc-esl-product-calculator-block .wc-esl-calculator-trigger {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .wc-esl-checkout-form-block,
+    .wc-esl-cart-shipping-block,
+    .wc-esl-checkout-shipping-block {
+        padding: 10px;
+        margin: 15px 0;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .wc-esl-cart-shipping-block,
+    .wc-esl-checkout-form-block {
+        background-color: #2a2a2a;
+        border-color: #444;
+        color: #ccc;
+    }
+
+    /* Keep checkout shipping block legacy-like even in dark mode */
+    .wc-esl-checkout-shipping-block {
+        background: transparent;
+        border: 0;
+        color: inherit;
+    }
+
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__list,
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__item,
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__empty {
+        background: #fff;
+        color: #1e1e1e;
+    }
+
+    .wc-esl-checkout-shipping-block #tips-city-container {
+        color: #ba3939;
+        background: #ffe0e0;
+        border-color: #a33a3a;
+    }
+
+    .wc-esl-product-calculator-block #eShopLogisticWidgetBlock {
+        background-color: #1e1e1e;
+        border-color: #444;
+        color: #ccc;
+    }
+}
+
+/* Accessibility improvements */
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:focus {
+    outline: 2px solid #007baa;
+    outline-offset: 2px;
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Animation for block appearance */
+.wc-esl-checkout-shipping-block,
+.wc-esl-product-calculator-block,
+.wc-esl-cart-shipping-block,
+.wc-esl-checkout-form-block {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print styles */
+@media print {
+    .wc-esl-product-calculator-block .wc-esl-calculator-trigger,
+    .wc-esl-checkout-shipping-block,
+    .wc-esl-cart-shipping-block {
+        display: none;
+    }
+}

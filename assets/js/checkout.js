@@ -1,4 +1,4 @@
-(function( $ ) {
+﻿(function( $ ) {
 	'use strict';
 
 	function shippingFieldName( $this = false ){
@@ -77,8 +77,6 @@
 			},
 			dataType: 'json',
 			success: function( response ) {
-
-				console.log(response);
 
 				if( response.success ) {
 					renderFunc( response.data );
@@ -375,7 +373,7 @@
 									renderCitiesModal(items, modeInput)
 								);
 							}else{
-								$this.next('#esl_result-search').html('<button id="esl_modal_button-search">Выбрать данный населённый пункт</button>');
+								$this.next('#esl_result-search').html('<button id="esl_modal_button-search">╨Т╤Л╨▒╤А╨░╤В╤М ╨┤╨░╨╜╨╜╤Л╨╣ ╨╜╨░╤Б╨╡╨╗╤С╨╜╨╜╤Л╨╣ ╨┐╤Г╨╜╨║╤В</button>');
 							}
 						}, currentBillingCountry, 'region');
 					}
@@ -405,8 +403,6 @@
 					},
 					dataType: 'json',
 					success: function( response ) {
-
-						console.log( response );
 
 						$( 'body' ).trigger( 'update_checkout' );
 						document.getElementById("modal-esl-city").style.display = "none"
@@ -518,8 +514,6 @@
 				dataType: 'json',
 				success: function( response ) {
 
-					console.log( response );
-
 					if( response.success ) {
 
 						$( `#${mode}_city` ).val( city );
@@ -527,7 +521,7 @@
 						$( `#${mode}_postcode` ).val( postcode );
 
 						$( `#wc_esl_${mode}_terminal` ).val( '' );
-						//$(`.wc-esl-terminals__button[data-mode="${mode}"]`).text("Выбрать пункт выдачи");
+						//$(`.wc-esl-terminals__button[data-mode="${mode}"]`).text("╨Т╤Л╨▒╤А╨░╤В╤М ╨┐╤Г╨╜╨║╤В ╨▓╤Л╨┤╨░╤З╨╕");
 
 						preload( `.woocommerce-${mode}-fields`, false );
 					}

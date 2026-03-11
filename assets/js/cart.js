@@ -20,8 +20,6 @@
 			dataType: 'json',
 			success: function( response ) {
 
-				console.log(response);
-
 				if( response.success ) {
 					renderFunc( response.data );
 				}
@@ -128,8 +126,6 @@
 				},
 				dataType: 'json',
 				success: function( response ) {
-
-					console.log( response );
 
 					if( response.success ) {
 

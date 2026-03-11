@@ -772,14 +772,11 @@ class Ajax implements ModuleInterface
 		$response->send();
 	}
 
-
 	public function updateShipping()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_array
-		$data = isset($_POST['data']) ? $this->sanitize_array(wp_unslash($_POST['data'])) : '';
+		$data = isset($_POST['data']) ? $this->sanitize_array($_POST['data']) : '';
 		$data =  json_decode(stripslashes($data), true);
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
-		$data['city'] = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
+		$data['city'] = isset($_POST['city']) ? wc_clean($_POST['city']) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
 		if (!isset($data['address']) || !$data['address'])
