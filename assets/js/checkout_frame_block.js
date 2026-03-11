@@ -1298,7 +1298,9 @@
                 // Для terminal: закрываем модалку при любом явном выборе (не в suppress-окне).
                 // Хеш-сравнение использовалось только для door, но для terminal пользователь
                 // всегда явно нажимает "Забрать отсюда" — закрываем безусловно.
-                const canCloseModal = !suppressCloseOnAutoSelect && hasTerminalSelection;
+                // userInteractedWithWidget позволяет закрыть даже если suppressCloseOnAutoSelect ещё true,
+                // но пользователь явно кликнул по виджету (pointerdown зафиксирован).
+                const canCloseModal = (!suppressCloseOnAutoSelect || userInteractedWithWidget) && hasTerminalSelection;
 
                 if (canCloseModal) {
                     const modal = document.getElementById('modal-esl-frame');
