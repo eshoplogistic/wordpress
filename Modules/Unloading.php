@@ -658,12 +658,17 @@ class Unloading implements ModuleInterface
         if (isset($partExplode[4])) {
             $result['room'] = $partExplode[4];
         }
+
+        return $result;
     }
 
     public function getPartAddressNameTerminal($name)
     {
         if (!$name) {
-            return '';
+            return array(
+                'terminal' => '',
+                'terminal_address' => '',
+            );
         }
 
         $result = array(
