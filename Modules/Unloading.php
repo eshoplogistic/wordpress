@@ -472,6 +472,7 @@ class Unloading implements ModuleInterface
             '5POST' => 'fivepost',
             'Boxberry' => 'boxberry',
             'Яндекс.Доставка' => 'yandex',
+            'Яндекс Доставка' => 'yandex',
             'СДЭК' => 'sdek',
             'Деловые линии' => 'delline',
             'Халва' => 'halva',
