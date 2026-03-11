@@ -254,8 +254,10 @@ class Base extends \WC_Shipping_Method
 				$cost = $conflict->init($cost);
 
 				switch($this->getType()) {
-					case 'terminal' && isset($response['terminals']):
-						$shippingMethods[$this->id]['terminals'] = $response['terminals'];
+					case 'terminal':
+						if(isset($response['terminals'])) {
+							$shippingMethods[$this->id]['terminals'] = $response['terminals'];
+						}
 						break;
 
 					case 'door':
@@ -398,6 +400,7 @@ class Base extends \WC_Shipping_Method
 		$cache_key = md5('widget/calculation'.json_encode($cacheJson));
 		$cache_data = get_transient($cache_key);
 		if($cache_data){
+			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethods[$this->id]['debug'] = ( $cache_data['debug'] ?? [] );
 			$shippingMethods[$this->id]['data']['terminal'] = ( $cache_data['data']['terminal'] ?? [] );
 			$shippingMethods[$this->id]['data']['door'] = ( $cache_data['data']['door'] ?? [] );

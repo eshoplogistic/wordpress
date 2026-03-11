@@ -54,7 +54,9 @@ class Checkout implements ModuleInterface
 	    $chosenShipping = WC()->session->chosen_shipping_methods;
 
 	    if($typeMethod == 'terminal' && in_array($idDelivery, $chosenShipping) && is_checkout()){
+		    $optionsRepository = new OptionsRepository();
 		    $addOption = $optionsRepository->getOption('wc_esl_shipping_add_form');
+		    $pvzName2 = '';
             if(isset($addOption['pvzName']) && $addOption['pvzName']){
                 $pvzName = $addOption['pvzName'];
             }else{
