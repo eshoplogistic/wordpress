@@ -14,11 +14,11 @@
  * @subpackage blocks
  */
 
+namespace eshoplogistic\WCEshopLogistic\Blocks\Shipping;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-namespace eshoplogistic\WCEshopLogistic\Blocks\Shipping;
 
 /**
  * Пример того, как может быть устроен калькулятор тарифов специально для Blocks:
