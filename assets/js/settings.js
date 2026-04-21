@@ -756,7 +756,7 @@ function sortableDelete(elem){
 				success: function( response ) {
 
 					PreloaderEsl.hide('.wc-esl-settings-general-options .card-body');
-					PushEsl.addItem(response.success ? 'success' : 'failed', response.msg);
+					PushEsl.addItem(response.success ? 'success' : 'error', response.msg);
 				}
 			});
 		});
@@ -783,7 +783,7 @@ function sortableDelete(elem){
 				success: function( response ) {
 
 					PreloaderEsl.hide('#eslPayTypeForm');
-					PushEsl.addItem(response.success ? 'success' : 'failed', response.msg);
+					PushEsl.addItem(response.success ? 'success' : 'error', response.msg);
 				}
 			});
 		});

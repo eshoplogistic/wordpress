@@ -573,7 +573,7 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		$formData = isset($_POST['formData']) ? sanitize_text_field(wp_unslash($_POST['formData'])) : null;
+		$formData = isset($_POST['formData']) ? wp_unslash($_POST['formData']) : null;
 
 		if (is_null($formData)) {
 			wp_send_json([
@@ -585,7 +585,7 @@ class Ajax implements ModuleInterface
 		$params = array();
 		parse_str($formData, $params);
 
-		if (!isset($params['esl_pay_type'])) {
+		if (!isset($params['esl_pay_type']) || !is_array($params['esl_pay_type'])) {
 			wp_send_json([
 				'success' => false,
 				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
@@ -594,8 +594,12 @@ class Ajax implements ModuleInterface
 
 		$payTypes = [];
 
+		array_walk_recursive($params['esl_pay_type'], function (&$val) {
+			$val = sanitize_text_field($val);
+		});
+
 		foreach ($params['esl_pay_type'] as $key => $value) {
-			$payTypes[$key] = $value;
+			$payTypes[sanitize_key($key)] = $value;
 		}
 
 		if (empty($payTypes)) {
