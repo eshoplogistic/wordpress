@@ -18,21 +18,49 @@ class Plugin
 	{
 		$optionsRepository = new OptionsRepository();
 
-		$pluginEnable = $optionsRepository->getOption('wc_esl_shipping_plugin_enable');
-		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
-		$paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
-		$accountBlocked = $optionsRepository->getOption('wc_esl_shipping_account_blocked');
+		$pluginEnable    = $optionsRepository->getOption('wc_esl_shipping_plugin_enable');
+		$apiKey          = $optionsRepository->getOption('wc_esl_shipping_api_key');
+		$paymentMethods  = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
+		$accountBlocked  = $optionsRepository->getOption('wc_esl_shipping_account_blocked');
+		$eslLog          = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_log');
 
-		if($pluginEnable !== '1') return false;
+		$logger = $eslLog && function_exists('wc_get_logger') ? wc_get_logger() : null;
 
-		if(empty($apiKey)) return false;
+		if ( $logger ) {
+			$logger->debug(
+				'[ESL isEnable] plugin_enable=' . var_export( $pluginEnable, true )
+				. ', api_key=' . ( empty( $apiKey ) ? 'EMPTY' : 'SET' )
+				. ', payment_methods=' . var_export( $paymentMethods, true )
+				. ', account_blocked=' . var_export( $accountBlocked, true ),
+				[ 'source' => 'wc-esl-shipping' ]
+			);
+		}
 
-		if(empty($paymentMethods)) return false;
+		if ( $pluginEnable !== '1' ) {
+			if ( $logger ) $logger->debug( '[ESL isEnable] BLOCKED: plugin_enable != 1', [ 'source' => 'wc-esl-shipping' ] );
+			return false;
+		}
 
-		if(!isset($accountBlocked)) return false;
+		if ( empty( $apiKey ) ) {
+			if ( $logger ) $logger->debug( '[ESL isEnable] BLOCKED: api_key is empty', [ 'source' => 'wc-esl-shipping' ] );
+			return false;
+		}
 
-		if($accountBlocked === '1') return false;
+		if ( empty( $paymentMethods ) ) {
+			if ( $logger ) $logger->debug( '[ESL isEnable] WARNING: payment_methods is empty (will affect cost calculation)', [ 'source' => 'wc-esl-shipping' ] );
+		}
 
+		if ( ! isset( $accountBlocked ) ) {
+			if ( $logger ) $logger->debug( '[ESL isEnable] BLOCKED: account_blocked is not set', [ 'source' => 'wc-esl-shipping' ] );
+			return false;
+		}
+
+		if ( $accountBlocked === '1' ) {
+			if ( $logger ) $logger->debug( '[ESL isEnable] BLOCKED: account_blocked = 1', [ 'source' => 'wc-esl-shipping' ] );
+			return false;
+		}
+
+		if ( $logger ) $logger->debug( '[ESL isEnable] OK, plugin is enabled', [ 'source' => 'wc-esl-shipping' ] );
 		return true;
 	}
 }

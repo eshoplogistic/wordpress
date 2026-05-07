@@ -32,8 +32,18 @@ class Shipping implements ModuleInterface
         $services = $optionsRepository->getOption('wc_esl_shipping_account_services');
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
+	    $eslLog = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_log');
+	    $logger = new \WC_Logger();
+
+	    if ( $eslLog ) {
+		    $logger->debug( '[ESL registerShippingMethods] frame_enable=' . var_export( $frameEnable, true ) . ', services=' . var_export( $services, true ), [ 'source' => 'wc-esl-shipping' ] );
+	    }
+
 	    if($frameEnable){
 		    $methods[ WC_ESL_PREFIX . 'frame_mixed' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\FrameMixed';
+		    if ( $eslLog ) {
+			    $logger->debug( '[ESL registerShippingMethods] registered: ' . WC_ESL_PREFIX . 'frame_mixed', [ 'source' => 'wc-esl-shipping' ] );
+		    }
 	    }elseif(!empty($services)){
 		    foreach($services as $serviceKey => $service) {
 				$exCustom = explode('-', $serviceKey);
@@ -41,12 +51,26 @@ class Shipping implements ModuleInterface
 					$serviceKey = 'custom';
 				}
 			    if($service['door'] == '1') {
-				    $methods[ WC_ESL_PREFIX . strtolower($serviceKey) . '_door' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
+				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_door';
+				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
+				    $methods[ $key ] = $class;
+				    if ( $eslLog ) {
+					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
+				    }
 			    }
 
 			    if($service['terminal'] == '1') {
-				    $methods[ WC_ESL_PREFIX . strtolower($serviceKey) . '_terminal' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
+				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_terminal';
+				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
+				    $methods[ $key ] = $class;
+				    if ( $eslLog ) {
+					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
+				    }
 			    }
+		    }
+	    } else {
+		    if ( $eslLog ) {
+			    $logger->debug( '[ESL registerShippingMethods] no methods registered: frame_enable=false, services empty', [ 'source' => 'wc-esl-shipping' ] );
 		    }
 	    }
 

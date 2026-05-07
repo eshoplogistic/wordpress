@@ -1,5 +1,8 @@
 window.addEventListener('load', function (event) {
-    eslRunMap()
+    // Запускаем только если на странице есть элемент с терминалами (legacy checkout)
+    if (document.getElementById('wcEslTerminals')) {
+        eslRunMap();
+    }
 });
 
 function eslRunMap() {
@@ -13,7 +16,12 @@ function eslRunMap() {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send(`action=wc_esl_set_terminal_address&terminal=${terminal.address}&terminal_code=${terminal.code}`)
+            const params = new URLSearchParams({
+                action: 'wc_esl_set_terminal_address',
+                terminal: terminal.address,
+                terminal_code: terminal.code || ''
+            });
+            request.send(params.toString())
 
             request.addEventListener("readystatechange", () => {
 
@@ -79,7 +87,7 @@ function eslRunMap() {
                 return result
             },
             createColForMap: function () {
-                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}""><h4 class="without-map">Пункты выдачи не найдены</h4></div>`
+                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}"><div class="wc-esl-map-preloader" style="display:none;"><div class="wc-esl-map-preloader__spinner"></div><p class="wc-esl-map-preloader__text">Загрузка пунктов выдачи...</p></div><h4 class="without-map">Пункты выдачи не найдены</h4></div>`
 
                 return col
             },
@@ -210,6 +218,11 @@ function eslRunMap() {
             if(typeof yandexMaps.terminals[1] === "undefined")
                 zoom = 16;
             if(typeof yandexMaps.terminals[0] !== "undefined"){
+                var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+                if (withoutMap) withoutMap.style.display = 'none';
+                var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+                if (preloader) preloader.style.display = 'none';
+
                 let defaultControls = ['zoomControl']
                 let apiKeyYa = document.getElementById('wcEslKeyYa').value
                 if(apiKeyYa)
@@ -281,21 +294,66 @@ function eslRunMap() {
             if (document.getElementById(YANDEX_MAP_CONTAINER_ID)) {
                 document.getElementById(YANDEX_MAP_CONTAINER_ID).remove()
             }
+            var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+            if (withoutMap) withoutMap.style.display = '';
+            var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+            if (preloader) preloader.style.display = 'none';
         }
     }
     yandexMaps.initApi()
 
     let bindEvents = {
         clickOnTerminals: function (event) {
-
-            let terminals = document.getElementById('wcEslTerminals').value
-            if (terminals) {
+            const terminalsEl = document.getElementById('wcEslTerminals');
+            if (!terminalsEl) return;
+            var parsedTerminals = [];
+            try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
+            if (parsedTerminals && parsedTerminals.length) {
                 yandexMaps.createContainer()
-                yandexMaps.terminals = JSON.parse(terminals)
+                yandexMaps.terminals = parsedTerminals
                 ymaps.ready(yandexMaps.initMap)
                 modalDom.open()
+            } else {
+                // Открываем модал сразу, затем догружаем терминалы через AJAX
+                modalDom.open();
+                var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+                if (withoutMap) withoutMap.style.display = 'none';
+                var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+                if (preloader) preloader.style.display = 'flex';
+                var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
+                    ? wc_esl_shipping_global.ajaxUrl
+                    : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
+                    ? wcEslBlockFrontend.ajaxUrl
+                    : null;
+                if (ajaxUrl) {
+                    var formData = new URLSearchParams();
+                    formData.append('action', 'wc_esl_get_terminals');
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData.toString()
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (preloader) preloader.style.display = 'none';
+                        if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
+                            terminalsEl.value = JSON.stringify(data.data.terminals);
+                            yandexMaps.createContainer();
+                            yandexMaps.terminals = data.data.terminals;
+                            ymaps.ready(yandexMaps.initMap);
+                        } else {
+                            if (withoutMap) withoutMap.style.display = '';
+                        }
+                    })
+                    .catch(function() {
+                        if (preloader) preloader.style.display = 'none';
+                        if (withoutMap) withoutMap.style.display = '';
+                    });
+                } else {
+                    if (preloader) preloader.style.display = 'none';
+                    if (withoutMap) withoutMap.style.display = '';
+                }
             }
-
         },
         onCloseModal: function () {
             yandexMaps.destroyMap()
@@ -338,5 +396,53 @@ function eslRunMap() {
     // document.addEventListener('onSelectAddress', function (event){
     //     esl.setTerminal( event.detail.address )
     // });
+
+    // Смена города в checkout: если модалка открыта — перезагрузить терминалы.
+    document.addEventListener('wc-esl-city-changed', function () {
+        var modal = document.getElementById(ID_MODAL);
+        if (!modal || !modal.classList.contains('modal__show')) return;
+
+        yandexMaps.destroyMap();
+
+        var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+        if (withoutMap) withoutMap.style.display = 'none';
+        var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+        if (preloader) preloader.style.display = 'flex';
+
+        var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
+            ? wc_esl_shipping_global.ajaxUrl
+            : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
+            ? wcEslBlockFrontend.ajaxUrl
+            : null;
+
+        if (!ajaxUrl) {
+            if (preloader) preloader.style.display = 'none';
+            if (withoutMap) withoutMap.style.display = '';
+            return;
+        }
+
+        var terminalsEl = document.getElementById('wcEslTerminals');
+        fetch(ajaxUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'wc_esl_get_terminals' }).toString()
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (preloader) preloader.style.display = 'none';
+            if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
+                if (terminalsEl) terminalsEl.value = JSON.stringify(data.data.terminals);
+                yandexMaps.createContainer();
+                yandexMaps.terminals = data.data.terminals;
+                ymaps.ready(yandexMaps.initMap);
+            } else {
+                if (withoutMap) withoutMap.style.display = '';
+            }
+        })
+        .catch(function () {
+            if (preloader) preloader.style.display = 'none';
+            if (withoutMap) withoutMap.style.display = '';
+        });
+    });
 
 };

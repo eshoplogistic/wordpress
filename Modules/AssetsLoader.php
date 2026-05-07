@@ -122,22 +122,24 @@ class AssetsLoader implements ModuleInterface
 			$this->injectGlobals('wc_esl_checkout_js');
 		}
 
-		if(is_checkout() && $frameEnable && empty( is_wc_endpoint_url('order-received'))) {
+		if(is_checkout() && empty( is_wc_endpoint_url('order-received'))) {
 			// Проверяем, используются ли блоки Gutenberg для доставки
 			$usingBlocks = has_block('eshoplogisticru/checkout-shipping') || 
 			               has_block('eshoplogisticru/checkout-form');
 
-			// SDK cart виджета должен быть подключен и для legacy, и для block checkout.
-			wp_enqueue_script(
-				'wc_esl_app_frame_js_v2',
-				'https://api.esplc.ru/widgets/cart/app.js',
-				[],
-				WC_ESL_VERSION,
-				true
-			);
+			// SDK cart виджета нужен только когда frame включён
+			if ($frameEnable) {
+				wp_enqueue_script(
+					'wc_esl_app_frame_js_v2',
+					'https://api.esplc.ru/widgets/cart/app.js',
+					[],
+					WC_ESL_VERSION,
+					true
+				);
+			}
 			
-			// Загружаем checkout_frame_v2.js только если НЕ используются блоки
-			if (!$usingBlocks) {
+			// Загружаем checkout_frame_v2.js только если НЕ используются блоки и frame включён
+			if ($frameEnable && !$usingBlocks) {
 				wp_enqueue_script(
 					'wc_esl_modal_js',
 					WC_ESL_PLUGIN_URL . 'assets/js/modal.js',
@@ -190,6 +192,14 @@ class AssetsLoader implements ModuleInterface
 		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 		$widgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
 		$apiKeyWCart = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
+
+		// Взаимный fallback: если один из ключей пуст — используем другой
+		if (empty($widgetKey) && !empty($apiKeyWCart)) {
+			$widgetKey = $apiKeyWCart;
+		} elseif (!empty($widgetKey) && empty($apiKeyWCart)) {
+			$apiKeyWCart = $widgetKey;
+		}
+
 		$addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 		$paymentCalcEnabled = isset($addForm['paymentCalc']) && $addForm['paymentCalc'] === 'true';
 

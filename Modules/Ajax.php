@@ -52,6 +52,9 @@ class Ajax implements ModuleInterface
 
 		add_action('wp_ajax_nopriv_wc_esl_get_shipping_data', [$this, 'getShippingData']);
 		add_action('wp_ajax_wc_esl_get_shipping_data', [$this, 'getShippingData']);
+
+		add_action('wp_ajax_nopriv_wc_esl_get_terminals', [$this, 'getTerminals']);
+		add_action('wp_ajax_wc_esl_get_terminals', [$this, 'getTerminals']);
 	}
 
 	public function initAdminRoutes()
@@ -496,6 +499,10 @@ class Ajax implements ModuleInterface
 				WC()->customer->set_shipping_city($city);
 				WC()->customer->set_shipping_state($region);
 				WC()->customer->set_shipping_postcode($postcode);
+				// Сбрасываем кэш терминалов по методам доставки, чтобы при следующем
+				// обращении к getTerminals был выполнен пересчёт для нового города.
+				$sessionService = new SessionService();
+				$sessionService->set('shipping_methods', []);
 				break;
 
 			default:
@@ -793,6 +800,55 @@ class Ajax implements ModuleInterface
 		$sessionService->set('esl_shipping_frame', $data);
 		if (!isset($data['address']) || !$data['address'])
 			$sessionService->drop('terminal_location');
+	}
+
+	public function getTerminals()
+	{
+		$shippingHelper = new ShippingHelper();
+		$sessionService = new SessionService();
+
+		$chosenMethods = WC()->session ? WC()->session->get('chosen_shipping_methods') : [];
+		$chosenMethods = $chosenMethods ?: [];
+		$chosenMethod  = isset($chosenMethods[0]) ? $chosenMethods[0] : '';
+
+		if (!$chosenMethod) {
+			wp_send_json_success(['terminals' => []]);
+			return;
+		}
+
+		$typeMethod = $shippingHelper->getTypeMethod($chosenMethod);
+		if ($typeMethod !== 'terminal') {
+			wp_send_json_success(['terminals' => []]);
+			return;
+		}
+
+		$shippingMethods = $sessionService->get('shipping_methods') ?: [];
+		$terminals = isset($shippingMethods[$chosenMethod]['terminals'])
+			? $shippingMethods[$chosenMethod]['terminals']
+			: [];
+
+		// Если сессия пуста (WC Blocks Store API использует отдельную сессию),
+		// перезапускаем calculate_shipping_basic() напрямую в контексте браузерного
+		// AJAX-запроса. Ответ ESL API уже закеширован в transient — вызов будет быстрым.
+		if (empty($terminals) && WC()->cart) {
+			$packages = WC()->cart->get_shipping_packages();
+			if (!empty($packages)) {
+				$package = reset($packages);
+				$methodInstances = WC()->shipping() ? WC()->shipping()->load_shipping_methods($package) : [];
+				foreach ($methodInstances as $method) {
+					if ($method->id === $chosenMethod && method_exists($method, 'calculate_shipping_basic')) {
+						$method->calculate_shipping_basic($package);
+						break;
+					}
+				}
+				$shippingMethods = $sessionService->get('shipping_methods') ?: [];
+				$terminals = isset($shippingMethods[$chosenMethod]['terminals'])
+					? $shippingMethods[$chosenMethod]['terminals']
+					: [];
+			}
+		}
+
+		wp_send_json_success(['terminals' => $terminals]);
 	}
 
 	public function getShippingData()

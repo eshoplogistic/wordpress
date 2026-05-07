@@ -105,14 +105,36 @@
      */
     function getCurrentCheckoutCityName() {
         try {
+            // 1. Кастомный ID поля из настроек
             const shippingFieldRef = document.getElementById('eslShippingCityFields');
+            const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : null;
+            if (shippingFieldId) {
+                const el = document.getElementById(shippingFieldId);
+                if (el && el.value) return el.value;
+            }
 
-            const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : 'shipping_city';
+            // 2. Legacy shortcode checkout: id="shipping_city"
+            const legacyEl = document.getElementById('shipping_city') || document.getElementById('shipping-city');
+            if (legacyEl && legacyEl.value) return legacyEl.value;
 
-            const shippingCityEl = document.getElementById(shippingFieldId);
+            // 3. WooCommerce Blocks: autocomplete="shipping city" или "billing city"
+            const blocksEl = document.querySelector('input[autocomplete="shipping city"]')
+                          || document.querySelector('input[autocomplete="billing city"]');
+            if (blocksEl && blocksEl.value) return blocksEl.value;
 
-            if (shippingCityEl && shippingCityEl.value) {
-                return shippingCityEl.value;
+            // 4. WooCommerce Blocks: data-field-key или name
+            const dataEl = document.querySelector('input[data-field-key="city"], input[name="city"]')
+                        || document.getElementById('billing_city')
+                        || document.getElementById('billing-city');
+            if (dataEl && dataEl.value) return dataEl.value;
+
+            // 5. Данные из скрытого поля widgetCityEsl (если name/city есть без fias)
+            const cityInput = document.getElementById('widgetCityEsl');
+            if (cityInput && cityInput.value) {
+                try {
+                    const parsed = JSON.parse(cityInput.value);
+                    if (parsed && (parsed.city || parsed.name)) return parsed.city || parsed.name;
+                } catch (e) {}
             }
 
             return '';
@@ -304,6 +326,17 @@
         return getFieldElement(ids);
     }
 
+    function getCheckoutBillingCityElement() {
+        const customRefId = 'eslBillingCityFields';
+        const customRef = document.getElementById(customRefId);
+        const customId = customRef && customRef.value ? customRef.value : '';
+
+        const fallbackIds = ['billing_city', 'billing-city'];
+
+        const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
+        return getFieldElement(ids);
+    }
+
     function getCheckoutCountryValue() {
         const countryEl = getFieldElement(['shipping_country', 'shipping-country']);
 
@@ -324,8 +357,16 @@
             input.value = nextValue;
         }
 
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
+        // Помечаем события как намеренное проставление значения (выбор города).
+        // В capture-обработчике этот флаг разрешает событию дойти до WC Blocks,
+        // тогда как обычные события набора текста блокируются там же.
+        const inputEvent = new Event('input', { bubbles: true });
+        inputEvent._eslCitySelection = true;
+        input.dispatchEvent(inputEvent);
+
+        const changeEvent = new Event('change', { bubbles: true });
+        changeEvent._eslCitySelection = true;
+        input.dispatchEvent(changeEvent);
     }
 
     function clearAddressFieldError() {
@@ -358,6 +399,22 @@
             city: ['shipping_city', 'shipping-city'],
             state: ['shipping_state', 'shipping-state'],
             postcode: ['shipping_postcode', 'shipping-postcode']
+        };
+
+        const cityEl = getFieldElement(fieldMap.city);
+        const stateEl = getFieldElement(fieldMap.state);
+        const postcodeEl = getFieldElement(fieldMap.postcode);
+
+        setInputValue(cityEl, cityData.city);
+        setInputValue(stateEl, cityData.region);
+        setInputValue(postcodeEl, cityData.postcode);
+    }
+
+    function setCheckoutBillingAddressValues(cityData) {
+        const fieldMap = {
+            city: ['billing_city', 'billing-city'],
+            state: ['billing_state', 'billing-state'],
+            postcode: ['billing_postcode', 'billing-postcode']
         };
 
         const cityEl = getFieldElement(fieldMap.city);
@@ -498,8 +555,40 @@
           });
     }
 
+    function requestBillingAddressUpdate(cityData) {
+        const addressEl = getFieldElement(['billing_address_1', 'billing-address_1']);
+
+        const body = new URLSearchParams({
+            action: 'wc_esl_update_shipping_address',
+            fias: cityData.fias || '',
+            city: cityData.city || '',
+            adress: addressEl ? addressEl.value : '',
+            region: cityData.region || '',
+            postcode: cityData.postcode || '',
+            mode: 'billing',
+            nonce: config.nonce || ''
+        });
+
+        const services = cityData.services;
+        if (Array.isArray(services)) {
+            services.forEach((service) => {
+                body.append('services[]', String(service));
+            });
+        } else if (services && typeof services === 'object') {
+            Object.keys(services).forEach((key) => {
+                body.append(`services[${key}]`, String(services[key]));
+            });
+        }
+
+        return fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        }).then((response) => response.json());
+    }
+
     function setupAddressSelectionForBlocks() {
-        const timers = { shipping: null };
+        const timers = { shipping: null, billing: null };
         let citySelectionInProgress = false;
         let suppressAutocompleteUntil = 0;
 
@@ -511,11 +600,11 @@
         };
 
         const runSearch = (mode) => {
-            if (mode !== 'shipping' || Date.now() < suppressAutocompleteUntil) {
+            if (Date.now() < suppressAutocompleteUntil) {
                 return;
             }
 
-            const inputEl = getCheckoutCityElement();
+            const inputEl = mode === 'billing' ? getCheckoutBillingCityElement() : getCheckoutCityElement();
             if (!inputEl) {
                 return;
             }
@@ -531,10 +620,6 @@
         };
 
         document.addEventListener('input', (event) => {
-            if (Date.now() < suppressAutocompleteUntil) {
-                return;
-            }
-
             const target = event.target;
             if (!target || !target.id) {
                 return;
@@ -542,8 +627,31 @@
 
             const shippingCity = getCheckoutCityElement();
             if (shippingCity && target.id === shippingCity.id) {
+                // Блокируем WC Blocks от пересчёта корзины при наборе каждой буквы.
+                // Capture-фаза срабатывает до React-делегирования (bubble от React root).
+                // События из setInputValue (выбор города) помечены _eslCitySelection
+                // и пропускаются, чтобы WC Blocks обновился с финальным значением.
+                if (!event._eslCitySelection) {
+                    event.stopPropagation();
+                }
+                if (Date.now() < suppressAutocompleteUntil) {
+                    return;
+                }
                 if (timers.shipping) clearTimeout(timers.shipping);
                 timers.shipping = setTimeout(() => runSearch('shipping'), 350);
+                return;
+            }
+
+            const billingCity = getCheckoutBillingCityElement();
+            if (billingCity && target.id === billingCity.id) {
+                if (!event._eslCitySelection) {
+                    event.stopPropagation();
+                }
+                if (Date.now() < suppressAutocompleteUntil) {
+                    return;
+                }
+                if (timers.billing) clearTimeout(timers.billing);
+                timers.billing = setTimeout(() => runSearch('billing'), 350);
             }
         }, true);
 
@@ -552,6 +660,7 @@
             if (!item) {
                 if (!event.target.closest || !event.target.closest('.wc-esl-search-city__list')) {
                     clearCityResultList('shipping');
+                    clearCityResultList('billing');
                 }
                 return;
             }
@@ -561,6 +670,8 @@
                 return;
             }
             citySelectionInProgress = true;
+
+            const selectionMode = item.getAttribute('data-mode') || 'shipping';
 
             const cityData = {
                 city: item.getAttribute('data-city') || '',
@@ -585,15 +696,30 @@
                 cityData.raw = null;
             }
 
-            setCheckoutAddressValues(cityData);
+            if (selectionMode === 'billing') {
+                setCheckoutBillingAddressValues(cityData);
+            } else {
+                setCheckoutAddressValues(cityData);
+            }
             updateWidgetCityData(cityData);
-            clearCityResultList('shipping');
+            clearCityResultList(selectionMode);
             hideCityTips();
             suppressAutocompleteUntil = Date.now() + 1500;
 
+            // Сбрасываем кешированные терминалы немедленно, чтобы следующее открытие
+            // модалки не показало пункты выдачи старого города.
+            const terminalsInput = document.getElementById('wcEslTerminals');
+            if (terminalsInput) {
+                terminalsInput.value = '[]';
+            }
+
             setLoadingState(true);
 
-            requestShippingAddressUpdate(cityData)
+            const updateRequest = selectionMode === 'billing'
+                ? requestBillingAddressUpdate(cityData)
+                : requestShippingAddressUpdate(cityData);
+
+            updateRequest
                 .then((response) => {
                     if (!response || response.success !== true) {
                         throw new Error('updateShippingAddress failed');
@@ -623,6 +749,10 @@
                     refreshCheckoutAfterShippingUpdate();
 
                     setTimeout(runAfterCheckoutRefresh, 900);
+
+                    // Уведомляем yandex-map.js о смене города — если модалка открыта,
+                    // она должна перезагрузить терминалы для нового города.
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
                 })
                 .catch((error) => {
                     console.error('eShopLogistic: failed to update shipping address', error);
@@ -665,21 +795,40 @@
             window.jQuery('body').trigger('update_checkout');
         }
 
-        // WooCommerce Blocks: invalidate cart/checkout stores.
+        // WooCommerce Blocks: принудительно перезапросить корзину у Store API,
+        // чтобы PHP пересчитал ставки доставки с актуальными данными ESL-сессии.
         try {
             if (window.wp && window.wp.data && typeof window.wp.data.dispatch === 'function') {
-                const cartStoreDispatch = window.wp.data.dispatch('wc/store/cart');
-                if (cartStoreDispatch && typeof cartStoreDispatch.invalidateResolutionForStore === 'function') {
-                    cartStoreDispatch.invalidateResolutionForStore();
+                var cartDispatch = window.wp.data.dispatch('wc/store/cart');
+                if (!cartDispatch) return;
+
+                // Метод 1: updateCustomerData — надёжно в любой версии WC Blocks.
+                // Посылает PATCH /wc/store/v1/cart/update-customer, ответ содержит
+                // пересчитанные ставки доставки (включая ESL с обновлённой сессией).
+                if (typeof cartDispatch.updateCustomerData === 'function') {
+                    var cartSelect = window.wp.data.select('wc/store/cart');
+                    var shippingAddress = {};
+                    if (cartSelect && typeof cartSelect.getCustomerData === 'function') {
+                        var customerData = cartSelect.getCustomerData();
+                        if (customerData && customerData.shipping_address) {
+                            shippingAddress = customerData.shipping_address;
+                        }
+                    }
+                    cartDispatch.updateCustomerData({ shipping_address: shippingAddress });
+                    return;
                 }
 
-                const checkoutStoreDispatch = window.wp.data.dispatch('wc/store/checkout');
-                if (checkoutStoreDispatch && typeof checkoutStoreDispatch.invalidateResolutionForStore === 'function') {
-                    checkoutStoreDispatch.invalidateResolutionForStore();
+                // Метод 2: invalidateResolutionForStore (старые версии WC Blocks).
+                if (typeof cartDispatch.invalidateResolutionForStore === 'function') {
+                    cartDispatch.invalidateResolutionForStore();
+                    var checkoutDispatch = window.wp.data.dispatch('wc/store/checkout');
+                    if (checkoutDispatch && typeof checkoutDispatch.invalidateResolutionForStore === 'function') {
+                        checkoutDispatch.invalidateResolutionForStore();
+                    }
                 }
             }
         } catch (e) {
-            console.warn('eShopLogistic: Blocks store invalidation failed', e);
+            console.warn('eShopLogistic: Blocks store refresh failed', e);
         }
     }
 
@@ -959,7 +1108,33 @@
             }
             
             if (!data.city || !data.city.fias) {
-                console.warn('eShopLogistic: missing city data - widget cannot initialize without city');
+                // Попытка авто-поиска города по значению поля checkout city
+                const cityName = getCurrentCheckoutCityName();
+                if (cityName && cityName.length >= 2) {
+                    searchCity(cityName, function(items) {
+                        if (!items || items.length === 0) {
+                            console.warn('eShopLogistic: missing city data - widget cannot initialize without city');
+                            return;
+                        }
+                        const best = items[0];
+                        const cityData = {
+                            city: best.city || best.name || cityName,
+                            region: best.region || '',
+                            postcode: best.postcode || '',
+                            fias: best.fias || '',
+                            services: best.services || [],
+                            raw: best
+                        };
+                        if (!cityData.fias) {
+                            console.warn('eShopLogistic: missing city data - widget cannot initialize without city');
+                            return;
+                        }
+                        updateWidgetCityData(cityData);
+                        sendWidgetParams(root, settlementOverride || toWidgetSettlement(cityData));
+                    });
+                } else {
+                    console.warn('eShopLogistic: missing city data - widget cannot initialize without city');
+                }
                 return;
             }
 
@@ -1460,10 +1635,10 @@
         }
 
         // Для Gutenberg блока: по умолчанию кнопка видна (блок специально для eShopLogistic)
-        // Скрываем только если явно выбран другой метод доставки
+        // Скрываем только если явно выбран другой метод доставки или выбрана курьерская доставка
         if (hasEslBlock) {
-            // Если метод определён и это не eShop — скрываем
-            const shouldHideTerminals = currentMethod && !isEshop;
+            // Скрываем кнопку ПВЗ если: не наш метод, или явно выбрана доставка до двери
+            const shouldHideTerminals = (currentMethod && !isEshop) || deliveryType === 'door';
             const shouldShowTerminals = !shouldHideTerminals;
 
             toggleTerminals(shouldShowTerminals, 'shipping');
@@ -1510,6 +1685,14 @@
         blocks.forEach(block => {
             if (block.dataset.initialized) return;
             block.dataset.initialized = 'true';
+
+            // Корзинный виджет выключен — инициализацию виджета и модала пропускаем,
+            // кнопку обрабатывает yandex-map.js через #wcEslTerminals
+            if (!config.checkoutFrameEnabled) {
+                handleShippingMethodChange();
+                setupAddressSelectionForBlocks();
+                return;
+            }
 
             // Используем контейнер, отрисованный PHP (совместимо с legacy-разметкой).
             const widgetContainer = block.querySelector('#eShopLogisticWidgetCart');
@@ -1688,6 +1871,159 @@
         setupShippingMethodObserver();
         subscribeToWooEvents();
         handleShippingMethodChange();
+        setupUseForBillingCheckbox();
+    }
+
+    /**
+     * Синхронизация ESL-сессии при переключении чекбокса
+     * «Использовать этот адрес для выставления счетов» в WC Blocks.
+     */
+    function setupUseForBillingCheckbox() {
+        // Защита от двойного срабатывания сразу из нескольких механизмов обнаружения
+        var _lastToggle = 0;
+
+        function onCheckboxToggle(useShippingAsBilling) {
+            var now = Date.now();
+            if (now - _lastToggle < 500) return;
+            _lastToggle = now;
+
+            setTimeout(function () {
+                var shippingCityEl = getCheckoutCityElement();
+                if (!shippingCityEl || !shippingCityEl.value) return;
+
+                var cityInputEl = document.getElementById('widgetCityEsl');
+                var shippingStateEl = getFieldElement(['shipping_state', 'shipping-state']);
+                var shippingPostcodeEl = getFieldElement(['shipping_postcode', 'shipping-postcode']);
+
+                var shippingCityData = {
+                    city: shippingCityEl.value,
+                    region: shippingStateEl ? shippingStateEl.value : '',
+                    postcode: shippingPostcodeEl ? shippingPostcodeEl.value : '',
+                    fias: '',
+                    services: []
+                };
+
+                if (cityInputEl && cityInputEl.value) {
+                    try {
+                        var parsed = JSON.parse(cityInputEl.value);
+                        if (parsed && parsed.city === shippingCityEl.value) {
+                            shippingCityData = Object.assign({}, shippingCityData, parsed);
+                        }
+                    } catch (ex) {}
+                }
+
+                console.log(shippingCityData);
+
+                var billingUpdatePromise;
+                if (useShippingAsBilling) {
+                    setCheckoutBillingAddressValues(shippingCityData);
+                    billingUpdatePromise = requestBillingAddressUpdate(shippingCityData);
+                } else {
+                    var billingCityEl = getCheckoutBillingCityElement();
+                    var billingStateEl = getFieldElement(['billing_state', 'billing-state']);
+                    var billingPostcodeEl = getFieldElement(['billing_postcode', 'billing-postcode']);
+                    billingUpdatePromise = requestBillingAddressUpdate({
+                        city: billingCityEl && billingCityEl.value ? billingCityEl.value : shippingCityData.city,
+                        region: billingStateEl ? billingStateEl.value : '',
+                        postcode: billingPostcodeEl ? billingPostcodeEl.value : '',
+                        fias: '',
+                        services: []
+                    });
+                }
+
+                Promise.all([
+                    requestShippingAddressUpdate(shippingCityData),
+                    billingUpdatePromise
+                ]).then(function () {
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: shippingCityData }));
+                    if (eslWidget) {
+                        sendWidgetParams(eslWidget, toWidgetSettlement(shippingCityData));
+                    }
+                    refreshCheckoutAfterShippingUpdate();
+                });
+            }, 300);
+        }
+
+        // Механизм 1: wp.data.subscribe — надёжно если WC Blocks 7+ и функция существует
+        if (window.wp && window.wp.data && typeof window.wp.data.subscribe === 'function') {
+            var _prev = null, _init = false;
+            window.wp.data.subscribe(function () {
+                try {
+                    var store = window.wp.data.select('wc/store/checkout');
+                    if (!store || typeof store.getUseShippingAsBilling !== 'function') return;
+                    var val = !!store.getUseShippingAsBilling();
+                    if (!_init) { _prev = val; _init = true; return; }
+                    if (val === _prev) return;
+                    _prev = val;
+                    onCheckboxToggle(val);
+                } catch (ex) {}
+            });
+        }
+
+        // Механизм 2: MutationObserver — следим за видимостью billing-city поля.
+        // Работает независимо от версии WC Blocks и имён классов.
+        // Когда billing-поля скрыты → "use shipping as billing" включён.
+        function isNodeVisible(el) {
+            var node = el;
+            while (node && node !== document.documentElement) {
+                if (!node.nodeType || node.nodeType !== 1) break;
+                var cs = window.getComputedStyle(node);
+                if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+                if (node.getAttribute('aria-hidden') === 'true') return false;
+                if (node.hasAttribute('hidden')) return false;
+                node = node.parentElement;
+            }
+            return true;
+        }
+
+        function isBillingCityVisible() {
+            var el = getCheckoutBillingCityElement();
+            return el ? isNodeVisible(el) : false;
+        }
+
+        var _prevBillingVisible = null;
+        var _mutationThrottle = false;
+        var _billingObserver = null;
+
+        function setupMutationObserver() {
+            if (_billingObserver) return;
+            var checkout = document.querySelector('.wp-block-woocommerce-checkout, .wc-block-checkout');
+            if (!checkout) return;
+
+            _prevBillingVisible = isBillingCityVisible();
+
+            _billingObserver = new MutationObserver(function () {
+                if (_mutationThrottle) return;
+                _mutationThrottle = true;
+                setTimeout(function () {
+                    _mutationThrottle = false;
+                    var nowVisible = isBillingCityVisible();
+                    if (_prevBillingVisible === null) { _prevBillingVisible = nowVisible; return; }
+                    if (nowVisible === _prevBillingVisible) return;
+                    _prevBillingVisible = nowVisible;
+                    onCheckboxToggle(!nowVisible);
+                }, 100);
+            });
+
+            _billingObserver.observe(checkout, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['style', 'class', 'hidden', 'aria-hidden']
+            });
+        }
+
+        setupMutationObserver();
+        setTimeout(setupMutationObserver, 1500);
+
+        // Механизм 3: DOM change event — запасной вариант
+        document.addEventListener('change', function (e) {
+            var t = e.target;
+            if (!t || t.type !== 'checkbox' || !t.closest) return;
+            if (t.closest('.wc-block-checkout__use-address-for-billing')) {
+                onCheckboxToggle(t.checked);
+            }
+        }, true);
     }
 
     // Инициализация при загрузке DOM

@@ -7,6 +7,7 @@ use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Models\OfferData;
+use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 
 if ( ! defined('ABSPATH') ) {
     exit;
@@ -83,9 +84,20 @@ class GutenbergBlock implements ModuleInterface
         // Получаем необходимые опции
         $widgetKey = $this->optionsRepository->getOption('wc_esl_shipping_widget_key');
         $apiKeyWCart = $this->optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
-        
+
+        // Если один из ключей не задан — используем другой как fallback
+        if (empty($widgetKey) && !empty($apiKeyWCart)) {
+            $widgetKey = $apiKeyWCart;
+        } elseif (!empty($widgetKey) && empty($apiKeyWCart)) {
+            $apiKeyWCart = $widgetKey;
+        }
+
+        // Получаем настройку корзинного виджета
+        $frameEnable = $this->optionsRepository->getOption('wc_esl_shipping_frame_enable');
+        $isFrameEnabled = !empty($frameEnable) && in_array($frameEnable, ['yes', 'on', '1', 1, true], true);
+
         // Если настройка неполная, показываем заглушку
-        if (empty($widgetKey) || empty($apiKeyWCart)) {
+        if (empty($widgetKey) && empty($apiKeyWCart)) {
             return '<div class="wc-esl-checkout-shipping-block" style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 20px 0;">' .
                    '<p style="color: #666;">' . esc_html__('eShopLogistic Shipping Calculator - Configuration required', 'eshoplogisticru') . '</p>' .
                    '</div>';
@@ -195,6 +207,7 @@ class GutenbergBlock implements ModuleInterface
                     </p>
                 </div>
                 
+                <?php if ($isFrameEnabled): ?>
                 <div id="modal-esl-frame" class="modal-esl-frame">
                     <div class="modal_content">
                         <div class="title">
@@ -217,6 +230,25 @@ class GutenbergBlock implements ModuleInterface
                         </div>
                     </div>
                 </div>
+                <?php else: ?>
+                <?php
+                // Корзинный виджет выключен — рендерим данные терминалов для яндекс-карты
+                $shippingHelper = new ShippingHelper();
+                $chosenMethods  = WC()->session->get('chosen_shipping_methods') ?: [];
+                $chosenMethod   = isset($chosenMethods[0]) ? $chosenMethods[0] : '';
+                $typeMethod     = $chosenMethod ? $shippingHelper->getTypeMethod($chosenMethod) : null;
+                $terminals      = [];
+                if ($typeMethod === 'terminal') {
+                    $stateShippingMethods = $sessionService->get('shipping_methods') ?: [];
+                    $terminals = isset($stateShippingMethods[$chosenMethod]['terminals'])
+                        ? $stateShippingMethods[$chosenMethod]['terminals']
+                        : [];
+                }
+                $apiKeyYa = $this->optionsRepository->getOption('wc_esl_shipping_api_key_ya') ?: '';
+                ?>
+                <input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(wp_json_encode($terminals)); ?>" />
+                <input type="hidden" name="wc-esl-api-key-ya" id="wcEslKeyYa" value="<?php echo esc_attr($apiKeyYa); ?>" />
+                <?php endif; ?>
             </div>
             <?php
             return ob_get_clean();
@@ -304,8 +336,14 @@ class GutenbergBlock implements ModuleInterface
         $addForm = $this->optionsRepository->getOption('wc_esl_shipping_add_form');
         $paymentCalcEnabled = isset($addForm['paymentCalc']) && $addForm['paymentCalc'] === 'true';
 
+        $widgetKey   = $this->optionsRepository->getOption('wc_esl_shipping_widget_key');
+        $apiKeyWCart = $this->optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
+        if (empty($widgetKey) && !empty($apiKeyWCart)) {
+            $widgetKey = $apiKeyWCart;
+        }
+
         wp_localize_script('wc_esl_block_frontend_js', 'wcEslBlockFrontend', [
-            'widgetKey' => $this->optionsRepository->getOption('wc_esl_shipping_widget_key'),
+            'widgetKey' => $widgetKey,
             'pluginUrl' => WC_ESL_PLUGIN_URL,
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'isCheckout' => is_checkout(),
