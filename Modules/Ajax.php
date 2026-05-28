@@ -798,8 +798,11 @@ class Ajax implements ModuleInterface
 		$data['city'] = isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '';
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
-		if (!isset($data['address']) || !$data['address'])
+		$frameMode = isset($data['mode']) ? strtolower(trim((string) $data['mode'])) : '';
+		$isDoorMode = in_array($frameMode, ['door', 'todoor', 'courier'], true);
+		if ($isDoorMode || (!isset($data['address']) || !$data['address']) && !in_array($frameMode, ['terminal', 'pickup', 'pvz', 'point', 'mixed'], true)) {
 			$sessionService->drop('terminal_location');
+		}
 	}
 
 	public function getTerminals()

@@ -2,7 +2,7 @@
 Contributors: Moonshine
 Tags: shipping,eshoplogistic,delivery,woocommerce
 Tested up to: 6.9
-Stable tag: 2.2.20
+Stable tag: 2.2.22
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

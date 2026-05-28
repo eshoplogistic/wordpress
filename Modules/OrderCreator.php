@@ -168,13 +168,18 @@ class OrderCreator implements ModuleInterface
 			return '';
 		}
 
-		$mode = isset($shippingFrame['mode']) ? (string) $shippingFrame['mode'] : '';
-		if ('terminal' !== $mode) {
-			return '';
-		}
-
 		$terminalAddress = isset($shippingFrame['terminalAddress']) ? trim((string) $shippingFrame['terminalAddress']) : '';
 		$terminalCode = isset($shippingFrame['terminalCode']) ? trim((string) $shippingFrame['terminalCode']) : '';
+
+		if ('' === $terminalAddress && isset($shippingFrame['terminal']) && is_array($shippingFrame['terminal'])) {
+			$terminalAddress = isset($shippingFrame['terminal']['address']) ? trim((string) $shippingFrame['terminal']['address']) : '';
+			$terminalCode = isset($shippingFrame['terminal']['code']) ? trim((string) $shippingFrame['terminal']['code']) : $terminalCode;
+		}
+
+		if ('' === $terminalAddress && isset($shippingFrame['pvz']) && is_array($shippingFrame['pvz'])) {
+			$terminalAddress = isset($shippingFrame['pvz']['address']) ? trim((string) $shippingFrame['pvz']['address']) : '';
+			$terminalCode = isset($shippingFrame['pvz']['code']) ? trim((string) $shippingFrame['pvz']['code']) : $terminalCode;
+		}
 
 		if ('' !== $terminalAddress && '' !== $terminalCode) {
 			return $terminalAddress . '. Код пункта: ' . $terminalCode;
@@ -182,6 +187,12 @@ class OrderCreator implements ModuleInterface
 
 		if ('' !== $terminalAddress) {
 			return $terminalAddress;
+		}
+
+		$mode = isset($shippingFrame['mode']) ? strtolower(trim((string) $shippingFrame['mode'])) : '';
+		$isTerminalMode = in_array($mode, ['terminal', 'pickup', 'pvz', 'point'], true);
+		if (!$isTerminalMode) {
+			return '';
 		}
 
 		$frameAddress = isset($shippingFrame['address']) ? trim((string) $shippingFrame['address']) : '';
