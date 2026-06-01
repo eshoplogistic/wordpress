@@ -24,6 +24,8 @@ This plugin offers comprehensive shipping integration with support for multiple 
 - Shipping calculator in product card, shopping cart, and custom pages via widgets
 - Order tracking with status updates
 - Comprehensive settings management panel
+- Full support for WooCommerce Block Checkout (Gutenberg-based checkout pages)
+- Four Gutenberg blocks for adding shipping widgets to any page
 
 **Feature Highlights:**
 
@@ -34,14 +36,16 @@ This plugin offers comprehensive shipping integration with support for multiple 
 * Dynamic cost and delivery time adjustments per rule
 * Custom delivery methods support
 * Full order export and tracking capabilities
+* WooCommerce Blocks checkout support — works with both classic shortcode and block-based checkout
+* Gutenberg blocks: Shipping Calculator (Checkout), Product Shipping Calculator, Cart Shipping, Checkout Form (Legacy)
 
 **Requirements:**
 - WordPress 6.0+
 - WooCommerce 4.0+
 - PHP 7.4+
 
-**Plugin Status:**
-Currently compatible with traditional checkout. Block-based checkout support is in development.
+**Checkout Mode Support:**
+Compatible with both traditional shortcode checkout (`[woocommerce_checkout]`) and WooCommerce Block Checkout.
 
 For detailed documentation and demo: [wp-v2.eshoplogistic.ru](https://wp-v2.eshoplogistic.ru/)
 
