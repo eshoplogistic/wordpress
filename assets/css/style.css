@@ -62,20 +62,47 @@
 	margin-top: 15px;
 }
 
-.esl_city_button{
+.woocommerce-checkout .form-row#billing_city_field .woocommerce-input-wrapper,
+.woocommerce-checkout .form-row#shipping_city_field .woocommerce-input-wrapper,
+.woocommerce-shipping-calculator .form-row#billing_city_field .woocommerce-input-wrapper,
+.woocommerce-shipping-calculator .form-row#shipping_city_field .woocommerce-input-wrapper {
+	position: relative;
+	display: block;
+}
+
+.woocommerce-checkout .form-row#billing_city_field .woocommerce-input-wrapper input,
+.woocommerce-checkout .form-row#shipping_city_field .woocommerce-input-wrapper input,
+.woocommerce-shipping-calculator .form-row#billing_city_field .woocommerce-input-wrapper input,
+.woocommerce-shipping-calculator .form-row#shipping_city_field .woocommerce-input-wrapper input {
+	padding-right: 46px !important;
+}
+
+.esl_city_button {
 	position: absolute;
 	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
 	left: 0;
+	top: 0;
 	width: 100%;
-	height: 62%;
-	background-color: rgba(242, 242, 242, 0);
+	height: 100%;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 0 12px 0 0;
+	color: #555;
+	transition: color 0.15s;
+}
+
+.esl_city_button:hover {
+	color: #222;
 }
 
 .esl_city_button svg {
-	width: 23px;
-	height: 23px;
-	position: absolute;
-	right: 25px;
+	width: 18px;
+	height: 18px;
+	position: static;
+	pointer-events: none;
 }
 
 .wc-esl-terminals__button {
