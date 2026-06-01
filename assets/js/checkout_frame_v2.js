@@ -398,6 +398,7 @@ function isNumeric(value) {
                 let value = modalSearch.val();
                 let modeInput = modalSearch.attr('data-mode');
                 $( `#${modeInput}_city` ).val( value );
+                $( `#esl_city_${modeInput}_city .esl-city-name` ).text( value );
 
                 document.getElementById("modal-esl-city").style.display = "none"
                 window.keyDelivery = 'door'
@@ -418,7 +419,10 @@ function isNumeric(value) {
                 if ($name === 'shipping_city')
                     mode = 'shipping';
 
+                let currentCity = $('#' + $name).val() || '';
+                $('#' + $name).closest('.woocommerce-input-wrapper').addClass('esl-city-modal-active');
                 $('#' + $name).after("<button type='button' value='OK' class='esl_city_button' id='esl_city_"+$name+"' data-mode='"+mode+"'>" +
+                    "<span class='esl-city-name'>" + currentCity + "</span>" +
                     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-house-fill\" viewBox=\"0 0 16 16\">\n" +
                     "<path d=\"M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z\"/>\n" +
                     "<path d=\"m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z\"/>\n" +
@@ -530,6 +534,7 @@ function isNumeric(value) {
                     if (response.success) {
                         // Обновить поля формы с данными выбранного города
                         $(`#${mode}_city`).val(cityData.city);
+                        $(`#esl_city_${mode}_city .esl-city-name`).text(cityData.city);
                         $(`#${mode}_state`).val(cityData.region);
                         $(`#${mode}_postcode`).val(cityData.postcode);
                         $(`#wc_esl_${mode}_terminal`).val('');
