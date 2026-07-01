@@ -166,6 +166,29 @@ class ShippingHelper
 		return $post_type;
 	}
 
+	/**
+	 * Рекурсивно сливает два массива, перезаписывая скалярные значения вместо
+	 * превращения их в массив (в отличие от array_merge_recursive).
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 * @return array
+	 */
+	public function mergeDeep($array1, $array2)
+	{
+		$result = $array1;
+
+		foreach ($array2 as $key => $value) {
+			if (is_array($value) && isset($result[$key]) && is_array($result[$key])) {
+				$result[$key] = $this->mergeDeep($result[$key], $value);
+			} else {
+				$result[$key] = $value;
+			}
+		}
+
+		return $result;
+	}
+
 	public function HPOS_is_enabled(){
 		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled()) {
 			return true;

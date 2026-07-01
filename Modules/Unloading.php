@@ -613,8 +613,7 @@ class Unloading implements ModuleInterface
         $exportFields = $exportFields->sendExportFields($data['delivery_id']);
         foreach ($exportFields as $key => $value) {
             if (isset($data[$key])) {
-                //$defaultFields[$key] = $defaultFields[$key] + $data[$key];
-                $defaultFields[$key] = array_merge_recursive($defaultFields[$key], $data[$key]);
+                $defaultFields[$key] = $shippingHelper->mergeDeep($defaultFields[$key], $data[$key]);
             }
         }
 
