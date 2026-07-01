@@ -316,7 +316,7 @@ class ExportFileds {
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
-					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				)
 			);
 		}
@@ -372,8 +372,8 @@ class ExportFileds {
 					'produce_date||date||Дата передачи груза' => $produce_date,
 				),
 				'delivery[location_from][pick_up_data]' => array(
-					'time_from||text||Время забора груза c (ЧЧ:ММ)' => ($exportFormSettings['sender-time-from-delline'])??'',
-					'time_to||text||Время забора груза до (ЧЧ:ММ)' => ($exportFormSettings['sender-time-to-delline'])??'',
+					'time_from||time||Время забора груза c' => ($exportFormSettings['sender-time-from-delline'])??'',
+					'time_to||time||Время забора груза до' => ($exportFormSettings['sender-time-to-delline'])??'',
 				),
 			);
 		}
@@ -442,7 +442,7 @@ class ExportFileds {
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
-					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				),
 				'delivery[location_to][address]' => array(
 					'index||text||Индекс адреса доставки' => $index
@@ -454,7 +454,7 @@ class ExportFileds {
 			$result = array(
 				'delivery' => array(
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
-					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				),
 			);
 		}
@@ -463,7 +463,7 @@ class ExportFileds {
 			$result = array(
 				'delivery' => array(
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
-					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				),
 			);
 		}

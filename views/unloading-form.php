@@ -153,9 +153,20 @@ $wc_esl_eslTable = new Table();
 
                                 if($wc_esl_type === 'checkbox')
 	                                $wc_esl_styleForm = 'checkbox-area';
+
+                                // «Взять оплату с получателя» — переключает видимость поля суммы, см. esl-take-payment-toggle в JS.
+                                $wc_esl_wrapperId = '';
+                                $wc_esl_wrapperStyle = '';
+                                $wc_esl_startDisabled = ($wc_esl_name === 'delivery-custom-cost');
+                                if($wc_esl_name === 'take_payment')
+                                    $wc_esl_styleForm .= ' esl-take-payment-toggle';
+                                if($wc_esl_startDisabled){
+                                    $wc_esl_wrapperId = 'esl-cost-toggle-'.esc_attr($wc_esl_nameArr);
+                                    $wc_esl_wrapperStyle = 'display:none';
+                                }
 								?>
 
-                                <div class="form-field <?php echo esc_attr($wc_esl_styleForm); ?>">
+                                <div class="form-field <?php echo esc_attr($wc_esl_styleForm); ?>"<?php echo $wc_esl_wrapperId ? ' id="' . esc_attr($wc_esl_wrapperId) . '"' : ''; ?><?php echo $wc_esl_wrapperStyle ? ' style="' . esc_attr($wc_esl_wrapperStyle) . '"' : ''; ?>>
                                     <label class="label" for="<?php echo esc_attr($wc_esl_name); ?>"><?php echo esc_html($wc_esl_nameRu); ?></label>
 									<?php if ( $wc_esl_type === 'text' ):
                                         $wc_esl_valueSaved = '';
@@ -166,6 +177,24 @@ $wc_esl_eslTable = new Table();
                                         <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
                                                value="<?php echo esc_attr($wc_esl_valueSaved)?>">
 									<?php endif; ?>
+	                                <?php if ( $wc_esl_type === 'number' ):
+                                        $wc_esl_valueSaved = '';
+                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
+                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
+                                        }
+                                        ?>
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="number"
+                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>" <?php echo $wc_esl_startDisabled ? 'disabled' : ''; ?>>
+	                                <?php endif; ?>
+	                                <?php if ( $wc_esl_type === 'time' ):
+                                        $wc_esl_valueSaved = '';
+                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
+                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
+                                        }
+                                        ?>
+                                        <input class="form-value esl-time-mask" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
+                                               placeholder="ЧЧ:ММ" value="<?php echo esc_attr($wc_esl_valueSaved)?>">
+	                                <?php endif; ?>
 	                                <?php if ( $wc_esl_type === 'checkbox' ):
                                         $wc_esl_valueSaved = '';
                                         if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved] == 'on'){

@@ -207,6 +207,66 @@ function eslRun() {
 
 })( jQuery );
 
+// Показывает/скрывает и включает/отключает поле "Сумма к взятию с получателя" в зависимости
+// от состояния соседнего чекбокса "Взять оплату с получателя за доставку" (esl-take-payment-toggle).
+function eslSyncCostToggle(checkbox) {
+    let wrapper = checkbox.closest('.esl-take-payment-toggle');
+    if (!wrapper) {
+        return;
+    }
+
+    let nameArr = checkbox.name.split('[')[0];
+    let target = document.getElementById('esl-cost-toggle-' + nameArr);
+    if (!target) {
+        return;
+    }
+
+    let costInput = target.querySelector('input');
+    if (checkbox.checked) {
+        target.style.display = '';
+        if (costInput) {
+            costInput.disabled = false;
+        }
+    } else {
+        target.style.display = 'none';
+        if (costInput) {
+            costInput.disabled = true;
+            costInput.value = '';
+        }
+    }
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('.esl-take-payment-toggle input[type="checkbox"]')) {
+        return;
+    }
+    eslSyncCostToggle(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('.esl-take-payment-toggle input[type="checkbox"]').forEach(eslSyncCostToggle);
+});
+
+// Форматирует ввод времени в поле ЧЧ:ММ по мере набора текста (esl-time-mask).
+document.addEventListener('input', function (e) {
+    if (!e.target.matches('.esl-time-mask')) {
+        return;
+    }
+
+    let digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    let hours = digits.slice(0, 2);
+    let minutes = digits.slice(2, 4);
+
+    if (hours.length === 2) {
+        hours = String(Math.min(parseInt(hours, 10), 23)).padStart(2, '0');
+    }
+    if (minutes.length === 2) {
+        minutes = String(Math.min(parseInt(minutes, 10), 59)).padStart(2, '0');
+    }
+
+    e.target.value = digits.length > 2 ? (hours + ':' + minutes) : digits;
+});
+
 function copyToClipboard(containerid, e) {
     let elemText = containerid
     let elemBut = e.id
