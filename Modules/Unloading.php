@@ -615,6 +615,15 @@ class Unloading implements ModuleInterface
             $defaultFields['delivery']['vat_rate'] = $data['delivery-vat_rate'];
         }
 
+        // Опция «Взять оплату с получателя за доставку» (sdek/postrf/fivepost/yandex) — переопределяет стоимость доставки,
+        // передаваемую в ТК, суммой, которую нужно получить с покупателя. Служебные ключи не должны попасть в итоговый payload.
+        if (isset($data['delivery']) && is_array($data['delivery'])) {
+            if (!empty($data['delivery']['take_payment']) && isset($data['delivery']['delivery-custom-cost']) && $data['delivery']['delivery-custom-cost'] !== '') {
+                $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
+            }
+            unset($data['delivery']['take_payment'], $data['delivery']['delivery-custom-cost']);
+        }
+
         if (isset($data['products'])) {
             $defaultPlaceVatRate = $exportFormSettings['default-vat-rate-' . $deliveryId] ?? 0;
             $declaredPriceZero = !empty($exportFormSettings['type-price-null-' . $deliveryId]);

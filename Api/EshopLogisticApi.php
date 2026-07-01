@@ -325,4 +325,16 @@ class EshopLogisticApi
 
 		return $this->sendLoadRequest($data);
 	}
+
+	/**
+	 * Справочник организационно-правовых форм для служб, которым он требуется (например, Деловые линии).
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceOpf()
+	{
+		$this->generateApiUrl('service/opf');
+
+		return $this->sendLoadRequest(array());
+	}
 }

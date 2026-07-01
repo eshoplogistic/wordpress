@@ -36,8 +36,13 @@ class ExportFileds {
 						'weight' => ''
 					)
 				),
+				'receiver' => array(
+					'type' => '',
+				),
 				'delivery' => array(
 					'tariff' => '',
+					'take_payment' => '',
+					'delivery-custom-cost' => '',
 				)
 			);
 		}
@@ -47,12 +52,22 @@ class ExportFileds {
 					'requester'    => '',
 					'counterparty' => '',
 				),
+				'receiver' => array(
+					'legal' => '',
+				),
 				'order'    => array(
 					'accept' => '',
+					'payer' => '',
 				),
 				'delivery' => array(
 					'mode' => '',
 					'produce_date' => '',
+					'location_from' => array(
+						'pick_up_data' => array(
+							'time_from' => '',
+							'time_to' => '',
+						)
+					)
 				)
 			);
 		}
@@ -90,11 +105,31 @@ class ExportFileds {
 			$result = array(
 				'delivery' => array(
 					'tariff' => '',
+					'take_payment' => '',
+					'delivery-custom-cost' => '',
 					'location_to' => array(
 						'address' => array(
 							'index' => ''
 						)
 					)
+				),
+			);
+		}
+
+		if ( $name === 'fivepost' ) {
+			$result = array(
+				'delivery' => array(
+					'take_payment' => '',
+					'delivery-custom-cost' => '',
+				),
+			);
+		}
+
+		if ( $name === 'yandex' ) {
+			$result = array(
+				'delivery' => array(
+					'take_payment' => '',
+					'delivery-custom-cost' => '',
 				),
 			);
 		}
@@ -271,8 +306,17 @@ class ExportFileds {
 					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
 					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
 				),
+				'receiver' => array(
+					'type||select||Тип получателя' => array(
+						1 => 'Физическое лицо',
+						3 => 'Юридическое лицо',
+						2 => 'ИП',
+					),
+				),
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,
+					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
+					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
 				)
 			);
 		}
@@ -283,15 +327,38 @@ class ExportFileds {
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
+			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
+			$opfType = $eshopLogisticApi->apiServiceOpf();
+			$opfType = $opfType->hasErrors() ? array() : $opfType->data();
+			$opfDelline = array(0 => '- Не выбрано -');
+			foreach ((array) $opfType as $key => $value) {
+				if (!empty($value['services']['delline'])) {
+					$opfDelline[$key] = $value['name'];
+				}
+			}
+
 			$result = array(
 				'sender'   => array(
 					'requester||text||Заказчик перевозки'    => ($exportFormSettings['sender-uid-delline'])??'',
 					'counterparty||text||Отправитель' => ($exportFormSettings['sender-counter-delline'])??'',
 				),
+				'receiver' => array(
+					'legal||select||Тип получателя' => array(
+						1 => 'Физическое лицо',
+						3 => 'Юридическое лицо',
+						2 => 'ИП',
+					),
+					'type||select||ОПФ получателя (для юр.лиц)' => $opfDelline,
+				),
 				'order'    => array(
 					'accept||select||Принятие заказа в работу' => array(
 						0 => 'Нет',
 						1 => 'Да',
+					),
+					'payer||select||Плательщик' => array(
+						'sender' => 'Отправитель',
+						'receiver' => 'Получатель',
+						'third' => 'Заказчик перевозки',
 					),
 				),
 				'delivery' => array(
@@ -303,7 +370,11 @@ class ExportFileds {
 						'small'   => 'Доставка малогабаритного груза',
 					),
 					'produce_date||date||Дата передачи груза' => $produce_date,
-				)
+				),
+				'delivery[location_from][pick_up_data]' => array(
+					'time_from||text||Время забора груза c (ЧЧ:ММ)' => ($exportFormSettings['sender-time-from-delline'])??'',
+					'time_to||text||Время забора груза до (ЧЧ:ММ)' => ($exportFormSettings['sender-time-to-delline'])??'',
+				),
 			);
 		}
 
@@ -370,10 +441,30 @@ class ExportFileds {
 			$result = array(
 				'delivery' => array(
 					'tariff||select||Тариф' => $tariffs,
+					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
+					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
 				),
 				'delivery[location_to][address]' => array(
 					'index||text||Индекс адреса доставки' => $index
 				)
+			);
+		}
+
+		if ( $name === 'fivepost' ) {
+			$result = array(
+				'delivery' => array(
+					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
+					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+				),
+			);
+		}
+
+		if ( $name === 'yandex' ) {
+			$result = array(
+				'delivery' => array(
+					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
+					'delivery-custom-cost||text||Сумма к взятию с получателя' => '',
+				),
 			);
 		}
 
