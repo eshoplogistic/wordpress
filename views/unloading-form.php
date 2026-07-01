@@ -200,8 +200,8 @@ $wc_esl_eslTable = new Table();
                                             $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
                                         }
                                         ?>
-                                        <input class="form-value esl-time-mask" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
-                                               placeholder="ЧЧ:ММ" value="<?php echo esc_attr($wc_esl_valueSaved)?>">
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="time"
+                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>">
 	                                <?php endif; ?>
 	                                <?php if ( $wc_esl_type === 'checkbox' ):
                                         $wc_esl_valueSaved = '';

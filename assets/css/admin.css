@@ -235,7 +235,7 @@
     margin-left: .35rem;
 }
 
-.wc-esl-settings .input-group > input.form-control:not([type="checkbox"]),
+.wc-esl-settings .input-group > input.form-control:not([type="checkbox"]):not([type="time"]),
 .wc-esl-settings .input-group > select:not([multiple]),
 .wc-esl-settings .input-group > textarea {
     flex: 1 1 280px;
@@ -248,6 +248,13 @@
     max-width: 20px;
     width: 20px;
     height: 20px;
+}
+
+/* Нативный time-picker компактный по природе — не растягиваем его на всю ширину поля */
+.wc-esl-settings .input-group > input[type="time"] {
+    flex: 0 0 auto;
+    max-width: 160px;
+    width: 160px;
 }
 
 .wc-esl-settings .input-group > select[multiple] {

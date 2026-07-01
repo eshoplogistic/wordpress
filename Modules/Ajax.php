@@ -1258,7 +1258,7 @@ class Ajax implements ModuleInterface
 						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
 							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
 						}
-						$html .= '<input class="form-value esl-time-mask" name="' . esc_attr($nameValue) . '" type="text" placeholder="ЧЧ:ММ" value="' . esc_attr($valueSaved) . '">';
+						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="time" value="' . esc_attr($valueSaved) . '">';
 						break;
 
 					case 'select':

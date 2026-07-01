@@ -1131,8 +1131,8 @@ $status_translate             = [
 								'fields' => array(
 									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала', 'help' => $terminalHelp ),
 									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
-									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'placeholder' => 'ЧЧ:ММ' ),
-									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'placeholder' => 'ЧЧ:ММ' ),
+									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'type' => 'time' ),
+									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'type' => 'time' ),
 								),
 							),
 							'pecom'    => array(
@@ -1205,12 +1205,17 @@ $status_translate             = [
 														<?php endif; ?>
                                                     </label>
                                                     <div class="col-sm-5">
-														<?php $carrierFieldValue = $export_form[ $carrierField['name'] ] ?? ''; ?>
+														<?php
+														$carrierFieldValue = $export_form[ $carrierField['name'] ] ?? '';
+														$carrierFieldType = $carrierField['type'] ?? 'text';
+														?>
                                                         <input
-                                                                type="text"
+                                                                type="<?php echo esc_attr($carrierFieldType); ?>"
                                                                 class="form-control"
                                                                 form="eslExportForm"
+														<?php if ( $carrierFieldType === 'text' ): ?>
                                                                 placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
+														<?php endif; ?>
                                                                 name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                 value="<?php echo esc_attr($carrierFieldValue) ?>"
                                                         />
