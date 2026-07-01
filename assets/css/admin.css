@@ -30,20 +30,164 @@
 .wc-esl-settings__body .card {
     padding: 0;
     max-width: 1110px;
+    border: 1px solid #e9ecef;
+    border-radius: .5rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    margin-bottom: 1.5rem;
+}
+
+.wc-esl-settings__body .card-header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.wc-esl-settings__body .card-body {
+    padding: 1.75rem 1.75rem 2rem;
+}
+
+/* Вложенный подзаголовок-разделитель внутри одной карточки (например, "Планировщик выгрузки заказов") */
+.wc-esl-settings__body .card-body .card-header {
+    margin: .5rem 0 1.5rem;
+    padding: 0 0 .75rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* --- Верхняя навигация по разделам страницы --- */
+.wc-esl-top-tabs {
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.wc-esl-top-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: .75rem 1.1rem;
+    font-weight: 700;
+    font-size: .95rem;
+    color: #6c757d;
+    border-radius: 0;
+    transition: color .15s ease, border-color .15s ease;
+}
+
+.wc-esl-top-tabs .nav-link:hover {
+    color: rgb(113, 23, 247);
+    border-color: transparent;
+}
+
+.wc-esl-top-tabs .nav-link.active {
+    color: rgb(113, 23, 247);
+    background: transparent;
+    border-color: rgb(113, 23, 247);
+}
+
+.wc-esl-top-tab-content {
+    max-width: 1110px;
+}
+
+/* --- Вкладки транспортных компаний внутри раздела "Выгрузка заказов" --- */
+#eslCarrierTabsWrap .nav-tabs {
+    border-bottom: 1px solid #e9ecef;
+}
+
+#eslCarrierTabsWrap .nav-link {
+    border: 1px solid transparent;
+    border-radius: .35rem .35rem 0 0;
+    padding: .5rem .9rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+#eslCarrierTabsWrap .nav-link:hover {
+    border-color: #e9ecef #e9ecef #e9ecef;
+    color: rgb(113, 23, 247);
+}
+
+#eslCarrierTabsWrap .nav-link.active {
+    color: rgb(113, 23, 247);
+    background: #f8f5ff;
+    border-color: #e9ecef #e9ecef #f8f5ff;
+}
+
+#eslCarrierTabsWrap .tab-content {
+    border: 1px solid #e9ecef;
+    border-top: none;
+    padding: 1.25rem;
+    border-radius: 0 0 .35rem .35rem;
+}
+
+.wc-esl-settings .btn-primary,
+.wc-esl-settings .wc-esl-add__button {
+    background-color: rgb(113, 23, 247);
+    border-color: rgb(113, 23, 247);
+}
+
+.wc-esl-settings .btn-primary:hover,
+.wc-esl-settings .wc-esl-add__button:hover {
+    background-color: rgb(93, 15, 209);
+    border-color: rgb(93, 15, 209);
 }
 
 .wc-esl-settings input,
-.wc-esl-settings textarea {
-    color: #495057;
+.wc-esl-settings textarea,
+.wc-esl-settings select {
+    color: #344054;
     background-color: #fff;
     background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: .25rem;
+    border: 1px solid #d0d5dd;
+    border-radius: .4rem;
+    padding: .6rem .85rem;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-.wc-esl-settings input[type="checkbox"]{
+.wc-esl-settings input:focus,
+.wc-esl-settings textarea:focus,
+.wc-esl-settings select:focus {
+    outline: none;
+    border-color: rgb(113, 23, 247);
+    box-shadow: 0 0 0 3px rgba(113, 23, 247, .12);
+}
+
+.wc-esl-settings select[multiple] {
+    min-height: 130px;
+    padding: .35rem;
+}
+
+/* У обычных (не multiple) select нативный вид в разных браузерах по-разному считает высоту строки
+   при большом line-height страницы — текст съезжает к нижнему краю. Убираем нативный рендер
+   и рисуем свою стрелку, чтобы вертикальное позиционирование текста было предсказуемым. */
+.wc-esl-settings select:not([multiple]) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    line-height: 1.4;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23667085' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .85rem center;
+}
+
+.wc-esl-settings select:not([multiple])::-ms-expand {
+    display: none;
+}
+
+.wc-esl-settings input[type="checkbox"]:not(.custom-control-input) {
     max-width: 20px;
-    margin-top: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: rgb(113, 23, 247);
+    cursor: pointer;
+}
+
+.wc-esl-settings .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: rgb(113, 23, 247);
+    border-color: rgb(113, 23, 247);
 }
 
 .wc-esl-settings .form-control {
@@ -52,6 +196,112 @@
 
 .wc-esl-settings .btn {
     font-size: .9rem;
+}
+
+.wc-esl-settings .button {
+    border-radius: .4rem;
+    border-color: #d0d5dd;
+    padding: .4rem .9rem;
+    height: auto;
+}
+
+/* --- Единый вид строк формы label + поле (используется как в eslExportForm/eslAddForm,
+   так и в "классическом" Bootstrap-варианте input-group с кнопкой, например API-ключ) --- */
+.wc-esl-settings .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 1.25rem;
+    row-gap: .35rem;
+    min-height: 2.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.wc-esl-settings .card-body > .input-group:last-child,
+.wc-esl-settings form .input-group:last-child {
+    margin-bottom: 0;
+}
+
+.wc-esl-settings .input-group > .col-form-label {
+    flex: 0 0 300px;
+    max-width: 300px;
+    padding: 0;
+    margin: 0;
+    font-weight: 600;
+    color: #344054;
+}
+
+.wc-esl-settings .input-group > .col-form-label .help-tip {
+    margin-left: .35rem;
+}
+
+.wc-esl-settings .input-group > input.form-control:not([type="checkbox"]),
+.wc-esl-settings .input-group > select:not([multiple]),
+.wc-esl-settings .input-group > textarea {
+    flex: 1 1 280px;
+    max-width: 420px;
+    width: auto;
+}
+
+.wc-esl-settings .input-group > input[type="checkbox"].form-control {
+    flex: 0 0 auto;
+    max-width: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.wc-esl-settings .input-group > select[multiple] {
+    flex: 1 1 100%;
+    max-width: 100%;
+}
+
+/* Строка с превью картинки и кнопками загрузки/удаления (Изображение для загрузки) */
+.wc-esl-settings .input-group > img {
+    flex: 0 0 auto;
+    border-radius: .35rem;
+}
+
+.wc-esl-settings .input-group > img[src] {
+    border: 1px solid #e9ecef;
+}
+
+.wc-esl-settings .input-group > img:not([src]),
+.wc-esl-settings .input-group > img[src=""] {
+    display: none;
+}
+
+.wc-esl-settings .input-group .ml-1 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+@media (max-width: 782px) {
+    .wc-esl-settings .input-group > .col-form-label {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+
+    .wc-esl-settings .input-group > input.form-control,
+    .wc-esl-settings .input-group > select,
+    .wc-esl-settings .input-group > textarea {
+        max-width: 100%;
+    }
+}
+
+/* Единая типографика подписей в строках на базе Bootstrap-грида (.form-group.row),
+   чтобы визуально совпадать со строками на основе .input-group выше. */
+.wc-esl-settings .form-group.row .col-form-label {
+    font-weight: 600;
+    color: #344054;
+}
+
+.wc-esl-settings .form-group.row {
+    margin-bottom: 1.75rem !important;
+}
+
+.wc-esl-settings .form-group.row:last-child {
+    margin-bottom: 0 !important;
 }
 
 .esl-notifications {
@@ -335,4 +585,25 @@
     background-color: #eee;
     padding: 8px;
     border-radius:8px;
+}
+
+/* Заголовки разделов внутри модалки генерируются в PHP как разные теги (p/h3/h4) —
+   приводим к единому компактному виду вместо разномастных нативных размеров. */
+#modal-esl-add-field .esl-box_add > p,
+#modal-esl-add-field h3,
+#modal-esl-add-field h4 {
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #667085;
+    margin: 1.5rem 0 .6rem;
+    padding: 0 0 .4rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#modal-esl-add-field > form > .esl-box_add:first-child > p:first-child,
+#modal-esl-add-field > form > h3:first-child,
+#modal-esl-add-field > form > h4:first-child {
+    margin-top: 0;
 }

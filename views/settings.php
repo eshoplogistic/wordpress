@@ -81,6 +81,26 @@ $status_translate             = [
         <div class="container-fluid wc-esl-settings-general-options">
             <div class="row">
                 <div class="col-md-12">
+                    <ul class="nav nav-tabs wc-esl-top-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="esl-top-tab-system-btn" data-toggle="tab" href="#esl-top-tab-system" role="tab">Основные настройки</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-payment-btn" data-toggle="tab" href="#esl-top-tab-payment" role="tab">Оплата и виджет</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-extra-btn" data-toggle="tab" href="#esl-top-tab-extra" role="tab">Дополнительные настройки</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-export-btn" data-toggle="tab" href="#esl-top-tab-export" role="tab">Выгрузка заказов</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-status-btn" data-toggle="tab" href="#esl-top-tab-status" role="tab">Синхронизация статусов</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content wc-esl-top-tab-content pt-4">
+                    <div class="tab-pane fade show active" id="esl-top-tab-system" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
 							<?php esc_html_e('Основные настройки', 'eshoplogisticru' ) ?>
@@ -290,6 +310,8 @@ $status_translate             = [
                         </div>
                     </div>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-payment" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
 							<?php esc_html_e( 'Настройки оплаты', 'eshoplogisticru' ) ?>
@@ -471,6 +493,8 @@ $status_translate             = [
                         </div>
                     </div>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-extra" role="tabpanel">
                     <div class="card wc-esl-settings-others">
                         <div class="card-header">
 							<?php esc_html_e( 'Дополнительные настройки eShopLogistic', 'eshoplogisticru' ) ?>
@@ -533,7 +557,7 @@ $status_translate             = [
                                                     placeholder="<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogisticru' ) ?>"
                                                     name="paymentCalc"
                                                     class="col-sm-8 form-control checkbox"
-											<?php echo ( $paymentCalc == 'true' ) ? 'checked=checked' : ''; ?>"
+											<?php echo ( $paymentCalc == 'true' ) ? 'checked=checked' : ''; ?>
                                             />
                                         </div>
 
@@ -553,7 +577,7 @@ $status_translate             = [
                                                         placeholder="<?php esc_html_e( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogisticru' ) ?>"
                                                         name="checkDelivery"
                                                         class="col-sm-8 form-control checkbox"
-												<?php echo ( $checkDelivery == 'true' ) ? 'checked=checked' : ''; ?>"
+												<?php echo ( $checkDelivery == 'true' ) ? 'checked=checked' : ''; ?>
                                                 />
                                             </div>
 
@@ -572,7 +596,7 @@ $status_translate             = [
                                                         placeholder="<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogisticru' ) ?>"
                                                         name="citySelectModal"
                                                         class="col-sm-8 form-control checkbox"
-												<?php echo ( $citySelectModal == 'true' ) ? 'checked=checked' : ''; ?>"
+												<?php echo ( $citySelectModal == 'true' ) ? 'checked=checked' : ''; ?>
                                                 />
                                             </div>
 
@@ -663,7 +687,7 @@ $status_translate             = [
                                                     placeholder="<?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogisticru' ) ?>"
                                                     name="offAddressCheck"
                                                     class="col-sm-8 form-control checkbox"
-		                                    <?php echo ( $offAddressCheck == 'true' ) ? 'checked=checked' : ''; ?>"
+		                                    <?php echo ( $offAddressCheck == 'true' ) ? 'checked=checked' : ''; ?>
                                             />
                                         </div>
 
@@ -687,7 +711,7 @@ $status_translate             = [
                                                     placeholder="<?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogisticru' ) ?>"
                                                     name="cronStatusEnable"
                                                     class="col-sm-8 form-control checkbox"
-		                                    <?php echo ( $cronStatusEnable == 'true' ) ? 'checked=checked' : ''; ?>"
+		                                    <?php echo ( $cronStatusEnable == 'true' ) ? 'checked=checked' : ''; ?>
                                             />
                                         </div>
 
@@ -749,6 +773,8 @@ $status_translate             = [
                         </div>
                     </div>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-export" role="tabpanel">
 					<?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-export">
                             <div class="card-header">
@@ -1062,79 +1088,6 @@ $status_translate             = [
                         </div>
 					<?php endif; ?>
 
-					<?php if ( $moduleVersion ): ?>
-                        <div class="card wc-esl-settings-status esl-section_drag">
-                            <div class="card-header">
-								<?php esc_html_e( 'Настройка статусов', 'eshoplogisticru' ) ?>
-                                <label>
-                                    <div class="help-tip">
-                                        <p>
-                                            Перетащите статус доставки в левую часть страницы. <br>Удалить новую связь
-                                            статусов можно после сохранения.
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div class="card-body" id="eslExportFormWrap">
-                                <div class="form-group row align-items-center mb-3">
-                                    <div class="col-sm-12">
-
-                                        <div class="row">
-                                            <div class="esl-inner_status col-sm-6">
-												<?php foreach ( $status_translate as $key => $value ):
-													$name = $key;
-													if ( isset( $status_translate[ $key ] ) ) {
-														$name = $status_translate[ $key ];
-													}
-													?>
-                                                    <div class="esl-inner_item">
-                                                        <div class="esl-status_api">
-															<?php echo esc_html( $name ); ?>
-                                                        </div>
-                                                        <ul class="js-inner-connected sortable"
-                                                            name="<?php echo esc_attr($key); ?>"
-                                                            aria-dropeffect="move">
-															<?php if ( isset( $status_form[ $key ] ) && $status_form[ $key ] ): ?>
-																<?php foreach ( $status_form[ $key ] as $item ): ?>
-                                                                    <li name="<?php echo esc_attr($item['name']); ?>"
-                                                                        data-desc="<?php echo esc_attr($item['desc']); ?>"
-                                                                        class="esl-status__wp"
-                                                                        role="option" aria-grabbed="false">
-                                                                        <span class=""
-                                                                              draggable="true"><?php echo esc_attr($item['desc']); ?></span>
-                                                                        <span class="sortable-delete"
-                                                                              onclick="sortableDelete(this)">х</span>
-                                                                    </li>
-																<?php endforeach; ?>
-															<?php endif; ?>
-                                                        </ul>
-                                                    </div>
-												<?php endforeach; ?>
-                                            </div>
-
-                                            <div class="esl-inner_item col-sm-6">
-
-                                                <ul class="js-connected sortable-copy" aria-dropeffect="move">
-													<?php foreach ( $status_wp as $key => $value ): ?>
-                                                        <li name="<?php echo esc_attr($key); ?>" data-desc="<?php echo esc_attr($value); ?>"
-                                                            class="esl-status__wp" role="option" aria-grabbed="false">
-                                                            <span class="" draggable="true"><?php echo esc_html($value); ?></span>
-                                                        </li>
-													<?php endforeach; ?>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <button class="btn btn-primary float-end" id="statusSave">
-									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
-                                </button>
-                            </div>
-                        </div>
-					<?php endif; ?>
-
 	                <?php if ( $moduleVersion ): ?>
 						<?php
 						// Список ТК, для которых уже реализованы дополнительные поля выгрузки (ExportFileds).
@@ -1372,6 +1325,83 @@ $status_translate             = [
                         </div>
 	                <?php endif; ?>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-status" role="tabpanel">
+					<?php if ( $moduleVersion ): ?>
+                        <div class="card wc-esl-settings-status esl-section_drag">
+                            <div class="card-header">
+								<?php esc_html_e( 'Настройка статусов', 'eshoplogisticru' ) ?>
+                                <label>
+                                    <div class="help-tip">
+                                        <p>
+                                            Перетащите статус доставки в левую часть страницы. <br>Удалить новую связь
+                                            статусов можно после сохранения.
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="card-body" id="eslExportFormWrap">
+                                <div class="form-group row align-items-center mb-3">
+                                    <div class="col-sm-12">
+
+                                        <div class="row">
+                                            <div class="esl-inner_status col-sm-6">
+												<?php foreach ( $status_translate as $key => $value ):
+													$name = $key;
+													if ( isset( $status_translate[ $key ] ) ) {
+														$name = $status_translate[ $key ];
+													}
+													?>
+                                                    <div class="esl-inner_item">
+                                                        <div class="esl-status_api">
+															<?php echo esc_html( $name ); ?>
+                                                        </div>
+                                                        <ul class="js-inner-connected sortable"
+                                                            name="<?php echo esc_attr($key); ?>"
+                                                            aria-dropeffect="move">
+															<?php if ( isset( $status_form[ $key ] ) && $status_form[ $key ] ): ?>
+																<?php foreach ( $status_form[ $key ] as $item ): ?>
+                                                                    <li name="<?php echo esc_attr($item['name']); ?>"
+                                                                        data-desc="<?php echo esc_attr($item['desc']); ?>"
+                                                                        class="esl-status__wp"
+                                                                        role="option" aria-grabbed="false">
+                                                                        <span class=""
+                                                                              draggable="true"><?php echo esc_attr($item['desc']); ?></span>
+                                                                        <span class="sortable-delete"
+                                                                              onclick="sortableDelete(this)">х</span>
+                                                                    </li>
+																<?php endforeach; ?>
+															<?php endif; ?>
+                                                        </ul>
+                                                    </div>
+												<?php endforeach; ?>
+                                            </div>
+
+                                            <div class="esl-inner_item col-sm-6">
+
+                                                <ul class="js-connected sortable-copy" aria-dropeffect="move">
+													<?php foreach ( $status_wp as $key => $value ): ?>
+                                                        <li name="<?php echo esc_attr($key); ?>" data-desc="<?php echo esc_attr($value); ?>"
+                                                            class="esl-status__wp" role="option" aria-grabbed="false">
+                                                            <span class="" draggable="true"><?php echo esc_html($value); ?></span>
+                                                        </li>
+													<?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary float-end" id="statusSave">
+									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+                                </button>
+                            </div>
+                        </div>
+					<?php endif; ?>
+
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
