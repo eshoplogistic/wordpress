@@ -131,6 +131,11 @@ $wc_esl_eslTable = new Table();
                                 <label class="label">Комментарий:</label>
                                 <textarea class="form-value" name="comment"></textarea>
                             </div>
+
+                            <div class="form-field">
+                                <label class="label" for="sender-custom-order-id">Свой номер заказа для ТК (необязательно):</label>
+                                <input class="form-value" name="sender-custom-order-id" type="text" value="">
+                            </div>
                         </div>
 
                         <div class="form-box">
@@ -233,6 +238,10 @@ $wc_esl_eslTable = new Table();
                                 <label class="label" for="receiver-city">Населённый пункт:</label>
                                 <input class="form-value" name="receiver-city" type="text"
                                        value="<?php echo esc_attr($wc_esl_address['city']) ?>">
+                            </div>
+                            <div class="form-field">
+                                <label class="label" for="receiver-district">Район:</label>
+                                <input class="form-value" name="receiver-district" type="text" value="">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-street">Улица:</label>
@@ -338,14 +347,14 @@ $wc_esl_eslTable = new Table();
                                         <div class="form-field_add">
                                             <label class="label" for="<?php echo esc_attr($wc_esl_k) ?>"><?php echo esc_html($wc_esl_v['name']) ?></label>
 											<?php if ( $wc_esl_v['type'] === 'integer' ): ?>
-                                                <input class="form-value_add" name="<?php echo esc_attr($wc_esl_k) ?>" type="number"
+                                                <input class="form-value_add" name="complement[<?php echo esc_attr($wc_esl_k) ?>]" type="number"
                                                        value="<?php echo esc_attr($wc_esl_valueSaved) ?>" max="<?php echo esc_attr($wc_esl_v['max_value']) ?>">
 											<?php else:
 												$wc_esl_check = '';
 												if($wc_esl_valueSaved != '0')
 													$wc_esl_check = 'checked="checked"';
                                                 ?>
-                                                <input class="form-value_add" name="<?php echo esc_attr($wc_esl_k) ?>" type="checkbox" <?php echo esc_attr($wc_esl_check) ?>>
+                                                <input class="form-value_add" name="complement[<?php echo esc_attr($wc_esl_k) ?>]" type="checkbox" <?php echo esc_attr($wc_esl_check) ?>>
 											<?php endif; ?>
                                         </div>
 									<?php endforeach; ?>

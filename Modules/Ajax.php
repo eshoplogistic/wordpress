@@ -1177,12 +1177,12 @@ class Ajax implements ModuleInterface
 							$html .= '<div class="form-field_add">';
 							$html .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
 							if ($v['type'] === 'integer') {
-								$html .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
+								$html .= '<input class="form-value_add" type="number" name="complement[' . esc_attr($k) . ']" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
 							} else {
 								$check = '';
 								if ($valueSaved != '0')
 									$check = 'checked="checked"';
-								$html .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
+								$html .= '<input class="form-value_add" name="complement[' . esc_attr($k) . ']" type="checkbox" ' . $check . '>';
 							}
 							$html .= '</div>';
 						}

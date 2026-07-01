@@ -51,6 +51,10 @@ class Unloading implements ModuleInterface
             'company' => '',
             'email' => '',
         ),
+        'seller' => array(
+            'name' => '',
+            'phone' => '',
+        ),
         'delivery' => array(
             'type' => '',
             'location_from' => array( //Адрес отправителя (при заборе груза от отправителя)
@@ -65,13 +69,16 @@ class Unloading implements ModuleInterface
                     'house' => '', //Номер строения
                     'room' => '' //Квартира / офис / помещение
                 ),
+                'platform_id' => '', //Код склада отправителя (нужен отдельным ТК, например Яндекс.Доставке)
             ),
             'payment' => '',
+            'vat_rate' => '', //Значение ставки НДС на доставку
             'cost' => '', //Стоимость доставки, рубли.
             'location_to' => array(
                 'terminal' => '',
                 'address' => array(
                     'region' => '',
+                    'district' => '', //Район
                     'city' => '',
                     'street' => '',
                     'house' => '',
@@ -79,6 +86,7 @@ class Unloading implements ModuleInterface
                 ),
             ),
         ),
+        'complement' => array(), //Доп.услуги ТК, полученные через apiExportAdditional
     );
 
     public function init()
@@ -515,6 +523,10 @@ class Unloading implements ModuleInterface
         $shippingHelper = new ShippingHelper();
         $optionsRepository = new OptionsRepository();
         $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
+        $exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+        if (!is_array($exportFormSettings)) {
+            $exportFormSettings = array();
+        }
 
         if (!isset($apiKey) && !$apiKey) {
             return false;
@@ -569,6 +581,11 @@ class Unloading implements ModuleInterface
             $defaultFields['delivery']['location_from']['terminal'] = $data['sender-terminal'];//Идентификатор пункта приёма груза Обязательно, если delivery.location_from.pick_up === false
         }
 
+        // Код склада отправителя для служб, которым он требуется (например, Яндекс.Доставка). Настраивается в разрезе службы доставки.
+        if (!empty($exportFormSettings['platform_id-' . $deliveryId])) {
+            $defaultFields['delivery']['location_from']['platform_id'] = $exportFormSettings['platform_id-' . $deliveryId];
+        }
+
         $defaultFields['delivery']['location_to'] = array(
             'address' => array(
                 'region' => $data['receiver-region'],
@@ -579,17 +596,35 @@ class Unloading implements ModuleInterface
             ),
         );
 
+        // Район получателя — заполняется вручную оператором, если требуется службе доставки.
+        if (!empty($data['receiver-district'])) {
+            $defaultFields['delivery']['location_to']['address']['district'] = $data['receiver-district'];
+        }
+
+        // Код ФИАС города получателя — передаётся, только если явно указан (например, интеграцией поиска адреса).
+        if (!empty($data['delivery-location_to-city_fias'])) {
+            $defaultFields['delivery']['location_to']['address']['city_fias'] = $data['delivery-location_to-city_fias'];
+        }
+
         if ($data['delivery_type'] === 'terminal') {
             $defaultFields['delivery']['location_to']['terminal'] = $data['terminal-code'];
         }
 
+        // Ставка НДС на доставку — передаётся только если явно указана оператором, чтобы не менять поведение по умолчанию на стороне API.
+        if (isset($data['delivery-vat_rate']) && $data['delivery-vat_rate'] !== '') {
+            $defaultFields['delivery']['vat_rate'] = $data['delivery-vat_rate'];
+        }
+
         if (isset($data['products'])) {
+            $defaultPlaceVatRate = $exportFormSettings['default-vat-rate-' . $deliveryId] ?? 0;
+            $declaredPriceZero = !empty($exportFormSettings['type-price-null-' . $deliveryId]);
+
             foreach ($data['products'] as $item) {
                 if (empty($item['product_id'])) {
                     continue;
                 }
 
-                $defaultFields['places'][] = array(
+                $place = array(
                     'article' => $item['product_id'],
                     'name' => $item['name'],
                     'count' => $item['quantity'],
@@ -598,16 +633,37 @@ class Unloading implements ModuleInterface
                     //Вес, в кг.
                     'dimensions' => $shippingHelper->dimensionsOption($item['width']) . '*' . $shippingHelper->dimensionsOption($item['length']) . '*' . $shippingHelper->dimensionsOption($item['height']),
                     //Габариты. Формат: строка вида «Д*Ш*В», в сантиметрах. Например: 15*25*10
-                    'vat_rate' => 0,
+                    'vat_rate' => $item['vat'] ?? $defaultPlaceVatRate,
                     //Значение ставки НДС Возможные варианты:0, 10, 20, -1 (без НДС)
                 );
+
+                if ($declaredPriceZero) {
+                    $place['declared_price'] = 0;
+                }
+
+                $defaultFields['places'][] = $place;
             }
         }
 
-        //if(isset($data['order']) && $data['order']){
-        //foreach ($data['order'] as $key=>$value)
-        //$defaultFields['order'][$key] = $value;
-        //}
+        // Доп.услуги (чекбоксы/числовые поля из вкладки «Дополнительные услуги»), отправляются как есть в блок complement.
+        if (isset($data['complement']) && is_array($data['complement'])) {
+            $defaultFields['complement'] = $data['complement'];
+        }
+
+        // Продавец — заполняется в настройках плагина в разрезе службы доставки, нужен не всем ТК.
+        $sellerName = $exportFormSettings['seller-name-' . $deliveryId] ?? '';
+        $sellerPhone = $exportFormSettings['seller-phone-' . $deliveryId] ?? '';
+        if ($sellerName !== '' || $sellerPhone !== '') {
+            $defaultFields['seller'] = array(
+                'name' => $sellerName,
+                'phone' => $sellerPhone,
+            );
+        }
+
+        // Позволяет переопределить идентификатор заказа на стороне ТК, если оператор указал свой номер.
+        if (!empty($data['sender-custom-order-id'])) {
+            $defaultFields['order']['id'] = $data['sender-custom-order-id'];
+        }
 
         $exportFields = new ExportFileds();
         $exportFields = $exportFields->sendExportFields($data['delivery_id']);
