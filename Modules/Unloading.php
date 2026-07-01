@@ -659,9 +659,9 @@ class Unloading implements ModuleInterface
             $defaultFields['complement'] = $data['complement'];
         }
 
-        // Продавец — заполняется в настройках плагина в разрезе службы доставки, нужен не всем ТК.
-        $sellerName = $exportFormSettings['seller-name-' . $deliveryId] ?? '';
-        $sellerPhone = $exportFormSettings['seller-phone-' . $deliveryId] ?? '';
+        // Продавец — общие для магазина данные (не завязаны на конкретную ТК), заполняются в настройках плагина.
+        $sellerName = $exportFormSettings['seller-name'] ?? '';
+        $sellerPhone = $exportFormSettings['seller-phone'] ?? '';
         if ($sellerName !== '' || $sellerPhone !== '') {
             $defaultFields['seller'] = array(
                 'name' => $sellerName,

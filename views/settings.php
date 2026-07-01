@@ -846,6 +846,32 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Код склада (Яндекс.Доставка)', 'eshoplogisticru' ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+												<?php
+												$platform_id_yandex = '';
+												if ( isset( $export_form['platform_id-yandex'] ) ) {
+													$platform_id_yandex = $export_form['platform_id-yandex'];
+												}
+												?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php esc_html_e( 'Код склада', 'eshoplogisticru' ) ?>"
+                                                        name="platform_id-yandex"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $platform_id_yandex ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 													<?php esc_html_e( 'Код терминала (5POST)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1092,6 +1118,44 @@ $status_translate             = [
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Время забора груза c (Деловые линии)', 'eshoplogisticru' ) ?>
+                                                </label>
+												<?php
+												$sender_time_from_delline = '';
+												if ( isset( $export_form['sender-time-from-delline'] ) ) {
+													$sender_time_from_delline = $export_form['sender-time-from-delline'];
+												}
+												?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="ЧЧ:ММ"
+                                                        name="sender-time-from-delline"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $sender_time_from_delline ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Время забора груза до (Деловые линии)', 'eshoplogisticru' ) ?>
+                                                </label>
+												<?php
+												$sender_time_to_delline = '';
+												if ( isset( $export_form['sender-time-to-delline'] ) ) {
+													$sender_time_to_delline = $export_form['sender-time-to-delline'];
+												}
+												?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="ЧЧ:ММ"
+                                                        name="sender-time-to-delline"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $sender_time_to_delline ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
 			                                        <?php esc_html_e( 'Название профиля отправителя (Kit)', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1223,6 +1287,54 @@ $status_translate             = [
                                                         value="<?php echo esc_attr( $sender_email ) ?>"
                                                 />
                                             </div>
+
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Продавец: имя', 'eshoplogisticru' ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Передаётся некоторым ТК как отдельные реквизиты продавца (не отправителя груза).
+                                                                Заполните, если это требуется вашей транспортной компанией.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+												<?php
+												$seller_name = '';
+												if ( isset( $export_form['seller-name'] ) ) {
+													$seller_name = $export_form['seller-name'];
+												}
+												?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php esc_html_e( 'Имя продавца', 'eshoplogisticru' ) ?>"
+                                                        name="seller-name"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $seller_name ) ?>"
+                                                />
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Продавец: телефон', 'eshoplogisticru' ) ?>
+                                                </label>
+												<?php
+												$seller_phone = '';
+												if ( isset( $export_form['seller-phone'] ) ) {
+													$seller_phone = $export_form['seller-phone'];
+												}
+												?>
+                                                <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder="<?php esc_html_e( 'Телефон продавца', 'eshoplogisticru' ) ?>"
+                                                        name="seller-phone"
+                                                        class="col-sm-8"
+                                                        value="<?php echo esc_attr( $seller_phone ) ?>"
+                                                />
+                                            </div>
+
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
 													<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>
