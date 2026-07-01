@@ -51,7 +51,7 @@ class ErrorResponse implements ApiResponseInterface, \JsonSerializable
 		return [];
 	}
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'success' => false,
