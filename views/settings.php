@@ -1332,6 +1332,14 @@ $status_translate             = [
                                         </div>
 									<?php endforeach; ?>
                                 </div>
+
+                                <div class="form-group row align-items-center mb-3">
+                                    <div class="col-sm-12">
+                                        <button type="submit" form="eslExportForm" class="btn btn-primary float-end">
+                                            <?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="modal-esl-add-field" class="modal-esl-frame">
