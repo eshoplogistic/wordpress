@@ -1098,38 +1098,38 @@ $status_translate             = [
 							'sdek'     => array(
 								'label' => 'СДЭК', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'yandex'   => array(
 								'label' => 'Яндекс', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'platform_id-yandex', 'label' => 'Код склада (Яндекс.Доставка)', 'help' => 'Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.' ),
 								),
 							),
 							'fivepost' => array(
 								'label' => '5POST', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'postrf'   => array(
 								'label' => 'Почта России', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'boxberry' => array(
 								'label' => 'Boxberry', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'delline'  => array(
 								'label' => 'Деловые линии', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
 									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'type' => 'time' ),
 									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'type' => 'time' ),
@@ -1138,14 +1138,14 @@ $status_translate             = [
 							'pecom'    => array(
 								'label' => 'ПЭК', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'baikal'   => array( 'label' => 'Байкал Сервис', 'take_payment' => false, 'fields' => array() ),
 							'kit'      => array(
 								'label' => 'Кит', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-uid-kit', 'label' => 'Название профиля отправителя', 'help' => 'Доступен в личном кабинете Кит.' ),
 								),
 							),
@@ -1153,7 +1153,7 @@ $status_translate             = [
 							'magnit'   => array(
 								'label' => 'Магнит Пост', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
@@ -1209,6 +1209,25 @@ $status_translate             = [
 														$carrierFieldValue = $export_form[ $carrierField['name'] ] ?? '';
 														$carrierFieldType = $carrierField['type'] ?? 'text';
 														?>
+														<?php if ( $carrierFieldType === 'terminal' ): ?>
+                                                        <div class="input-group input-group-inline">
+                                                            <input
+                                                                    type="text"
+                                                                    class="form-control"
+                                                                    form="eslExportForm"
+                                                                    placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
+                                                                    name="<?php echo esc_attr($carrierField['name']); ?>"
+                                                                    value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                            />
+                                                            <div class="input-group-append">
+                                                                <button type="button" class="btn btn-primary esl-search-terminal"
+                                                                        data-service="<?php echo esc_attr($carrierSlug); ?>"
+                                                                        data-target="<?php echo esc_attr($carrierField['name']); ?>">
+																	<?php esc_html_e( 'Поиск терминала', 'eshoplogisticru' ) ?>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+														<?php else: ?>
                                                         <input
                                                                 type="<?php echo esc_attr($carrierFieldType); ?>"
                                                                 class="form-control"
@@ -1219,6 +1238,7 @@ $status_translate             = [
                                                                 name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                 value="<?php echo esc_attr($carrierFieldValue) ?>"
                                                         />
+														<?php endif; ?>
                                                     </div>
                                                 </div>
 											<?php endforeach; ?>
@@ -1323,6 +1343,24 @@ $status_translate             = [
                                     <div id="content-add-field_ajax"></div>
                                     <div class="footer">
                                         <input id="buttonModalAddField" class="btn btn-primary" type="button"  value="Сохранить">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="modal-esl-terminal-search" class="modal-esl-frame">
+                                <div class="modal_content">
+                                    <div class="title">
+                                        <span class="close_modal_window">×</span>
+                                        <p><strong>Выбор терминала ТК, в который вы будете сдавать заказы на доставку</strong><br></p>
+                                    </div>
+                                    <div class="esl-terminal-search-fields">
+                                        <label><?php esc_html_e( 'Для быстрого поиска укажите название улицы', 'eshoplogisticru' ) ?></label>
+                                        <input type="text" id="settlementTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Город или населённый пункт', 'eshoplogisticru' ) ?>">
+                                        <input type="text" id="addressTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Найти ПВЗ / постамат по его адресу', 'eshoplogisticru' ) ?>">
+                                    </div>
+                                    <div id="content-terminal-search_ajax"></div>
+                                    <div class="footer">
+                                        <input id="buttonModalTerminalSearch" class="btn btn-primary" type="button" value="Поиск">
                                     </div>
                                 </div>
                             </div>

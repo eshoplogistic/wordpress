@@ -3,15 +3,18 @@ window.addEventListener('load', function(event) {
 
 	let modalAddField = document.getElementById("modal-esl-add-field")
 	let contentAjax = document.getElementById("content-add-field_ajax")
-	let span = document.getElementsByClassName("close_modal_window")[0]
+	let modalTerminalSearch = document.getElementById("modal-esl-terminal-search")
+	let contentTerminalSearch = document.getElementById("content-terminal-search_ajax")
 
-	span.onclick = function () {
-		modalAddField.style.display = "none"
-	}
+	document.querySelectorAll(".modal-esl-frame .close_modal_window").forEach(function (span) {
+		span.onclick = function () {
+			span.closest(".modal-esl-frame").style.display = "none"
+		}
+	})
 
 	window.onclick = function (event) {
-		if (event.target === modalAddField) {
-			modalAddField.style.display = "none"
+		if (event.target.classList && event.target.classList.contains("modal-esl-frame")) {
+			event.target.style.display = "none"
 		}
 	}
 
@@ -29,6 +32,17 @@ window.addEventListener('load', function(event) {
 			});
 			modalAddField.style.display = "block"
 		},
+		clickOnSearchTerminal: function (event) {
+			let service = event.target.getAttribute('data-service');
+			let target = event.target.getAttribute('data-target');
+
+			modalTerminalSearch.dataset.service = service;
+			modalTerminalSearch.dataset.target = target;
+			contentTerminalSearch.innerHTML = '';
+			document.getElementById('settlementTerminalSearch').value = '';
+			document.getElementById('addressTerminalSearch').value = '';
+			modalTerminalSearch.style.display = "block"
+		},
 		onCloseModal: function () {
 		},
 	}
@@ -39,6 +53,59 @@ window.addEventListener('load', function(event) {
 			els_add_buttons[i].addEventListener('click', bindEvents.clickOnAddField, false);
 		}
 
+	}
+
+	let els_search_terminal_buttons = document.getElementsByClassName('esl-search-terminal')
+	if (els_search_terminal_buttons) {
+		for (let i = 0; i < els_search_terminal_buttons.length; i++) {
+			els_search_terminal_buttons[i].addEventListener('click', bindEvents.clickOnSearchTerminal, false);
+		}
+	}
+
+	function runTerminalSearch() {
+		let data = {};
+		data.action = 'wc_esl_shipping_search_terminal';
+		data.service = modalTerminalSearch.dataset.service;
+		data.settlement = document.getElementById('settlementTerminalSearch').value;
+		data.address = document.getElementById('addressTerminalSearch').value;
+		data.nonce = wc_esl_shipping_global.nonce;
+
+		HttpClientEsl.post(data, function (result) {
+			if (result.success !== true) return;
+
+			contentTerminalSearch.innerHTML = result.data;
+
+			let els_terminal_items = contentTerminalSearch.getElementsByClassName('esl-terminal-search-modal__item');
+			for (let i = 0; i < els_terminal_items.length; i++) {
+				els_terminal_items[i].addEventListener('click', function (e) {
+					let element = e.target.closest('[data-code]');
+					let code = element ? element.dataset.code : null;
+					if (!code) return;
+
+					let targetElem = document.getElementsByName(modalTerminalSearch.dataset.target);
+					if (targetElem && targetElem[0]) {
+						targetElem[0].value = code;
+					}
+
+					modalTerminalSearch.style.display = "none"
+				}, false);
+			}
+		});
+	}
+
+	let buttonModalTerminalSearch = document.getElementById('buttonModalTerminalSearch')
+	if (buttonModalTerminalSearch) {
+		buttonModalTerminalSearch.addEventListener('click', runTerminalSearch, false);
+	}
+
+	let addressTerminalSearchInput = document.getElementById('addressTerminalSearch')
+	if (addressTerminalSearchInput) {
+		addressTerminalSearchInput.addEventListener('keypress', function (event) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				runTerminalSearch();
+			}
+		});
 	}
 });
 

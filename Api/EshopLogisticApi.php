@@ -337,4 +337,27 @@ class EshopLogisticApi
 
 		return $this->sendLoadRequest(array());
 	}
+
+	/**
+	 * Поиск терминалов/ПВЗ службы доставки (используется для подсказки кода терминала отправителя).
+	 *
+	 * @param string $service
+	 * @param string $settlement
+	 * @param string $region
+	 * @param string $address
+	 * @param bool   $onlyBranches
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceTerminals($service, $settlement = '', $region = '', $address = '', $onlyBranches = false)
+	{
+		$this->generateApiUrl('service/terminals');
+		$data['service'] = $service;
+		if ($settlement) $data['settlement'] = $settlement;
+		if ($region) $data['region'] = $region;
+		if ($address) $data['address'] = $address;
+		if ($onlyBranches) $data['only_branches'] = 1;
+
+		return $this->sendLoadRequest($data);
+	}
 }

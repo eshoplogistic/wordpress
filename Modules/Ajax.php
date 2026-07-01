@@ -81,6 +81,7 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_unloading_delete', [$this, 'unloadingDelete']);
 		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
 		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
+		add_action('wp_ajax_wc_esl_shipping_search_terminal', [$this, 'searchTerminalAdmin']);
 	}
 
 	public function changeEnablePlugin()
@@ -450,6 +451,60 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $result
+		]);
+	}
+
+	/**
+	 * Поиск терминалов ТК для настроек плагина (подсказка кода терминала отправителя).
+	 */
+	public function searchTerminalAdmin()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$service    = isset($_POST['service']) ? sanitize_text_field(wp_unslash($_POST['service'])) : '';
+		$settlement = isset($_POST['settlement']) ? sanitize_text_field(wp_unslash($_POST['settlement'])) : '';
+		$address    = isset($_POST['address']) ? sanitize_text_field(wp_unslash($_POST['address'])) : '';
+
+		if (!$service) {
+			wp_send_json_error('Не указана служба доставки');
+			return;
+		}
+
+		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+		$result = $eshopLogisticApi->apiServiceTerminals($service, $settlement, '', $address, $service === 'pecom');
+
+		$terminals = $result->hasErrors() ? array() : $result->data();
+
+		if (empty($terminals)) {
+			wp_send_json([
+				'success' => true,
+				'data'    => '<b>По запросу не найдено ниодного подходящего пункта самовывоза</b>',
+			]);
+			return;
+		}
+
+		$html = '<ul class="esl-terminal-search-modal__list">';
+		foreach ($terminals as $terminal) {
+			if (!isset($terminal['code'])) continue;
+			$html .= '<li class="esl-terminal-search-modal__item" data-code="' . esc_attr($terminal['code']) . '">'
+				. esc_html($terminal['name'] ?? '')
+				. ' <small>' . esc_html($terminal['settlement'] ?? '') . ', ' . esc_html($terminal['address'] ?? '') . '</small></li>';
+		}
+		$html .= '</ul>';
+
+		wp_send_json([
+			'success' => true,
+			'data'    => $html,
 		]);
 	}
 
