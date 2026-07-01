@@ -760,428 +760,6 @@ $status_translate             = [
                                     <div class="col-sm-12">
                                         <form action="/" method="post" id="eslExportForm">
                                             <p>Адрес отправителя</p>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код терминала (СДЭК)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_terminal = '';
-												if ( isset( $export_form['sender-terminal-sdek'] ) ) {
-													$sender_terminal = $export_form['sender-terminal-sdek'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-sdek"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код терминала (Boxberry)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_terminal = '';
-												if ( isset( $export_form['sender-terminal-boxberry'] ) ) {
-													$sender_terminal = $export_form['sender-terminal-boxberry'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-boxberry"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код терминала (Яндекс)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_terminal = '';
-												if ( isset( $export_form['sender-terminal-yandex'] ) ) {
-													$sender_terminal = $export_form['sender-terminal-yandex'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-yandex"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код склада (Яндекс.Доставка)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$platform_id_yandex = '';
-												if ( isset( $export_form['platform_id-yandex'] ) ) {
-													$platform_id_yandex = $export_form['platform_id-yandex'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код склада', 'eshoplogisticru' ) ?>"
-                                                        name="platform_id-yandex"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $platform_id_yandex ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код терминала (5POST)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_terminal = '';
-												if ( isset( $export_form['sender-terminal-fivepost'] ) ) {
-													$sender_terminal = $export_form['sender-terminal-fivepost'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-fivepost"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Код терминала (KIT)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_terminal = '';
-		                                        if ( isset( $export_form['sender-terminal-kit'] ) ) {
-			                                        $sender_terminal = $export_form['sender-terminal-kit'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-kit"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Код терминала (Почта России)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_terminal = '';
-		                                        if ( isset( $export_form['sender-terminal-postrf'] ) ) {
-			                                        $sender_terminal = $export_form['sender-terminal-postrf'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-postrf"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Код терминала (ПЭК)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_terminal = '';
-		                                        if ( isset( $export_form['sender-terminal-pecom'] ) ) {
-			                                        $sender_terminal = $export_form['sender-terminal-pecom'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-pecom"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Код терминала (Магнит Пост)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_terminal = '';
-		                                        if ( isset( $export_form['sender-terminal-magnit'] ) ) {
-			                                        $sender_terminal = $export_form['sender-terminal-magnit'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-magnit"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Код терминала (Деловые линии)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Код терминала в случае самостоятельной доставки на
-                                                                терминал транспортной компании.
-                                                                Узнайте у своего менеджера.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_terminal = '';
-												if ( isset( $export_form['sender-terminal-delline'] ) ) {
-													$sender_terminal = $export_form['sender-terminal-delline'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Код терминала', 'eshoplogisticru' ) ?>"
-                                                        name="sender-terminal-delline"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_terminal ) ?>"
-                                                />
-                                            </div>
-
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Заказчик перевозки (Деловые линии)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Значение UID контрагента из списка контрагентов в личном
-                                                                кабинете на сайте ДЛ.
-                                                                Игнорируется при отсутствии полного доступа к
-                                                                контрагентам; иначе - обязетелен.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_uid = '';
-												if ( isset( $export_form['sender-uid-delline'] ) ) {
-													$sender_uid = $export_form['sender-uid-delline'];
-												}
-												$counterparties = $eshopLogisticApi->apiServiceCounterparties( 'delline' );
-												if ( ! $counterparties->hasErrors() ) {
-													$counterparties = $counterparties->data();
-												} else {
-													$counterparties = array();
-												}
-												?>
-												<?php if ( isset( $counterparties['counterparties'] ) ): ?>
-                                                    <select id="senderUidDelline" name="sender-uid-delline">
-														<?php foreach ( $counterparties['counterparties'] as $key => $value ): ?>
-                                                            <option value="<?php echo esc_attr($value['uid']); ?>" <?php echo $sender_uid == $value['uid'] ? 'selected' : '' ?>>
-																<?php echo esc_html($value['name']) ?>
-                                                            </option>
-														<?php endforeach; ?>
-                                                    </select>
-												<?php else: ?>
-                                                    <input
-                                                            type="text"
-                                                            class="form-control"
-                                                            placeholder="<?php esc_html_e( 'UID', 'eshoplogisticru' ) ?>"
-                                                            name="sender-uid-delline"
-                                                            class="col-sm-8"
-                                                            value="<?php echo esc_attr( $sender_uid ) ?>"
-                                                    />
-												<?php endif; ?>
-
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Отправитель (Деловые линии)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Значение ID контрагента из адресной книги в личном
-                                                                кабинете на сайте ДЛ.
-                                                                Игнорируется при отсутствии полного доступа к
-                                                                контрагентам; иначе - обязетелен.
-                                                                Значение можно получить в адресной строке браузера при
-                                                                переходе к нужному контрагенту.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$sender_counter = '';
-												if ( isset( $export_form['sender-counter-delline'] ) ) {
-													$sender_counter = $export_form['sender-counter-delline'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'ID контрагента', 'eshoplogisticru' ) ?>"
-                                                        name="sender-counter-delline"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_counter ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Время забора груза c (Деловые линии)', 'eshoplogisticru' ) ?>
-                                                </label>
-												<?php
-												$sender_time_from_delline = '';
-												if ( isset( $export_form['sender-time-from-delline'] ) ) {
-													$sender_time_from_delline = $export_form['sender-time-from-delline'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="ЧЧ:ММ"
-                                                        name="sender-time-from-delline"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_time_from_delline ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Время забора груза до (Деловые линии)', 'eshoplogisticru' ) ?>
-                                                </label>
-												<?php
-												$sender_time_to_delline = '';
-												if ( isset( $export_form['sender-time-to-delline'] ) ) {
-													$sender_time_to_delline = $export_form['sender-time-to-delline'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="ЧЧ:ММ"
-                                                        name="sender-time-to-delline"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_time_to_delline ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Название профиля отправителя (Kit)', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Доступен в личном кабинете Кит.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_uid = '';
-		                                        if ( isset( $export_form['sender-uid-kit'] ) ) {
-			                                        $sender_uid = $export_form['sender-uid-kit'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Название профиля отправителя', 'eshoplogisticru' ) ?>"
-                                                        name="sender-uid-kit"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_uid ) ?>"
-                                                />
-
-                                            </div>
-
                                             <hr>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
@@ -1558,55 +1136,223 @@ $status_translate             = [
 					<?php endif; ?>
 
 	                <?php if ( $moduleVersion ): ?>
+						<?php
+						// Список ТК, для которых уже реализованы дополнительные поля выгрузки (ExportFileds).
+						// take_payment => true — служба поддерживает опцию "взять оплату с получателя" (Этап 3).
+						// fields — специфичные для службы поля адреса отправителя (были перенесены сюда из общего списка).
+						$terminalHelp = 'Код терминала в случае самостоятельной доставки на терминал транспортной компании. Узнайте у своего менеджера.';
+						$carrierTabs = array(
+							'sdek'     => array(
+								'label' => 'СДЭК', 'take_payment' => true,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'yandex'   => array(
+								'label' => 'Яндекс', 'take_payment' => true,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'platform_id-yandex', 'label' => 'Код склада (Яндекс.Доставка)', 'help' => 'Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.' ),
+								),
+							),
+							'fivepost' => array(
+								'label' => '5POST', 'take_payment' => true,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'postrf'   => array(
+								'label' => 'Почта России', 'take_payment' => true,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'boxberry' => array(
+								'label' => 'Boxberry', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'delline'  => array(
+								'label' => 'Деловые линии', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
+									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'placeholder' => 'ЧЧ:ММ' ),
+									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'placeholder' => 'ЧЧ:ММ' ),
+								),
+							),
+							'pecom'    => array(
+								'label' => 'ПЭК', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'baikal'   => array( 'label' => 'Байкал Сервис', 'take_payment' => false, 'fields' => array() ),
+							'kit'      => array(
+								'label' => 'Кит', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+									array( 'name' => 'sender-uid-kit', 'label' => 'Название профиля отправителя', 'help' => 'Доступен в личном кабинете Кит.' ),
+								),
+							),
+							'halva'    => array( 'label' => 'Постаматы «Халва»', 'take_payment' => false, 'fields' => array() ),
+							'magnit'   => array(
+								'label' => 'Магнит Пост', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала', 'help' => $terminalHelp ),
+								),
+							),
+							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
+						);
+
+						$carrierPaymentTypeOptions = array(
+							''                => '-- Не выбрано --',
+							'already_paid'    => 'Заказ уже оплачен',
+							'cash_on_receipt' => 'Наличными при получении',
+							'card_on_receipt' => 'Картой при получении',
+							'cashless'        => 'Безналичный расчет',
+						);
+						?>
                         <div class="card wc-esl-settings-status esl-section_add_field">
                             <div class="card-header">
-				                <?php esc_html_e( 'Дополнительные услуги', 'eshoplogisticru' ) ?>
+				                <?php esc_html_e( 'Настройки транспортных компаний', 'eshoplogisticru' ) ?>
                             </div>
 
-                            <div class="card-body" id="eslAddFormField">
-                                <div class="form-group row align-items-center mb-3">
-                                    <div class="col-sm-12">
+                            <div class="card-body" id="eslCarrierTabsWrap">
+                                <ul class="nav nav-tabs" role="tablist">
+									<?php foreach ( $carrierTabs as $carrierSlug => $carrierData ): ?>
+                                        <li class="nav-item">
+                                            <a class="nav-link<?php echo esc_attr($carrierSlug === 'sdek' ? ' active' : ''); ?>"
+                                               id="esl-carrier-tab-<?php echo esc_attr($carrierSlug); ?>-btn"
+                                               data-toggle="tab"
+                                               href="#esl-carrier-tab-<?php echo esc_attr($carrierSlug); ?>"
+                                               role="tab">
+												<?php echo esc_html($carrierData['label']); ?>
+                                            </a>
+                                        </li>
+									<?php endforeach; ?>
+                                </ul>
 
-                                        <div class="row">
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="sdek">Настройки для СДЭК</button>
+                                <div class="tab-content pt-3">
+									<?php foreach ( $carrierTabs as $carrierSlug => $carrierData ): ?>
+                                        <div class="tab-pane fade<?php echo esc_attr($carrierSlug === 'sdek' ? ' show active' : ''); ?>"
+                                             id="esl-carrier-tab-<?php echo esc_attr($carrierSlug); ?>" role="tabpanel">
+
+											<?php foreach ( $carrierData['fields'] as $carrierField ): ?>
+                                                <div class="form-group row align-items-center mb-3">
+                                                    <label for="" class="col-sm-5 col-form-label">
+														<?php echo esc_html($carrierField['label']); ?>
+														<?php if ( ! empty( $carrierField['help'] ) ): ?>
+                                                        <label>
+                                                            <div class="help-tip">
+                                                                <p><?php echo esc_html($carrierField['help']); ?></p>
+                                                            </div>
+                                                        </label>
+														<?php endif; ?>
+                                                    </label>
+                                                    <div class="col-sm-5">
+														<?php $carrierFieldValue = $export_form[ $carrierField['name'] ] ?? ''; ?>
+                                                        <input
+                                                                type="text"
+                                                                class="form-control"
+                                                                form="eslExportForm"
+                                                                placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
+                                                                name="<?php echo esc_attr($carrierField['name']); ?>"
+                                                                value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                        />
+                                                    </div>
+                                                </div>
+											<?php endforeach; ?>
+
+											<?php if ( $carrierSlug === 'delline' ):
+												// Заказчик перевозки (ДЛ) — список контрагентов запрашивается через API; при ошибке — обычное текстовое поле.
+												$sender_uid = $export_form['sender-uid-delline'] ?? '';
+												$counterparties = $eshopLogisticApi->apiServiceCounterparties( 'delline' );
+												$counterparties = $counterparties->hasErrors() ? array() : $counterparties->data();
+												?>
+                                                <div class="form-group row align-items-center mb-3">
+                                                    <label for="" class="col-sm-5 col-form-label">
+														<?php esc_html_e( 'Заказчик перевозки (Деловые линии)', 'eshoplogisticru' ) ?>
+                                                        <label>
+                                                            <div class="help-tip">
+                                                                <p>
+                                                                    Значение UID контрагента из списка контрагентов в личном кабинете на сайте ДЛ.
+                                                                    Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен.
+                                                                </p>
+                                                            </div>
+                                                        </label>
+                                                    </label>
+                                                    <div class="col-sm-5">
+														<?php if ( isset( $counterparties['counterparties'] ) ): ?>
+                                                            <select id="senderUidDelline" name="sender-uid-delline" form="eslExportForm" class="form-control">
+																<?php foreach ( $counterparties['counterparties'] as $counterpartyKey => $counterpartyValue ): ?>
+                                                                    <option value="<?php echo esc_attr($counterpartyValue['uid']); ?>" <?php echo esc_attr( $sender_uid == $counterpartyValue['uid'] ? 'selected' : '' ); ?>>
+																			<?php echo esc_html($counterpartyValue['name']) ?>
+                                                                    </option>
+																<?php endforeach; ?>
+                                                            </select>
+														<?php else: ?>
+                                                            <input
+                                                                    type="text"
+                                                                    class="form-control"
+                                                                    form="eslExportForm"
+                                                                    placeholder="<?php esc_html_e( 'UID', 'eshoplogisticru' ) ?>"
+                                                                    name="sender-uid-delline"
+                                                                    value="<?php echo esc_attr( $sender_uid ) ?>"
+                                                            />
+														<?php endif; ?>
+                                                    </div>
+                                                </div>
+											<?php endif; ?>
+
+                                            <div class="form-group row align-items-center mb-3">
+                                                <label for="" class="col-sm-5 col-form-label">
+													<?php esc_html_e( 'Способ оплаты заказа по умолчанию', 'eshoplogisticru' ) ?>
+                                                </label>
+                                                <div class="col-sm-5">
+													<?php $defaultPaymentType = $export_form[ 'default-payment-type-' . $carrierSlug ] ?? ''; ?>
+                                                    <select name="default-payment-type-<?php echo esc_attr($carrierSlug); ?>" form="eslExportForm" class="form-control">
+														<?php foreach ( $carrierPaymentTypeOptions as $optValue => $optLabel ): ?>
+                                                            <option value="<?php echo esc_attr($optValue); ?>" <?php echo esc_attr($defaultPaymentType === $optValue ? 'selected' : ''); ?>>
+																<?php echo esc_html($optLabel); ?>
+                                                            </option>
+														<?php endforeach; ?>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="yandex">Настройки для Яндекс</button>
+
+											<?php if ( $carrierData['take_payment'] ): ?>
+                                                <div class="form-group row align-items-center mb-3">
+                                                    <label for="" class="col-sm-5 col-form-label">
+														<?php esc_html_e( 'Взять оплату с получателя за доставку по умолчанию', 'eshoplogisticru' ) ?>
+                                                    </label>
+                                                    <div class="col-sm-5">
+                                                        <input type="checkbox"
+                                                               name="default-take-payment-<?php echo esc_attr($carrierSlug); ?>"
+                                                               form="eslExportForm"
+                                                            <?php echo esc_attr( ! empty( $export_form[ 'default-take-payment-' . $carrierSlug ] ) ? 'checked' : '' ); ?>>
+                                                    </div>
+                                                </div>
+											<?php endif; ?>
+
+                                            <div class="form-group row align-items-center mb-3">
+                                                <label for="" class="col-sm-5 col-form-label">
+													<?php esc_html_e( 'Нулевая объявленная стоимость по умолчанию', 'eshoplogisticru' ) ?>
+                                                </label>
+                                                <div class="col-sm-5">
+                                                    <input type="checkbox"
+                                                           name="type-price-null-<?php echo esc_attr($carrierSlug); ?>"
+                                                           form="eslExportForm"
+                                                        <?php echo esc_attr( ! empty( $export_form[ 'type-price-null-' . $carrierSlug ] ) ? 'checked' : '' ); ?>>
+                                                </div>
                                             </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="fivepost">Настройки для 5POST</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="boxberry">Настройки для Boxberry</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="delline">Настройки для Деловые линии</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="pecom">Настройки для ПЭК</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="baikal">Настройки для Байкал Сервис</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="kit">Настройки для Кит</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="halva">Настройки для Постаматы «Халва»</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="postrf">Настройки для Почта России</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="magnit">Настройки для Магнит Пост</button>
-                                            </div>
-                                            <div class="esl-inner_add col-sm-6 mb-1">
-                                                <button type="button" class="wc-esl-add__button btn-primary" data-mode="dpd">Настройки для DPD</button>
-                                            </div>
+
+                                            <button type="button" class="wc-esl-add__button btn-primary" data-mode="<?php echo esc_attr($carrierSlug); ?>">
+												<?php esc_html_e( 'Настройка дополнительных услуг', 'eshoplogisticru' ) ?>
+                                            </button>
                                         </div>
-
-                                    </div>
+									<?php endforeach; ?>
                                 </div>
                             </div>
 

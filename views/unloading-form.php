@@ -111,13 +111,17 @@ $wc_esl_eslTable = new Table();
                                        value="<?php echo esc_attr($wc_esl_addressShipping['terminal_address'] ?? '') ?>">
                             </div>
 
+                            <?php
+                            // Способ оплаты по умолчанию настраивается в разрезе службы доставки (Настройки транспортных компаний).
+                            $wc_esl_defaultPaymentType = $wc_esl_exportFormSettings['default-payment-type-' . mb_strtolower($wc_esl_typeMethod['name'])] ?? '';
+                            ?>
                             <div class="form-field">
                                 <label class="label">Способ оплаты заказа:</label>
                                 <select name="payment_type" form="unloading_form" class="form-value">
-                                    <option value="already_paid">Заказ уже оплачен</option>
-                                    <option value="cash_on_receipt">Наличными при получении</option>
-                                    <option value="card_on_receipt">Картой при получении</option>
-                                    <option value="cashless">Безналичный расчет</option>
+                                    <option value="already_paid" <?php echo esc_attr($wc_esl_defaultPaymentType === 'already_paid' ? 'selected' : ''); ?>>Заказ уже оплачен</option>
+                                    <option value="cash_on_receipt" <?php echo esc_attr($wc_esl_defaultPaymentType === 'cash_on_receipt' ? 'selected' : ''); ?>>Наличными при получении</option>
+                                    <option value="card_on_receipt" <?php echo esc_attr($wc_esl_defaultPaymentType === 'card_on_receipt' ? 'selected' : ''); ?>>Картой при получении</option>
+                                    <option value="cashless" <?php echo esc_attr($wc_esl_defaultPaymentType === 'cashless' ? 'selected' : ''); ?>>Безналичный расчет</option>
                                 </select>
                             </div>
 
@@ -157,12 +161,16 @@ $wc_esl_eslTable = new Table();
                                 // «Взять оплату с получателя» — переключает видимость поля суммы, см. esl-take-payment-toggle в JS.
                                 $wc_esl_wrapperId = '';
                                 $wc_esl_wrapperStyle = '';
-                                $wc_esl_startDisabled = ($wc_esl_name === 'delivery-custom-cost');
+                                $wc_esl_startDisabled = false;
                                 if($wc_esl_name === 'take_payment')
                                     $wc_esl_styleForm .= ' esl-take-payment-toggle';
-                                if($wc_esl_startDisabled){
+                                if($wc_esl_name === 'delivery-custom-cost'){
+                                    $wc_esl_takePaymentChecked = isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'])
+                                        ? ($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'] == 'on')
+                                        : !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery]);
+                                    $wc_esl_startDisabled = !$wc_esl_takePaymentChecked;
                                     $wc_esl_wrapperId = 'esl-cost-toggle-'.esc_attr($wc_esl_nameArr);
-                                    $wc_esl_wrapperStyle = 'display:none';
+                                    $wc_esl_wrapperStyle = $wc_esl_startDisabled ? 'display:none' : '';
                                 }
 								?>
 
@@ -198,6 +206,9 @@ $wc_esl_eslTable = new Table();
 	                                <?php if ( $wc_esl_type === 'checkbox' ):
                                         $wc_esl_valueSaved = '';
                                         if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved] == 'on'){
+                                            $wc_esl_valueSaved = 'checked';
+                                        } elseif ($wc_esl_name === 'take_payment' && !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery])) {
+                                            // Значение по умолчанию из настроек транспортных компаний, если по заказу ничего не сохранено.
                                             $wc_esl_valueSaved = 'checked';
                                         }
                                         ?>
