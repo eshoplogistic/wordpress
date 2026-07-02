@@ -1,3 +1,23 @@
+:root {
+    --esl-accent: #2271b1;
+    --esl-accent-dark: #135e96;
+    --esl-accent-soft: rgba(34, 113, 177, .08);
+    --esl-accent-soft-strong: rgba(34, 113, 177, .16);
+    --esl-text: #1d2327;
+    --esl-text-muted: #646970;
+    --esl-border: #dcdcde;
+    --esl-border-soft: #e2e4e7;
+    --esl-bg: #ffffff;
+    --esl-bg-soft: #f6f7f7;
+    --esl-radius: 10px;
+    --esl-radius-sm: 6px;
+    --esl-shadow-modal: 0 24px 60px -18px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .08);
+    --esl-success: #00a32a;
+    --esl-error: #d63638;
+    --esl-warning: #dba617;
+}
+
+/* Overlay. JS toggles display:block/none inline on #modal-esl — keep base display:none. */
 .modal-esl {
     display: none;
     position: fixed;
@@ -6,87 +26,119 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(23, 27, 32, .55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
     z-index: 9999;
 }
+
 .modal-esl .modal_content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--esl-bg);
+    margin: 4vh auto;
+    width: min(940px, 94vw);
+    max-height: 92vh;
+    border: none;
+    border-radius: var(--esl-radius);
+    box-shadow: var(--esl-shadow-modal);
+    overflow: hidden;
     z-index: 99999;
-}
-.modal-esl .modal_content .close_modal_window {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
 }
 
 .modal-esl .title {
-    padding-bottom: 45px;
-    font-size: 18px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--esl-border-soft);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--esl-text);
 }
 
-.modal-esl #buttonModalUnload{
-    position: relative;
-    left: 50%;
-    transform: translate(-50%, 0);
+.modal-esl .modal_content .close_modal_window {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--esl-text-muted);
+    background: transparent;
+    border-radius: 50%;
+    float: none;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
 }
 
-.modal-esl .footer{
-    padding-top: 50px;
+.modal-esl .modal_content .close_modal_window:hover {
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-error);
+}
+
+.modal-esl .content_inner {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 24px;
 }
 
 .modal-esl main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
     margin: 0 auto;
-    background: #fff;
+    background: var(--esl-bg);
 }
 
-.modal-esl section {
-    display: none;
-    padding: 20px 0 0;
-    border-top: 1px solid #ddd;
-}
-
+/* Tab bar — icon-only pills. Sibling order/ids of #tab1..4 must stay flat next to <form>,
+   the CSS-only tab switching below relies on the general-sibling combinator. */
 .modal-esl input[name="tabs"] {
     display: none;
 }
 
-.modal-esl label {
-    margin: 0 0 -1px;
-    padding: 10px 5px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.modal-esl label[name="tabLabel"] {
-    display: inline-block;
-    margin: 0 0 -1px;
-    padding: 15px 25px;
-    font-weight: 600;
-    text-align: center;
-    color: #bbb;
+.modal-esl label[name="tabLabel"].tabLabel {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin: 12px 0 0;
+    padding: 0;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg);
     border: 1px solid transparent;
-}
-
-.modal-esl label[name="tabLabel"]:before {
-    font-weight: normal;
-    margin-right: 10px;
-}
-
-.modal-esl label[name="tabLabel"]:hover {
-    color: #888;
+    border-radius: var(--esl-radius-sm);
+    font-weight: 600;
+    text-align: center;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.modal-esl input:checked + label {
-    color: #555;
-    border: 1px solid #ddd;
-    border-top: 2px solid color(srgb 0.1337 0.4415 0.6943);
-    border-bottom: 1px solid #fff;
+.modal-esl label[name="tabLabel"].tabLabel svg {
+    width: 20px;
+    height: 20px;
+}
+
+.modal-esl label[name="tabLabel"].tabLabel:hover {
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
+}
+
+.modal-esl input[name="tabs"]:checked + label[name="tabLabel"].tabLabel {
+    color: #fff;
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .35);
 }
 
 .modal-esl #tab1:checked ~ form #content1,
@@ -96,17 +148,31 @@
     display: block;
 }
 
+.modal-esl form {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+.modal-esl section {
+    display: none;
+    padding: 22px 0 4px;
+    border-top: 1px solid var(--esl-border-soft);
+    margin-top: 12px;
+}
+
 .modal-esl .contact-grid {
     display: grid;
     grid-template-columns: 1fr;
     grid-gap: 35px;
 }
 
+/* Base field layout (content4's table cells and content3's checklist override this). */
 .modal-esl .form-field {
     position: relative;
-    display: inline-block;
-    width: 30.8%;
-    margin-right: 15px;
+    display: block;
+    width: 100%;
+    margin: 0;
 }
 
 .modal-esl .form-field select {
@@ -114,94 +180,182 @@
 }
 
 .modal-esl form .label {
-    display: table;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--esl-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .modal-esl form input,
 .modal-esl form textarea,
 .modal-esl form select {
-    border: none !important;
-    height: 50px;
-    padding: 0 10px;
-    background-color: rgb(247,247,247);
-    color: rgb(85,85,85);
-}
-
-.modal-esl form #content1 input,
-.modal-esl form #content1 textarea,
-.modal-esl form #content1 select,
-.modal-esl form #content2 input,
-.modal-esl form #content2 textarea,
-.modal-esl form #content2 select {
+    box-sizing: border-box;
     width: 100%;
-    font-size: 11px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--esl-border) !important;
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text);
+    font-size: 13px;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 
-/* Вкладки "Получатель" и "Отправитель" — одна колонка, компактные поля, как в референсе МоегоСклада. */
-.modal-esl form #content1 .form-box,
-.modal-esl form #content2 .form-box {
-    display: flex;
-    flex-direction: column;
-    max-width: 420px;
-}
-
-.modal-esl form #content1 .form-field,
-.modal-esl form #content2 .form-field {
-    display: block;
-    width: 100%;
-    margin-right: 0;
-}
-
-.modal-esl form #content1 input,
-.modal-esl form #content1 select,
-.modal-esl form #content2 input,
-.modal-esl form #content2 select {
-    height: 30px;
-}
-
-.modal-esl form #content1 .label,
-.modal-esl form #content2 .label {
-    color: #888;
-    font-weight: 600;
-}
-
-.modal-esl td input {
+/* Reset the native arrow and draw our own — the browser-default arrow otherwise sits
+   flush against the text with no reserved space, so long option labels run under it.
+   Widths/box-sizing repeated with !important because some Linux/GTK builds keep an
+   internal native min-width on <select> even after appearance:none. */
+.modal-esl form select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    box-sizing: border-box !important;
     width: 100% !important;
-    padding: 0 !important;
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    padding-left: 5px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding-right: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23646970' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 6 8 10 12 6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 13px;
 }
 
-.esl_list_links td{
-    background-color: color(srgb 0.9686 0.9686 0.9687);
-}
-
-.modal-esl form textarea {
-    height: 100px !important;
-    width: 200px !important;
-    padding: 15px 10px;
-    display: block;
+.modal-esl form input:hover:not(:disabled),
+.modal-esl form textarea:hover:not(:disabled),
+.modal-esl form select:hover:not(:disabled) {
+    border-color: #b9bcbf !important;
 }
 
 .modal-esl form input:focus,
 .modal-esl form textarea:focus,
 .modal-esl form select:focus {
-    box-shadow: none !important;
-    border-bottom: 2px solid color(srgb 0.1355 0.4428 0.695 / 0.48) !important;
+    outline: none;
+    background-color: var(--esl-bg);
+    border-color: var(--esl-accent) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
+}
+
+.modal-esl form input:disabled,
+.modal-esl form select:disabled {
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text-muted);
+    cursor: not-allowed;
+}
+
+/* Tabs "Получатель" и "Отправитель" — responsive multi-column field grid. */
+.modal-esl form #content1 .form-box,
+.modal-esl form #content2 .form-box {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px 20px;
+    max-width: none;
+    min-width: 0;
+}
+
+.modal-esl form #content1 .form-box .form-field,
+.modal-esl form #content2 .form-box .form-field {
+    min-width: 0;
+}
+
+.modal-esl form #content1 input,
+.modal-esl form #content1 select,
+.modal-esl form #content2 input,
+.modal-esl form #content2 select {
+    height: 38px;
+}
+
+.modal-esl form #content1 .label,
+.modal-esl form #content2 .label {
+    color: var(--esl-text-muted);
+    font-weight: 600;
+}
+
+.modal-esl form textarea {
+    height: 90px !important;
+    width: 100% !important;
+    padding: 10px 12px;
+    display: block;
+    resize: vertical;
+    grid-column: 1 / -1;
 }
 
 .modal-esl form .form-box {
     display: block;
-    border-bottom: 1px solid color(srgb 0.8666 0.8667 0.8668);
-    padding-bottom: 25px;
+    padding-bottom: 6px;
 }
 
 .modal-esl form .form-box-title {
     display: block;
+    grid-column: 1 / -1;
     width: 100%;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
+    color: var(--esl-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Checkbox / toggle fields span the full grid row. */
+.modal-esl form .checkbox-area {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--esl-bg-soft);
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius-sm);
+}
+
+.modal-esl form .checkbox-area .label {
+    position: static;
+    margin: 0;
+}
+
+/* appearance:none replaces the native checkbox paint entirely — some Linux/GTK Chromium
+   themes render a native checkbox with accent-color as a tall pill instead of a square
+   when a custom border is also applied, so we draw a plain box + checkmark ourselves. */
+.modal-esl form input[type=checkbox] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    display: block;
+    flex-shrink: 0;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    margin: 2px auto;
+    padding: 0;
+    background-color: var(--esl-bg);
+    border: 1px solid var(--esl-border) !important;
+    border-radius: 4px;
+    float: unset;
+    cursor: pointer;
+}
+
+.modal-esl form input[type=checkbox]:checked {
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent) !important;
+}
+
+/* Same technique wp-admin's own core checkbox styling uses (dashicons glyph via ::before,
+   oversized and pulled back with a negative margin — the glyph has built-in padding, so
+   percentage width/height leaves it small and pinned to the top-left instead of centered). */
+.modal-esl form input[type=checkbox]:checked::before {
+    content: "\f147";
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: -4px 0 0 -4px;
+    font: normal 24px/1 dashicons;
+    text-align: center;
+    color: #fff;
 }
 
 .modal-esl form .form-field.esl-pickup-terminal .form-value:disabled,
@@ -211,6 +365,178 @@
 .modal-esl form .form-field.esl-pecom-receiver-identity .form-value:disabled,
 .modal-esl form .form-field.esl-pecom-receiver-requisites .form-value:disabled {
     opacity: .5;
+}
+
+/* Tab "Дополнительные услуги" — checklist grouped by category. */
+.modal-esl form #content3 {
+    padding-top: 8px;
+}
+
+.modal-esl .esl-box_add {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0 24px;
+}
+
+.modal-esl .esl-box_add-title {
+    grid-column: 1 / -1;
+    margin: 18px 0 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--esl-border-soft);
+    color: var(--esl-accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.modal-esl .esl-box_add-title:first-child {
+    margin-top: 0;
+}
+
+.modal-esl .form-field_add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 10px 6px;
+    border-bottom: 1px dashed var(--esl-border-soft);
+    border-radius: var(--esl-radius-sm);
+    transition: background-color .15s ease;
+}
+
+.modal-esl .form-field_add:hover {
+    background-color: var(--esl-bg-soft);
+}
+
+.modal-esl form #content3 .label {
+    position: static;
+    margin: 0;
+    color: var(--esl-text);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.modal-esl form #content3 input {
+    height: 32px;
+    margin: 0;
+    border: 1px solid var(--esl-border) !important;
+}
+
+.modal-esl form #content3 input[type=number] {
+    width: 70px !important;
+    text-align: center;
+}
+
+.modal-esl form #content3 input[type=checkbox] {
+    width: 18px !important;
+    height: 18px;
+    margin: 0;
+}
+
+/* Tab "Места" — order-items table. */
+.modal-esl .esl-table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius);
+}
+
+.modal-esl .esl_list_links {
+    border: none;
+    background: var(--esl-bg);
+}
+
+.modal-esl .esl_list_links thead tr th,
+.modal-esl .esl_list_links tr th {
+    padding: 10px 8px;
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+}
+
+.modal-esl .esl_list_links tbody tr:hover {
+    background-color: var(--esl-accent-soft);
+}
+
+.modal-esl .esl_list_links td {
+    padding: 6px 8px;
+    background-color: var(--esl-bg-soft);
+}
+
+.modal-esl td input {
+    width: 100% !important;
+    height: 32px;
+    padding: 0 !important;
+    padding-left: 8px !important;
+    border: 1px solid var(--esl-border-soft) !important;
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg) !important;
+}
+
+.modal-esl .tablenav {
+    padding: 10px 0;
+}
+
+.modal-esl #buttonModalUnloadAdd {
+    border-radius: var(--esl-radius-sm);
+}
+
+.modal-esl .esl-delete_table_elem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0 auto;
+    border-radius: 50%;
+    color: var(--esl-error);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.modal-esl .esl-delete_table_elem:hover {
+    background-color: rgba(214, 54, 56, .1);
+}
+
+.modal-esl .esl-delete_table_elem.first {
+    display: none;
+}
+
+/* Sticky action bar. */
+.modal-esl .footer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    margin: 24px -24px 0;
+    padding: 16px 24px;
+    background: var(--esl-bg);
+    border-top: 1px solid var(--esl-border-soft);
+}
+
+.modal-esl #buttonModalUnload {
+    position: static;
+    left: auto;
+    transform: none;
+    min-width: 200px;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(34, 113, 177, .3);
+    transition: background-color .15s ease, transform .1s ease;
+}
+
+.modal-esl #buttonModalUnload:hover {
+    background: var(--esl-accent-dark);
+    transform: translateY(-1px);
 }
 
 .esl-notifications {
@@ -229,22 +555,24 @@
     justify-content: start;
     padding: .9em 1em;
     margin-bottom: 1em;
+    border-radius: var(--esl-radius-sm);
     border-top: 3px solid;
+    box-shadow: 0 6px 20px -6px rgba(0, 0, 0, .25);
 }
 
 .esl-notifications__item-success {
-    border-color: #28a745;
-    background: rgba(40, 167, 69, .85);
+    border-color: var(--esl-success);
+    background: rgba(0, 163, 42, .9);
 }
 
 .esl-notifications__item-error {
-    border-color: #dc3545;
-    background: rgba(220, 53, 69, .85);
+    border-color: var(--esl-error);
+    background: rgba(214, 54, 56, .9);
 }
 
 .esl-notifications__item-warning {
-    border-color: #ffc107;
-    background: rgba(255, 193, 7, .85);
+    border-color: var(--esl-warning);
+    background: rgba(219, 166, 23, .9);
 }
 
 .esl-notifications__icon {
@@ -270,56 +598,11 @@
     left: 0;
     justify-content: center;
     z-index: 200;
-    background: rgba(255, 255, 255, .57);
+    background: rgba(255, 255, 255, .7);
 }
 
 .esl-preloader .spinner-grow {
-    color: rgb(113, 23, 247);
-}
-
-.modal-esl form input[type=checkbox] {
-    float: unset;
-    height: 15px;
-    width: 15px !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    margin: 2px auto;
-    min-width: 10px !important;
-    display: block;
-}
-
-.modal-esl form .checkbox-area .label{
-    position: static;
-}
-
-.modal-esl form .checkbox-area{
-
-}
-
-.modal-esl form #content3 .label{
-    position: static;
-}
-
-.modal-esl form #content3 input{
-    border: black !important;
-    height: 15px;
-    margin-left: 2px;
-}
-
-.modal-esl form #content3 input[type=checkbox]:checked::before {
-    float: unset;
-}
-
-.modal-esl form #content3 input[type=checkbox] {
-    float: unset;
-    height: 15px;
-    width: 15px !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    margin: 2px auto;
-}
-
-.modal-esl .form-field_add {
-    margin: 10px;
-    display: inline-grid;
+    color: var(--esl-accent);
 }
 
 #woocommerce-order-esl-unloading .inside button {
@@ -329,40 +612,44 @@
 }
 
 .esl-status__order {
-    border-bottom: 1px solid color(srgb 0.7638 0.7688 0.7817);
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--esl-border);
+    color: var(--esl-text-muted);
 }
 
-.esl_list_links tr th{
-    font-size: 10px;
-}
-
-.modal-esl form input[type=checkbox]{
-
-}
-
-@media screen and (max-width: 650px) {
-    .modal-esl .tabLabel {
-        font-size: 0;
-    }
-
-    .modal-esl .tabLabel:before {
+@media screen and (max-width: 782px) {
+    .modal-esl .modal_content {
         margin: 0;
-        font-size: 18px;
+        width: 100%;
+        max-height: 100vh;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .modal-esl form #content1 .form-box,
+    .modal-esl form #content2 .form-box,
+    .modal-esl .esl-box_add {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-esl .footer {
+        margin: 20px -16px 0;
+        padding: 14px 16px;
+    }
+
+    .modal-esl .content_inner {
+        padding: 0 16px;
+    }
+
+    .modal-esl .title {
+        padding: 16px;
     }
 }
 
-@media screen and (max-width: 1050px) {
-    .modal-esl .form-field {
-        width: 98.8%;
-    }
-
-    .modal-esl #the-list tr:last-child td, .modal-esl #the-list tr:last-child th{
-        display: grid !important;
-    }
-}
-
-@media screen and (max-width: 400px) {
-    .modal-esl label {
-        padding: 15px;
+@media screen and (max-width: 480px) {
+    .modal-esl label[name="tabLabel"].tabLabel {
+        width: 40px;
+        height: 40px;
     }
 }
