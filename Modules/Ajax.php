@@ -1112,6 +1112,12 @@ class Ajax implements ModuleInterface
 			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';
 		} else {
 			$result = $unloading->updateStatusById($status, $order_id);
+			if ($result === false) {
+				$isError = true;
+				$result = 'Не удалось обновить статус: нет данных о статусе заказа у транспортной компании';
+			} elseif ($result === 'Ошибка при обновлении') {
+				$isError = true;
+			}
 		}
 
 		wp_send_json([
