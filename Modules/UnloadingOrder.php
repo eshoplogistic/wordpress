@@ -441,6 +441,13 @@ class UnloadingOrder implements ModuleInterface
         }
         $shippingMethods['answer'] = $result->data();
 
+        // Сразу после успешной выгрузки — попытка немедленно сменить статус заказа
+        // (настройка «Статус заказа сразу после выгрузки»), не дожидаясь трек-номера.
+        // Best-effort: результат не влияет на ответ оператору по самой выгрузке.
+        if (!empty($data['order_id'])) {
+            $this->updateStatusById($shippingMethods['answer'], $data['order_id'], true);
+        }
+
         $orderId = $shippingMethods['answer']['order']['id'] ?? '';
         if (!$orderId) {
             $this->saveShippingMethods($orderShippingId, $shippingMethods);
@@ -929,23 +936,36 @@ class UnloadingOrder implements ModuleInterface
         return wc_get_order_statuses();
     }
 
-    public function updateStatusById($id, $order_id)
+    public function updateStatusById($id, $order_id, $first = false)
     {
-        if (!isset($id['state']['number']) && !isset($id['state']['status']['code'])) {
+        $optionsRepository = new OptionsRepository();
+        $order = wc_get_order($order_id);
+        if (!$order) {
             return false;
         }
 
-        $optionsRepository = new OptionsRepository();
-        $settingsStatus = $optionsRepository->getOption('wc_esl_shipping_plugin_status_form');
-
-        $order = wc_get_order($order_id);
         $orderStatus = $order->get_status();
         $resultNameStatus = '';
 
-        if (isset($settingsStatus[$id['state']['status']['code']])) {
-            $resultNameStatus = $settingsStatus[$id['state']['status']['code']][0]['name'];
+        // Сразу после успешной выгрузки — если в настройках задан фиксированный статус
+        // (независимо от статуса ТК), используем его вместо ожидания трек-номера/кода статуса.
+        if ($first) {
+            $exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+            if (!empty($exportFormSettings['after-unloading-status'])) {
+                $resultNameStatus = $exportFormSettings['after-unloading-status'];
+            }
         }
 
+        if (!$resultNameStatus) {
+            if (!isset($id['state']['number']) && !isset($id['state']['status']['code'])) {
+                return false;
+            }
+
+            $settingsStatus = $optionsRepository->getOption('wc_esl_shipping_plugin_status_form');
+            if (isset($id['state']['status']['code']) && isset($settingsStatus[$id['state']['status']['code']])) {
+                $resultNameStatus = $settingsStatus[$id['state']['status']['code']][0]['name'];
+            }
+        }
 
         if ($resultNameStatus) {
             if ($orderStatus == $resultNameStatus || 'wc-' . $orderStatus == $resultNameStatus) {

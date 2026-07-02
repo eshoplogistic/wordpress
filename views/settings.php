@@ -1077,6 +1077,34 @@ $status_translate             = [
                                                 />
                                             </div>
 
+                                            <div class="input-group">
+                                                <label for="" class="col-sm-4 col-form-label">
+													<?php esc_html_e( 'Статус заказа сразу после выгрузки', 'eshoplogisticru' ) ?>
+                                                    <label>
+                                                        <div class="help-tip">
+                                                            <p>
+                                                                Если задано — статус заказа будет изменён на выбранный
+                                                                сразу после успешной выгрузки в ТК, не дожидаясь
+                                                                получения трек-номера. Если не задано — статус
+                                                                обновится позже по обычному сопоставлению статусов ТК
+                                                                (см. ниже) через крон или кнопку «Обновить статус».
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                </label>
+												<?php
+												$after_unloading_status = '';
+												if ( isset( $export_form['after-unloading-status'] ) ) {
+													$after_unloading_status = $export_form['after-unloading-status'];
+												}
+												?>
+                                                <select name="after-unloading-status" class="form-control col-sm-8">
+                                                    <option value=""><?php esc_html_e( '-- Не выбрано --', 'eshoplogisticru' ) ?></option>
+													<?php foreach ( $status_wp as $wc_esl_statusKey => $wc_esl_statusLabel ): ?>
+                                                        <option value="<?php echo esc_attr($wc_esl_statusKey); ?>" <?php echo esc_attr($after_unloading_status === $wc_esl_statusKey ? 'selected' : ''); ?>><?php echo esc_html($wc_esl_statusLabel); ?></option>
+													<?php endforeach; ?>
+                                                </select>
+                                            </div>
 
                                             <button class="btn btn-primary float-end" type="submit">
 												<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
