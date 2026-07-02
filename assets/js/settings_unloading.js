@@ -118,6 +118,58 @@ function eslRun() {
 
 }
 
+// Сравнение суммы заказа с суммой заявленных мест перед отправкой формы выгрузки.
+// Пороговое значение (1 руб.) и формулы взяты из МС (script.js: getOrderSumMismatch).
+function eslParseFloatSafe(value) {
+    if (value === null || value === undefined) {
+        return 0;
+    }
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+    let normalized = String(value).replace(',', '.').replace(/[^0-9.\-]/g, '');
+    let parsed = parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function eslRoundMoney(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function eslCalculatePlacesSum(products) {
+    if (!products) {
+        return 0;
+    }
+    let total = 0;
+    let items = Array.isArray(products) ? products : Object.values(products);
+    items.forEach(function (item) {
+        if (!item) {
+            return;
+        }
+        let price = eslParseFloatSafe(item.price);
+        let quantity = eslParseFloatSafe(item.quantity);
+        if (price > 0 && quantity > 0) {
+            total += price * quantity;
+        }
+    });
+    return total;
+}
+
+function eslGetOrderSumMismatch(formData) {
+    if (!Object.prototype.hasOwnProperty.call(formData, 'order_sum')) {
+        return null;
+    }
+    let orderSum = eslRoundMoney(eslParseFloatSafe(formData.order_sum));
+    let placesSum = eslRoundMoney(eslCalculatePlacesSum(formData.products));
+    if (Math.abs(orderSum - placesSum) > 1) {
+        return {
+            orderSum: orderSum,
+            placesSum: placesSum,
+            deviation: eslRoundMoney(placesSum - orderSum),
+        };
+    }
+    return null;
+}
 
 (function( $ ) {
 
@@ -125,7 +177,23 @@ function eslRun() {
         $('#buttonModalUnload').click(function(e) {
             e.preventDefault();
 
-            let data = JSON.stringify($('#unloading_form').serializeControls(), null, 2);
+            let formData = $('#unloading_form').serializeControls();
+            let mismatch = eslGetOrderSumMismatch(formData);
+            if (mismatch) {
+                let deviationSign = mismatch.deviation >= 0 ? '+' : '';
+                let confirmed = window.confirm(
+                    'Сумма стоимости мест не совпадает с суммой заказа.\n' +
+                    'Сумма мест: ' + mismatch.placesSum.toFixed(2) + ' руб.\n' +
+                    'Сумма заказа: ' + mismatch.orderSum.toFixed(2) + ' руб.\n' +
+                    'Отклонение: ' + deviationSign + mismatch.deviation.toFixed(2) + ' руб.\n' +
+                    'Продолжить выгрузку?'
+                );
+                if (!confirmed) {
+                    return;
+                }
+            }
+
+            let data = JSON.stringify(formData, null, 2);
             PreloaderEsl.show('#unloading_form');
 
             $.ajax({

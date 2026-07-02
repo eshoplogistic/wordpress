@@ -89,6 +89,7 @@ $wc_esl_eslTable = new Table();
                     <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($wc_esl_orderData['id']) ? $wc_esl_orderData['id'] : ''); ?>">
                     <input type="hidden" name="order_status" value="<?php echo esc_attr(isset($wc_esl_orderData['status']) ? $wc_esl_orderData['status'] : ''); ?>">
                     <input type="hidden" name="order_shipping_id" value="<?php echo esc_attr($wc_esl_orderShippingId); ?>">
+                    <input type="hidden" name="order_sum" value="<?php echo esc_attr(isset($wc_esl_orderData['total']) ? $wc_esl_orderData['total'] : ''); ?>">
 
                     <section id="content1">
 
