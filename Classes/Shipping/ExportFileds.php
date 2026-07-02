@@ -142,7 +142,31 @@ class ExportFileds {
 						'series' => '',
 						'number' => '',
 						'date' => '',
-					)
+						'first_name' => '',
+						'last_name' => '',
+						'patronymic' => '',
+					),
+					'requisites' => array(
+						'name' => '',
+						'inn' => '',
+					),
+				),
+				'receiver' => array(
+					'identity' => array(
+						'type' => '',
+						'passport_series' => '',
+						'passport_number' => '',
+						'passport_date_of_issue' => '',
+						'passport_date_of_birth' => '',
+						'passport_organization' => '',
+					),
+					'requisites' => array(
+						'inn' => '',
+						'kpp' => '',
+					),
+				),
+				'order' => array(
+					'payer' => '',
 				),
 				'delivery'   => array(
 					'produce_date' => '',
@@ -474,8 +498,18 @@ class ExportFileds {
 			$produce_date = $date->format('Y-m-d');
 
 			$result = array(
+				// Тип отправителя не отправляется в API (у ПЭК под тем же путём sender[identity][type]
+				// уже занят "типом документа", см. ниже) — используется только для показа/скрытия
+				// блоков "Данные отправителя" (юрлицо/ИП) и "Реквизиты организации" (физлицо) ниже.
+				'sender-entity-type-pecom' => array(
+					'value||select||Тип отправителя' => array(
+						1 => 'Юридическое лицо',
+						2 => 'Индивидуальный предприниматель',
+						3 => 'Физическое лицо',
+					),
+				),
 				'sender[identity]'   => array(
-					'type||select'    => array(
+					'type||select||Тип документа отправителя'    => array(
 						10 => 'ПАСПОРТ ГРАЖДАНИНА РФ',
 						1 => 'ПАСПОРТ ИНОСТРАННОГО ГРАЖДАНИНА',
 						2 => 'РАЗРЕШЕННИЕ НА ВРЕМЕННОЕ ПРОЖИВАНИЕ',
@@ -489,12 +523,44 @@ class ExportFileds {
 						11 => 'СВИДЕТЕЛЬСТВО О РАССМОТРЕНИИ ХОДАТАЙСТВА О ПРИЗНАНИИ БЕЖЕНЦЕМ',
 						12 => 'ВОЕННЫЙ БИЛЕТ',
 					),
-					'series||text' => '',
-					'number||text' => '',
-					'date||date' => '',
+					'series||text||Серия документа' => '',
+					'number||text||Номер документа' => '',
+					'date||date||Дата выдачи документа' => '',
+					'first_name||text||Имя' => '',
+					// В API ПЭК поля идентификации физлица смещены: identity.last_name — это
+					// фактически отчество, а identity.patronymic — фамилия. Подписи полей ниже
+					// отражают реальный смысл, а не буквальное название JSON-ключа.
+					'last_name||text||Отчество' => '',
+					'patronymic||text||Фамилия' => '',
+				),
+				'sender[requisites]' => array(
+					'name||text||Наименование организации/ИП' => '',
+					'inn||text||ИНН отправителя' => '',
+				),
+				'receiver[identity]' => array(
+					'type||select||Тип получателя' => array(
+						1 => 'Физическое лицо',
+						2 => 'Индивидуальный предприниматель',
+						3 => 'Юридическое лицо',
+					),
+					'passport_series||text||Серия паспорта получателя' => '',
+					'passport_number||text||Номер паспорта получателя' => '',
+					'passport_date_of_issue||date||Дата выдачи паспорта получателя' => '',
+					'passport_date_of_birth||date||Дата рождения получателя' => '',
+					'passport_organization||text||Кем выдан паспорт получателя' => '',
+				),
+				'receiver[requisites]' => array(
+					'inn||text||ИНН получателя' => '',
+					'kpp||text||КПП получателя' => '',
+				),
+				'order' => array(
+					'payer||select||Плательщик' => array(
+						'sender' => 'Отправитель',
+						'receiver' => 'Получатель',
+					),
 				),
 				'delivery' => array(
-					'produce_date||date' => $produce_date,
+					'produce_date||date||Дата передачи груза' => $produce_date,
 				)
 			);
 		}

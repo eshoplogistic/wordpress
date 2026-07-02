@@ -366,6 +366,67 @@ window.addEventListener('load', function () {
     document.querySelectorAll('#unloading_form select[name="pick_up"]').forEach(eslSyncPickUpToggle);
 });
 
+// ПЭК: тип отправителя (юрлицо/ИП/физлицо) определяет, какие поля реально нужны —
+// документ+ФИО представителя (юрлицо/ИП) или реквизиты организации (физлицо).
+// Как и pick_up выше — отключаем неиспользуемые поля, чтобы не отправлялись с формой.
+function eslSyncPecomSenderType(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let value = select.value;
+    let showIdentity = (value === '1' || value === '2');
+
+    form.querySelectorAll('.esl-pecom-sender-identity .form-value').forEach(function (input) {
+        input.disabled = !showIdentity;
+    });
+    form.querySelectorAll('.esl-pecom-sender-requisites .form-value').forEach(function (input) {
+        input.disabled = showIdentity;
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="sender-entity-type-pecom[value]"]')) {
+        return;
+    }
+    eslSyncPecomSenderType(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="sender-entity-type-pecom[value]"]').forEach(eslSyncPecomSenderType);
+});
+
+// ПЭК: тип получателя определяет паспортные данные (физлицо) или реквизиты
+// организации/ИП (ИНН/КПП).
+function eslSyncPecomReceiverType(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let value = select.value;
+    let showIdentity = (value === '1');
+
+    form.querySelectorAll('.esl-pecom-receiver-identity .form-value').forEach(function (input) {
+        input.disabled = !showIdentity;
+    });
+    form.querySelectorAll('.esl-pecom-receiver-requisites .form-value').forEach(function (input) {
+        input.disabled = showIdentity;
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="receiver[identity][type]"]')) {
+        return;
+    }
+    eslSyncPecomReceiverType(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="receiver[identity][type]"]').forEach(eslSyncPecomReceiverType);
+});
+
 function copyToClipboard(containerid, e) {
     let elemText = containerid
     let elemBut = e.id

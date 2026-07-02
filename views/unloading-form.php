@@ -205,6 +205,21 @@ $wc_esl_eslTable = new Table();
                                 $wc_esl_startDisabled = false;
                                 if($wc_esl_name === 'take_payment')
                                     $wc_esl_styleForm .= ' esl-take-payment-toggle';
+
+                                // ПЭК: показ/скрытие блоков "Данные отправителя"/"Реквизиты организации" по
+                                // типу отправителя, и паспорт/реквизиты получателя по типу получателя.
+                                // См. esl-pecom-sender-type-toggle / esl-pecom-receiver-type-toggle в JS.
+                                if($wc_esl_typeDelivery === 'pecom'){
+                                    if($wc_esl_nameArr === 'sender[identity]')
+                                        $wc_esl_styleForm .= ' esl-pecom-sender-identity';
+                                    if($wc_esl_nameArr === 'sender[requisites]')
+                                        $wc_esl_styleForm .= ' esl-pecom-sender-requisites';
+                                    if($wc_esl_nameArr === 'receiver[identity]' && $wc_esl_name !== 'type')
+                                        $wc_esl_styleForm .= ' esl-pecom-receiver-identity';
+                                    if($wc_esl_nameArr === 'receiver[requisites]')
+                                        $wc_esl_styleForm .= ' esl-pecom-receiver-requisites';
+                                }
+
                                 if($wc_esl_name === 'delivery-custom-cost'){
                                     $wc_esl_takePaymentChecked = isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'])
                                         ? ($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'] == 'on')
