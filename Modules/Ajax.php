@@ -1018,6 +1018,7 @@ class Ajax implements ModuleInterface
 
 		$unloading = new UnloadingOrder();
 		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
+		$unloading->clearLocalShipment($order_id);
 
 		wp_send_json([
 			'success' => true,

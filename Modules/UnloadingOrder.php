@@ -427,45 +427,175 @@ class UnloadingOrder implements ModuleInterface
         $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
         $result = $eshopLogisticApi->apiExportCreate($defaultParamsCreate);
 
-        if (!$result->hasErrors()) {
-            $shippingMethod = wc_get_order_item_meta($data['order_shipping_id'], 'esl_shipping_methods', $single = true);
-            if ($shippingMethod) {
-                $shippingMethods = json_decode($shippingMethod, true);
-            }else{
-                $shippingMethods = [];
+        if ($result->hasErrors()) {
+            return $result;
+        }
+
+        $orderShippingId = $data['order_shipping_id'];
+        $deliveryId = $data['delivery_id'];
+
+        $shippingMethod = wc_get_order_item_meta($orderShippingId, 'esl_shipping_methods', $single = true);
+        $shippingMethods = $shippingMethod ? json_decode($shippingMethod, true) : [];
+        if (!is_array($shippingMethods)) {
+            $shippingMethods = [];
+        }
+        $shippingMethods['answer'] = $result->data();
+
+        $orderId = $shippingMethods['answer']['order']['id'] ?? '';
+        if (!$orderId) {
+            $this->saveShippingMethods($orderShippingId, $shippingMethods);
+            return $result;
+        }
+
+        $optionsRepository = new OptionsRepository();
+        $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
+        $dataGet = array(
+            'key' => $apiKey,
+            'action' => 'get',
+            'order_id' => $orderId,
+            'service' => $deliveryId,
+        );
+
+        // ПЭК подтверждает заявку асинхронно — трек-номер может быть не готов сразу
+        // после создания. Повторяем запрос до 3 раз (8с, затем 2с, 2с). Если за 3
+        // попытки трек так и не пришёл, это не ошибка — заявка у ТК уже создана,
+        // откатывать локальное состояние нельзя (повторное нажатие "Выгрузить"
+        // создаст дубль заявки у перевозчика). Помечаем как "ожидает подтверждения".
+        if ($deliveryId === 'pecom') {
+            $this->saveShippingMethods($orderShippingId, $shippingMethods);
+
+            $maxAttempts = 3;
+            $retryDelay = 2;
+            $resultGet = null;
+
+            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+                sleep($attempt === 1 ? 8 : $retryDelay);
+                $resultGet = $eshopLogisticApi->apiExportCreateSdek($dataGet);
+                if (!$resultGet->hasErrors()) {
+                    break;
+                }
             }
 
-            sleep(3);
-            $optionsRepository = new OptionsRepository();
-            $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
-            $shippingMethods['answer'] = $result->data();
+            if (!$resultGet->hasErrors()) {
+                unset($shippingMethods['pending_confirmation']);
+                $this->applyTrackingResult($orderShippingId, $shippingMethods, $resultGet->data());
+                return $resultGet;
+            }
 
-            $dataGet = array(
-                'key' => $apiKey,
-                'action' => 'get',
-                'order_id' => $shippingMethods['answer']['order']['id'],
-                'service' => $data['delivery_id'],
-            );
-            $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+            $shippingMethods['pending_confirmation'] = true;
+            $this->saveShippingMethods($orderShippingId, $shippingMethods);
+            return $result;
+        }
+
+        // СДЭК: один follow-up запрос, но с полноценным откатом при ошибке — если ТК
+        // вернула ошибку именно на этапе получения трек-номера, считаем выгрузку
+        // неудавшейся и разрешаем оператору повторить попытку.
+        if ($deliveryId === 'sdek') {
+            sleep(3);
             $resultGet = $eshopLogisticApi->apiExportCreateSdek($dataGet);
 
-            if(!$resultGet->hasErrors()){
-                $resultTracking = $resultGet->data();
-                if(isset($resultTracking['state']['tracking'])){
-                    $shippingMethods['tracking'] = $resultTracking['state']['tracking'];
-                    wc_update_order_item_meta($data['order_shipping_id'], 'Трек-код', $resultTracking['state']['tracking']);
-                }
-
-                $jsonArr = json_encode($shippingMethods, JSON_UNESCAPED_UNICODE);
-                wc_update_order_item_meta($data['order_shipping_id'], 'esl_shipping_methods', $jsonArr);
-
-                if ($data['delivery_id'] == 'sdek' && isset($shippingMethods['answer']['order']['id'])) {
-                    return $resultGet;
-                }
+            if (!$resultGet->hasErrors()) {
+                $this->applyTrackingResult($orderShippingId, $shippingMethods, $resultGet->data());
+                return $resultGet;
             }
+
+            $this->clearShippingAnswer($orderShippingId);
+            return $resultGet;
+        }
+
+        // Остальные ТК: необязательный best-effort follow-up без отката — трек-номер
+        // может прийти позже через периодический опрос статуса (Cron/UnloadingCron.php).
+        sleep(3);
+        $resultGet = $eshopLogisticApi->apiExportCreateSdek($dataGet);
+        if (!$resultGet->hasErrors()) {
+            $this->applyTrackingResult($orderShippingId, $shippingMethods, $resultGet->data());
+        } else {
+            $this->saveShippingMethods($orderShippingId, $shippingMethods);
         }
 
         return $result;
+    }
+
+    /**
+     * Резолвит order-item ID строки доставки заказа (тот же паттерн, что уже
+     * используется в infoOrder()).
+     *
+     * @param int $orderId
+     *
+     * @return int
+     */
+    private function getOrderShippingItemId($orderId)
+    {
+        $order = wc_get_order($orderId);
+        if (!$order) {
+            return 0;
+        }
+
+        $orderData = $order->get_data();
+        $orderShippingId = reset($orderData['shipping_lines']);
+
+        return $orderShippingId ? $orderShippingId->get_id() : 0;
+    }
+
+    /**
+     * @param int   $orderShippingId
+     * @param array $shippingMethods
+     */
+    private function saveShippingMethods($orderShippingId, array $shippingMethods)
+    {
+        wc_update_order_item_meta($orderShippingId, 'esl_shipping_methods', json_encode($shippingMethods, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * @param int   $orderShippingId
+     * @param array $shippingMethods
+     * @param array $resultTracking
+     */
+    private function applyTrackingResult($orderShippingId, array $shippingMethods, $resultTracking)
+    {
+        if (isset($resultTracking['state']['tracking'])) {
+            $shippingMethods['tracking'] = $resultTracking['state']['tracking'];
+            wc_update_order_item_meta($orderShippingId, 'Трек-код', $resultTracking['state']['tracking']);
+        }
+
+        $this->saveShippingMethods($orderShippingId, $shippingMethods);
+    }
+
+    /**
+     * Сбрасывает локальные данные о созданной заявке (ответ ТК, трек-номер, флаг
+     * ожидания подтверждения) — используется и как откат при ошибке follow-up
+     * запроса (SDEK), и при явном удалении заявки оператором.
+     *
+     * @param int $orderShippingId
+     */
+    private function clearShippingAnswer($orderShippingId)
+    {
+        $shippingMethod = wc_get_order_item_meta($orderShippingId, 'esl_shipping_methods', $single = true);
+        $shippingMethods = $shippingMethod ? json_decode($shippingMethod, true) : [];
+        if (!is_array($shippingMethods)) {
+            $shippingMethods = [];
+        }
+
+        unset($shippingMethods['answer'], $shippingMethods['tracking'], $shippingMethods['pending_confirmation']);
+
+        $this->saveShippingMethods($orderShippingId, $shippingMethods);
+        wc_delete_order_item_meta($orderShippingId, 'Трек-код');
+    }
+
+    /**
+     * Публичная точка входа для очистки локального состояния заявки по ID заказа
+     * WooCommerce (используется после удаления заявки в кабинете ТК).
+     *
+     * @param int $orderId
+     */
+    public function clearLocalShipment($orderId)
+    {
+        $orderShippingId = $this->getOrderShippingItemId($orderId);
+        if (!$orderShippingId) {
+            return;
+        }
+
+        $this->clearShippingAnswer($orderShippingId);
     }
 
     public function getMethodByName($name)

@@ -45,6 +45,9 @@ class UnloadingInfo
             if (isset($shippingMethods['answer']['order']['id'])) {
                 $html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "' . esc_html($orderType) . '": ' . esc_html($shippingMethods['answer']['order']['id']) . '</div>';
             }
+            if (!empty($shippingMethods['pending_confirmation'])) {
+                $html .= '<div class="esl-status_info">Ожидается подтверждение от транспортной компании — трек-номер ещё не получен. Повторное нажатие «Выгрузить» не требуется.</div>';
+            }
         }
         if (isset($result['order']['orderId'])) {
             $html .= '<div class="esl-status_infoTitle">Идентификатор заказа: ' . esc_html($result['order']['orderId']) . '</div>';
