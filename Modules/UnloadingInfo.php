@@ -35,7 +35,7 @@ class UnloadingInfo
         }
 
         if (isset($result['data']['messages'])) {
-            $html = '<div class="esl-status_infoTitle">' . esc_html($result['data']['messages']) . '</div>';
+            $html = '<div class="esl-status_infoTitle esl-status_infoTitle--error">' . esc_html($result['data']['messages']) . '</div>';
         }
         if (isset($result['state']['number'])) {
             $html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
@@ -65,7 +65,7 @@ class UnloadingInfo
         }
 
         if (!$html) {
-            $html = '<div class="esl-status_infoTitle">Ошибка при загрузке данных.</div>';
+            $html = '<div class="esl-status_infoTitle esl-status_infoTitle--error">Ошибка при загрузке данных.</div>';
         }
 
         return $html;

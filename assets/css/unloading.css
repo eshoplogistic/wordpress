@@ -89,12 +89,18 @@
 }
 
 .modal-esl main {
+    margin: 0 auto;
+    background: var(--esl-bg);
+}
+
+/* Tab bar row + wrapping form-as-next-row layout is specific to the tabbed unloading
+   form (#modal-esl) — the plain order-info popup (#modal-esl-info) reuses .modal-esl
+   chrome but has no tabs, so it must stay in normal block flow, not flex-wrap. */
+#modal-esl main {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 4px;
-    margin: 0 auto;
-    background: var(--esl-bg);
 }
 
 /* Tab bar — icon-only pills. Sibling order/ids of #tab1..4 must stay flat next to <form>,
@@ -548,6 +554,78 @@
 .modal-esl #buttonModalUnload:hover {
     background: var(--esl-accent-dark);
     transform: translateY(-1px);
+}
+
+/* "Информация о заказе" popup (#modal-esl-info) — plain status/order-id lines injected
+   via AJAX by Modules/UnloadingInfo.php, no tabs/form, just .esl-status_info(Title) divs. */
+#modal-esl-info main {
+    padding: 20px 0 24px;
+}
+
+#modal-esl-info main > p {
+    margin: 0;
+    color: var(--esl-text-muted);
+    font-size: 13px;
+}
+
+#modal-esl-info .esl-status_infoTitle,
+#modal-esl-info .esl-status_info {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--esl-border-soft);
+    color: var(--esl-text);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#modal-esl-info .esl-status_infoTitle {
+    font-weight: 700;
+}
+
+#modal-esl-info .esl-status_infoTitle:first-child,
+#modal-esl-info .esl-status_info:first-child {
+    padding-top: 0;
+}
+
+#modal-esl-info .esl-status_infoTitle:last-child,
+#modal-esl-info .esl-status_info:last-child {
+    border-bottom: none;
+}
+
+/* API-error message ($result['data']['messages']) reuses .esl-status_infoTitle with no
+   way to tell it apart in CSS alone — Modules/UnloadingInfo.php also tags it with this
+   modifier class so it reads as a warning, not a regular status line. */
+#modal-esl-info .esl-status_infoTitle.esl-status_infoTitle--error {
+    padding: 10px 14px;
+    background: rgba(214, 54, 56, .08);
+    border: 1px solid rgba(214, 54, 56, .2);
+    border-radius: var(--esl-radius-sm);
+    color: var(--esl-error);
+}
+
+#modal-esl-info .esl-status_infoTitle input {
+    box-sizing: border-box;
+    height: 34px;
+    margin: 0 8px;
+    padding: 0 10px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text);
+    font-size: 13px;
+}
+
+#modal-esl-info .esl-status_infoTitle .button {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
+    color: #fff;
+    font-weight: 600;
+}
+
+#modal-esl-info .esl-status_infoTitle .button:hover {
+    background: var(--esl-accent-dark);
 }
 
 .esl-notifications {
