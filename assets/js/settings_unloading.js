@@ -55,6 +55,10 @@ function eslRun() {
             }
         },
         clickOnDelete: function (event) {
+            if (!window.confirm('Внимание! Все данные по выгрузке доставки будут безвозвратно удалены из заказа. Продолжить?')) {
+                return;
+            }
+
             let order_id = document.getElementById("order_info_id").value
             let order_type = document.getElementById("order_info_type").value
 
