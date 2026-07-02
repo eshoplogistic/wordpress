@@ -57,6 +57,8 @@ function eslRun() {
         clickOnDelete: function (event) {
             let order_id = document.getElementById("order_info_id").value
             let order_type = document.getElementById("order_info_type").value
+
+            PreloaderEsl.show('#woocommerce-order-esl-unloading');
             const xhr = new XMLHttpRequest()
             xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
             let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
@@ -64,6 +66,13 @@ function eslRun() {
             xhr.send(params)
             xhr.onload = () => {
                 let obj = JSON.parse(xhr.responseText);
+                PreloaderEsl.hide('#woocommerce-order-esl-unloading');
+                PushEsl.addItem(obj.success ? 'success' : 'error', obj.msg);
+                // Локальное состояние заявки на сервере сброшено — перезагружаем,
+                // чтобы кнопки "Выгрузить"/"Удалить" сразу отразили новое состояние.
+                if (obj.success) {
+                    window.location.reload();
+                }
             }
         },
         clickOnStatusUpdate: function (event) {

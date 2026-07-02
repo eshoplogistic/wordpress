@@ -817,7 +817,7 @@ class UnloadingOrder implements ModuleInterface
         }
 
         //FAKE
-        //$defaultFields['fake'] = 1;
+        $defaultFields['fake'] = 1;
 
         return $defaultFields;
     }

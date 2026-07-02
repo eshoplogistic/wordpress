@@ -8,8 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $wc_esl_shippingMethods    = $wc_esl_shippingMethods ?? array();
 $wc_esl_unloadingStatus    = isset($wc_esl_shippingMethods['answer']['state']['status']['code']);
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only UI flag used only to toggle button visibility.
-$wc_esl_hasDeleteFlag      = isset($_GET['eslD']) && '' !== sanitize_text_field(wp_unslash($_GET['eslD']));
 ?>
 
 <?php if($wc_esl_unloadingStatus): ?>
@@ -25,7 +23,7 @@ $wc_esl_hasDeleteFlag      = isset($_GET['eslD']) && '' !== sanitize_text_field(
 <button type="button" id="esl_unloading_status_update" class="button button-primary" title="<?php echo esc_attr('Обновить статус заказа'); ?>">
     <span class="dashicons dashicons-update-alt"></span>
 </button>
-<?php if($wc_esl_hasDeleteFlag): ?>
+<?php if($wc_esl_unloadingStatus): ?>
 <button type="button" id="esl_unloading_delete" class="button button-primary" title="<?php echo esc_attr('Удалить выгрузку'); ?>">
     <span class="dashicons dashicons-trash"></span>
 </button>
