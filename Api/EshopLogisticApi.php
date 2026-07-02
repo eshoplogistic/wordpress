@@ -203,42 +203,38 @@ class EshopLogisticApi
 		return $this->apiBaseUrl['v2'];
 	}
 
+	/**
+	 * Пишет запрос/ответ ESL API в стандартный логгер WooCommerce (источник "wc-esl-shipping",
+	 * WooCommerce > Статус > Журналы), а не в текстовый файл внутри папки плагина — файл был
+	 * доступен по прямой публичной ссылке без авторизации и мог раскрывать API-ключ и ПДн
+	 * покупателей (адрес, телефон, email) кому угодно, кто знает URL.
+	 *
+	 * @param mixed  $log  Ответ API (обычно массив, декодированный из JSON).
+	 * @param mixed  $type Данные запроса (если переданы, добавляются в лог вместе с URL запроса).
+	 */
 	public function eslWriteLog($log, $type = '') {
 		if(isset($type['target']))
 			return false;
 
-		$d = gmdate("j-M-Y H:i:s") . ' UTC';
-		$header = ' ####################### ';
-		$plugin = WP_PLUGIN_DIR . '/eshoplogisticru';
-		if(is_dir( $plugin )){
-			$path = $plugin.'/esl.log';
-			if (file_exists($path)) {
-				$size = filesize($path);
-				$sizeMb = round($size / 1024 / 1024, 2);
-				if($sizeMb > 10){
-					file_put_contents($path, '');
-				}
-			}
+		if( ! function_exists('wc_get_logger') )
+			return false;
 
-			if (is_array($log) || is_object($log)) {
-				if (is_object($log)) {
-					$log = (array) $log;
-				}
-				if($type){
-					$urlRequest = $this->apiUrl;
-					$tmp['sendRequest'] = $type;
-					$tmp['sendRequest']['url'] = $urlRequest;
-					array_unshift($log, $tmp);
-				}
-				$encodedLog = wp_json_encode($log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-				if (false === $encodedLog) {
-					$encodedLog = 'Failed to encode log payload';
-				}
-				file_put_contents($path, $header . $d . $header . $encodedLog . PHP_EOL, FILE_APPEND);
-			} else {
-				file_put_contents($path, $header . $d . $header . (string) $log . PHP_EOL, FILE_APPEND);
+		if (is_array($log) || is_object($log)) {
+			$log = (array) $log;
+			if($type){
+				$tmp['sendRequest'] = $type;
+				$tmp['sendRequest']['url'] = $this->apiUrl;
+				array_unshift($log, $tmp);
 			}
+			$message = wp_json_encode($log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			if (false === $message) {
+				$message = 'Failed to encode log payload';
+			}
+		} else {
+			$message = (string) $log;
 		}
+
+		wc_get_logger()->info($message, array('source' => 'wc-esl-shipping'));
 	}
 
 	public function geo($ip = '')
@@ -270,6 +266,10 @@ class EshopLogisticApi
 
 		try {
 			$response = $this->sendRequest( $data );
+
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( $response, $data );
+			}
 
 			if ( $response['http_status'] == 200 && isset($response['data']['state']['number'])) {
 				return new CollectionResponse( $response['data'] );

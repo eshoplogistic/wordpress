@@ -189,11 +189,11 @@ $status_translate             = [
                                         <label class="custom-control-label" for="enablePluginLog">
                                             <div class="help-tip">
                                                 <p>
-                                                    Если включен данный параметр, все запросы будут записываться в
-                                                    текстовый файл.<br>
-                                                    Путь к файлу: 
-                                                    <a href="<?php echo esc_url(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?>">
-                                                        <?php echo esc_html(get_site_url() . '/wp-content/plugins/eshoplogisticru/esl.log'); ?></a>
+                                                    Если включен данный параметр, все запросы к API будут записываться
+                                                    в журнал WooCommerce (источник «wc-esl-shipping»).<br>
+                                                    Посмотреть журналы:
+                                                    <a href="<?php echo esc_url(admin_url('admin.php?page=wc-status&tab=logs')); ?>">
+                                                        WooCommerce → Статус → Журналы</a>
                                                 </p>
                                             </div>
                                         </label>
