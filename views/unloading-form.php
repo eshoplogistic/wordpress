@@ -44,6 +44,21 @@ $wc_esl_additionalFieldsRu = array(
 );
 
 $wc_esl_eslTable = new Table();
+$wc_esl_eslTable->prepare_items( $wc_esl_orderItems, $wc_esl_typeMethod );
+$wc_esl_placesColumns = $wc_esl_eslTable->get_columns();
+$wc_esl_placesItems   = $wc_esl_eslTable->items;
+
+// Сумма для сверки с суммой "Мест" при отправке формы (см. eslGetOrderSumMismatch в
+// settings_unloading.js) — считаем от тех же данных, что и сама таблица "Места"
+// (цена товара из каталога * кол-во), а не от итога заказа: итог заказа включает
+// доставку, и сравнение с ним всегда давало бы ложное расхождение.
+$wc_esl_orderSum = 0;
+foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
+	if ( ! $wc_esl_placeRow ) {
+		continue;
+	}
+	$wc_esl_orderSum += (float) ( $wc_esl_placeRow['price'] ?? 0 ) * (float) ( $wc_esl_placeRow['quantity'] ?? 0 );
+}
 ?>
 
 <div id="modal-esl" class="modal-esl">
@@ -89,7 +104,7 @@ $wc_esl_eslTable = new Table();
                     <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($wc_esl_orderData['id']) ? $wc_esl_orderData['id'] : ''); ?>">
                     <input type="hidden" name="order_status" value="<?php echo esc_attr(isset($wc_esl_orderData['status']) ? $wc_esl_orderData['status'] : ''); ?>">
                     <input type="hidden" name="order_shipping_id" value="<?php echo esc_attr($wc_esl_orderShippingId); ?>">
-                    <input type="hidden" name="order_sum" value="<?php echo esc_attr(isset($wc_esl_orderData['total']) ? $wc_esl_orderData['total'] : ''); ?>">
+                    <input type="hidden" name="order_sum" value="<?php echo esc_attr($wc_esl_orderSum); ?>">
 
                     <section id="content1">
 
@@ -395,9 +410,6 @@ $wc_esl_eslTable = new Table();
                     <section id="content4">
                         <div class="esl-table-scroll">
 						<?php
-						$wc_esl_eslTable->prepare_items( $wc_esl_orderItems, $wc_esl_typeMethod );
-						$wc_esl_placesColumns  = $wc_esl_eslTable->get_columns();
-						$wc_esl_placesItems    = $wc_esl_eslTable->items;
 						$wc_esl_placesDefaults = array(
 							'product_id' => '',
 							'name'       => '',
