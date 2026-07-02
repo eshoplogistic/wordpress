@@ -17,6 +17,17 @@
     --esl-warning: #dba617;
 }
 
+/* No global box-sizing reset existed before — width:100% + padding on plain <div>s (e.g.
+   .checkbox-area) defaulted to content-box, so the padding added on top of 100% width and
+   silently overflowed the grid column; .content_inner's overflow-x:hidden then clipped it,
+   which read as "no right padding" even though the CSS padding value was correct. */
+.modal-esl,
+.modal-esl *,
+.modal-esl *::before,
+.modal-esl *::after {
+    box-sizing: border-box;
+}
+
 /* Overlay. JS toggles display:block/none inline on #modal-esl — keep base display:none. */
 .modal-esl {
     display: none;
@@ -320,6 +331,13 @@
 
 .modal-esl form .checkbox-area .label {
     position: static;
+    margin: 0;
+}
+
+/* input[type=checkbox] below has margin:2px auto for other layout contexts (e.g. table
+   cells) — the auto side-margins fight .checkbox-area's own justify-content:space-between
+   and eat the container's right padding, leaving the checkbox flush against the edge. */
+.modal-esl form .checkbox-area input[type=checkbox] {
     margin: 0;
 }
 
