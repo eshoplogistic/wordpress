@@ -209,6 +209,10 @@ class EshopLogisticApi
 	 * доступен по прямой публичной ссылке без авторизации и мог раскрывать API-ключ и ПДн
 	 * покупателей (адрес, телефон, email) кому угодно, кто знает URL.
 	 *
+	 * Формат: короткая сводка первой строкой (action/service/order_id — чтобы можно было
+	 * понять "что за запрос и откуда" не разворачивая JSON), затем отдельно request и response
+	 * в pretty-print JSON, а не одной нечитаемой строкой.
+	 *
 	 * @param mixed  $log  Ответ API (обычно массив, декодированный из JSON).
 	 * @param mixed  $type Данные запроса (если переданы, добавляются в лог вместе с URL запроса).
 	 */
@@ -219,22 +223,37 @@ class EshopLogisticApi
 		if( ! function_exists('wc_get_logger') )
 			return false;
 
-		if (is_array($log) || is_object($log)) {
-			$log = (array) $log;
-			if($type){
-				$tmp['sendRequest'] = $type;
-				$tmp['sendRequest']['url'] = $this->apiUrl;
-				array_unshift($log, $tmp);
-			}
-			$message = wp_json_encode($log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			if (false === $message) {
-				$message = 'Failed to encode log payload';
-			}
-		} else {
-			$message = (string) $log;
+		$jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT;
+		$isRequestArray = is_array($type) || is_object($type);
+		$requestArr = $isRequestArray ? (array) $type : array();
+
+		$orderId = $requestArr['order_id'] ?? $requestArr['order']['id'] ?? '';
+		$summary = sprintf(
+			'ESL API%s%s%s | %s',
+			isset($requestArr['action']) ? ' action=' . $requestArr['action'] : '',
+			isset($requestArr['service']) ? ' service=' . $requestArr['service'] : '',
+			$orderId !== '' ? ' order_id=' . $orderId : '',
+			$this->apiUrl
+		);
+
+		$lines = array($summary);
+
+		if ($isRequestArray && $requestArr) {
+			$requestJson = wp_json_encode($requestArr, $jsonFlags);
+			$lines[] = '--- Запрос ---';
+			$lines[] = false !== $requestJson ? $requestJson : 'Failed to encode request payload';
 		}
 
-		wc_get_logger()->info($message, array('source' => 'wc-esl-shipping'));
+		if (is_array($log) || is_object($log)) {
+			$responseJson = wp_json_encode((array) $log, $jsonFlags);
+			$lines[] = '--- Ответ ---';
+			$lines[] = false !== $responseJson ? $responseJson : 'Failed to encode response payload';
+		} else {
+			$lines[] = '--- Ответ ---';
+			$lines[] = (string) $log;
+		}
+
+		wc_get_logger()->info(implode("\n", $lines), array('source' => 'wc-esl-shipping'));
 	}
 
 	public function geo($ip = '')
