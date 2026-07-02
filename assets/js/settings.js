@@ -197,6 +197,57 @@ function eslRun() {
 					copy: true,
 					connectWith: 'js-connected'
 				});
+
+				// Крестик удаления рендерится в PHP только для статусов, уже сохранённых в базе
+				// (see views/settings.php: $status_form). Свежая копия статуса, перетащенная из
+				// правого списка, приходит без него — добавляем крестик сразу же, не дожидаясь
+				// сохранения и перезагрузки страницы. Заодно не даём положить один и тот же
+				// статус (по атрибуту name — слаг статуса WooCommerce) дважды в одну и ту же
+				// зону: и внутри одной строки ESL-статуса, и обратно в правый пул "доступных"
+				// (там оригинал лежит постоянно, так что "возврат" туда — по сути удаление
+				// перетащенной копии, а не второй такой же элемент).
+				document.querySelectorAll('.sortable, .sortable-copy').forEach(function (list) {
+					list.addEventListener('sortupdate', function (e) {
+						let destination = e.detail && e.detail.destination ? e.detail.destination.container : null;
+						let droppedItem = e.detail ? e.detail.item : null;
+						if (!destination || !droppedItem) {
+							return;
+						}
+
+						let isInnerRow = destination.classList.contains('js-inner-connected');
+						let isPool = destination.classList.contains('js-connected');
+						if (!isInnerRow && !isPool) {
+							return;
+						}
+
+						let statusKey = droppedItem.getAttribute('name');
+						let isDuplicate = Array.from(destination.querySelectorAll('li.esl-status__wp')).some(function (item) {
+							return item !== droppedItem && item.getAttribute('name') === statusKey;
+						});
+
+						if (isDuplicate) {
+							droppedItem.remove();
+							return;
+						}
+
+						if (isInnerRow) {
+							if (!droppedItem.querySelector('.sortable-delete')) {
+								let del = document.createElement('span');
+								del.className = 'sortable-delete';
+								del.textContent = 'х';
+								del.addEventListener('click', function () {
+									sortableDelete(del);
+								});
+								droppedItem.appendChild(del);
+							}
+						} else {
+							let del = droppedItem.querySelector('.sortable-delete');
+							if (del) {
+								del.remove();
+							}
+						}
+					});
+				});
 			}
 			if(this.exportForm){
 				this.exportForm.addEventListener('submit', this.submitExportForm.bind({

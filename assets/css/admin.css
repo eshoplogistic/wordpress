@@ -599,6 +599,7 @@
 }
 
 .esl-section_drag .esl-status__wp{
+    position: relative;
     border: 1px solid #dcdcde;
     display: inline-block;
     padding: 5px 10px;
@@ -610,9 +611,38 @@
     transition: border-color .15s ease, box-shadow .15s ease;
 }
 
+/* Chips inside a drop zone carry a delete "×" — reserve room on the right so the
+   label text never runs under it. */
+.esl-inner_status .esl-status__wp {
+    padding-right: 26px;
+}
+
 .esl-section_drag .esl-status__wp:hover {
     border-color: var(--esl-accent);
     box-shadow: 0 0 0 3px var(--esl-accent-soft);
+}
+
+/* html5sortable's drag ghost (.sortable-dragging) and drop-target placeholder
+   (.sortable-placeholder) ship with zero built-in styling — the placeholder is an
+   empty <li>, so without a size/shape it's a near-invisible sliver while dragging.
+   Scoped to the left rows (.esl-inner_status) only, not the right pool: the pool's
+   list is copy-mode (sortable('.sortable-copy', {copy:true, ...})), and html5sortable
+   has a bug there — it adds this class to the original on drag but removes it from
+   the clone, not the original, so the source chip in the pool would stay dimmed
+   forever after the first drag if styled here too. */
+.esl-inner_status .sortable-dragging {
+    opacity: .4;
+}
+
+.esl-section_drag .sortable-placeholder {
+    display: inline-block;
+    width: 90px;
+    height: 30px;
+    margin: 0 5px 5px 0;
+    background-color: var(--esl-accent-soft);
+    border: 1px dashed var(--esl-accent);
+    border-radius: 999px;
+    vertical-align: top;
 }
 
 .esl-section_drag .js-inner-connected {
@@ -650,9 +680,26 @@
 
 .sortable-delete{
     position: absolute;
-    margin-left: 2px;
-    margin-top: -17px;
-    color: rgba(236, 0, 0, 0.66);
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border-radius: 50%;
+    color: #d63638;
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.sortable-delete:hover {
+    background-color: rgba(214, 54, 56, .14);
 }
 
 .modal-esl-frame {
