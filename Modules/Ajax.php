@@ -1107,14 +1107,15 @@ class Ajax implements ModuleInterface
 
 		$unloading = new UnloadingOrder();
 		$status = $unloading->infoOrder($order_id, $order_type);
-		if (isset($status['success']) && $status['success'] === false) {
+		$isError = isset($status['success']) && $status['success'] === false;
+		if ($isError) {
 			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';
 		} else {
 			$result = $unloading->updateStatusById($status, $order_id);
 		}
 
 		wp_send_json([
-			'success' => true,
+			'success' => !$isError,
 			'data' => $result,
 			'msg' => ""
 		]);
