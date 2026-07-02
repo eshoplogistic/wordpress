@@ -687,11 +687,47 @@
     left: 0;
     justify-content: center;
     z-index: 200;
-    background: rgba(255, 255, 255, .7);
+    background: rgba(255, 255, 255, .8);
+    backdrop-filter: blur(1px);
 }
 
-.esl-preloader .spinner-grow {
-    color: var(--esl-accent);
+/* Самодостаточный спиннер — не зависит от Bootstrap .spinner-grow/.sr-only, которых на
+   странице заказа нет (bootstrap.min.css здесь не подключается), иначе это просто текст
+   "Загрузка..." без анимации. См. также assets/css/admin.css — тот же приём для страницы
+   настроек. */
+.esl-spinner {
+    position: relative;
+    width: 34px;
+    height: 34px;
+}
+
+.esl-spinner::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--esl-accent-soft-strong);
+    border-top-color: var(--esl-accent);
+    animation: esl-spin .7s linear infinite;
+}
+
+.esl-spinner__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@keyframes esl-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 #woocommerce-order-esl-unloading .inside button {

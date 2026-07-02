@@ -478,11 +478,43 @@
     left: 0;
     justify-content: center;
     z-index: 200;
-    background: rgba(255, 255, 255, .57);
+    background: rgba(255, 255, 255, .75);
+    backdrop-filter: blur(1px);
 }
 
-.esl-preloader .spinner-grow {
-    color: var(--esl-accent);
+.esl-spinner {
+    position: relative;
+    width: 34px;
+    height: 34px;
+}
+
+.esl-spinner::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--esl-accent-soft-strong);
+    border-top-color: var(--esl-accent);
+    animation: esl-spin .7s linear infinite;
+}
+
+.esl-spinner__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@keyframes esl-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .wc-esl-settings-general-options .card-header {
