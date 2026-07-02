@@ -56,7 +56,7 @@ class UnloadingInfo
             $html .= '<div class="esl-status_info">Текущий статус: ' . esc_html($result['state']['status']['description']) . '</div>';
         }
         if (isset($result['state']['service_status']['description'])) {
-            $html .= '<br><div class="esl-status_info">Описание: ' . esc_html($result['state']['service_status']['description']) . '</div>';
+            $html .= '<div class="esl-status_info">Описание: ' . esc_html($result['state']['service_status']['description']) . '</div>';
         }
 
         $print = $this->returnPrint();

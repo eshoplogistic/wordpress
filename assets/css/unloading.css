@@ -730,17 +730,87 @@
     }
 }
 
-#woocommerce-order-esl-unloading .inside button {
-    padding-top: 5px;
-    width: 55px;
-    margin-top: 5px;
+.esl-status__order {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    background: rgba(0, 163, 42, .08);
+    border: 1px solid rgba(0, 163, 42, .2);
+    border-radius: var(--esl-radius-sm);
+    color: var(--esl-success);
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.esl-status__order {
-    padding-bottom: 6px;
-    margin-bottom: 6px;
-    border-bottom: 1px solid var(--esl-border);
+.esl-status__order .dashicons {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+}
+
+.esl-unload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    height: 34px;
+    padding: 0;
+    margin: 0;
+    background: var(--esl-bg);
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    box-shadow: none;
+    transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:hover:not(:disabled) {
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
+    transform: translateY(-1px);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled:hover {
+    background: var(--esl-bg);
+    border-color: var(--esl-border);
+    transform: none;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button .dashicons {
+    display: inline-block;
+    float: none;
+    margin: 0;
+    color: var(--esl-accent);
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+    text-align: center;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled .dashicons {
     color: var(--esl-text-muted);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions #esl_unloading_delete .dashicons {
+    color: var(--esl-error);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions #esl_unloading_delete:hover {
+    background: rgba(214, 54, 56, .08);
+    border-color: var(--esl-error);
 }
 
 @media screen and (max-width: 782px) {

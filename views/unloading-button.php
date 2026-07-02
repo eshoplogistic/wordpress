@@ -11,20 +11,25 @@ $wc_esl_unloadingStatus    = isset($wc_esl_shippingMethods['answer']['state']['s
 ?>
 
 <?php if($wc_esl_unloadingStatus): ?>
-    <p class="esl-status__order"><?php echo esc_html('Заказ выгружен'); ?></p>
+    <p class="esl-status__order">
+        <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
+        <?php echo esc_html('Заказ выгружен'); ?>
+    </p>
 <?php endif; ?>
 
-<button type="button" id="esl_unloading_form" class="button button-primary" title="<?php echo esc_attr('Выгрузить в кабинет службы доставки'); ?>" <?php echo esc_attr($wc_esl_unloadingStatus ? 'disabled' : '') ?>>
-    <span class="dashicons dashicons-share-alt2"></span>
-</button>
-<button type="button" id="esl_unloading_status" class="button button-primary" title="<?php echo esc_attr('Данные о выгрузке службы доставки'); ?>">
-    <span class="dashicons dashicons-clipboard"></span>
-</button>
-<button type="button" id="esl_unloading_status_update" class="button button-primary" title="<?php echo esc_attr('Обновить статус заказа'); ?>">
-    <span class="dashicons dashicons-update-alt"></span>
-</button>
-<?php if($wc_esl_unloadingStatus): ?>
-<button type="button" id="esl_unloading_delete" class="button button-primary" title="<?php echo esc_attr('Удалить выгрузку'); ?>">
-    <span class="dashicons dashicons-trash"></span>
-</button>
-<?php endif; ?>
+<div class="esl-unload-actions">
+    <button type="button" id="esl_unloading_form" class="button button-primary" title="<?php echo esc_attr('Выгрузить в кабинет службы доставки'); ?>" <?php echo esc_attr($wc_esl_unloadingStatus ? 'disabled' : '') ?>>
+        <span class="dashicons dashicons-share-alt2"></span>
+    </button>
+    <button type="button" id="esl_unloading_status" class="button button-primary" title="<?php echo esc_attr('Данные о выгрузке службы доставки'); ?>">
+        <span class="dashicons dashicons-clipboard"></span>
+    </button>
+    <button type="button" id="esl_unloading_status_update" class="button button-primary" title="<?php echo esc_attr('Обновить статус заказа'); ?>">
+        <span class="dashicons dashicons-update-alt"></span>
+    </button>
+    <?php if($wc_esl_unloadingStatus): ?>
+    <button type="button" id="esl_unloading_delete" class="button button-primary" title="<?php echo esc_attr('Удалить выгрузку'); ?>">
+        <span class="dashicons dashicons-trash"></span>
+    </button>
+    <?php endif; ?>
+</div>
