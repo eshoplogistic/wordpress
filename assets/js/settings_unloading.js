@@ -218,34 +218,6 @@ function eslGetOrderSumMismatch(formData) {
             });
         });
 
-        $('#buttonModalUnloadAdd').click(function(e) {
-            e.preventDefault();
-            let table = document.querySelector('.esl_list_links');
-            let tbodyTr = table.querySelector('tbody tr');
-            let tbodyTrAll = table.querySelectorAll('tbody tr');
-            let tbodyTd = tbodyTr.querySelectorAll('td');
-            let tbodyTdArray = [...tbodyTd];
-            let tbodyTrArray = [...tbodyTrAll];
-            let tbodyTrArrayCount = Number(tbodyTrArray.length)+1;
-            let tr = document.createElement('tr');
-            tbodyTdArray.forEach(element => {
-                let td = document.createElement('td');
-                let input = document.createElement('input');
-                input.name = 'products['+tbodyTrArrayCount+']['+element.getAttribute('name')+']';
-                td.appendChild(input);
-                tr.appendChild(td);
-            });
-
-
-            table.querySelector('tbody').appendChild(tr);
-        });
-
-        $('.esl-delete_table_elem').click(function(e) {
-            e.preventDefault();
-            $(this).parents('tr').remove();
-        });
-
-
         $.fn.serializeControls = function() {
             let data = {};
             function buildInputObject(arr, val) {
@@ -425,6 +397,68 @@ document.addEventListener('change', function (e) {
 
 window.addEventListener('load', function () {
     document.querySelectorAll('#unloading_form select[name="receiver[identity][type]"]').forEach(eslSyncPecomReceiverType);
+});
+
+// "Места": обычная HTML-таблица с <template> для клонирования новой строки —
+// перенесено из МС (assets/js/table_offers.js: elemCreateInFrameTableOffers/
+// deleteFrameTableElem). WP_List_Table для этой задачи не подходил: он всегда
+// рисовал второй ряд заголовков снизу (thead+tfoot) и не переиндексировал имена
+// полей при удалении строки, из-за чего после удаления не первой строки и
+// добавления новой могли получиться два input с одинаковым name="products[N][...]"
+// (последний перетирал первый при сборке данных на отправку).
+function eslPlacesRenumber(table) {
+    if (!table) {
+        return;
+    }
+
+    table.querySelectorAll('tbody tr').forEach(function (tr, index) {
+        tr.setAttribute('data-number', index);
+        tr.querySelectorAll('td input[data-field]').forEach(function (input) {
+            input.name = 'products[' + index + '][' + input.getAttribute('data-field') + ']';
+        });
+    });
+}
+
+function eslAddPlaceRow(button) {
+    let wrapper = button.closest('.esl-places__main');
+    if (!wrapper) {
+        return;
+    }
+
+    let table = wrapper.querySelector('.esl-places-table');
+    let template = wrapper.querySelector('template.esl-row-template');
+    if (!table || !template) {
+        return;
+    }
+
+    let row = template.content.firstElementChild.cloneNode(true);
+    table.querySelector('tbody').appendChild(row);
+    eslPlacesRenumber(table);
+}
+
+function eslDeletePlaceRow(button) {
+    let table = button.closest('.esl-places-table');
+    let row = button.closest('tr');
+    if (!table || !row) {
+        return;
+    }
+
+    row.remove();
+    eslPlacesRenumber(table);
+}
+
+document.addEventListener('click', function (e) {
+    if (e.target.id === 'buttonModalUnloadAdd') {
+        e.preventDefault();
+        eslAddPlaceRow(e.target);
+        return;
+    }
+
+    let deleteBtn = e.target.closest('.esl-delete_table_elem');
+    if (deleteBtn) {
+        e.preventDefault();
+        eslDeletePlaceRow(deleteBtn);
+    }
 });
 
 function copyToClipboard(containerid, e) {

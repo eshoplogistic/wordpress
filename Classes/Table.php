@@ -384,7 +384,7 @@ class Table extends WP_List_Table {
 
 					if($column_name == 'delete'){
 						if($i != 0){
-							echo '<td ' . esc_attr($attributes) . '><div class="esl-delete_table_elem">&#65794;</div></td>';
+							echo '<td ' . esc_attr($attributes) . '><div class="esl-delete_table_elem">&times;</div></td>';
 						}
 					}else{
 						$value = isset($rec[$column_name]) ? $rec[$column_name] : '';

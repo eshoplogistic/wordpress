@@ -442,13 +442,13 @@
     border-radius: var(--esl-radius);
 }
 
-.modal-esl .esl_list_links {
+.modal-esl .esl-places-table {
     border: none;
     background: var(--esl-bg);
 }
 
-.modal-esl .esl_list_links thead tr th,
-.modal-esl .esl_list_links tr th {
+.modal-esl .esl-places-table thead tr th,
+.modal-esl .esl-places-table tr th {
     padding: 10px 8px;
     background-color: var(--esl-bg-soft);
     color: var(--esl-text-muted);
@@ -458,11 +458,11 @@
     letter-spacing: .02em;
 }
 
-.modal-esl .esl_list_links tbody tr:hover {
+.modal-esl .esl-places-table tbody tr:hover {
     background-color: var(--esl-accent-soft);
 }
 
-.modal-esl .esl_list_links td {
+.modal-esl .esl-places-table td {
     padding: 6px 8px;
     background-color: var(--esl-bg-soft);
 }
@@ -492,7 +492,10 @@
     width: 26px;
     height: 26px;
     margin: 0 auto;
+    padding: 0;
+    border: none;
     border-radius: 50%;
+    background: transparent;
     color: var(--esl-error);
     font-size: 14px;
     cursor: pointer;
@@ -503,8 +506,16 @@
     background-color: rgba(214, 54, 56, .1);
 }
 
-.modal-esl .esl-delete_table_elem.first {
-    display: none;
+.modal-esl .esl-places__main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.modal-esl .esl-places-table td.column-delete {
+    width: 44px;
+    text-align: center;
 }
 
 /* Sticky action bar. */

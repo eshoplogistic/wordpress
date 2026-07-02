@@ -396,8 +396,80 @@ $wc_esl_eslTable = new Table();
                         <div class="esl-table-scroll">
 						<?php
 						$wc_esl_eslTable->prepare_items( $wc_esl_orderItems, $wc_esl_typeMethod );
-						$wc_esl_eslTable->display();
+						$wc_esl_placesColumns  = $wc_esl_eslTable->get_columns();
+						$wc_esl_placesItems    = $wc_esl_eslTable->items;
+						$wc_esl_placesDefaults = array(
+							'product_id' => '',
+							'name'       => '',
+							'quantity'   => '1',
+							'price'      => '0',
+							'weight'     => '0',
+							'width'      => '0',
+							'length'     => '0',
+							'height'     => '0',
+						);
 						?>
+                            <div class="esl-places__main">
+                                <button id="buttonModalUnloadAdd" type="button" class="button button-primary"><?php esc_html_e( 'Добавить место', 'eshoplogisticru' ); ?></button>
+                                <table class="esl-places-table">
+                                    <thead>
+                                        <tr>
+											<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
+                                                <th scope="col"><?php echo esc_html( $wc_esl_colLabel ); ?></th>
+											<?php endforeach; ?>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+										<?php if ( $wc_esl_placesItems ):
+											$wc_esl_rowIndex = 0;
+											foreach ( $wc_esl_placesItems as $wc_esl_rec ):
+												if ( ! $wc_esl_rec ) {
+													continue;
+												}
+												?>
+                                                <tr data-number="<?php echo esc_attr( $wc_esl_rowIndex ); ?>">
+													<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
+														<?php if ( $wc_esl_colKey === 'delete' ): ?>
+                                                            <td class="column-delete">
+																<?php if ( $wc_esl_rowIndex !== 0 ): ?>
+                                                                    <button type="button" class="esl-delete_table_elem" title="<?php esc_attr_e( 'Удалить место', 'eshoplogisticru' ); ?>">&times;</button>
+																<?php endif; ?>
+                                                            </td>
+														<?php else:
+															$wc_esl_cellValue = isset( $wc_esl_rec[ $wc_esl_colKey ] ) ? $wc_esl_rec[ $wc_esl_colKey ] : '';
+															if ( is_array( $wc_esl_cellValue ) || is_object( $wc_esl_cellValue ) ) {
+																$wc_esl_cellValue = wp_json_encode( $wc_esl_cellValue );
+															}
+															?>
+                                                            <td class="column-<?php echo esc_attr( $wc_esl_colKey ); ?>">
+                                                                <input type="text" data-field="<?php echo esc_attr( $wc_esl_colKey ); ?>"
+                                                                       name="products[<?php echo esc_attr( $wc_esl_rowIndex ); ?>][<?php echo esc_attr( $wc_esl_colKey ); ?>]"
+                                                                       value="<?php echo esc_attr( stripslashes( (string) $wc_esl_cellValue ) ); ?>">
+                                                            </td>
+														<?php endif; ?>
+													<?php endforeach; ?>
+                                                </tr>
+												<?php
+												$wc_esl_rowIndex++;
+											endforeach;
+										endif; ?>
+                                    </tbody>
+                                </table>
+                                <template class="esl-row-template">
+                                    <tr>
+										<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
+											<?php if ( $wc_esl_colKey === 'delete' ): ?>
+                                                <td class="column-delete"><button type="button" class="esl-delete_table_elem" title="<?php esc_attr_e( 'Удалить место', 'eshoplogisticru' ); ?>">&times;</button></td>
+											<?php else: ?>
+                                                <td class="column-<?php echo esc_attr( $wc_esl_colKey ); ?>">
+                                                    <input type="text" data-field="<?php echo esc_attr( $wc_esl_colKey ); ?>"
+                                                           value="<?php echo esc_attr( isset( $wc_esl_placesDefaults[ $wc_esl_colKey ] ) ? $wc_esl_placesDefaults[ $wc_esl_colKey ] : '' ); ?>">
+                                                </td>
+											<?php endif; ?>
+										<?php endforeach; ?>
+                                    </tr>
+                                </template>
+                            </div>
                         </div>
                     </section>
 
