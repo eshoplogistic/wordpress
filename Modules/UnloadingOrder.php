@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Unloading implements ModuleInterface
+class UnloadingOrder implements ModuleInterface
 {
 
     private $deliveryEsl = false;
@@ -753,14 +753,6 @@ class Unloading implements ModuleInterface
         }
 
         return $result;
-    }
-
-    public function returnPrint()
-    {
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
-        return View::render('unloading/print', [
-
-        ]);
     }
 
     public function infoOrder($id, $type, $action = 'get', $dataAdd = [])

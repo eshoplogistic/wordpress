@@ -21,7 +21,7 @@ use eshoplogistic\WCEshopLogistic\Modules\OrderCreator;
 use eshoplogistic\WCEshopLogistic\Modules\Settings;
 use eshoplogistic\WCEshopLogistic\Modules\Routes;
 use eshoplogistic\WCEshopLogistic\Modules\Footer;
-use eshoplogistic\WCEshopLogistic\Modules\Unloading;
+use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
 use eshoplogistic\WCEshopLogistic\Modules\GutenbergBlock;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -74,7 +74,7 @@ final class WCEshopLogistic
         $this->initModule(Checkout::class);
         $this->initModule(OrderCreator::class);
         $this->initModule(Footer::class);
-        $this->initModule(Unloading::class);
+        $this->initModule(UnloadingOrder::class);
     }
 
     private function initModule( $module )

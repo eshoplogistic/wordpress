@@ -969,7 +969,7 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
 		$data = isset($_POST['data']) ? $this->sanitize_array(wp_unslash($_POST['data'])) : null;
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$resultParams = $unloading->params_delivery_init($data);
 
 		if ($resultParams->hasErrors()) {
@@ -1016,7 +1016,7 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
 
 		wp_send_json([
@@ -1043,49 +1043,11 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
-		$result = $unloading->infoOrder($order_id, $order_type);
-		$html = '';
-
-		$order = wc_get_order($order_id);
-		$orderShippings = $order ? $order->get_shipping_methods() : [];
-		$shippingMethod = '';
-		foreach ($orderShippings as $key => $item) {
-			$shippingMethod = wc_get_order_item_meta($item->get_id(), 'esl_shipping_methods', $single = true);
-		}
-
-		if (isset($result['data']['messages'])) {
-			$html = '<div class="esl-status_infoTitle">' . esc_html($result['data']['messages']) . '</div>';
-		}
-		if (isset($result['state']['number'])) {
-			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
-		}
-		if (isset($shippingMethod) && $shippingMethod) {
-			$shippingMethods = json_decode($shippingMethod, true);
-			if (isset($shippingMethods['answer']['order']['id'])) {
-				$html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "' . esc_html($order_type) . '": ' . esc_html($shippingMethods['answer']['order']['id']) . '</div>';
-			}
-		}
-		if (isset($result['order']['orderId'])) {
-			$html .= '<div class="esl-status_infoTitle">Идентификатор заказа: ' . esc_html($result['order']['orderId']) . '</div>';
-		}
-		if (isset($result['state'])) {
-			$html .= '<div class="esl-status_info">Текущий статус: ' . esc_html($result['state']['status']['description']) . '</div>';
-		}
-		if (isset($result['state']['service_status']['description'])) {
-			$html .= '<br><div class="esl-status_info">Описание: ' . esc_html($result['state']['service_status']['description']) . '</div>';
-		}
-
-		$print = $unloading->returnPrint();
-		if ($print)
-			$html .= $print;
-
-		if (!$html)
-			$html = '<div class="esl-status_infoTitle">Ошибка при загрузке данных.</div>';
+		$unloadingInfo = new UnloadingInfo();
 
 		wp_send_json([
 			'success' => true,
-			'data' => $html,
+			'data' => $unloadingInfo->initReturn($order_id, $order_type),
 			'msg' => ''
 		]);
 	}
@@ -1142,7 +1104,7 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$status = $unloading->infoOrder($order_id, $order_type);
 		if (isset($status['success']) && $status['success'] === false) {
 			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';

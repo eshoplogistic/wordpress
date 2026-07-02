@@ -2,7 +2,7 @@
 namespace eshoplogistic\WCEshopLogistic\Cron;
 
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
-use eshoplogistic\WCEshopLogistic\Modules\Unloading;
+use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
 
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -35,7 +35,7 @@ class UnloadingCron
 
 	public function updateStatus(){
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		//$wpStatuses = $unloading->getStatusWp();
 		$wpStatusesKeys = array();
 		if(isset($this->addForm['statusEnd'])){

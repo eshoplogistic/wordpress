@@ -137,6 +137,34 @@
     font-size: 11px;
 }
 
+/* Вкладки "Получатель" и "Отправитель" — одна колонка, компактные поля, как в референсе МоегоСклада. */
+.modal-esl form #content1 .form-box,
+.modal-esl form #content2 .form-box {
+    display: flex;
+    flex-direction: column;
+    max-width: 420px;
+}
+
+.modal-esl form #content1 .form-field,
+.modal-esl form #content2 .form-field {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+}
+
+.modal-esl form #content1 input,
+.modal-esl form #content1 select,
+.modal-esl form #content2 input,
+.modal-esl form #content2 select {
+    height: 30px;
+}
+
+.modal-esl form #content1 .label,
+.modal-esl form #content2 .label {
+    color: #888;
+    font-weight: 600;
+}
+
 .modal-esl td input {
     width: 100% !important;
     padding: 0 !important;
@@ -166,6 +194,19 @@
     display: block;
     border-bottom: 1px solid color(srgb 0.8666 0.8667 0.8668);
     padding-bottom: 25px;
+}
+
+.modal-esl form .form-box-title {
+    display: block;
+    width: 100%;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.modal-esl form .form-field.esl-pickup-terminal .form-value:disabled,
+.modal-esl form .form-field.esl-pickup-address .form-value:disabled {
+    opacity: .5;
 }
 
 .esl-notifications {
@@ -250,21 +291,21 @@
 
 }
 
-.modal-esl form #content4 .label{
+.modal-esl form #content3 .label{
     position: static;
 }
 
-.modal-esl form #content4 input{
+.modal-esl form #content3 input{
     border: black !important;
     height: 15px;
     margin-left: 2px;
 }
 
-.modal-esl form #content4 input[type=checkbox]:checked::before {
+.modal-esl form #content3 input[type=checkbox]:checked::before {
     float: unset;
 }
 
-.modal-esl form #content4 input[type=checkbox] {
+.modal-esl form #content3 input[type=checkbox] {
     float: unset;
     height: 15px;
     width: 15px !important;

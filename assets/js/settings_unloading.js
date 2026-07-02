@@ -247,6 +247,44 @@ window.addEventListener('load', function () {
     document.querySelectorAll('.esl-take-payment-toggle input[type="checkbox"]').forEach(eslSyncCostToggle);
 });
 
+// Поле "Способ отгрузки в ТК" (pick_up) определяет, какие поля отправителя реально
+// используются на бэкенде (Modules/Unloading.php: pick_up=0 -> sender-terminal, pick_up=1 -> адрес).
+// Здесь просто отключаем неиспользуемые поля, чтобы они не вводили оператора в заблуждение
+// и не отправлялись вместе с формой (disabled-поля не попадают в serializeArray()).
+function eslSyncPickUpToggle(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let value = select.value;
+
+    form.querySelectorAll('.esl-pickup-terminal').forEach(function (field) {
+        let input = field.querySelector('.form-value');
+        if (input) {
+            input.disabled = (value === '1');
+        }
+    });
+
+    form.querySelectorAll('.esl-pickup-address').forEach(function (field) {
+        let input = field.querySelector('.form-value');
+        if (input) {
+            input.disabled = (value === '0');
+        }
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="pick_up"]')) {
+        return;
+    }
+    eslSyncPickUpToggle(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="pick_up"]').forEach(eslSyncPickUpToggle);
+});
+
 function copyToClipboard(containerid, e) {
     let elemText = containerid
     let elemBut = e.id

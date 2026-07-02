@@ -24,7 +24,7 @@ class OptionsPage implements ModuleInterface
 	private $paymentGateways;
 
 	/**
-	 * @var Unloading $unloading
+	 * @var UnloadingOrder $unloading
 	 */
 	private $unloading;
 
@@ -32,7 +32,7 @@ class OptionsPage implements ModuleInterface
 	{
 		$this->option = new OptionsRepository();
 		$this->paymentGateways = new PaymentGatewaysRepository();
-		$this->unloading = new Unloading();
+		$this->unloading = new UnloadingOrder();
 	}
 
 	public function init()
