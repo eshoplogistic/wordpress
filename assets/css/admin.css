@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap');
 
+:root {
+    /* Same accent used in the order-export modal (assets/css/unloading.css) — kept in sync
+       on purpose so the settings page and the order modal read as one product. */
+    --esl-accent: #2271b1;
+    --esl-accent-dark: #135e96;
+    --esl-accent-soft: rgba(34, 113, 177, .08);
+    --esl-accent-soft-strong: rgba(34, 113, 177, .16);
+}
+
 .toplevel_page_wc_esl_options {
     background: #f8fafc;
 }
@@ -18,13 +27,47 @@
     position: relative;
 }
 
+.wc-esl-settings__header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.75rem 0;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
 .wc-esl-settings__title {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0 0 .4rem;
     font-size: 1.5rem;
     font-weight: 800;
 }
 
-.wc-esl-settings__title > span {
-    color: rgb(113, 23, 247);
+.wc-esl-settings__title .dashicons {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 1.4rem;
+    color: var(--esl-accent);
+}
+
+.wc-esl-settings__title > span:not(.dashicons) {
+    color: var(--esl-accent);
+}
+
+.wc-esl-settings__doc-link {
+    margin: 0;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.wc-esl-settings__doc-link a {
+    color: var(--esl-accent);
+    text-decoration: none;
+}
+
+.wc-esl-settings__doc-link a:hover {
+    text-decoration: underline;
 }
 
 .wc-esl-settings__body .card {
@@ -55,38 +98,65 @@
     border-bottom: 1px solid #e9ecef;
 }
 
-/* --- Верхняя навигация по разделам страницы --- */
+/* --- Верхняя навигация по разделам страницы — сегментированные "таблетки" вместо
+   подчёркнутых текстовых вкладок, тот же язык, что и иконки-вкладки в модалке выгрузки. --- */
 .wc-esl-top-tabs {
-    border-bottom: 2px solid #e9ecef;
-    margin-bottom: 0;
+    display: flex;
     flex-wrap: wrap;
+    gap: .4rem;
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.wc-esl-top-tabs .nav-item {
+    margin: 0;
 }
 
 .wc-esl-top-tabs .nav-link {
-    border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    padding: .75rem 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1px solid #e9ecef;
+    margin-bottom: 0;
+    padding: .6rem 1.1rem;
     font-weight: 700;
-    font-size: .95rem;
-    color: #6c757d;
-    border-radius: 0;
-    transition: color .15s ease, border-color .15s ease;
+    font-size: .88rem;
+    color: #475467;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.wc-esl-top-tabs .nav-link .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
 }
 
 .wc-esl-top-tabs .nav-link:hover {
-    color: rgb(113, 23, 247);
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
     border-color: transparent;
 }
 
 .wc-esl-top-tabs .nav-link.active {
-    color: rgb(113, 23, 247);
-    background: transparent;
-    border-color: rgb(113, 23, 247);
+    color: #fff;
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .35);
 }
 
 .wc-esl-top-tab-content {
     max-width: 1110px;
+}
+
+@media (max-width: 782px) {
+    .wc-esl-top-tabs .nav-link {
+        padding: .55rem .85rem;
+        font-size: .82rem;
+    }
 }
 
 /* --- Вкладки транспортных компаний внутри раздела "Выгрузка заказов" --- */
@@ -105,13 +175,13 @@
 
 #eslCarrierTabsWrap .nav-link:hover {
     border-color: #e9ecef #e9ecef #e9ecef;
-    color: rgb(113, 23, 247);
+    color: var(--esl-accent);
 }
 
 #eslCarrierTabsWrap .nav-link.active {
-    color: rgb(113, 23, 247);
-    background: #f8f5ff;
-    border-color: #e9ecef #e9ecef #f8f5ff;
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
+    border-color: #e9ecef #e9ecef var(--esl-accent-soft);
 }
 
 #eslCarrierTabsWrap .tab-content {
@@ -123,14 +193,25 @@
 
 .wc-esl-settings .btn-primary,
 .wc-esl-settings .wc-esl-add__button {
-    background-color: rgb(113, 23, 247);
-    border-color: rgb(113, 23, 247);
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent);
+    border-radius: .45rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    transition: background-color .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
 }
 
 .wc-esl-settings .btn-primary:hover,
 .wc-esl-settings .wc-esl-add__button:hover {
-    background-color: rgb(93, 15, 209);
-    border-color: rgb(93, 15, 209);
+    background-color: var(--esl-accent-dark);
+    border-color: var(--esl-accent-dark);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .3);
+    transform: translateY(-1px);
+}
+
+.wc-esl-settings .btn-primary:active,
+.wc-esl-settings .wc-esl-add__button:active {
+    transform: translateY(0);
 }
 
 .wc-esl-settings input,
@@ -149,8 +230,8 @@
 .wc-esl-settings textarea:focus,
 .wc-esl-settings select:focus {
     outline: none;
-    border-color: rgb(113, 23, 247);
-    box-shadow: 0 0 0 3px rgba(113, 23, 247, .12);
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft-strong);
 }
 
 .wc-esl-settings select[multiple] {
@@ -181,13 +262,13 @@
     width: 20px;
     height: 20px;
     margin: 0;
-    accent-color: rgb(113, 23, 247);
+    accent-color: var(--esl-accent);
     cursor: pointer;
 }
 
 .wc-esl-settings .custom-control-input:checked ~ .custom-control-label::before {
-    background-color: rgb(113, 23, 247);
-    border-color: rgb(113, 23, 247);
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent);
 }
 
 .wc-esl-settings .form-control {
@@ -213,8 +294,8 @@
     align-items: center;
     column-gap: 1.25rem;
     row-gap: .35rem;
-    min-height: 2.75rem;
-    margin-bottom: 1.75rem;
+    min-height: 2.5rem;
+    margin-bottom: 1.1rem;
 }
 
 .wc-esl-settings .card-body > .input-group:last-child,
@@ -333,7 +414,7 @@
 }
 
 .wc-esl-settings .form-group.row {
-    margin-bottom: 1.75rem !important;
+    margin-bottom: 1.1rem !important;
 }
 
 .wc-esl-settings .form-group.row:last-child {
@@ -401,7 +482,7 @@
 }
 
 .esl-preloader .spinner-grow {
-    color: rgb(113, 23, 247);
+    color: var(--esl-accent);
 }
 
 .wc-esl-settings-general-options .card-header {
@@ -414,20 +495,30 @@
     top: 15px;
     right: 300px;
     text-align: center;
-    background-color: #aaaaaa;
+    background-color: var(--esl-accent-soft-strong);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 14px;
-    line-height: 26px;
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+    line-height: 24px;
     cursor: default;
     z-index: 999999;
+    transition: background-color .15s ease;
+}
+
+.help-tip:hover {
+    background-color: var(--esl-accent);
 }
 
 .help-tip:before{
     content:'?';
     font-weight: bold;
-    color:#fff;
+    color: var(--esl-accent);
+    transition: color .15s ease;
+}
+
+.help-tip:hover:before {
+    color: #fff;
 }
 
 .custom-control {
@@ -446,12 +537,12 @@
 .help-tip p{
     display: none;
     text-align: left;
-    background-color: rgba(30, 32, 33, 0.93);
-    padding: 10px;
+    background-color: rgba(29, 35, 39, 0.96);
+    padding: 12px 14px;
     width: 250px;
     position: absolute;
-    border-radius: 3px;
-    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px -6px rgba(0, 0, 0, .35);
     right: -4px;
     color: #FFF;
     font-size: 13px;
@@ -498,6 +589,8 @@
 
 .esl-section_drag .esl-inner_item ul{
     min-height: 40px;
+    padding: .6rem;
+    border-radius: 0 .5rem .5rem .5rem;
 }
 
 .esl-section_drag .js-connected {
@@ -506,29 +599,41 @@
 }
 
 .esl-section_drag .esl-status__wp{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    border: 1px solid #dcdcde;
     display: inline-block;
-    padding: 5px;border-radius: 5px;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
-    margin-right: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: #fff;
+    margin: 0 5px 5px 0;
+    font-size: .85rem;
+    cursor: grab;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.esl-section_drag .esl-status__wp:hover {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
 }
 
 .esl-section_drag .js-inner-connected {
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    border: 1px solid #dcdcde;
+    background-color: #f6f7f7;
     padding-top: 10px;
     padding-bottom: 5px;
     padding-left: 10px;
     padding-right: 10px;
     min-height: 57px;
+    border-radius: 0 .5rem .5rem .5rem;
 }
 
 .esl-section_drag .esl-status_api{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
-    display: inline;padding: 2px;
-    border-radius: 5px 5px 0px 0px;
+    border: 1px solid #dcdcde;
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: .5rem .5rem 0 0;
     font-size: 14px;
     font-weight: 600;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
+    background-color: #f6f7f7;
 }
 
 .esl-section_drag .esl-inner_status{
@@ -588,15 +693,15 @@
     transform: translate(-50%, 0);
     height: auto;
     color: #fff;
-    background-color: #489afa;
-    border-color: #0062cc;
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
     margin-top: 15px;
 }
 
 .modal-esl-frame #buttonModalAddField:hover,
 .modal-esl-frame #buttonModalTerminalSearch:hover {
-    background-color: #086be1;
-    border-color: #0062cc;
+    background-color: var(--esl-accent-dark);
+    border-color: var(--esl-accent-dark);
 }
 
 #modal-esl-terminal-search .esl-terminal-search-fields label {
@@ -633,7 +738,7 @@
 }
 
 #modal-esl-terminal-search .esl-terminal-search-modal__item:hover {
-    background-color: #f5f3ff;
+    background-color: var(--esl-accent-soft);
 }
 
 

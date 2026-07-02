@@ -62,13 +62,14 @@ $status_translate             = [
             <div class="row">
                 <div class="col-md-12">
                     <h1 class="wc-esl-settings__title">
+                        <span class="dashicons dashicons-cart" aria-hidden="true"></span>
 						<?php esc_html_e( 'Настройки eShopLogistic Shipping', 'eshoplogisticru' ) ?>
                     </h1>
 					<?php if ( $moduleVersion ): ?>
-                        <h4><a href="https://wp-v2.eshoplogistic.ru/documentation-v2/" target="_blank">Документация по
+                        <h4 class="wc-esl-settings__doc-link"><a href="https://wp-v2.eshoplogistic.ru/documentation-v2/" target="_blank">Документация по
                                 настройке</a></h4>
 					<?php else: ?>
-                        <h4><a href="https://wp-v2.eshoplogistic.ru/documentation/" target="_blank">Документация по
+                        <h4 class="wc-esl-settings__doc-link"><a href="https://wp-v2.eshoplogistic.ru/documentation/" target="_blank">Документация по
                                 настройке</a></h4>
 					<?php endif; ?>
                 </div>
@@ -83,19 +84,19 @@ $status_translate             = [
                 <div class="col-md-12">
                     <ul class="nav nav-tabs wc-esl-top-tabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" id="esl-top-tab-system-btn" data-toggle="tab" href="#esl-top-tab-system" role="tab">Основные настройки</a>
+                            <a class="nav-link active" id="esl-top-tab-system-btn" data-toggle="tab" href="#esl-top-tab-system" role="tab"><span class="dashicons dashicons-admin-generic"></span>Основные настройки</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-payment-btn" data-toggle="tab" href="#esl-top-tab-payment" role="tab">Оплата и виджет</a>
+                            <a class="nav-link" id="esl-top-tab-payment-btn" data-toggle="tab" href="#esl-top-tab-payment" role="tab"><span class="dashicons dashicons-money-alt"></span>Оплата и виджет</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-extra-btn" data-toggle="tab" href="#esl-top-tab-extra" role="tab">Дополнительные настройки</a>
+                            <a class="nav-link" id="esl-top-tab-extra-btn" data-toggle="tab" href="#esl-top-tab-extra" role="tab"><span class="dashicons dashicons-admin-tools"></span>Дополнительные настройки</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-export-btn" data-toggle="tab" href="#esl-top-tab-export" role="tab">Выгрузка заказов</a>
+                            <a class="nav-link" id="esl-top-tab-export-btn" data-toggle="tab" href="#esl-top-tab-export" role="tab"><span class="dashicons dashicons-upload"></span>Выгрузка заказов</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-status-btn" data-toggle="tab" href="#esl-top-tab-status" role="tab">Синхронизация статусов</a>
+                            <a class="nav-link" id="esl-top-tab-status-btn" data-toggle="tab" href="#esl-top-tab-status" role="tab"><span class="dashicons dashicons-update"></span>Синхронизация статусов</a>
                         </li>
                     </ul>
 
@@ -280,6 +281,11 @@ $status_translate             = [
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
 									<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogisticru' ) ?>
+                                    <div class="help-tip">
+                                        <p>
+                                            Для активации поиска на яндекс картах
+                                        </p>
+                                    </div>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyYaForm">
@@ -299,11 +305,6 @@ $status_translate             = [
                                             </div>
                                         </div>
                                     </form>
-                                </div>
-                                <div class="help-tip">
-                                    <p>
-                                        Для активации поиска на яндекс картах
-                                    </p>
                                 </div>
                             </div>
 
