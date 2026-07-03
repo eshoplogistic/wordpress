@@ -70,6 +70,17 @@
     color: var(--esl-text);
 }
 
+.modal-esl .title .esl-modal-title__text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-esl .title .esl-modal-title__text svg {
+    flex: 0 0 auto;
+    color: var(--esl-accent);
+}
+
 .modal-esl .modal_content .close_modal_window {
     display: inline-flex;
     align-items: center;
@@ -574,8 +585,9 @@
     transform: translateY(-1px);
 }
 
-/* "Информация о заказе" popup (#modal-esl-info) — plain status/order-id lines injected
-   via AJAX by Modules/UnloadingInfo.php, no tabs/form, just .esl-status_info(Title) divs. */
+/* "Информация о заказе" popup (#modal-esl-info) — status/order-id rows injected via AJAX
+   by Modules/UnloadingInfo.php. .esl-info-card groups .esl-info-row label/value pairs;
+   .esl-info-alert is the error/empty state; .esl-info-note is an informational aside. */
 #modal-esl-info main {
     padding: 20px 0 24px;
 }
@@ -586,53 +598,72 @@
     font-size: 13px;
 }
 
-#modal-esl-info .esl-status_infoTitle,
-#modal-esl-info .esl-status_info {
-    padding: 12px 0;
+.esl-info-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius);
+    background: var(--esl-bg-soft);
+    overflow: hidden;
+}
+
+.esl-info-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    align-items: center;
+    gap: 4px 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--esl-border-soft);
-    color: var(--esl-text);
     font-size: 13px;
     line-height: 1.5;
 }
 
-#modal-esl-info .esl-status_infoTitle {
-    font-weight: 700;
-}
-
-#modal-esl-info .esl-status_infoTitle:first-child,
-#modal-esl-info .esl-status_info:first-child {
-    padding-top: 0;
-}
-
-#modal-esl-info .esl-status_infoTitle:last-child,
-#modal-esl-info .esl-status_info:last-child {
+.esl-info-row:last-child {
     border-bottom: none;
 }
 
-/* API-error message ($result['data']['messages']) reuses .esl-status_infoTitle with no
-   way to tell it apart in CSS alone — Modules/UnloadingInfo.php also tags it with this
-   modifier class so it reads as a warning, not a regular status line. */
-#modal-esl-info .esl-status_infoTitle.esl-status_infoTitle--error {
-    padding: 10px 14px;
-    background: rgba(214, 54, 56, .08);
-    border: 1px solid rgba(214, 54, 56, .2);
-    border-radius: var(--esl-radius-sm);
-    color: var(--esl-error);
+.esl-info-row__label {
+    color: var(--esl-text-muted);
+    font-weight: 600;
 }
 
-#modal-esl-info .esl-status_infoTitle input {
+.esl-info-row__value {
+    color: var(--esl-text);
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.esl-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--esl-accent-soft);
+    color: var(--esl-accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.esl-info-row--copy .esl-copy-control {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.esl-info-row--copy input {
     box-sizing: border-box;
     height: 34px;
-    margin: 0 8px;
     padding: 0 10px;
     border: 1px solid var(--esl-border);
     border-radius: var(--esl-radius-sm);
-    background-color: var(--esl-bg-soft);
+    background-color: var(--esl-bg);
     color: var(--esl-text);
     font-size: 13px;
+    min-width: 0;
+    flex: 1 1 140px;
 }
 
-#modal-esl-info .esl-status_infoTitle .button {
+.esl-copy-btn.button {
     height: 34px;
     padding: 0 14px;
     border-radius: var(--esl-radius-sm);
@@ -640,10 +671,38 @@
     border-color: var(--esl-accent-dark);
     color: #fff;
     font-weight: 600;
+    box-shadow: none;
+    flex: 0 0 auto;
 }
 
-#modal-esl-info .esl-status_infoTitle .button:hover {
+.esl-copy-btn.button:hover {
     background: var(--esl-accent-dark);
+}
+
+.esl-info-note {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(219, 166, 23, .1);
+    border: 1px solid rgba(219, 166, 23, .25);
+    color: #8a6207;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.esl-info-alert {
+    padding: 12px 16px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(214, 54, 56, .08);
+    border: 1px solid rgba(214, 54, 56, .2);
+    color: var(--esl-error);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.esl-info-alert + .esl-info-card,
+.esl-info-card + .esl-info-alert {
+    margin-top: 12px;
 }
 
 /* Блок "Печатные формы" внутри #modal-esl-info (views/unloading/print.php) —
@@ -652,7 +711,16 @@
    ядровый ".wp-core-ui .button" (2 класса) перебивает наш класс-без-id по
    специфичности, и кнопка остаётся с дефолтной серой обводкой вместо заливки. */
 #modal-esl-info .esl-print {
-    padding-top: 4px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--esl-border-soft);
+}
+
+#modal-esl-info .esl-print__title {
+    margin-bottom: 12px;
+    color: var(--esl-text);
+    font-size: 13px;
+    font-weight: 700;
 }
 
 #modal-esl-info .esl-print__paper {
@@ -665,11 +733,11 @@
 }
 
 #modal-esl-info .esl-print__paper select {
-    height: 30px;
-    padding: 0 8px;
+    height: 32px;
+    padding: 0 10px;
     border: 1px solid var(--esl-border);
     border-radius: var(--esl-radius-sm);
-    background-color: var(--esl-bg-soft);
+    background-color: var(--esl-bg);
     color: var(--esl-text);
     font-size: 13px;
 }
@@ -681,19 +749,28 @@
 }
 
 #modal-esl-info .esl-print-button {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: var(--esl-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 999px;
     background: var(--esl-accent);
     border-color: var(--esl-accent-dark);
     color: #fff;
     font-weight: 600;
     box-shadow: none;
+    transition: background-color .15s ease, transform .1s ease;
+}
+
+#modal-esl-info .esl-print-button__icon {
+    flex: 0 0 auto;
 }
 
 #modal-esl-info .esl-print-button:hover {
     background: var(--esl-accent-dark);
     color: #fff;
+    transform: translateY(-1px);
 }
 
 #modal-esl-info .esl-print-button--active {
@@ -712,7 +789,9 @@
 }
 
 #modal-esl-info .esl-print__result a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 8px 14px;
     border-radius: var(--esl-radius-sm);
     background: rgba(34, 113, 177, .08);
@@ -942,6 +1021,11 @@
 
     .modal-esl .title {
         padding: 16px;
+    }
+
+    .esl-info-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
     }
 }
 

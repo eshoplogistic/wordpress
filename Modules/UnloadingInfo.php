@@ -25,7 +25,7 @@ class UnloadingInfo
     {
         $unloadingOrder = new UnloadingOrder();
         $result = $unloadingOrder->infoOrder($orderId, $orderType);
-        $html = '';
+        $rows = '';
 
         $order = wc_get_order($orderId);
         $orderShippings = $order ? $order->get_shipping_methods() : [];
@@ -34,11 +34,12 @@ class UnloadingInfo
             $shippingMethod = wc_get_order_item_meta($item->get_id(), 'esl_shipping_methods', $single = true);
         }
 
+        $errorHtml = '';
         if (isset($result['data']['messages'])) {
-            $html = '<div class="esl-status_infoTitle esl-status_infoTitle--error">' . esc_html($result['data']['messages']) . '</div>';
+            $errorHtml = '<div class="esl-info-alert esl-info-alert--error">' . esc_html($result['data']['messages']) . '</div>';
         }
         if (isset($result['state']['number'])) {
-            $html .= '<div class="esl-status_infoTitle">' . esc_html__('Номер заказа:', 'eshoplogisticru') . ' <input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">' . esc_html__('Скопировать номер', 'eshoplogisticru') . '</button></div>';
+            $rows .= '<div class="esl-info-row esl-info-row--copy"><span class="esl-info-row__label">' . esc_html__('Номер заказа:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-copy-control"><input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary esl-copy-btn" onclick="copyToClipboard(copyText1, this)">' . esc_html__('Скопировать номер', 'eshoplogisticru') . '</button></span></div>';
         }
         $hasCarrierOrder = false;
         if (isset($shippingMethod) && $shippingMethod) {
@@ -46,20 +47,25 @@ class UnloadingInfo
             if (isset($shippingMethods['answer']['order']['id'])) {
                 $hasCarrierOrder = true;
                 /* translators: %s: carrier service name */
-                $html .= '<div class="esl-status_infoTitle">' . sprintf(esc_html__('Идентификатор заказа в системе "%s":', 'eshoplogisticru'), esc_html($orderType)) . ' ' . esc_html($shippingMethods['answer']['order']['id']) . '</div>';
+                $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . sprintf(esc_html__('Идентификатор заказа в системе "%s":', 'eshoplogisticru'), esc_html($orderType)) . '</span><span class="esl-info-row__value">' . esc_html($shippingMethods['answer']['order']['id']) . '</span></div>';
             }
             if (!empty($shippingMethods['pending_confirmation'])) {
-                $html .= '<div class="esl-status_info">' . esc_html__('Ожидается подтверждение от транспортной компании — трек-номер ещё не получен. Повторное нажатие «Выгрузить» не требуется.', 'eshoplogisticru') . '</div>';
+                $rows .= '<div class="esl-info-note">' . esc_html__('Ожидается подтверждение от транспортной компании — трек-номер ещё не получен. Повторное нажатие «Выгрузить» не требуется.', 'eshoplogisticru') . '</div>';
             }
         }
         if (isset($result['order']['orderId'])) {
-            $html .= '<div class="esl-status_infoTitle">' . esc_html__('Идентификатор заказа:', 'eshoplogisticru') . ' ' . esc_html($result['order']['orderId']) . '</div>';
+            $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Идентификатор заказа:', 'eshoplogisticru') . '</span><span class="esl-info-row__value">' . esc_html($result['order']['orderId']) . '</span></div>';
         }
         if (isset($result['state'])) {
-            $html .= '<div class="esl-status_info">' . esc_html__('Текущий статус:', 'eshoplogisticru') . ' ' . esc_html($result['state']['status']['description']) . '</div>';
+            $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Текущий статус:', 'eshoplogisticru') . '</span><span class="esl-info-row__value"><span class="esl-status-badge">' . esc_html($result['state']['status']['description']) . '</span></span></div>';
         }
         if (isset($result['state']['service_status']['description'])) {
-            $html .= '<div class="esl-status_info">' . esc_html__('Описание:', 'eshoplogisticru') . ' ' . esc_html($result['state']['service_status']['description']) . '</div>';
+            $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Описание:', 'eshoplogisticru') . '</span><span class="esl-info-row__value">' . esc_html($result['state']['service_status']['description']) . '</span></div>';
+        }
+
+        $html = $errorHtml;
+        if ($rows) {
+            $html .= '<div class="esl-info-card">' . $rows . '</div>';
         }
 
         if ($hasCarrierOrder) {
@@ -70,7 +76,7 @@ class UnloadingInfo
         }
 
         if (!$html) {
-            $html = '<div class="esl-status_infoTitle esl-status_infoTitle--error">' . esc_html__('Ошибка при загрузке данных.', 'eshoplogisticru') . '</div>';
+            $html = '<div class="esl-info-alert esl-info-alert--error">' . esc_html__('Ошибка при загрузке данных.', 'eshoplogisticru') . '</div>';
         }
 
         return $html;
