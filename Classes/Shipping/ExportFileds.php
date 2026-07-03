@@ -351,9 +351,18 @@ class ExportFileds {
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
-			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
-			$opfType = $eshopLogisticApi->apiServiceOpf();
-			$opfType = $opfType->hasErrors() ? array() : $opfType->data();
+			$opfCacheKey = WC_ESL_PREFIX . 'opf_types';
+			$opfType = get_transient($opfCacheKey);
+			if (false === $opfType) {
+				$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
+				$opfTypeResponse = $eshopLogisticApi->apiServiceOpf();
+				if ($opfTypeResponse->hasErrors()) {
+					$opfType = array();
+				} else {
+					$opfType = $opfTypeResponse->data();
+					set_transient($opfCacheKey, $opfType, HOUR_IN_SECONDS);
+				}
+			}
 			$opfDelline = array(0 => '- Не выбрано -');
 			foreach ((array) $opfType as $key => $value) {
 				if (!empty($value['services']['delline'])) {
