@@ -214,6 +214,12 @@ function eslGetOrderSumMismatch(formData) {
 
                     PreloaderEsl.hide('#woocommerce-order-esl-unloading');
                     PushEsl.addItem(response.success === true ? 'success' : 'error', response.msg);
+
+                    // Заявка создана — перезагружаем, чтобы кнопки "Выгрузить"/"Удалить"
+                    // и статус заявки сразу отразили новое состояние (как при удалении).
+                    if (response.success === true) {
+                        window.location.reload();
+                    }
                 }
             });
         });
