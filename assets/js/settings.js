@@ -131,6 +131,7 @@ function eslRun() {
 		widgetWrapperSelector: '.wc-esl-settings-widget .card-body',
 		addWrapperSelector: '.wc-esl-settings-others .card-body',
 		exportWrapperSelector: '.wc-esl-settings-export .card-body',
+		carrierTabsWrapperSelector: '#eslCarrierTabsWrap',
 		statusWrapperSelector: '.wc-esl-settings-status .card-body',
 		dimensionMeasurement: document.getElementById('dimensionMeasurement'),
 		addForm: document.getElementById('eslAddForm'),
@@ -729,7 +730,15 @@ function eslRun() {
 				result.push({name:key, value:value});
 			}
 
-			PreloaderEsl.show(_self.exportWrapperSelector);
+			// У #eslExportForm две кнопки "Сохранить" в разных карточках — "Адрес
+			// отправителя" сверху и "Настройки транспортных компаний" снизу (там поля
+			// связаны через form="eslExportForm", а не вложенность). Прелоадер должен
+			// появляться там, где реально нажали, а не всегда в верхнем блоке.
+			let submitter = event.submitter;
+			_self.exportPreloaderTarget = (submitter && submitter.closest(_self.carrierTabsWrapperSelector))
+				? _self.carrierTabsWrapperSelector
+				: _self.exportWrapperSelector;
+			PreloaderEsl.show(_self.exportPreloaderTarget);
 
 			_self.changeExportForm(result);
 		},
@@ -749,7 +758,7 @@ function eslRun() {
 		callbackChangeExportForm: function (response) {
 			let _self = this._self;
 			PushEsl.addItem(response.status, response.msg);
-			PreloaderEsl.hide(_self.exportWrapperSelector);
+			PreloaderEsl.hide(_self.exportPreloaderTarget || _self.exportWrapperSelector);
 		},
 
 		statusSaveForm: function (event) {
