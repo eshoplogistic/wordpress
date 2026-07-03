@@ -476,7 +476,7 @@ class Ajax implements ModuleInterface
 		$address    = isset($_POST['address']) ? sanitize_text_field(wp_unslash($_POST['address'])) : '';
 
 		if (!$service) {
-			wp_send_json_error('Не указана служба доставки');
+			wp_send_json_error(__('Не указана служба доставки', 'eshoplogisticru'));
 			return;
 		}
 
@@ -1120,7 +1120,7 @@ class Ajax implements ModuleInterface
 			$result = $unloading->updateStatusById($status, $order_id);
 			if ($result === false) {
 				$isError = true;
-				$result = 'Не удалось обновить статус: нет данных о статусе заказа у транспортной компании';
+				$result = __('Не удалось обновить статус: нет данных о статусе заказа у транспортной компании', 'eshoplogisticru');
 			} elseif ($result === 'Ошибка при обновлении') {
 				$isError = true;
 			}
