@@ -823,11 +823,19 @@
 
 #modal-esl-add-field .label{
     position: static;
+    margin: 0;
 }
 
-#modal-esl-add-field input, #modal-esl-add-field select{
-    height: 15px;
+#modal-esl-add-field input:not([type=checkbox]), #modal-esl-add-field select{
+    height: 30px;
     margin-left: 10px;
+}
+
+#modal-esl-add-field input[type=checkbox] {
+    width: 20px;
+    height: 20px;
+    margin: 0 0 0 10px;
+    flex-shrink: 0;
 }
 
 #modal-esl-add-field input[type=number] {
@@ -838,12 +846,22 @@
     float: unset;
 }
 
+/* Пилюли доп.полей раскладываются как flex-items (а не как строчный текст), иначе
+   браузер выравнивает их по baseline и разновысокие пилюли "прыгают" по вертикали. */
+#modal-esl-add-field .esl-box_add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
 #modal-esl-add-field .form-field_add {
     margin: 6px;
     display: inline-flex;
+    align-items: center;
     background-color: #eee;
     padding: 8px;
     border-radius:8px;
+    vertical-align: top;
 }
 
 /* Заголовки разделов внутри модалки генерируются в PHP как разные теги (p/h3/h4) —
@@ -851,6 +869,7 @@
 #modal-esl-add-field .esl-box_add > p,
 #modal-esl-add-field h3,
 #modal-esl-add-field h4 {
+    flex: 1 0 100%;
     font-size: .8rem;
     font-weight: 700;
     text-transform: uppercase;
