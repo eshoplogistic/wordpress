@@ -1018,12 +1018,18 @@ class Ajax implements ModuleInterface
 
 		$unloading = new UnloadingOrder();
 		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
-		$unloading->clearLocalShipment($order_id);
+		$isError = isset($result['success']) && $result['success'] === false;
+
+		if (!$isError) {
+			$unloading->clearLocalShipment($order_id);
+		}
 
 		wp_send_json([
-			'success' => true,
+			'success' => !$isError,
 			'data' => $result,
-			'msg' => esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
+			'msg' => $isError
+				? (isset($result['data']['messages']) ? esc_html($result['data']['messages']) : esc_html__("Ошибка при удалении заказа для выгрузки", 'eshoplogisticru'))
+				: esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
 		]);
 	}
 
