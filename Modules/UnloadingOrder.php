@@ -464,19 +464,21 @@ class UnloadingOrder implements ModuleInterface
         );
 
         // ПЭК подтверждает заявку асинхронно — трек-номер может быть не готов сразу
-        // после создания. Повторяем запрос до 3 раз (8с, затем 2с, 2с). Если за 3
-        // попытки трек так и не пришёл, это не ошибка — заявка у ТК уже создана,
-        // откатывать локальное состояние нельзя (повторное нажатие "Выгрузить"
-        // создаст дубль заявки у перевозчика). Помечаем как "ожидает подтверждения".
+        // после создания. Повторяем запрос до 2 раз (3с, затем 2с) — короче, чем
+        // раньше (было 8с+2с+2с=12с), чтобы не упереться в таймаут PHP/прокси внутри
+        // AJAX-запроса. Если трек так и не пришёл, это не ошибка — заявка у ТК уже
+        // создана, откатывать локальное состояние нельзя (повторное нажатие
+        // "Выгрузить" создаст дубль заявки у перевозчика). Помечаем как "ожидает
+        // подтверждения" — дальше трек подхватит Cron/UnloadingCron.php.
         if ($deliveryId === 'pecom') {
             $this->saveShippingMethods($orderShippingId, $shippingMethods);
 
-            $maxAttempts = 3;
+            $maxAttempts = 2;
             $retryDelay = 2;
             $resultGet = null;
 
             for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-                sleep($attempt === 1 ? 8 : $retryDelay);
+                sleep($attempt === 1 ? 3 : $retryDelay);
                 $resultGet = $eshopLogisticApi->apiExportCreateSdek($dataGet);
                 if (!$resultGet->hasErrors()) {
                     break;
