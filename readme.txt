@@ -1,7 +1,7 @@
 === eShopLogistic Shipping Calculator ===
 Contributors: Moonshine
 Tags: shipping,eshoplogistic,delivery,woocommerce
-Tested up to: 6.9
+Tested up to: 7.0
 Stable tag: 2.2.22
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

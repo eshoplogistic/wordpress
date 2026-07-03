@@ -36,6 +36,7 @@ class Shipping implements ModuleInterface
 	    $logger = new \WC_Logger();
 
 	    if ( $eslLog ) {
+		    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
 		    $logger->debug( '[ESL registerShippingMethods] frame_enable=' . var_export( $frameEnable, true ) . ', services=' . var_export( $services, true ), [ 'source' => 'wc-esl-shipping' ] );
 	    }
 
@@ -55,6 +56,7 @@ class Shipping implements ModuleInterface
 				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
 				    $methods[ $key ] = $class;
 				    if ( $eslLog ) {
+					    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
 					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
 				    }
 			    }
@@ -64,6 +66,7 @@ class Shipping implements ModuleInterface
 				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
 				    $methods[ $key ] = $class;
 				    if ( $eslLog ) {
+					    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
 					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
 				    }
 			    }

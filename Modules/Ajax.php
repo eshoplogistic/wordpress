@@ -635,7 +635,7 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		$formData = isset($_POST['formData']) ? wp_unslash($_POST['formData']) : null;
+		$formData = isset($_POST['formData']) ? sanitize_text_field(wp_unslash($_POST['formData'])) : null;
 
 		if (is_null($formData)) {
 			wp_send_json([

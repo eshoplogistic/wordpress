@@ -27,6 +27,7 @@ class Plugin
 		$logger = $eslLog && function_exists('wc_get_logger') ? wc_get_logger() : null;
 
 		if ( $logger ) {
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
 			$logger->debug(
 				'[ESL isEnable] plugin_enable=' . var_export( $pluginEnable, true )
 				. ', api_key=' . ( empty( $apiKey ) ? 'EMPTY' : 'SET' )
@@ -34,6 +35,7 @@ class Plugin
 				. ', account_blocked=' . var_export( $accountBlocked, true ),
 				[ 'source' => 'wc-esl-shipping' ]
 			);
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		}
 
 		if ( $pluginEnable !== '1' ) {
