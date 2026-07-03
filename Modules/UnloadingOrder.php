@@ -900,17 +900,7 @@ class UnloadingOrder implements ModuleInterface
         $optionsRepository = new OptionsRepository();
         $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 
-        $order = wc_get_order($id);
-        $orderData = $order->get_data();
-        $orderShippingId = reset($orderData['shipping_lines']);
-        $orderShippingId = $orderShippingId->get_id();
-        $shippingMethod = wc_get_order_item_meta($orderShippingId, 'esl_shipping_methods', $single = true);
-        if ($shippingMethod) {
-            $shippingMethods = json_decode($shippingMethod, true);
-            if (isset($shippingMethods['answer']['order']['id'])) {
-                $id = $shippingMethods['answer']['order']['id'];
-            }
-        }
+        $id = $this->resolveCarrierOrderId($id);
 
         $data = array(
             'key' => $apiKey,
@@ -931,6 +921,88 @@ class UnloadingOrder implements ModuleInterface
         }
 
         return $result->data();
+    }
+
+    /**
+     * Резолвит идентификатор заказа в системе ТК по локальному WC order id
+     * (esl_shipping_methods.answer.order.id), с фолбэком на сам order id,
+     * если выгрузки ещё не было. Общий кусок для infoOrder()/printOrder().
+     *
+     * @param int $orderId
+     *
+     * @return int|string
+     */
+    private function resolveCarrierOrderId($orderId)
+    {
+        $id = $orderId;
+        $order = wc_get_order($orderId);
+        if (!$order) {
+            return $id;
+        }
+
+        $orderData = $order->get_data();
+        $orderShippingId = reset($orderData['shipping_lines']);
+        if (!$orderShippingId) {
+            return $id;
+        }
+        $orderShippingId = $orderShippingId->get_id();
+
+        $shippingMethod = wc_get_order_item_meta($orderShippingId, 'esl_shipping_methods', $single = true);
+        if ($shippingMethod) {
+            $shippingMethods = json_decode($shippingMethod, true);
+            if (isset($shippingMethods['answer']['order']['id'])) {
+                $id = $shippingMethods['answer']['order']['id'];
+            }
+        }
+
+        return $id;
+    }
+
+    /**
+     * Получение печатной формы (этикетка/накладная/штрихкоды и т.д.) по уже
+     * выгруженному заказу. Портировано из moj_sklad UnloadingPrint::initType() —
+     * тот же endpoint (delivery/order, action=print), только результат — не HTML
+     * виджета, а сырые success/url для рендера ссылки в Ajax::unloadingPrint().
+     *
+     * @param int    $orderId
+     * @param string $orderType Слаг ТК (sdek, pecom, dpd ...).
+     * @param string $mode      barcodes|order|label|invoice|bill|act ...
+     * @param string $paper     Формат бумаги (A4, A5 ...), если применимо к ТК.
+     *
+     * @return array{success: bool, url?: string, error?: array}
+     */
+    public function printOrder($orderId, $orderType, $mode, $paper = '')
+    {
+        $optionsRepository = new OptionsRepository();
+        $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
+
+        $carrierOrderId = $this->resolveCarrierOrderId($orderId);
+
+        $data = array(
+            'key' => $apiKey,
+            'action' => 'print',
+            'order_id' => $carrierOrderId,
+            'service' => $orderType,
+            'fake' => 1,
+        );
+
+        if ($mode) {
+            $data['mode'] = $mode;
+        }
+        if ($paper) {
+            $data['format'] = $paper;
+        }
+
+        $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+        $result = $eshopLogisticApi->apiExportCreate($data);
+
+        if ($result->hasErrors()) {
+            return array('success' => false, 'error' => $result->jsonSerialize());
+        }
+
+        $resultData = $result->data();
+
+        return array('success' => true, 'url' => $resultData['url'] ?? '');
     }
 
     public function getStatusWp()

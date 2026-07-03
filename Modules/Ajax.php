@@ -79,6 +79,7 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_save_status_form', [$this, 'unloadingStatus']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_status_update', [$this, 'unloadingStatusUpdate']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_delete', [$this, 'unloadingDelete']);
+		add_action('wp_ajax_wc_esl_shipping_unloading_print', [$this, 'unloadingPrint']);
 		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
 		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
 		add_action('wp_ajax_wc_esl_shipping_search_terminal', [$this, 'searchTerminalAdmin']);
@@ -1130,6 +1131,42 @@ class Ajax implements ModuleInterface
 			'success' => !$isError,
 			'data' => $result,
 			'msg' => ""
+		]);
+	}
+
+	public function unloadingPrint()
+	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
+		if (
+			!isset($_POST['order_id']) ||
+			!isset($_POST['order_type']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
+
+		$order_id = absint(wp_unslash($_POST['order_id']));
+		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
+		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : '';
+		$paper = isset($_POST['paper']) ? sanitize_text_field(wp_unslash($_POST['paper'])) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$unloading = new UnloadingOrder();
+		$result = $unloading->printOrder($order_id, $order_type, $mode, $paper);
+
+		$urlPrint = !empty($result['success']) ? ($result['url'] ?? '') : '';
+
+		$html = '';
+		if ($urlPrint) {
+			$html = '<a href="' . esc_url($urlPrint) . '" target="_blank" rel="noopener">' . esc_html__('Открыть печатную форму', 'eshoplogisticru') . '</a>';
+		}
+
+		wp_send_json([
+			'success' => (bool) $urlPrint,
+			'data' => $html,
+			'msg' => $urlPrint ? '' : esc_html__('Печатная форма не получена', 'eshoplogisticru')
 		]);
 	}
 

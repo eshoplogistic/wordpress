@@ -467,6 +467,62 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// Печатные формы (модалка "Информация о заказе") — портировано из МС
+// onSelectedPrintBut()/getPrintType. Кнопки рендерятся в views/unloading/print.php,
+// сама HTML-ссылка на печатную форму приходит с сервера (Ajax::unloadingPrint()).
+document.addEventListener('click', function (e) {
+    let printBtn = e.target.closest('.esl-print-button');
+    if (!printBtn) {
+        return;
+    }
+    e.preventDefault();
+
+    let wrapper = printBtn.closest('.esl-print');
+    let paperSelect = wrapper ? wrapper.querySelector('.esl-print-paper') : null;
+    let resultBox = wrapper ? wrapper.querySelector('.esl-print__result') : null;
+    let mode = printBtn.getAttribute('data-mode') || '';
+    let paper = paperSelect ? paperSelect.value : '';
+
+    let orderIdField = document.getElementById('order_info_id');
+    let orderTypeField = document.getElementById('order_info_type');
+    if (!orderIdField || !orderTypeField) {
+        return;
+    }
+
+    if (wrapper) {
+        wrapper.querySelectorAll('.esl-print-button').forEach(function (btn) {
+            btn.classList.remove('esl-print-button--active');
+        });
+    }
+    printBtn.classList.add('esl-print-button--active');
+
+    if (resultBox) {
+        resultBox.textContent = 'Загрузка…';
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', wc_esl_shipping_global.ajaxUrl);
+    let params = 'action=wc_esl_shipping_unloading_print'
+        + '&order_id=' + encodeURIComponent(orderIdField.value)
+        + '&order_type=' + encodeURIComponent(orderTypeField.value)
+        + '&mode=' + encodeURIComponent(mode)
+        + '&paper=' + encodeURIComponent(paper)
+        + '&esl_nonce=' + wc_esl_shipping_global.eslNonce;
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.send(params);
+    xhr.onload = () => {
+        let obj = JSON.parse(xhr.responseText);
+        if (!resultBox) {
+            return;
+        }
+        if (obj.success) {
+            resultBox.innerHTML = obj.data;
+        } else {
+            resultBox.textContent = obj.msg || 'Не удалось получить печатную форму';
+        }
+    };
+});
+
 function copyToClipboard(containerid, e) {
     let elemText = containerid
     let elemBut = e.id

@@ -646,6 +646,91 @@
     background: var(--esl-accent-dark);
 }
 
+/* Блок "Печатные формы" внутри #modal-esl-info (views/unloading/print.php) —
+   портировано из МС widgets/unloadingprint.html.php. Селекторы намеренно
+   заскоуплены через #modal-esl-info (id), а не просто .esl-print-button — иначе
+   ядровый ".wp-core-ui .button" (2 класса) перебивает наш класс-без-id по
+   специфичности, и кнопка остаётся с дефолтной серой обводкой вместо заливки. */
+#modal-esl-info .esl-print {
+    padding-top: 4px;
+}
+
+#modal-esl-info .esl-print__paper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--esl-text);
+}
+
+#modal-esl-info .esl-print__paper select {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text);
+    font-size: 13px;
+}
+
+#modal-esl-info .esl-print__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#modal-esl-info .esl-print-button {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+#modal-esl-info .esl-print-button:hover {
+    background: var(--esl-accent-dark);
+    color: #fff;
+}
+
+#modal-esl-info .esl-print-button--active {
+    background: var(--esl-accent-dark);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .4);
+}
+
+#modal-esl-info .esl-print__result {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--esl-text-muted);
+}
+
+#modal-esl-info .esl-print__result:empty {
+    margin-top: 0;
+}
+
+#modal-esl-info .esl-print__result a {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(34, 113, 177, .08);
+    color: var(--esl-accent);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#modal-esl-info .esl-print__result a:hover {
+    background: rgba(34, 113, 177, .15);
+    text-decoration: underline;
+}
+
+.esl-print__result a {
+    font-weight: 600;
+}
+
 .esl-notifications {
     position: fixed;
     top: 120px;
