@@ -111,11 +111,11 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $paymentMethodOptions ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
 		}
 
 		if ( ! isset( $this->selectedPayment['key'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
 		}
 
 		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $this->addressForDelivery : $this->addressForDelivery;
@@ -162,14 +162,14 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $data['payment_method']['id'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
 		}
 
 		$orderData = new OrderData( $data );
 		$orderId   = $orderData->save();
 
 		if ( ! $orderId ) {
-			$this->json( [
+			return $this->json( [
 				'success' => false,
 				'message' => __( 'При создании заказа произошла ошибка', 'eshoplogisticru' )
 			] );
