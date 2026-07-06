@@ -156,11 +156,11 @@ class EshopLogisticApi
 			if($this->eslLog == '1'){
 				$this->eslWriteLog( $response, $data );
 			}
-			if ( isset($response['success']) && $response['success'] || ($response['http_status'] == 200) ) {
+			if ( is_array($response) && ( (isset($response['success']) && $response['success']) || (isset($response['http_status']) && $response['http_status'] == 200) ) ) {
 				if(isset($response['debug']))
 					$response['data']['debug'] = $response['debug'];
 
-				return new CollectionResponse( $response['data'] );
+				return new CollectionResponse( $response['data'] ?? [] );
 			}
 
 			return new ErrorResponse( $response );
@@ -281,7 +281,7 @@ class EshopLogisticApi
 				$this->eslWriteLog( $response, $data );
 			}
 
-			if ( $response['http_status'] == 200 && isset($response['data']['state']['number'])) {
+			if ( is_array($response) && ($response['http_status'] ?? null) == 200 && isset($response['data']['state']['number'])) {
 				return new CollectionResponse( $response['data'] );
 			}
 
