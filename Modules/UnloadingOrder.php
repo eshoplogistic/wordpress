@@ -826,7 +826,7 @@ class UnloadingOrder implements ModuleInterface
         }
 
         //FAKE
-        $defaultFields['fake'] = 1;
+        //$defaultFields['fake'] = 1;
 
         return $defaultFields;
     }
@@ -907,7 +907,7 @@ class UnloadingOrder implements ModuleInterface
             'action' => $action,
             'order_id' => $id,
             'service' => $type,
-            'fake' => 1
+            //'fake' => 1
         );
 
         if($dataAdd){
@@ -983,7 +983,7 @@ class UnloadingOrder implements ModuleInterface
             'action' => 'print',
             'order_id' => $carrierOrderId,
             'service' => $orderType,
-            'fake' => 1,
+            //'fake' => 1,
         );
 
         if ($mode) {
