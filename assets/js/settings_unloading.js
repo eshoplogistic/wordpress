@@ -306,6 +306,43 @@ window.addEventListener('load', function () {
     document.querySelectorAll('.esl-take-payment-toggle input[type="checkbox"]').forEach(eslSyncCostToggle);
 });
 
+// Поле "Тип доставки" (delivery_type) определяет, какие поля получателя актуальны —
+// как в moj_sklad: для ПВЗ (terminal) нужны "Код ПВЗ"/"Адрес ПВЗ", а "Улица"/"Здание"/
+// "Квартира" (и комментарий у Яндекс.Доставки) не нужны, и наоборот для курьера (door).
+function eslSyncDeliveryTypeToggle(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let isTerminal = (select.value === 'terminal');
+
+    form.querySelectorAll('.esl-terminal-only').forEach(function (field) {
+        let input = field.querySelector('.form-value');
+        if (input) {
+            input.disabled = !isTerminal;
+        }
+    });
+
+    form.querySelectorAll('.esl-door-only').forEach(function (field) {
+        let input = field.querySelector('.form-value');
+        if (input) {
+            input.disabled = isTerminal;
+        }
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="delivery_type"]')) {
+        return;
+    }
+    eslSyncDeliveryTypeToggle(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="delivery_type"]').forEach(eslSyncDeliveryTypeToggle);
+});
+
 // Поле "Способ отгрузки в ТК" (pick_up) определяет, какие поля отправителя реально
 // используются на бэкенде (Modules/Unloading.php: pick_up=0 -> sender-terminal, pick_up=1 -> адрес).
 // Здесь просто отключаем неиспользуемые поля, чтобы они не вводили оператора в заблуждение

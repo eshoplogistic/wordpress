@@ -131,13 +131,13 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 </select>
                             </div>
 
-                            <div class="form-field">
+                            <div class="form-field esl-terminal-only">
                                 <label class="label" for="terminal-code">Код ПВЗ:</label>
                                 <input class="form-value" id="terminal-code" name="terminal-code" type="text"
                                        value="<?php echo esc_attr($wc_esl_addressShipping['terminal'] ?? '') ?>">
                             </div>
 
-                            <div class="form-field">
+                            <div class="form-field esl-terminal-only">
                                 <label class="label" for="terminal-address">Адрес ПВЗ:</label>
                                 <input class="form-value" id="terminal-address" name="terminal-address" type="text"
                                        value="<?php echo esc_attr($wc_esl_addressShipping['terminal_address'] ?? '') ?>">
@@ -153,11 +153,13 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 <input class="form-value" id="receiver-phone" name="receiver-phone" type="text"
                                        value="<?php echo esc_attr($wc_esl_address['phone']) ?>">
                             </div>
+                            <?php if ($wc_esl_typeMethod['name'] !== 'postrf'): ?>
                             <div class="form-field">
                                 <label class="label" for="receiver-email">Электронная почта:</label>
                                 <input class="form-value" id="receiver-email" name="receiver-email" type="text"
                                        value="<?php echo esc_attr($wc_esl_address['email']) ?>">
                             </div>
+                            <?php endif; ?>
                             <div class="form-field">
                                 <label class="label" for="receiver-region">Регион:</label>
                                 <input class="form-value" id="receiver-region" name="receiver-region" type="text"
@@ -172,16 +174,16 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 <label class="label" for="receiver-district">Район:</label>
                                 <input class="form-value" id="receiver-district" name="receiver-district" type="text" value="<?php echo esc_attr($wc_esl_district) ?>">
                             </div>
-                            <div class="form-field">
+                            <div class="form-field esl-door-only">
                                 <label class="label" for="receiver-street">Улица:</label>
                                 <input class="form-value" id="receiver-street" name="receiver-street" type="text"
                                        value="<?php echo esc_attr($wc_esl_street) ?>">
                             </div>
-                            <div class="form-field">
+                            <div class="form-field esl-door-only">
                                 <label class="label" for="receiver-house">Здание:</label>
                                 <input class="form-value" id="receiver-house" name="receiver-house" type="text" value="<?php echo esc_attr($wc_esl_building) ?>">
                             </div>
-                            <div class="form-field">
+                            <div class="form-field esl-door-only">
                                 <label class="label" for="receiver-room">Квартира / офис:</label>
                                 <input class="form-value" id="receiver-room" name="receiver-room" type="text" value="<?php echo esc_attr($wc_esl_room) ?>">
                             </div>
@@ -330,10 +332,18 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                        value="<?php echo esc_attr($wc_esl_orderData['shipping_total']); ?>">
                             </div>
 
-                            <div class="form-field">
+                            <?php
+                            // dpd/fivepost/pecom не поддерживают комментарий к заказу. Яндекс.Доставка —
+                            // только при курьерской доставке (для ПВЗ поле скрыто), как в moj_sklad.
+                            $wc_esl_showComment = !in_array($wc_esl_typeMethod['name'], array('dpd', 'fivepost', 'pecom'), true);
+                            $wc_esl_commentDoorOnly = $wc_esl_typeMethod['name'] === 'yandex';
+                            ?>
+                            <?php if ($wc_esl_showComment): ?>
+                            <div class="form-field<?php echo $wc_esl_commentDoorOnly ? ' esl-door-only' : ''; ?>">
                                 <label class="label" for="comment">Комментарий:</label>
                                 <textarea class="form-value" id="comment" name="comment"></textarea>
                             </div>
+                            <?php endif; ?>
                         </div>
 
                     </section>
