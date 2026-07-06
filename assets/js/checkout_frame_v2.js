@@ -810,6 +810,17 @@ function isNumeric(value) {
 
         },
         confirm: async function (response) {
+            const serviceData = response.service && response.service.responseData
+                ? response.service.responseData[response.typeDelivery]
+                : undefined
+
+            if (!serviceData) {
+                // Тариф для этого типа доставки ещё не посчитан (например, курьер ждёт адрес) —
+                // виджет повторно вызовет onSelectedService, когда данные будут готовы.
+                console.log('ESL: нет данных тарифа для "' + response.typeDelivery + '", выбор пропущен')
+                return
+            }
+
             let esldata = {
                 price: 0,
                 time: '',
@@ -834,12 +845,12 @@ function isNumeric(value) {
                 esldata.deliveryMethods = response.deliveryMethods
             }
 
-            let time = response.service.responseData[response.typeDelivery].time
+            let time = serviceData.time
 
-            esldata.price = response.service.responseData[response.typeDelivery].price
+            esldata.price = serviceData.price
             esldata.time = time.value + ' ' + time.unit
-            if (response.service.responseData[response.typeDelivery].comment) {
-                esldata.comment += '<br>' + response.service.responseData[response.typeDelivery].comment
+            if (serviceData.comment) {
+                esldata.comment += '<br>' + serviceData.comment
             }
 
             if (typeof response.terminal == 'object') {
