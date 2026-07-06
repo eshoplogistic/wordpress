@@ -105,9 +105,9 @@
      */
     function getCurrentCheckoutCityName() {
         try {
-            // 1. Кастомный ID поля из настроек
-            const shippingFieldRef = document.getElementById('eslShippingCityFields');
-            const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : null;
+            // 1. Кастомный ID поля из настроек (передаётся в конфиге, т.к. в Blocks
+            // скрытые input'ы легаси-чекаута #eslShippingCityFields не рендерятся)
+            const shippingFieldId = config.shippingCityField || '';
             if (shippingFieldId) {
                 const el = document.getElementById(shippingFieldId);
                 if (el && el.value) return el.value;
@@ -316,10 +316,7 @@
     }
 
     function getCheckoutCityElement() {
-        const customRefId = 'eslShippingCityFields';
-        const customRef = document.getElementById(customRefId);
-        const customId = customRef && customRef.value ? customRef.value : '';
-
+        const customId = config.shippingCityField || '';
         const fallbackIds = ['shipping_city', 'shipping-city'];
 
         const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
@@ -327,10 +324,7 @@
     }
 
     function getCheckoutBillingCityElement() {
-        const customRefId = 'eslBillingCityFields';
-        const customRef = document.getElementById(customRefId);
-        const customId = customRef && customRef.value ? customRef.value : '';
-
+        const customId = config.billingCityField || '';
         const fallbackIds = ['billing_city', 'billing-city'];
 
         const ids = customId ? [customId, ...fallbackIds] : fallbackIds;

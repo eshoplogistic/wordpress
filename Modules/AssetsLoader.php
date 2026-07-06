@@ -203,6 +203,9 @@ class AssetsLoader implements ModuleInterface
 		$addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 		$paymentCalcEnabled = isset($addForm['paymentCalc']) && $addForm['paymentCalc'] === 'true';
 
+		$billingCityField = !empty($addForm['billingCity']) ? $addForm['billingCity'] : 'billing_city';
+		$shippingCityField = !empty($addForm['shippingCity']) ? $addForm['shippingCity'] : 'shipping_city';
+
 		// Проверяем наличие опции
 		$isFrameEnabled = false;
 		if ( !empty($frameEnable) ) {
@@ -222,6 +225,8 @@ class AssetsLoader implements ModuleInterface
 		$config_script .= '    "shippingNonce": ' . json_encode(wp_create_nonce('wc-esl-shipping')) . ',' . "\n";
 		$config_script .= '    "checkoutFrameEnabled": ' . json_encode($isFrameEnabled) . ',' . "\n";
 		$config_script .= '    "paymentCalc": ' . json_encode($paymentCalcEnabled) . ',' . "\n";
+		$config_script .= '    "billingCityField": ' . json_encode($billingCityField) . ',' . "\n";
+		$config_script .= '    "shippingCityField": ' . json_encode($shippingCityField) . ',' . "\n";
 		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";
 		$config_script .= '};' . "\n";
 		$config_script .= 'console.log("✓ wcEslBlockFrontend injected:", window.wcEslBlockFrontend);' . "\n";
