@@ -9,6 +9,7 @@ use eshoplogistic\WCEshopLogistic\Http\Response\CollectionResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ErrorResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ExceptionResponse;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 if ( ! defined('ABSPATH') ) {
 	exit;
@@ -210,8 +211,11 @@ class EshopLogisticApi
 	 * покупателей (адрес, телефон, email) кому угодно, кто знает URL.
 	 *
 	 * Формат: короткая сводка первой строкой (action/service/order_id — чтобы можно было
-	 * понять "что за запрос и откуда" не разворачивая JSON), затем отдельно request и response
-	 * в pretty-print JSON, а не одной нечитаемой строкой.
+	 * понять "что за запрос и откуда" не разворачивая JSON), а request/response передаются
+	 * вторым аргументом ($context) через общий хелпер EslLogger. Это тот же механизм, которым
+	 * пользуется ядро WooCommerce для лога "place-order-debug": логгер (LogHandlerFileV2)
+	 * дописывает " CONTEXT: {json}" в конец строки, а страница просмотра лога сворачивает его
+	 * в блок "Дополнительный контекст" — вместо того, чтобы выводить сырой JSON прямо в тексте лога.
 	 *
 	 * @param mixed  $log  Ответ API (обычно массив, декодированный из JSON).
 	 * @param mixed  $type Данные запроса (если переданы, добавляются в лог вместе с URL запроса).
@@ -220,10 +224,6 @@ class EshopLogisticApi
 		if(isset($type['target']))
 			return false;
 
-		if( ! function_exists('wc_get_logger') )
-			return false;
-
-		$jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT;
 		$isRequestArray = is_array($type) || is_object($type);
 		$requestArr = $isRequestArray ? (array) $type : array();
 
@@ -236,24 +236,15 @@ class EshopLogisticApi
 			$this->apiUrl
 		);
 
-		$lines = array($summary);
+		$context = array('source' => 'wc-esl-shipping');
 
 		if ($isRequestArray && $requestArr) {
-			$requestJson = wp_json_encode($requestArr, $jsonFlags);
-			$lines[] = '--- Запрос ---';
-			$lines[] = false !== $requestJson ? $requestJson : 'Failed to encode request payload';
+			$context['request'] = $requestArr;
 		}
 
-		if (is_array($log) || is_object($log)) {
-			$responseJson = wp_json_encode((array) $log, $jsonFlags);
-			$lines[] = '--- Ответ ---';
-			$lines[] = false !== $responseJson ? $responseJson : 'Failed to encode response payload';
-		} else {
-			$lines[] = '--- Ответ ---';
-			$lines[] = (string) $log;
-		}
+		$context['response'] = (is_array($log) || is_object($log)) ? (array) $log : (string) $log;
 
-		wc_get_logger()->info(implode("\n", $lines), array('source' => 'wc-esl-shipping'));
+		EslLogger::info($summary, $context);
 	}
 
 	public function geo($ip = '')

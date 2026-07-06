@@ -2,6 +2,7 @@
 namespace eshoplogistic\WCEshopLogistic\Cron;
 
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
 
 if ( ! defined( 'WPINC' ) ) {
@@ -105,10 +106,10 @@ class UnloadingCron
                 }
             }
 
-			$logger = wc_get_logger();
-			$context = array( 'source' => 'esl-info-cron-status' );
-			$statusLog = wp_json_encode($status, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			$logger->info( false !== $statusLog ? $statusLog : 'Failed to encode status log',  $context);
+			EslLogger::info( '[ESL updateStatus] order_id=' . $orderId, array(
+				'source' => 'esl-info-cron-status',
+				'status'  => $status,
+			) );
 		}
 
 	}

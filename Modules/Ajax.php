@@ -4,6 +4,7 @@ namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OptionsController;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\SessionController;
@@ -976,10 +977,10 @@ class Ajax implements ModuleInterface
 		if ($resultParams->hasErrors()) {
 			$error = $resultParams->jsonSerialize();
 
-			$logger = wc_get_logger();
-			$context = array('source' => 'esl-error-load-unloading');
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Debug logging for error tracking
-			$logger->info(print_r($error, true),  $context);
+			EslLogger::info( '[ESL unloadingEnable] validation errors', array(
+				'source' => 'esl-error-load-unloading',
+				'error'  => $error,
+			) );
 
 			if (isset($error['data']['errors'])) {
 				$this->iteratorError($error['data']['errors']);

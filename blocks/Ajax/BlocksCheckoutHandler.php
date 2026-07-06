@@ -13,10 +13,11 @@
 
 namespace eshoplogistic\WCEshopLogistic\Blocks\Ajax;
 
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
 class BlocksCheckoutHandler {
-	
+
 	/**
 	 * Обработка обновления выбранного shipping frame для WooCommerce Blocks checkout.
 	 *
@@ -25,12 +26,14 @@ class BlocksCheckoutHandler {
 	 */
 	public function handleShippingUpdate() {
 		if ( ! check_ajax_referer( 'wc-esl-shipping', 'nonce', false ) ) {
+			EslLogger::debug( '[ESL BlocksCheckoutHandler] BLOCKED: security check failed' );
 			wp_send_json_error(['message' => 'Security check failed']);
 			return;
 		}
 
 		// Валидация запроса
 		if ( ! isset($_POST['data']) ) {
+			EslLogger::debug( '[ESL BlocksCheckoutHandler] BLOCKED: missing shipping data' );
 			wp_send_json_error(['message' => 'Missing shipping data']);
 			return;
 		}
@@ -108,6 +111,12 @@ class BlocksCheckoutHandler {
 			// Очистка кэша доставки для принудительного пересчета
 			$this->clearShippingCache();
 		}
+
+		EslLogger::debug( '[ESL BlocksCheckoutHandler] frame updated', [
+			'mode'          => $mode,
+			'frame_changed' => $frameChanged,
+			'frame'         => $data,
+		] );
 
 		// Возврат JSON-ответа для Blocks store
 		// JS вызовет invalidateResolutionForStore(), что заставит

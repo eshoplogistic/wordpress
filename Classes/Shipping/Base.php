@@ -13,6 +13,7 @@ use eshoplogistic\WCEshopLogistic\Services\CalculationService;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Helpers\ConflictPluginsHelper;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 class Base extends \WC_Shipping_Method
 {
@@ -197,8 +198,6 @@ class Base extends \WC_Shipping_Method
 			}
 		}
 
-		$logger = new \WC_Logger();
-
 		try {
 			if(!$apiKey) throw new \Exception(__("API ключ не установлен", 'eshoplogisticru'));
 			//if(!$payment) throw new \Exception(__("Метод оплаты не установлен", 'eshoplogisticru'));
@@ -276,7 +275,7 @@ class Base extends \WC_Shipping_Method
 		} catch(\Exception $e) {
 			unset($shippingMethods[$this->id]);
 
-			$logger->debug($e->getMessage());
+			EslLogger::debug( '[ESL calculate_shipping_basic] ' . $e->getMessage() );
 		}
 
 		$sessionService->set('shipping_methods', $shippingMethods);

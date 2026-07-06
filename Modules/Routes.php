@@ -3,6 +3,7 @@
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OrderController;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\WidgetController;
 
@@ -49,8 +50,7 @@ class Routes implements ModuleInterface
             $response->send();
 
         } catch(\Exception $e) {
-            $logger = new \WC_Logger();
-            $logger->debug($e->getMessage());
+            EslLogger::debug( '[ESL createOrder] ' . $e->getMessage() );
         }
     }
 
@@ -69,8 +69,7 @@ class Routes implements ModuleInterface
 			$response->send();
 
 		} catch(\Exception $e) {
-			$logger = new \WC_Logger();
-			$logger->debug($e->getMessage());
+			EslLogger::debug( '[ESL widgetLogData] ' . $e->getMessage() );
 		}
 	}
 }

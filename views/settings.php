@@ -190,8 +190,11 @@ $status_translate             = [
                                         <label class="custom-control-label" for="enablePluginLog">
                                             <div class="help-tip">
                                                 <p>
-                                                    Если включен данный параметр, все запросы к API будут записываться
-                                                    в журнал WooCommerce (источник «wc-esl-shipping»).<br>
+                                                    Если включен данный параметр, отладочные логи плагина (запросы к API,
+                                                    расчёт доставки, ошибки cron и выгрузки заказов) будут записываться
+                                                    в журнал WooCommerce — в основном под источником «wc-esl-shipping»,
+                                                    часть записей об ошибках выгрузки и статусах cron — под источниками
+                                                    «esl-error-load-unloading» и «esl-info-cron-status».<br>
                                                     Посмотреть журналы:
                                                     <a href="<?php echo esc_url(admin_url('admin.php?page=wc-status&tab=logs')); ?>">
                                                         WooCommerce → Статус → Журналы</a>

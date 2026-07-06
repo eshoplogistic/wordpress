@@ -6,6 +6,7 @@ use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\Classes\View;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
@@ -32,19 +33,14 @@ class Shipping implements ModuleInterface
         $services = $optionsRepository->getOption('wc_esl_shipping_account_services');
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
-	    $eslLog = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_log');
-	    $logger = new \WC_Logger();
-
-	    if ( $eslLog ) {
-		    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
-		    $logger->debug( '[ESL registerShippingMethods] frame_enable=' . var_export( $frameEnable, true ) . ', services=' . var_export( $services, true ), [ 'source' => 'wc-esl-shipping' ] );
-	    }
+	    EslLogger::debug( '[ESL registerShippingMethods] checking config', array(
+		    'frame_enable' => $frameEnable,
+		    'services'     => $services,
+	    ) );
 
 	    if($frameEnable){
 		    $methods[ WC_ESL_PREFIX . 'frame_mixed' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\FrameMixed';
-		    if ( $eslLog ) {
-			    $logger->debug( '[ESL registerShippingMethods] registered: ' . WC_ESL_PREFIX . 'frame_mixed', [ 'source' => 'wc-esl-shipping' ] );
-		    }
+		    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . WC_ESL_PREFIX . 'frame_mixed' );
 	    }elseif(!empty($services)){
 		    foreach($services as $serviceKey => $service) {
 				$exCustom = explode('-', $serviceKey);
@@ -55,26 +51,22 @@ class Shipping implements ModuleInterface
 				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_door';
 				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
 				    $methods[ $key ] = $class;
-				    if ( $eslLog ) {
-					    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
-					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
-				    }
+				    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class, array(
+					    'class_exists' => class_exists( $class ),
+				    ) );
 			    }
 
 			    if($service['terminal'] == '1') {
 				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_terminal';
 				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
 				    $methods[ $key ] = $class;
-				    if ( $eslLog ) {
-					    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Debug logging gated behind admin-configurable log flag, not left over debug code.
-					    $logger->debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class . ' (class_exists=' . var_export( class_exists( $class ), true ) . ')', [ 'source' => 'wc-esl-shipping' ] );
-				    }
+				    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class, array(
+					    'class_exists' => class_exists( $class ),
+				    ) );
 			    }
 		    }
 	    } else {
-		    if ( $eslLog ) {
-			    $logger->debug( '[ESL registerShippingMethods] no methods registered: frame_enable=false, services empty', [ 'source' => 'wc-esl-shipping' ] );
-		    }
+		    EslLogger::debug( '[ESL registerShippingMethods] no methods registered: frame_enable=false, services empty' );
 	    }
 
         return $methods;

@@ -5,6 +5,7 @@ namespace eshoplogistic\WCEshopLogistic\Services;
 use eshoplogistic\WCEshopLogistic\Contracts\OrderDataInterface;
 use eshoplogistic\WCEshopLogistic\Contracts\OfferInterface;
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 
 if ( ! defined('ABSPATH') ) {
@@ -43,15 +44,13 @@ class CalculationService
 			$cityTo = $cityName.' '.$adress;
 		}
 
-        $logger = new \WC_Logger();
-        $payload = [
+        EslLogger::debug( '[ESL calculate] delivery calculation request', [
             'service' => $service,
             'from' => $cityFrom,
             'to' => $cityTo,
             'payment' => $payment,
             'offers' => $offers,
-        ];
-        $logger->debug( wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+        ] );
 
         $response = $this->api->calculateDelivery($service, [
             'from' => $cityFrom,
