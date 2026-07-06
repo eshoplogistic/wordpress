@@ -215,8 +215,32 @@
 
         if (methodName.indexOf('_door') !== -1) return 'door';
         if (methodName.indexOf('_terminal') !== -1) return 'terminal';
-        if (methodName.indexOf('_mixed') !== -1) return window.keyDelivery;
-        
+        if (methodName.indexOf('_mixed') !== -1) {
+            // window.keyDelivery по умолчанию равен 'door', пока покупатель ни разу
+            // не открывал модалку выбора — это не значит, что он выбрал доставку до
+            // двери. Если тариф "mixed"-метода уже выбран (в т.ч. восстановлен из
+            // сессии) и его подпись явно указывает на ПВЗ/терминал, доверяем подписи,
+            // иначе кнопка выбора ПВЗ ошибочно скрывается для терминального тарифа.
+            const selectedRadio = document.querySelector(
+                '.wc-block-components-shipping-rates-control input[type="radio"]:checked, ' +
+                'input[type="radio"][name*="shipping_method"]:checked, ' +
+                'input[type="radio"][name*="shipping-rate"]:checked'
+            );
+            const label = (selectedRadio?.closest('label')?.textContent || '').toLowerCase();
+
+            if (label.indexOf('пункт выдачи') !== -1 ||
+                label.indexOf('терминал') !== -1 ||
+                label.indexOf('самовывоз') !== -1) {
+                return 'terminal';
+            }
+
+            if (label.indexOf('курьер') !== -1 || label.indexOf('до двери') !== -1) {
+                return 'door';
+            }
+
+            return window.keyDelivery;
+        }
+
         return null;
     }
 
@@ -1447,6 +1471,16 @@
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
             const deliveryData = event.detail;
+            const responseData = deliveryData?.service?.responseData?.[deliveryData?.typeDelivery];
+
+            if (!responseData) {
+                // Тариф для этого типа доставки ещё не посчитан (например, курьер ждёт
+                // ввода адреса) — не сохраняем это как выбор, иначе в сессию уйдёт
+                // подтверждённая ставка с ценой 0, которая переживёт перезагрузку страницы.
+                console.log('ESL: нет данных тарифа для "' + (deliveryData?.typeDelivery || '') + '", выбор пропущен');
+                return;
+            }
+
             const selectedHash = getServiceSignature(deliveryData);
             const frameData = buildLegacyShippingFrameData(deliveryData);
             const hasTerminalSelection = handleServiceChange(deliveryData);
@@ -1700,6 +1734,20 @@
 
             // Инициализировать модальное окно
             initModal();
+
+            // Синхронизировать видимость кнопки ПВЗ с уже выбранным (восстановленным
+            // из сессии) способом доставки — иначе кнопка остаётся скрытой до первого
+            // ручного клика по radio, хотя нужный ESL-метод уже выбран. Список radio
+            // от WooCommerce Blocks рендерится React'ом асинхронно и может ещё не
+            // существовать в момент первого вызова, поэтому повторяем несколько раз.
+            let syncAttempts = 0;
+            const syncInterval = setInterval(() => {
+                handleShippingMethodChange();
+                syncAttempts += 1;
+                if (syncAttempts >= 6) {
+                    clearInterval(syncInterval);
+                }
+            }, 500);
         });
     }
 
