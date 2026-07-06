@@ -8,6 +8,7 @@ use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Classes\View;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\AddressParser;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 
@@ -354,6 +355,26 @@ class UnloadingOrder implements ModuleInterface
                 if (!$room)
                     $room = get_post_meta($order->get_id(), 'esl_shipping_field_room', true);
 
+                $district = '';
+
+                // Структурированных полей адреса на чекауте нет - покупатель пишет улицу/дом/
+                // квартиру произвольным текстом в стандартные поля WooCommerce. Разбираем эту
+                // строку эвристически и подставляем только то, в чём разбор уверен; остальное
+                // оставляем пустым, чтобы не записать в заявку на доставку неверные данные.
+                if ($typeMethod['type'] === 'door' && (!$street || !$building || !$room)) {
+                    $parsedAddress = AddressParser::parse(
+                        (string) $order->get_shipping_address_1() ?: (string) $order->get_billing_address_1(),
+                        (string) $order->get_shipping_address_2() ?: (string) $order->get_billing_address_2(),
+                        (string) $order->get_shipping_city() ?: (string) $order->get_billing_city(),
+                        (string) $order->get_shipping_state() ?: (string) $order->get_billing_state()
+                    );
+
+                    if (!$street) $street = $parsedAddress['street'];
+                    if (!$building) $building = $parsedAddress['building'];
+                    if (!$room) $room = $parsedAddress['room'];
+                    $district = $parsedAddress['district'];
+                }
+
                 // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
                 echo View::render('unloading-form', [
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -387,7 +408,9 @@ class UnloadingOrder implements ModuleInterface
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                     'wc_esl_building' => $building,
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                    'wc_esl_room' => $room
+                    'wc_esl_room' => $room,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_district' => $district
                 ]);
             }
         }

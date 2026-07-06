@@ -28,6 +28,7 @@ $wc_esl_addFieldSaved      = isset( $wc_esl_addFieldSaved ) ? $wc_esl_addFieldSa
 $wc_esl_street             = isset( $wc_esl_street ) ? $wc_esl_street : '';
 $wc_esl_building           = isset( $wc_esl_building ) ? $wc_esl_building : '';
 $wc_esl_room               = isset( $wc_esl_room ) ? $wc_esl_room : '';
+$wc_esl_district           = isset( $wc_esl_district ) ? $wc_esl_district : '';
 
 $wc_esl_fulfillment = false;
 if(isset($wc_esl_infoApi['services']['pochtalion'])){
@@ -169,7 +170,7 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-district">Район:</label>
-                                <input class="form-value" id="receiver-district" name="receiver-district" type="text" value="">
+                                <input class="form-value" id="receiver-district" name="receiver-district" type="text" value="<?php echo esc_attr($wc_esl_district) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-street">Улица:</label>
