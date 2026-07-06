@@ -38,6 +38,30 @@ class OptionsPage implements ModuleInterface
 	public function init()
 	{
 		add_action( 'admin_menu', [$this, 'registerOptionsPage'], 99 );
+		add_action( 'admin_notices', [$this, 'renderPaymentMethodsNotice'] );
+	}
+
+	public function renderPaymentMethodsNotice()
+	{
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check, no state change.
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		if ( $page !== 'wc_esl_options' || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$pluginEnable   = $this->option->getOption( 'wc_esl_shipping_plugin_enable' );
+		$apiKey         = $this->option->getOption( 'wc_esl_shipping_api_key' );
+		$paymentMethods = $this->option->getOption( 'wc_esl_shipping_payment_methods' );
+
+		if ( $pluginEnable !== '1' || empty( $apiKey ) || ! empty( $paymentMethods ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+			esc_html__( 'eShopLogistic: не сопоставлены методы оплаты с методами оплаты сервиса (вкладка «Оплата и виджет») — это повлияет на расчёт стоимости доставки.', 'eshoplogisticru' )
+		);
 	}
 
 	public function registerOptionsPage()
