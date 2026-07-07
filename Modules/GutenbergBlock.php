@@ -255,10 +255,7 @@ class GutenbergBlock implements ModuleInterface
         }
         
              // Для предпросмотра в редакторе админки показываем заглушку
-        return '<div class="wc-esl-checkout-shipping-block" style="padding: 20px; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 4px; margin: 20px 0; text-align: center;">' .
-               '<p style="margin: 0; color: #666;">📦 ' . esc_html__('Shipping Calculator (Checkout)', 'eshoplogisticru') . '</p>' .
-               '<p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">' . esc_html__('Displays on checkout page', 'eshoplogisticru') . '</p>' .
-               '</div>';
+        return $this->renderBlockPlaceholder('wc-esl-checkout-shipping-block', __('Shipping Calculator (Checkout)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
     }
 
     /**
@@ -300,11 +297,11 @@ class GutenbergBlock implements ModuleInterface
             }
             
             $html .= '</div>';
-            
+
             return $html;
         }
-        
-        return '';
+
+        return $this->renderBlockPlaceholder('wc-esl-product-calculator-block', __('Product Shipping Calculator', 'eshoplogisticru'), __('Displays on product pages', 'eshoplogisticru'));
     }
 
     /**
@@ -315,8 +312,8 @@ class GutenbergBlock implements ModuleInterface
         if (is_cart()) {
             return '<div class="wc-esl-cart-shipping-block" data-block-type="cart-shipping"></div>';
         }
-        
-        return '';
+
+        return $this->renderBlockPlaceholder('wc-esl-cart-shipping-block', __('Cart Shipping (Frame)', 'eshoplogisticru'), __('Displays on cart page', 'eshoplogisticru'));
     }
 
     /**
@@ -324,8 +321,24 @@ class GutenbergBlock implements ModuleInterface
      */
     public function renderCheckoutFormBlock($attributes)
     {
-        return '<div class="wc-esl-checkout-form-block" ' .
-               'data-form-type="' . esc_attr($attributes['formType'] ?? 'full') . '"></div>';
+        if (is_checkout() && !is_wc_endpoint_url('order-received')) {
+            return '<div class="wc-esl-checkout-form-block" ' .
+                   'data-form-type="' . esc_attr($attributes['formType'] ?? 'full') . '"></div>';
+        }
+
+        return $this->renderBlockPlaceholder('wc-esl-checkout-form-block', __('Checkout Form (Legacy)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
+    }
+
+    /**
+     * Единая заглушка для блоков, показываемая в редакторе и вне их целевого контекста
+     * (согласовано с фолбэком renderCheckoutShippingBlock).
+     */
+    private function renderBlockPlaceholder($className, $title, $description)
+    {
+        return '<div class="' . esc_attr($className) . '" style="padding: 20px; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 4px; margin: 20px 0; text-align: center;">' .
+               '<p style="margin: 0; color: #666;">📦 ' . esc_html($title) . '</p>' .
+               '<p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">' . esc_html($description) . '</p>' .
+               '</div>';
     }
 
     /**
