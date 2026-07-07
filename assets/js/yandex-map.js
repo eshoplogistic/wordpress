@@ -19,7 +19,8 @@ function eslRunMap() {
             const params = new URLSearchParams({
                 action: 'wc_esl_set_terminal_address',
                 terminal: terminal.address,
-                terminal_code: terminal.code || ''
+                terminal_code: terminal.code || '',
+                nonce: wc_esl_shipping_global.nonce
             });
             request.send(params.toString())
 
@@ -51,7 +52,7 @@ function eslRunMap() {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send('action=wc_esl_set_terminal_filter&filters='+JSON.stringify(filters))
+            request.send('action=wc_esl_set_terminal_filter&filters='+encodeURIComponent(JSON.stringify(filters))+'&nonce='+wc_esl_shipping_global.nonce)
 
             request.addEventListener("readystatechange", () => {
 

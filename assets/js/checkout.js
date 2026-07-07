@@ -401,6 +401,7 @@
 					async: true,
 					data: {
 						action : 'wc_esl_update_shipping_address',
+						nonce: wc_esl_shipping_global.nonce
 					},
 					dataType: 'json',
 					success: function( response ) {
@@ -513,7 +514,8 @@
 					services,
 					city,
 					mode,
-					adress
+					adress,
+					nonce: wc_esl_shipping_global.nonce
 				},
 				dataType: 'json',
 				success: function( response ) {

@@ -122,7 +122,8 @@
 					postcode,
 					services,
 					city,
-					mode
+					mode,
+					nonce: wc_esl_shipping_global.nonce
 				},
 				dataType: 'json',
 				success: function( response ) {

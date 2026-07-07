@@ -527,7 +527,8 @@ function isNumeric(value) {
                 data: {
                     action: 'wc_esl_update_shipping_address',
                     ...cityData,
-                    mode
+                    mode,
+                    nonce: wc_esl_shipping_global.nonce
                 },
                 dataType: 'json',
                 success: function (response) {
@@ -869,7 +870,7 @@ function isNumeric(value) {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}`)
+            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}&nonce=${wc_esl_shipping_global.nonce}`)
 
             request.addEventListener("readystatechange", () => {
 

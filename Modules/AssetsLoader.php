@@ -127,8 +127,13 @@ class AssetsLoader implements ModuleInterface
 			$usingBlocks = has_block('eshoplogisticru/checkout-shipping') || 
 			               has_block('eshoplogisticru/checkout-form');
 
-			// SDK cart виджета нужен только когда frame включён
-			if ($frameEnable) {
+			// SDK cart виджета нужен только когда frame включён. Для блочного чекаута
+			// это не нужно: checkout_frame_block.js сам грузит и отслеживает SDK
+			// динамически (свой <script data-esl-widget-sdk="cart">), не видит этот
+			// подключённый через wp_enqueue_script тег (у него нет такого маркера) и
+			// поэтому раньше загружал app.js второй раз с нуля — второй, "спешный"
+			// экземпляр не всегда успевал получить полный список служб доставки.
+			if ($frameEnable && !$usingBlocks) {
 				wp_enqueue_script(
 					'wc_esl_app_frame_js_v2',
 					'https://api.esplc.ru/widgets/cart/app.js',

@@ -8,6 +8,15 @@
     border: 0;
 }
 
+/* Скрыть legacy-прелоадер (рендерится PHP как часть блока для паритета с classic
+   checkout) — в блочном чекауте его никто не показывает/не скрывает через JS
+   (это делает assets/css/style.css через классы body.load/.loaded_hiding, но
+   style.css намеренно не подключается на блочном чекауте). Без этого правила
+   спиннер виден постоянно, независимо от результата загрузки виджета. */
+.wc-esl-checkout-shipping-block .preloader {
+    display: none;
+}
+
 /* Legacy parity: city search UI */
 .wc-esl-checkout-shipping-block .wc-block-components-text-input {
     position: relative;

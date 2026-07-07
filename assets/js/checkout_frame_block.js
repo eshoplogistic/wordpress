@@ -13,6 +13,7 @@
     let errorCity = 0;
     let eslWidget = null;
     let widgetSdkRequested = false;
+    let loadingHideTimer = null;
 
     /**
      * Запустить инициализацию CDN SDK вручную.
@@ -82,7 +83,23 @@
             document.body.appendChild(preloader);
         }
 
-        preloader.style.display = isLoading ? 'block' : 'none';
+        // Небольшая задержка перед скрытием (а не мгновенное display:none) сглаживает
+        // мигание прелоадера, когда подряд идёт несколько быстрых show/hide (разные
+        // AJAX-запросы завершаются почти одновременно). Если за это время придёт новый
+        // "show" — просто отменяем скрытие, не моргая.
+        if (loadingHideTimer) {
+            clearTimeout(loadingHideTimer);
+            loadingHideTimer = null;
+        }
+
+        if (isLoading) {
+            preloader.style.display = 'block';
+        } else {
+            loadingHideTimer = setTimeout(() => {
+                preloader.style.display = 'none';
+                loadingHideTimer = null;
+            }, 250);
+        }
     }
 
     /**
@@ -547,7 +564,7 @@
             region: cityData.region || '',
             postcode: cityData.postcode || '',
             mode: updateMode,
-            nonce: config.nonce || ''
+            nonce: config.shippingNonce || config.nonce || ''
         });
 
         const services = cityData.services;
@@ -584,7 +601,7 @@
             region: cityData.region || '',
             postcode: cityData.postcode || '',
             mode: 'billing',
-            nonce: config.nonce || ''
+            nonce: config.shippingNonce || config.nonce || ''
         });
 
         const services = cityData.services;
@@ -799,7 +816,8 @@
             body: new URLSearchParams({
                 action: 'wc_esl_set_terminal_address',
                 terminal: terminalAddress,
-                terminal_code: terminalCode || ''
+                terminal_code: terminalCode || '',
+                nonce: config.shippingNonce || config.nonce || ''
             })
         }).then(r => r.json());
     }
@@ -1629,7 +1647,18 @@
                     if (widgetContainer) {
                         // Даём время на отрисовку модального окна
                         setTimeout(() => {
-                            reinitWidget(widgetContainer);
+                            // Виджет уже загружен и работает (обычно — с самой загрузки
+                            // страницы): полный reinitWidget() здесь сносит уже готовый
+                            // SDK и запускает новый экземпляр с нуля, из-за чего повторный
+                            // поиск города/служб может не успеть завершиться до конца и
+                            // показать неполный список (например, только Dostavista) —
+                            // именно поэтому раньше требовался повторный ввод города.
+                            // Если виджет уже жив — просто обновляем ему параметры.
+                            if (widgetSdkLoaded && window.widgetInit && eslWidget) {
+                                sendWidgetParams(widgetContainer);
+                            } else {
+                                reinitWidget(widgetContainer);
+                            }
                         }, 100);
                     }
                 }

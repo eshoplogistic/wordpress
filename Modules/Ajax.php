@@ -512,7 +512,13 @@ class Ajax implements ModuleInterface
 
 	public function updateShippingAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$fias = isset($_POST['fias']) ? sanitize_text_field(wp_unslash($_POST['fias'])) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$city = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
@@ -689,7 +695,13 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$terminal = isset($_POST['terminal']) ? sanitize_text_field(wp_unslash($_POST['terminal'])) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$terminal_code = isset($_POST['terminal_code']) ? sanitize_text_field(wp_unslash($_POST['terminal_code'])) : '';
@@ -708,7 +720,13 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalFilter()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$filters = isset($_POST['filters']) ? sanitize_text_field(wp_unslash($_POST['filters'])) : '';
 		$filters =  json_decode(stripslashes($filters), true);
 		$terminals = array();
@@ -786,7 +804,12 @@ class Ajax implements ModuleInterface
 
 	public function resetShippingAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Public AJAX endpoint for session reset functionality
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
 		try {
 			$sessionService = new SessionService();
 			$sessionService->dropAll();
