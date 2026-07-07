@@ -60,7 +60,7 @@ class CalculationService
             'debug' => 1
         ]);
 
-        if($response->hasErrors()) throw new \Exception(esc_html("Ошибка при расчёте стоимости доставки", 'eshoplogisticru'));
+        if($response->hasErrors()) throw new \Exception(esc_html(__("Ошибка при расчёте стоимости доставки", 'eshoplogisticru')));
 
         return apply_filters('wc_esl_response_data_api', $response->data());
     }
