@@ -201,34 +201,39 @@ class ExportFileds {
 			$result = array(
 				'sender' => array(
 					'legal' => '',
+					'company' => '',
 					'identity' => array(
 						'type' => '',
 						'series' => '',
 						'number' => '',
+					),
+					'requisites' => array(
 						'inn' => '',
 						'kpp' => '',
-					)
+					),
 				),
 				'receiver' => array(
-					'legal' => '',
 					'identity' => array(
 						'type' => '',
-						'series' => '',
-						'number' => '',
+						'passport_series' => '',
+						'passport_number' => '',
+					),
+					'requisites' => array(
 						'inn' => '',
 						'kpp' => '',
-					)
+					),
 				),
 				'delivery' => array(
+					'produce_date' => '',
 					'location_from' => array(
 						'pick_up_data' => array(
-							'date' => '',
 							'time_from' => '',
 							'time_to' => '',
-							'lift' => '',
-							'floor' => '',
 						)
 					)
+				),
+				'order' => array(
+					'content' => '',
 				),
 			);
 		}
@@ -251,6 +256,14 @@ class ExportFileds {
 					'produce_date' => '',
 					'produce_time' => '',
 					'tariff' => '',
+				),
+			);
+		}
+
+		if ( $name === 'integral' ) {
+			$result = array(
+				'delivery' => array(
+					'variant' => '',
 				),
 			);
 		}
@@ -598,55 +611,81 @@ class ExportFileds {
 		}
 
 		if ( $name === 'baikal' ) {
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+
 			$date = new DateTime();
 			$date->modify('+1 day');
 			$produce_date = $date->format('Y-m-d');
 
+			$senderLegalList = array(
+				1 => 'Юридическое лицо',
+				2 => 'Физическое лицо',
+			);
+
+			$senderOrgFormList = array(
+				1 => 'Физическое лицо',
+				5 => 'ООО',
+				6 => 'ОАО',
+				7 => 'ЗАО',
+				8 => 'ПАО',
+				9 => 'ИП',
+				12 => 'АО',
+			);
+
+			// ОПФ (организационно-правовые формы) получателя — тот же справочник и кэш, что и у Деловых линий (см. блок delline выше).
+			$opfCacheKey = WC_ESL_PREFIX . 'opf_types';
+			$opfType = get_transient($opfCacheKey);
+			if (false === $opfType) {
+				$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
+				$opfTypeResponse = $eshopLogisticApi->apiServiceOpf();
+				if ($opfTypeResponse->hasErrors()) {
+					$opfType = array();
+				} else {
+					$opfType = $opfTypeResponse->data();
+					set_transient($opfCacheKey, $opfType, HOUR_IN_SECONDS);
+				}
+			}
+			$opfBaikal = array('' => '- Не выбрано -');
+			foreach ((array) $opfType as $key => $value) {
+				if (!empty($value['services']['baikal'])) {
+					$opfBaikal[$value['services']['baikal']] = $value['name'];
+				}
+			}
+
 			$result = array(
 				'sender' => array(
-					'legal||select||Форма контрагента' => array(
-						1   => 'Юридическое лицо',
-						2   => 'Физическое лицо'
-					),
+					'legal||select||Тип отправителя' => $senderLegalList,
+					'company||text||Наименование организации' => ($exportFormSettings['sender-company-baikal']) ?? '',
 				),
-				'sender[identity]'   => array(
-					'type||select||Тип организационно-правовой формы'    => array(
-						1 => 'Физическое лицо',
-						5 => 'ООО',
-						9 => 'ИП',
-						12 => 'АО',
-					),
-					'series||text||Серия документа для физического лица' => '',
-					'number||text||Номер документа для физического лица' => '',
-					'inn||text||ИНН для юридического лица' => '',
-					'kpp||text||КПП для юридического лица' => '',
+				'sender[identity]' => array(
+					'type||select||Правовая форма (ОПФ)' => $senderOrgFormList,
+					'series||text||Серия' => ($exportFormSettings['sender-identity-series-baikal']) ?? '',
+					'number||text||Номер' => ($exportFormSettings['sender-identity-number-baikal']) ?? '',
 				),
-				'receiver' => array(
-					'legal||select||Форма контрагента' => array(
-						1   => 'Юридическое лицо',
-						2   => 'Физическое лицо'
-					),
+				'sender[requisites]' => array(
+					'inn||text||ИНН' => ($exportFormSettings['sender-inn-baikal']) ?? '',
+					'kpp||text||КПП' => ($exportFormSettings['sender-kpp-baikal']) ?? '',
 				),
-				'receiver[identity]'   => array(
-					'type||select||Тип организационно-правовой формы'    => array(
-						1 => 'Физическое лицо',
-						5 => 'ООО',
-						9 => 'ИП',
-						12 => 'АО',
-					),
-					'series||text||Серия документа для физического лица' => '',
-					'number||text||Номер документа для физического лица' => '',
-					'inn||text||ИНН для юридического лица' => '',
-					'kpp||text||КПП для юридического лица' => '',
+				'receiver[identity]' => array(
+					'type||select||Тип получателя' => $opfBaikal,
+					'passport_series||text||Серия' => '',
+					'passport_number||text||Номер' => '',
+				),
+				'receiver[requisites]' => array(
+					'inn||text||ИНН' => '',
+					'kpp||text||КПП' => '',
+				),
+				'delivery' => array(
+					'produce_date||date||Дата передачи груза' => $produce_date,
 				),
 				'delivery[location_from][pick_up_data]' => array(
-					'date||date||Дата забора груза от отправителя' => $produce_date,
-					'time_from||date||Время начала периода забора груза от отправителя' => $produce_date,
-					'time_to||date||Время окончания периода забора груза от отправителя' => $produce_date,
-					'lift||checkbox||Флаг наличия лифта' => '',
-					'floor||text||Количество этажей, если нужен спуск/подъём' => '',
-
-				)
+					'time_from||time||Интервал для забора груза c' => ($exportFormSettings['sender-time-from-baikal']) ?? '',
+					'time_to||time||Интервал для забора груза до' => ($exportFormSettings['sender-time-to-baikal']) ?? '',
+				),
+				'order' => array(
+					'content||text||Характер груза' => ($exportFormSettings['order-content-baikal']) ?? '',
+				),
 			);
 		}
 
@@ -685,6 +724,17 @@ class ExportFileds {
 					'produce_date||date||Дата приёма груза' => $produce_date,
 					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => '',
 					'tariff||select||Тариф' => $tariffs,
+				),
+			);
+		}
+
+		if ( $name === 'integral' ) {
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+
+			$result = array(
+				'order' => array(
+					'content||text||Характер груза' => ($exportFormSettings['order-content-integral']) ?? '',
 				),
 			);
 		}

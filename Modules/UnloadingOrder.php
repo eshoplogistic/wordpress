@@ -652,6 +652,7 @@ class UnloadingOrder implements ModuleInterface
             'Магнит Пост' => 'magnit',
             'Байкал Сервис' => 'baikal',
             'DPD' => 'dpd',
+            'Интеграл' => 'integral',
             'Фулфилмент-оператор «Почтальон»' => 'pochtalion',
         );
 

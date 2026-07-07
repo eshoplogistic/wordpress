@@ -442,6 +442,66 @@ window.addEventListener('load', function () {
     document.querySelectorAll('#unloading_form select[name="receiver[identity][type]"]').forEach(eslSyncPecomReceiverType);
 });
 
+// Байкал Сервис: тип отправителя определяет, нужны ли реквизиты организации (ОПФ/название/
+// ИНН/КПП, код 1 = юрлицо) или паспортные данные физлица (код 2), см. moj_sklad displayForm().
+function eslSyncBaikalSenderLegal(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let isOrg = (select.value === '1');
+
+    form.querySelectorAll('.esl-baikal-sender-legal-org .form-value').forEach(function (input) {
+        input.disabled = !isOrg;
+    });
+    form.querySelectorAll('.esl-baikal-sender-legal-individual .form-value').forEach(function (input) {
+        input.disabled = isOrg;
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="sender[legal]"]')) {
+        return;
+    }
+    eslSyncBaikalSenderLegal(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="sender[legal]"]').forEach(eslSyncBaikalSenderLegal);
+});
+
+// Байкал Сервис: тип получателя (справочник ОПФ транспортной компании) определяет,
+// нужен ли паспорт (код "1" = физлицо) или ИНН/КПП организации (любой другой заполненный код).
+function eslSyncBaikalReceiverType(select) {
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let value = select.value;
+    let showIndividual = (value === '1');
+    let showOrg = (value !== '' && value !== '1');
+
+    form.querySelectorAll('.esl-baikal-receiver-individual .form-value').forEach(function (input) {
+        input.disabled = !showIndividual;
+    });
+    form.querySelectorAll('.esl-baikal-receiver-org .form-value').forEach(function (input) {
+        input.disabled = !showOrg;
+    });
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="receiver[identity][type]"]')) {
+        return;
+    }
+    eslSyncBaikalReceiverType(e.target);
+});
+
+window.addEventListener('load', function () {
+    document.querySelectorAll('#unloading_form select[name="receiver[identity][type]"]').forEach(eslSyncBaikalReceiverType);
+});
+
 // "Места": обычная HTML-таблица с <template> для клонирования новой строки —
 // перенесено из МС (assets/js/table_offers.js: elemCreateInFrameTableOffers/
 // deleteFrameTableElem). WP_List_Table для этой задачи не подходил: он всегда

@@ -370,4 +370,20 @@ class EshopLogisticApi
 
 		return $this->sendLoadRequest($data);
 	}
+
+	/**
+	 * Поиск варианта "Характер груза" по названию (например, для Байкал Сервиса) — подсказка
+	 * при заполнении соответствующего поля в настройках ТК.
+	 *
+	 * @param string $name    Строка поиска.
+	 * @param string $service Слаг службы доставки.
+	 */
+	public function apiFreightTypes($name, $service = '')
+	{
+		$this->generateApiUrl('service/freighttypes');
+		$data['name'] = $name;
+		if ($service) $data['service'] = $service;
+
+		return $this->sendLoadRequest($data);
+	}
 }

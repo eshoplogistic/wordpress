@@ -780,7 +780,8 @@
 }
 
 .modal-esl-frame #buttonModalAddField,
-.modal-esl-frame #buttonModalTerminalSearch {
+.modal-esl-frame #buttonModalTerminalSearch,
+.modal-esl-frame #buttonModalFreightSearch {
     position: relative;
     left: 50%;
     transform: translate(-50%, 0);
@@ -792,7 +793,8 @@
 }
 
 .modal-esl-frame #buttonModalAddField:hover,
-.modal-esl-frame #buttonModalTerminalSearch:hover {
+.modal-esl-frame #buttonModalTerminalSearch:hover,
+.modal-esl-frame #buttonModalFreightSearch:hover {
     background-color: var(--esl-accent-dark);
     border-color: var(--esl-accent-dark);
 }
@@ -831,6 +833,43 @@
 }
 
 #modal-esl-terminal-search .esl-terminal-search-modal__item:hover {
+    background-color: var(--esl-accent-soft);
+}
+
+#modal-esl-freight-search .esl-terminal-search-fields label {
+    display: block;
+    margin-bottom: .5rem;
+    font-weight: 600;
+    color: #667085;
+}
+
+#modal-esl-freight-search .esl-terminal-search-fields input {
+    display: block;
+    width: 100%;
+    margin-bottom: .75rem;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item {
+    padding: .6rem .9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item:last-child {
+    border-bottom: none;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item:hover {
     background-color: var(--esl-accent-soft);
 }
 

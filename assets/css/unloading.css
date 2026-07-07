@@ -400,7 +400,11 @@
 .modal-esl form .form-field.esl-pecom-receiver-identity .form-value:disabled,
 .modal-esl form .form-field.esl-pecom-receiver-requisites .form-value:disabled,
 .modal-esl form .form-field.esl-terminal-only .form-value:disabled,
-.modal-esl form .form-field.esl-door-only .form-value:disabled {
+.modal-esl form .form-field.esl-door-only .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-sender-legal-org .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-sender-legal-individual .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-receiver-individual .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-receiver-org .form-value:disabled {
     opacity: .5;
 }
 

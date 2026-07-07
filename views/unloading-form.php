@@ -119,6 +119,26 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 </div>
                             <?php endif; ?>
 
+                            <?php if(mb_strtolower($wc_esl_typeMethod['name']) === 'integral'):
+                                // Интеграл — агрегатор, реально везёт один из этих перевозчиков; вариант влияет
+                                // на то, какая ТК обработает заявку на стороне сервиса.
+                                $wc_esl_integralVariantList = array(
+                                    'sdek' => 'СДЭК',
+                                    'fivepost' => '5POST',
+                                    'postrf' => 'Почта России',
+                                );
+                                $wc_esl_integralVariantDefault = $wc_esl_exportFormSettings['delivery-variant-integral'] ?? 'sdek';
+                            ?>
+                                <div class="form-field">
+                                    <label class="label" for="integral-variant">Вариант доставки:</label>
+                                    <select id="integral-variant" name="delivery[variant]" form="unloading_form" class="form-value">
+                                        <?php foreach ($wc_esl_integralVariantList as $wc_esl_variantKey => $wc_esl_variantName): ?>
+                                            <option value="<?php echo esc_attr($wc_esl_variantKey) ?>" <?php echo esc_attr($wc_esl_integralVariantDefault === $wc_esl_variantKey ? 'selected' : '') ?>><?php echo esc_html($wc_esl_variantName) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+
                             <div class="form-field">
                                 <label class="label" for="delivery_type">Тип доставки:</label>
                                 <select id="delivery_type" name="delivery_type" form="unloading_form" class="form-value">
@@ -236,6 +256,23 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                         $wc_esl_styleForm .= ' esl-pecom-receiver-identity';
                                     if($wc_esl_nameArr === 'receiver[requisites]')
                                         $wc_esl_styleForm .= ' esl-pecom-receiver-requisites';
+                                }
+
+                                // Байкал Сервис: "Наименование организации"/ОПФ — только для отправителя-юрлица,
+                                // серия/номер паспорта — только для отправителя-физлица; паспорт получателя —
+                                // только для получателя-физлица, ИНН/КПП получателя — только для получателя-юрлица.
+                                // См. eslSyncBaikalSenderLegalToggle / eslSyncBaikalReceiverTypeToggle в JS.
+                                if($wc_esl_typeDelivery === 'baikal'){
+                                    if(($wc_esl_nameArr === 'sender' && $wc_esl_name === 'company')
+                                        || ($wc_esl_nameArr === 'sender[identity]' && $wc_esl_name === 'type')
+                                        || $wc_esl_nameArr === 'sender[requisites]')
+                                        $wc_esl_styleForm .= ' esl-baikal-sender-legal-org';
+                                    if($wc_esl_nameArr === 'sender[identity]' && in_array($wc_esl_name, array('series', 'number'), true))
+                                        $wc_esl_styleForm .= ' esl-baikal-sender-legal-individual';
+                                    if($wc_esl_nameArr === 'receiver[identity]' && in_array($wc_esl_name, array('passport_series', 'passport_number'), true))
+                                        $wc_esl_styleForm .= ' esl-baikal-receiver-individual';
+                                    if($wc_esl_nameArr === 'receiver[requisites]')
+                                        $wc_esl_styleForm .= ' esl-baikal-receiver-org';
                                 }
 
                                 if($wc_esl_name === 'delivery-custom-cost'){

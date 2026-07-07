@@ -1173,7 +1173,22 @@ $status_translate             = [
 									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
-							'baikal'   => array( 'label' => 'Байкал Сервис', 'take_payment' => false, 'fields' => array() ),
+							'baikal'   => array(
+								'label' => 'Байкал Сервис', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-terminal-baikal', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'order-content-baikal', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти', 'type' => 'freight' ),
+									array( 'name' => 'sender-type-baikal', 'label' => 'Тип отправителя по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Юридическое лицо', 2 => 'Физическое лицо' ) ),
+									array( 'name' => 'sender-org-form-baikal', 'label' => 'Правовая форма (ОПФ) по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Физическое лицо', 5 => 'ООО', 6 => 'ОАО', 7 => 'ЗАО', 8 => 'ПАО', 9 => 'ИП', 12 => 'АО' ) ),
+									array( 'name' => 'sender-company-baikal', 'label' => 'Наименование организации' ),
+									array( 'name' => 'sender-inn-baikal', 'label' => 'ИНН организации' ),
+									array( 'name' => 'sender-kpp-baikal', 'label' => 'КПП организации' ),
+									array( 'name' => 'sender-identity-series-baikal', 'label' => 'Серия документа (для физ. лица)' ),
+									array( 'name' => 'sender-identity-number-baikal', 'label' => 'Номер документа (для физ. лица)' ),
+									array( 'name' => 'sender-time-from-baikal', 'label' => 'Интервал для забора груза c', 'type' => 'time' ),
+									array( 'name' => 'sender-time-to-baikal', 'label' => 'Интервал для забора груза до', 'type' => 'time' ),
+								),
+							),
 							'kit'      => array(
 								'label' => 'Кит', 'take_payment' => false,
 								'fields' => array(
@@ -1189,6 +1204,13 @@ $status_translate             = [
 								),
 							),
 							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
+							'integral' => array(
+								'label' => 'Интеграл', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'delivery-variant-integral', 'label' => 'Вариант доставки по умолчанию', 'type' => 'select', 'values' => array( 'sdek' => 'СДЭК', 'fivepost' => '5POST', 'postrf' => 'Почта России' ) ),
+									array( 'name' => 'order-content-integral', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти' ),
+								),
+							),
 						);
 
 						$carrierPaymentTypeOptions = array(
@@ -1259,6 +1281,32 @@ $status_translate             = [
                                                                 </button>
                                                             </div>
                                                         </div>
+														<?php elseif ( $carrierFieldType === 'freight' ): ?>
+                                                        <div class="input-group input-group-inline">
+                                                            <input
+                                                                    type="text"
+                                                                    class="form-control"
+                                                                    form="eslExportForm"
+                                                                    placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
+                                                                    name="<?php echo esc_attr($carrierField['name']); ?>"
+                                                                    value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                            />
+                                                            <div class="input-group-append">
+                                                                <button type="button" class="btn btn-primary esl-search-freight"
+                                                                        data-service="<?php echo esc_attr($carrierSlug); ?>"
+                                                                        data-target="<?php echo esc_attr($carrierField['name']); ?>">
+																	<?php esc_html_e( 'Поиск', 'eshoplogisticru' ) ?>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+														<?php elseif ( $carrierFieldType === 'select' ): ?>
+                                                        <select class="form-control" form="eslExportForm" name="<?php echo esc_attr($carrierField['name']); ?>">
+															<?php foreach ( (array) ( $carrierField['values'] ?? array() ) as $carrierOptValue => $carrierOptLabel ): ?>
+                                                                <option value="<?php echo esc_attr($carrierOptValue); ?>" <?php echo esc_attr( (string) $carrierFieldValue === (string) $carrierOptValue ? 'selected' : '' ); ?>>
+																	<?php echo esc_html($carrierOptLabel); ?>
+                                                                </option>
+															<?php endforeach; ?>
+                                                        </select>
 														<?php else: ?>
                                                         <input
                                                                 type="<?php echo esc_attr($carrierFieldType); ?>"
@@ -1401,6 +1449,22 @@ $status_translate             = [
                                     <div id="content-terminal-search_ajax"></div>
                                     <div class="footer">
                                         <input id="buttonModalTerminalSearch" class="btn btn-primary" type="button" value="Поиск">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="modal-esl-freight-search" class="modal-esl-frame">
+                                <div class="modal_content">
+                                    <div class="title">
+                                        <span class="close_modal_window">×</span>
+                                        <p><strong><?php esc_html_e( 'Выбор характера груза', 'eshoplogisticru' ) ?></strong><br></p>
+                                    </div>
+                                    <div class="esl-terminal-search-fields">
+                                        <input type="text" id="freightTypeSearch" class="form-control" placeholder="<?php esc_attr_e( 'Характер груза', 'eshoplogisticru' ) ?>">
+                                    </div>
+                                    <div id="content-freight-search_ajax"></div>
+                                    <div class="footer">
+                                        <input id="buttonModalFreightSearch" class="btn btn-primary" type="button" value="Поиск">
                                     </div>
                                 </div>
                             </div>

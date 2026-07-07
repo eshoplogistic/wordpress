@@ -84,6 +84,7 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
 		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
 		add_action('wp_ajax_wc_esl_shipping_search_terminal', [$this, 'searchTerminalAdmin']);
+		add_action('wp_ajax_wc_esl_shipping_search_freight', [$this, 'searchFreightAdmin']);
 	}
 
 	public function changeEnablePlugin()
@@ -501,6 +502,58 @@ class Ajax implements ModuleInterface
 			$html .= '<li class="esl-terminal-search-modal__item" data-code="' . esc_attr($terminal['code']) . '">'
 				. esc_html($terminal['name'] ?? '')
 				. ' <small>' . esc_html($terminal['settlement'] ?? '') . ', ' . esc_html($terminal['address'] ?? '') . '</small></li>';
+		}
+		$html .= '</ul>';
+
+		wp_send_json([
+			'success' => true,
+			'data'    => $html,
+		]);
+	}
+
+	/**
+	 * Поиск варианта "Характер груза" для настроек ТК (например, Байкал Сервис).
+	 */
+	public function searchFreightAdmin()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$service = isset($_POST['service']) ? sanitize_text_field(wp_unslash($_POST['service'])) : '';
+		$name    = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
+
+		if (!$name) {
+			wp_send_json_error(__('Не указана строка поиска', 'eshoplogisticru'));
+			return;
+		}
+
+		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+		$result = $eshopLogisticApi->apiFreightTypes($name, $service);
+
+		$freightTypes = $result->hasErrors() ? array() : $result->data();
+
+		if (empty($freightTypes)) {
+			wp_send_json([
+				'success' => true,
+				'data'    => '<b>' . esc_html__('По запросу не найдено ниодного подходящего варианта', 'eshoplogisticru') . '</b>',
+			]);
+			return;
+		}
+
+		$html = '<ul class="esl-freight-search-modal__list">';
+		foreach ($freightTypes as $freightType) {
+			if (!isset($freightType['code'])) continue;
+			$html .= '<li class="esl-freight-search-modal__item" data-code="' . esc_attr($freightType['code']) . '" data-title="' . esc_attr($freightType['name'] ?? '') . '">'
+				. esc_html($freightType['name'] ?? '') . '</li>';
 		}
 		$html .= '</ul>';
 
