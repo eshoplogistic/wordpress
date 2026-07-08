@@ -1298,6 +1298,7 @@ class Ajax implements ModuleInterface
 				$additionalFields = $additionalFields->data();
 			}
 			// Если $additionalFields уже массив, ничего не делаем
+			$hasFields = false;
 			if (is_array($additionalFields)) {
 				$additionalFieldsRu = array(
 					'packages'  => 'Упаковка',
@@ -1306,10 +1307,10 @@ class Ajax implements ModuleInterface
 					'other'     => 'Другие услуги',
 				);
 				$type = mb_strtolower($type);
-				$html .= '<div class="esl-box_add">';
+				$fieldsHtml = '<div class="esl-box_add">';
 				foreach ($additionalFields as $key => $value) {
 					$title = ($additionalFieldsRu[$key]) ?? $key;
-					$html .= '<p>' . esc_html($title) . '</p>';
+					$groupHtml = '';
 					if (is_array($value)) {
 						foreach ($value as $k => $v) {
 							if (!isset($v['name']))
@@ -1318,23 +1319,30 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0') {
 								$valueSaved = $addFieldSaved[$type][$k];
 							}
-							$html .= '<div class="form-field_add">';
-							$html .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
+							$groupHtml .= '<div class="form-field_add">';
+							$groupHtml .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
 							if ($v['type'] === 'integer') {
-								$html .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
+								$groupHtml .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
 							} else {
 								$check = '';
 								if ($valueSaved != '0')
 									$check = 'checked="checked"';
-								$html .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
+								$groupHtml .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
 							}
-							$html .= '</div>';
+							$groupHtml .= '</div>';
 						}
 					} // если $value не массив, ничего не делаем
+					if ($groupHtml !== '') {
+						$hasFields = true;
+						$fieldsHtml .= '<p>' . esc_html($title) . '</p>' . $groupHtml;
+					}
 				}
-				$html .= '</div>';
+				$fieldsHtml .= '</div>';
+			}
+			if ($hasFields) {
+				$html .= $fieldsHtml;
 			} else {
-				$html .= '<p>Дополнительные услуги отсутствуют.</p>';
+				$html .= '<p><strong>Дополнительные услуги отсутствуют.</strong></p>';
 			}
 		}
 
