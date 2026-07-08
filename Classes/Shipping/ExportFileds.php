@@ -271,6 +271,23 @@ class ExportFileds {
 		return $result;
 	}
 
+	/**
+	 * Оборачивает список опций select'а (value => label) в единый формат
+	 * value => array('text' => label, 'selected' => bool), где selected
+	 * вычисляется по текущему значению из wc_esl_shipping_export_form.
+	 * Один и тот же формат читают вкладка настроек и форма выгрузки заказа.
+	 */
+	private function selectOptions( array $labels, $currentValue ) {
+		$options = array();
+		foreach ( $labels as $value => $label ) {
+			$options[ $value ] = array(
+				'text'     => $label,
+				'selected' => (string) $value === (string) $currentValue,
+			);
+		}
+		return $options;
+	}
+
 	public function exportFields( $name, $shippingMethods = array(), $order = array() ) {
 		$result = array();
 		if ( $name === 'boxberry' ) {
@@ -281,22 +298,22 @@ class ExportFileds {
 
 			$result = array(
 				'order' => array(
-					'barcode||text||Штрих-код посылки'        => '',
-					'type||select||Тип отправления'         => array(
+					'barcode||text||Штрих-код посылки'        => ($exportFormSettings['order-barcode-boxberry']) ?? '',
+					'type||select||Тип отправления'         => $this->selectOptions( array(
 						0 => 'Посылка',
 						2 => 'Курьер Онлайн',
 						3 => 'Посылка Онлайн',
 						5 => 'Посылка 1й класс'
-					),
-					'packing_type||select||Тип упаковки' => array(
+					), $exportFormSettings['order-type-boxberry'] ?? '' ),
+					'packing_type||select||Тип упаковки' => $this->selectOptions( array(
 						1 => 'упаковка ИМ',
 						2 => 'упаковка Boxberry',
-					),
-					'issue||select||Вид выдачи заказа'        => array(
+					), $exportFormSettings['order-packing-type-boxberry'] ?? '' ),
+					'issue||select||Вид выдачи заказа'        => $this->selectOptions( array(
 						0 => 'выдача без вскрытия',
 						1 => 'выдача со вскрытием и проверкой комплектности',
 						2 => 'выдача части вложения'
-					)
+					), $exportFormSettings['order-issue-boxberry'] ?? '' )
 				),
 				'order[combine_places]' => array(
 					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
@@ -319,24 +336,13 @@ class ExportFileds {
 			}
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
-            if(!isset($exportFormSettings['type-order-sdek']))
-                $exportFormSettings['type-order-sdek'] = false;
-
-            if(!isset($exportFormSettings['combine-places-apply']))
-                $exportFormSettings['combine-places-apply'] = false;
 
 			$result = array(
 				'order'    => array(
-					'type||select||Тип заказа' => array(
-						1 => array(
-							'selected' => ($exportFormSettings['type-order-sdek'] == 1)??false,
-							'text' => 'Интернет-магазин'
-						),
-						2 => array(
-							'selected' => ($exportFormSettings['type-order-sdek'] == 2)??false,
-							'text' => 'Доставка'
-						),
-					),
+					'type||select||Тип заказа' => $this->selectOptions( array(
+						1 => 'Интернет-магазин',
+						2 => 'Доставка',
+					), $exportFormSettings['type-order-sdek'] ?? '' ),
 				),
 				'order[combine_places]' => array(
 					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
@@ -344,14 +350,14 @@ class ExportFileds {
 					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
 				),
 				'receiver' => array(
-					'type||select||Тип получателя' => array(
+					'type||select||Тип получателя' => $this->selectOptions( array(
 						1 => 'Физическое лицо',
 						3 => 'Юридическое лицо',
 						2 => 'ИП',
-					),
+					), $exportFormSettings['receiver-type-sdek'] ?? '' ),
 				),
 				'delivery' => array(
-					'tariff||select||Тариф' => $tariffs,
+					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-sdek'] ?? '' ),
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
 					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				)
@@ -389,32 +395,32 @@ class ExportFileds {
 					'counterparty||text||Отправитель' => ($exportFormSettings['sender-counter-delline'])??'',
 				),
 				'receiver' => array(
-					'legal||select||Тип получателя' => array(
+					'legal||select||Тип получателя' => $this->selectOptions( array(
 						1 => 'Физическое лицо',
 						3 => 'Юридическое лицо',
 						2 => 'ИП',
-					),
-					'type||select||ОПФ получателя (для юр.лиц)' => $opfDelline,
+					), $exportFormSettings['receiver-legal-delline'] ?? '' ),
+					'type||select||ОПФ получателя (для юр.лиц)' => $this->selectOptions( $opfDelline, $exportFormSettings['receiver-type-delline'] ?? '' ),
 				),
 				'order'    => array(
-					'accept||select||Принятие заказа в работу' => array(
+					'accept||select||Принятие заказа в работу' => $this->selectOptions( array(
 						0 => 'Нет',
 						1 => 'Да',
-					),
-					'payer||select||Плательщик' => array(
+					), $exportFormSettings['order-accept-delline'] ?? '' ),
+					'payer||select||Плательщик' => $this->selectOptions( array(
 						'sender' => 'Отправитель',
 						'receiver' => 'Получатель',
 						'third' => 'Заказчик перевозки',
-					),
+					), $exportFormSettings['order-payer-delline'] ?? '' ),
 				),
 				'delivery' => array(
-					'mode||select||Вид доставки' => array(
+					'mode||select||Вид доставки' => $this->selectOptions( array(
 						'auto'    => 'Автодоставка',
 						'express' => 'Экспресс-доставка',
 						'letter'  => 'Письмо',
 						'avia'    => 'Авиадоставка',
 						'small'   => 'Доставка малогабаритного груза',
-					),
+					), $exportFormSettings['delivery-mode-delline'] ?? '' ),
 					'produce_date||date||Дата передачи груза' => $produce_date,
 				),
 				'delivery[location_from][pick_up_data]' => array(
@@ -436,30 +442,30 @@ class ExportFileds {
 					'requester||text||Название профиля отправителя'    => ($exportFormSettings['sender-uid-kit'])??'',
 				),
 				'receiver' => array(
-					'legal||select||Форма контрагента' => array(
+					'legal||select||Форма контрагента' => $this->selectOptions( array(
 						1   => 'Физическое лицо',
 						2   => 'ИП',
 						3   => 'Юридическое лицо',
-					),
-					'company||text||Название организации' => '',
+					), $exportFormSettings['receiver-legal-kit'] ?? '' ),
+					'company||text||Название организации' => ($exportFormSettings['receiver-company-kit']) ?? '',
 				),
 				'receiver[requisites]' => array(
-					'inn||text||ИНН для юридического лица' => '',
-					'kpp||text||КПП для юридического лица' => '',
-					'unp||text||УПН' => '',
-					'bin||text||БИН' => '',
+					'inn||text||ИНН для юридического лица' => ($exportFormSettings['receiver-inn-kit']) ?? '',
+					'kpp||text||КПП для юридического лица' => ($exportFormSettings['receiver-kpp-kit']) ?? '',
+					'unp||text||УПН' => ($exportFormSettings['receiver-unp-kit']) ?? '',
+					'bin||text||БИН' => ($exportFormSettings['receiver-bin-kit']) ?? '',
 				),
 				'delivery' => array(
-					'variant||select||Вариант доставки' => array(
+					'variant||select||Вариант доставки' => $this->selectOptions( array(
 						1 => 'стандарт',
 						3 => 'экспресс',
-					),
+					), $exportFormSettings['delivery-variant-kit'] ?? '' ),
 				),
 				'delivery[location_from][pick_up_data]' => array(
 					'date||date||Дата забора груза' => $produce_date,
 					'time_from||date||Время начала периода' => $produce_date,
 					'time_to||date||Время окончания периода' => $produce_date,
-					'comment||text||Комментарий' => '',
+					'comment||text||Комментарий' => ($exportFormSettings['pickup-comment-kit']) ?? '',
 
 				)
 			);
@@ -484,9 +490,12 @@ class ExportFileds {
 				$index = $orderData['billing']['postcode']??'';
 			}
 
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+
 			$result = array(
 				'delivery' => array(
-					'tariff||select||Тариф' => $tariffs,
+					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-postrf'] ?? '' ),
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
 					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				),
@@ -519,19 +528,22 @@ class ExportFileds {
 			$date->modify('+1 day');
 			$produce_date = $date->format('Y-m-d');
 
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
+
 			$result = array(
 				// Тип отправителя не отправляется в API (у ПЭК под тем же путём sender[identity][type]
 				// уже занят "типом документа", см. ниже) — используется только для показа/скрытия
 				// блоков "Данные отправителя" (юрлицо/ИП) и "Реквизиты организации" (физлицо) ниже.
 				'sender-entity-type-pecom' => array(
-					'value||select||Тип отправителя' => array(
+					'value||select||Тип отправителя' => $this->selectOptions( array(
 						1 => 'Юридическое лицо',
 						2 => 'Индивидуальный предприниматель',
 						3 => 'Физическое лицо',
-					),
+					), $exportFormSettings['sender-entity-type-pecom'] ?? '' ),
 				),
 				'sender[identity]'   => array(
-					'type||select||Тип документа отправителя'    => array(
+					'type||select||Тип документа отправителя'    => $this->selectOptions( array(
 						10 => 'ПАСПОРТ ГРАЖДАНИНА РФ',
 						1 => 'ПАСПОРТ ИНОСТРАННОГО ГРАЖДАНИНА',
 						2 => 'РАЗРЕШЕННИЕ НА ВРЕМЕННОЕ ПРОЖИВАНИЕ',
@@ -544,42 +556,44 @@ class ExportFileds {
 						9 => 'ПАСПОРТ МОРЯКА',
 						11 => 'СВИДЕТЕЛЬСТВО О РАССМОТРЕНИИ ХОДАТАЙСТВА О ПРИЗНАНИИ БЕЖЕНЦЕМ',
 						12 => 'ВОЕННЫЙ БИЛЕТ',
-					),
-					'series||text||Серия документа' => '',
-					'number||text||Номер документа' => '',
-					'date||date||Дата выдачи документа' => '',
-					'first_name||text||Имя' => '',
+					), $exportFormSettings['sender-identity-type-pecom'] ?? '' ),
+					'series||text||Серия документа' => ($exportFormSettings['sender-identity-series-pecom']) ?? '',
+					'number||text||Номер документа' => ($exportFormSettings['sender-identity-number-pecom']) ?? '',
+					'date||date||Дата выдачи документа' => ($exportFormSettings['sender-identity-date-pecom']) ?? '',
+					'first_name||text||Имя' => ($exportFormSettings['sender-identity-first-name-pecom']) ?? '',
 					// В API ПЭК поля идентификации физлица смещены: identity.last_name — это
 					// фактически отчество, а identity.patronymic — фамилия. Подписи полей ниже
-					// отражают реальный смысл, а не буквальное название JSON-ключа.
-					'last_name||text||Отчество' => '',
-					'patronymic||text||Фамилия' => '',
+					// отражают реальный смысл, а не буквальное название JSON-ключа. Ключи опций
+					// (sender-identity-last-name-pecom / -patronymic-pecom) берутся по имени
+					// JSON-поля, а не по подписи, чтобы не перепутать значения местами.
+					'last_name||text||Отчество' => ($exportFormSettings['sender-identity-last-name-pecom']) ?? '',
+					'patronymic||text||Фамилия' => ($exportFormSettings['sender-identity-patronymic-pecom']) ?? '',
 				),
 				'sender[requisites]' => array(
-					'name||text||Наименование организации/ИП' => '',
-					'inn||text||ИНН отправителя' => '',
+					'name||text||Наименование организации/ИП' => ($exportFormSettings['sender-requisites-name-pecom']) ?? '',
+					'inn||text||ИНН отправителя' => ($exportFormSettings['sender-requisites-inn-pecom']) ?? '',
 				),
 				'receiver[identity]' => array(
-					'type||select||Тип получателя' => array(
+					'type||select||Тип получателя' => $this->selectOptions( array(
 						1 => 'Физическое лицо',
 						2 => 'Индивидуальный предприниматель',
 						3 => 'Юридическое лицо',
-					),
-					'passport_series||text||Серия паспорта получателя' => '',
-					'passport_number||text||Номер паспорта получателя' => '',
-					'passport_date_of_issue||date||Дата выдачи паспорта получателя' => '',
-					'passport_date_of_birth||date||Дата рождения получателя' => '',
-					'passport_organization||text||Кем выдан паспорт получателя' => '',
+					), $exportFormSettings['receiver-identity-type-pecom'] ?? '' ),
+					'passport_series||text||Серия паспорта получателя' => ($exportFormSettings['receiver-passport-series-pecom']) ?? '',
+					'passport_number||text||Номер паспорта получателя' => ($exportFormSettings['receiver-passport-number-pecom']) ?? '',
+					'passport_date_of_issue||date||Дата выдачи паспорта получателя' => ($exportFormSettings['receiver-passport-date-issue-pecom']) ?? '',
+					'passport_date_of_birth||date||Дата рождения получателя' => ($exportFormSettings['receiver-passport-date-birth-pecom']) ?? '',
+					'passport_organization||text||Кем выдан паспорт получателя' => ($exportFormSettings['receiver-passport-org-pecom']) ?? '',
 				),
 				'receiver[requisites]' => array(
-					'inn||text||ИНН получателя' => '',
-					'kpp||text||КПП получателя' => '',
+					'inn||text||ИНН получателя' => ($exportFormSettings['receiver-requisites-inn-pecom']) ?? '',
+					'kpp||text||КПП получателя' => ($exportFormSettings['receiver-requisites-kpp-pecom']) ?? '',
 				),
 				'order' => array(
-					'payer||select||Плательщик' => array(
+					'payer||select||Плательщик' => $this->selectOptions( array(
 						'sender' => 'Отправитель',
 						'receiver' => 'Получатель',
-					),
+					), $exportFormSettings['order-payer-pecom'] ?? '' ),
 				),
 				'delivery' => array(
 					'produce_date||date||Дата передачи груза' => $produce_date,
@@ -588,9 +602,11 @@ class ExportFileds {
 		}
 
 		if ( $name === 'halva' ) {
+			$optionsRepository = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 			$result = array(
 				'order' => array(
-					'packing||checkbox' => '',
+					'packing||checkbox||Упаковка' => ($exportFormSettings['order-packing-halva'] ?? '') == 'on' ? 'checked' : '',
 				)
 			);
 		}
@@ -600,7 +616,7 @@ class ExportFileds {
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 			$result = array(
 				'receiver' => array(
-					'last_name||text||Фамилия получателя' => ''
+					'last_name||text||Фамилия получателя' => ($exportFormSettings['receiver-last-name-magnit']) ?? ''
 				),
 				'order[combine_places]' => array(
 					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
@@ -655,11 +671,11 @@ class ExportFileds {
 
 			$result = array(
 				'sender' => array(
-					'legal||select||Тип отправителя' => $senderLegalList,
+					'legal||select||Тип отправителя' => $this->selectOptions( $senderLegalList, $exportFormSettings['sender-type-baikal'] ?? '' ),
 					'company||text||Наименование организации' => ($exportFormSettings['sender-company-baikal']) ?? '',
 				),
 				'sender[identity]' => array(
-					'type||select||Правовая форма (ОПФ)' => $senderOrgFormList,
+					'type||select||Правовая форма (ОПФ)' => $this->selectOptions( $senderOrgFormList, $exportFormSettings['sender-org-form-baikal'] ?? '' ),
 					'series||text||Серия' => ($exportFormSettings['sender-identity-series-baikal']) ?? '',
 					'number||text||Номер' => ($exportFormSettings['sender-identity-number-baikal']) ?? '',
 				),
@@ -668,13 +684,13 @@ class ExportFileds {
 					'kpp||text||КПП' => ($exportFormSettings['sender-kpp-baikal']) ?? '',
 				),
 				'receiver[identity]' => array(
-					'type||select||Тип получателя' => $opfBaikal,
-					'passport_series||text||Серия' => '',
-					'passport_number||text||Номер' => '',
+					'type||select||Тип получателя' => $this->selectOptions( $opfBaikal, $exportFormSettings['receiver-type-baikal'] ?? '' ),
+					'passport_series||text||Серия' => ($exportFormSettings['receiver-passport-series-baikal']) ?? '',
+					'passport_number||text||Номер' => ($exportFormSettings['receiver-passport-number-baikal']) ?? '',
 				),
 				'receiver[requisites]' => array(
-					'inn||text||ИНН' => '',
-					'kpp||text||КПП' => '',
+					'inn||text||ИНН' => ($exportFormSettings['receiver-inn-baikal']) ?? '',
+					'kpp||text||КПП' => ($exportFormSettings['receiver-kpp-baikal']) ?? '',
 				),
 				'delivery' => array(
 					'produce_date||date||Дата передачи груза' => $produce_date,
@@ -709,11 +725,11 @@ class ExportFileds {
 
 			$result = array(
 				'receiver' => array(
-					'email||text||Адрес электронной почты' => ''
+					'email||text||Адрес электронной почты' => ($exportFormSettings['receiver-email-dpd']) ?? ''
 				),
 				'order' => array(
-					'content||text||Содержимое отправления (что за товары)' => '',
-					'costly||checkbox||Флаг «Ценный груз»' => '',
+					'content||text||Содержимое отправления (что за товары)' => ($exportFormSettings['order-content-dpd']) ?? '',
+					'costly||checkbox||Флаг «Ценный груз»' => ($exportFormSettings['order-costly-dpd'] ?? '') == 'on' ? 'checked' : '',
 				),
 				'order[combine_places]' => array(
 					'apply||checkbox||Объединить все грузовые места в одно' => (isset($exportFormSettings['combine-places-apply']) && $exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
@@ -722,8 +738,8 @@ class ExportFileds {
 				),
 				'delivery' => array(
 					'produce_date||date||Дата приёма груза' => $produce_date,
-					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => '',
-					'tariff||select||Тариф' => $tariffs,
+					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => ($exportFormSettings['delivery-produce-time-dpd']) ?? '',
+					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-dpd'] ?? '' ),
 				),
 			);
 		}
@@ -744,151 +760,257 @@ class ExportFileds {
 
     public function settingsExportForOneDelivery($name)
     {
-        $result = array();
-        if($name == 'yandex'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'boxberry'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'sdek'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'fivepost'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'delline'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'baikal'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'magnit'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'kit'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'postrf'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
-        }
-        if($name == 'dpd'){
-            $result = array(
-                'hr' => array(
-                    'hr||hr||Объединение грузовых мест' => '',
-                ),
-                'export_stt_one_delivery' => array(
-                    'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => '',
-                    'default_stt_name||text||Название места||Товар' => '',
-                    'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => '',
-                    'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => '',
-                    'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => '',
-                ),
-            );
+        // Одинаковый набор полей "объединения мест" для всех служб, у которых он есть —
+        // отличаются только сохранённые значения (свой плоский ключ на каждую службу).
+        $carriersWithOneDelivery = array(
+            'yandex', 'boxberry', 'sdek', 'fivepost', 'delline',
+            'baikal', 'magnit', 'kit', 'postrf', 'dpd',
+        );
+
+        if ( ! in_array( $name, $carriersWithOneDelivery, true ) ) {
+            return array();
         }
 
+        $optionsRepository = new OptionsRepository();
+        $exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
-        return $result;
+        $mergeInOne = ($exportFormSettings['merge-in-one-' . $name] ?? '') == 'on' ? 'checked' : '';
 
+        return array(
+            'hr' => array(
+                'hr||hr||Объединение грузовых мест' => '',
+            ),
+            'export_stt_one_delivery' => array(
+                'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => $mergeInOne,
+                'default_stt_name||text||Название места||Товар' => ($exportFormSettings['default-stt-name-' . $name]) ?? 'Товар',
+                'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => ($exportFormSettings['default-stt-width-' . $name]) ?? '',
+                'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => ($exportFormSettings['default-stt-length-' . $name]) ?? '',
+                'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => ($exportFormSettings['default-stt-height-' . $name]) ?? '',
+            ),
+        );
     }
+
+	/**
+	 * Карта "куда сохранять" для полей exportFields()/settingsExportForOneDelivery(), которые
+	 * показываются во вкладке настроек ТК как "настройки по умолчанию" (ключ вида
+	 * 'nameArr.name' => плоское имя в wc_esl_shipping_export_form). Поле, которого нет в этой
+	 * карте для своей службы, в общем блоке вкладки НЕ рендерится: оно либо уже есть как
+	 * отдельное поле вкладки (см. $carrierTabs в views/settings.php), либо это контекстное/
+	 * вычисляемое значение конкретного заказа (даты "+1 день", индекс адреса заказа и т.п.),
+	 * либо уже покрыто существующим чекбоксом "default-take-payment-{carrier}".
+	 */
+	private function tabFieldMap( $carrierSlug ) {
+		$sttFields = array(
+			'export_stt_one_delivery.merge_in_one'                      => 'merge-in-one-' . $carrierSlug,
+			'export_stt_one_delivery.default_stt_name'                  => 'default-stt-name-' . $carrierSlug,
+			'export_stt_one_delivery.default_stt_one_delivery_width'    => 'default-stt-width-' . $carrierSlug,
+			'export_stt_one_delivery.default_stt_one_delivery_length'   => 'default-stt-length-' . $carrierSlug,
+			'export_stt_one_delivery.default_stt_one_delivery_height'   => 'default-stt-height-' . $carrierSlug,
+		);
+
+		$map = array(
+			'boxberry' => array(
+				'order.barcode'                     => 'order-barcode-boxberry',
+				'order.type'                        => 'order-type-boxberry',
+				'order.packing_type'                => 'order-packing-type-boxberry',
+				'order.issue'                        => 'order-issue-boxberry',
+				'order[combine_places].apply'        => 'combine-places-apply',
+				'order[combine_places].dimensions'   => 'combine-places-dimensions',
+				'order[combine_places].weight'       => 'combine-places-weight',
+			),
+			'sdek' => array(
+				'order[combine_places].apply'        => 'combine-places-apply',
+				'order[combine_places].dimensions'   => 'combine-places-dimensions',
+				'order[combine_places].weight'       => 'combine-places-weight',
+				'receiver.type'                       => 'receiver-type-sdek',
+				'delivery.tariff'                     => 'delivery-tariff-sdek',
+			),
+			'delline' => array(
+				'receiver.legal'                      => 'receiver-legal-delline',
+				'receiver.type'                       => 'receiver-type-delline',
+				'order.accept'                         => 'order-accept-delline',
+				'order.payer'                          => 'order-payer-delline',
+				'delivery.mode'                        => 'delivery-mode-delline',
+			),
+			'kit' => array(
+				'receiver.legal'                      => 'receiver-legal-kit',
+				'receiver.company'                    => 'receiver-company-kit',
+				'receiver[requisites].inn'            => 'receiver-inn-kit',
+				'receiver[requisites].kpp'            => 'receiver-kpp-kit',
+				'receiver[requisites].unp'            => 'receiver-unp-kit',
+				'receiver[requisites].bin'            => 'receiver-bin-kit',
+				'delivery.variant'                     => 'delivery-variant-kit',
+				'delivery[location_from][pick_up_data].comment' => 'pickup-comment-kit',
+			),
+			'postrf' => array(
+				'delivery.tariff' => 'delivery-tariff-postrf',
+			),
+			'fivepost' => array(),
+			'yandex'   => array(),
+			'pecom'    => array(
+				'sender-entity-type-pecom.value'            => 'sender-entity-type-pecom',
+				'sender[identity].type'                     => 'sender-identity-type-pecom',
+				'sender[identity].series'                   => 'sender-identity-series-pecom',
+				'sender[identity].number'                   => 'sender-identity-number-pecom',
+				'sender[identity].date'                     => 'sender-identity-date-pecom',
+				'sender[identity].first_name'               => 'sender-identity-first-name-pecom',
+				'sender[identity].last_name'                => 'sender-identity-last-name-pecom',
+				'sender[identity].patronymic'               => 'sender-identity-patronymic-pecom',
+				'sender[requisites].name'                   => 'sender-requisites-name-pecom',
+				'sender[requisites].inn'                    => 'sender-requisites-inn-pecom',
+				'receiver[identity].type'                   => 'receiver-identity-type-pecom',
+				'receiver[identity].passport_series'        => 'receiver-passport-series-pecom',
+				'receiver[identity].passport_number'        => 'receiver-passport-number-pecom',
+				'receiver[identity].passport_date_of_issue' => 'receiver-passport-date-issue-pecom',
+				'receiver[identity].passport_date_of_birth' => 'receiver-passport-date-birth-pecom',
+				'receiver[identity].passport_organization'  => 'receiver-passport-org-pecom',
+				'receiver[requisites].inn'                  => 'receiver-requisites-inn-pecom',
+				'receiver[requisites].kpp'                  => 'receiver-requisites-kpp-pecom',
+				'order.payer'                                => 'order-payer-pecom',
+			),
+			'halva' => array(
+				'order.packing' => 'order-packing-halva',
+			),
+			'magnit' => array(
+				'receiver.last_name'                  => 'receiver-last-name-magnit',
+				'order[combine_places].apply'         => 'combine-places-apply',
+				'order[combine_places].dimensions'    => 'combine-places-dimensions',
+				'order[combine_places].weight'        => 'combine-places-weight',
+			),
+			'baikal' => array(
+				'receiver[identity].type'             => 'receiver-type-baikal',
+				'receiver[identity].passport_series'  => 'receiver-passport-series-baikal',
+				'receiver[identity].passport_number'  => 'receiver-passport-number-baikal',
+				'receiver[requisites].inn'            => 'receiver-inn-baikal',
+				'receiver[requisites].kpp'            => 'receiver-kpp-baikal',
+			),
+			'dpd' => array(
+				'receiver.email'                      => 'receiver-email-dpd',
+				'order.content'                        => 'order-content-dpd',
+				'order.costly'                          => 'order-costly-dpd',
+				'order[combine_places].apply'          => 'combine-places-apply',
+				'order[combine_places].dimensions'     => 'combine-places-dimensions',
+				'order[combine_places].weight'         => 'combine-places-weight',
+				'delivery.produce_time'                 => 'delivery-produce-time-dpd',
+				'delivery.tariff'                        => 'delivery-tariff-dpd',
+			),
+			'integral' => array(),
+		);
+
+		$carrierMap = $map[ $carrierSlug ] ?? array();
+
+		$carriersWithOneDelivery = array(
+			'yandex', 'boxberry', 'sdek', 'fivepost', 'delline',
+			'baikal', 'magnit', 'kit', 'postrf', 'dpd',
+		);
+		if ( in_array( $carrierSlug, $carriersWithOneDelivery, true ) ) {
+			$carrierMap = array_merge( $carrierMap, $sttFields );
+		}
+
+		return $carrierMap;
+	}
+
+	/**
+	 * Рендерит HTML "Дополнительных настроек" (бывший блок модалки "Настройка дополнительных
+	 * услуг") для вкладки настроек службы доставки — вызывается лениво по AJAX при активации
+	 * вкладки (см. Modules/Ajax.php::getExportExtraFields()).
+	 */
+	public function renderTabFields( $carrierSlug ) {
+		$map = $this->tabFieldMap( $carrierSlug );
+
+		$html  = $this->renderTabFieldGroup( $this->exportFields( $carrierSlug ), $map );
+		$html .= $this->renderTabFieldGroup( $this->settingsExportForOneDelivery( $carrierSlug ), $map );
+
+		if ( $carrierSlug !== 'halva' ) {
+			$optionsRepository  = new OptionsRepository();
+			$exportFormSettings = $optionsRepository->getOption( 'wc_esl_shipping_export_form' );
+			$pickUpKey          = 'default-pick-up-' . $carrierSlug;
+			$pickUp             = (string) ( $exportFormSettings[ $pickUpKey ] ?? '' );
+
+			$html .= '<h4>' . esc_html__( 'Дополнительные настройки ТК.', 'eshoplogisticru' ) . '</h4>';
+			$html .= '<div class="form-group row align-items-center mb-3">
+				<label class="col-sm-5 col-form-label">' . esc_html__( 'Способ доставки до терминала ТК по умолчанию', 'eshoplogisticru' ) . '</label>
+				<div class="col-sm-5">
+					<select class="form-control" form="eslExportForm" name="' . esc_attr( $pickUpKey ) . '">
+						<option value="0" ' . selected( $pickUp, '0', false ) . '>' . esc_html__( 'Сами привезём на терминал транспортной компании', 'eshoplogisticru' ) . '</option>
+						<option value="1" ' . selected( $pickUp, '1', false ) . '>' . esc_html__( 'Груз заберёт транспортная компания', 'eshoplogisticru' ) . '</option>
+					</select>
+				</div>
+			</div>';
+		}
+
+		if ( $html === '' ) {
+			$html = '<p>' . esc_html__( 'Дополнительных настроек для этой службы нет.', 'eshoplogisticru' ) . '</p>';
+		}
+
+		return $html;
+	}
+
+	private function renderTabFieldGroup( array $fieldGroups, array $map ) {
+		$html = '';
+		foreach ( $fieldGroups as $nameArr => $arr ) {
+			if ( $nameArr === 'hr' ) {
+				foreach ( $arr as $key => $value ) {
+					$parts = explode( '||', $key );
+					$label = $parts[2] ?? '';
+					if ( $label !== '' ) {
+						$html .= '<h4>' . esc_html( $label ) . '</h4>';
+					}
+				}
+				continue;
+			}
+
+			foreach ( $arr as $key => $value ) {
+				$parts     = explode( '||', $key );
+				$name      = $parts[0];
+				$typeField = $parts[1] ?? 'text';
+				$label     = $parts[2] ?? $name;
+
+				$mapKey = $nameArr . '.' . $name;
+				if ( ! isset( $map[ $mapKey ] ) ) {
+					continue;
+				}
+
+				$html .= '<div class="form-group row align-items-center mb-3">
+					<label class="col-sm-5 col-form-label">' . esc_html( $label ) . '</label>
+					<div class="col-sm-5">' . $this->renderTabFieldInput( $map[ $mapKey ], $typeField, $value ) . '</div>
+				</div>';
+			}
+		}
+		return $html;
+	}
+
+	private function renderTabFieldInput( $flatKey, $typeField, $value ) {
+		$name = esc_attr( $flatKey );
+
+		switch ( $typeField ) {
+			case 'select':
+				$options = '';
+				foreach ( (array) $value as $optValue => $optData ) {
+					if ( is_array( $optData ) && isset( $optData['text'] ) ) {
+						$options .= '<option value="' . esc_attr( $optValue ) . '" ' . selected( ! empty( $optData['selected'] ), true, false ) . '>' . esc_html( $optData['text'] ) . '</option>';
+					} else {
+						$options .= '<option value="' . esc_attr( $optValue ) . '">' . esc_html( $optData ) . '</option>';
+					}
+				}
+				return '<select class="form-control" form="eslExportForm" name="' . $name . '">' . $options . '</select>';
+
+			case 'checkbox':
+				$checked = ( $value === 'checked' ) ? 'checked' : '';
+				return '<input type="checkbox" form="eslExportForm" name="' . $name . '" ' . $checked . '>';
+
+			case 'number':
+				return '<input type="number" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+
+			case 'date':
+				return '<input type="date" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+
+			case 'time':
+				return '<input type="time" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+
+			default:
+				return '<input type="text" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+		}
+	}
 
 }

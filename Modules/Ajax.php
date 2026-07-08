@@ -83,6 +83,7 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_unloading_print', [$this, 'unloadingPrint']);
 		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
 		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
+		add_action('wp_ajax_wc_esl_shipping_get_export_fields', [$this, 'getExportExtraFields']);
 		add_action('wp_ajax_wc_esl_shipping_search_terminal', [$this, 'searchTerminalAdmin']);
 		add_action('wp_ajax_wc_esl_shipping_search_freight', [$this, 'searchFreightAdmin']);
 	}
@@ -1288,8 +1289,6 @@ class Ajax implements ModuleInterface
 		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
 		$additionalFields = $eshopLogisticApi->apiExportAdditional($additional);
 		$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
-		$methodDelivery = new ExportFileds();
-		$fieldDelivery  = $methodDelivery->exportFields(mb_strtolower($type));
 
 		$html = '<form action="/" method="post" id="eslAddFieldForm" data-type="' . esc_attr($type) . '">';
 		if (is_object($additionalFields) && method_exists($additionalFields, 'hasErrors') && $additionalFields->hasErrors()) {
@@ -1339,203 +1338,40 @@ class Ajax implements ModuleInterface
 			}
 		}
 
-		if ($fieldDelivery) {
-			$html .= ' <h4>Дополнительные настройки выгрузки ТК.</h4>';
-			// Внешний цикл по массиву полей
-			foreach ($fieldDelivery as $nameArr => $arr) {
-				// Внутренний цикл по каждому полю
-				foreach ($arr as $key => $value) {
-					// Разбиваем ключ на части
-					list($name, $typeField, $nameRu) = explode('||', $key);
-					$nameRu = $nameRu ?? $name;
-					$styleForm = '';
+		$html .= '</form>';
 
-					// Устанавливаем специальный класс для чекбоксов
-					if ($typeField === 'checkbox') {
-						$styleForm = 'checkbox-area';
-					}
-
-					// Выводим контейнер поля формы
-					$html .= '
-                                <div class="form-field_add ' . esc_attr($styleForm) . '">
-                                <label class="label" for="' . esc_attr($name) . '">' . esc_html($nameRu) . '</label>
-                                ';
-
-
-					$nameValue = $nameArr . '[' . $name . ']';
-					$nameFiledSaved = $nameArr . '[' . $name . ']';
-					// Генерируем соответствующее поле ввода
-					switch ($typeField) {
-						case 'text':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'checkbox':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
-							$valueSaved = 'checked';
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
-						break;
-
-					case 'date':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'number':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="number" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'time':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="time" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'select':
-						$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
-						// Цикл по опциям селекта
-						if (is_array($value)) {
-							foreach ($value as $k => $v) {
-								if (is_array($v) && isset($v['text'])) {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
-								} else {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
-								}
-							}
-						}
-						$html .= '</select>';
-						break;
-				}
-
-				$html .= '</div>';
-			}
-		}
+		wp_send_json([
+			'success' => true,
+			'data' => $html,
+			'msg' => ""
+		]);
 	}
 
-	$sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery(mb_strtolower($type));
-
-	if ($sttExForOneDelivery) {
-		foreach ($sttExForOneDelivery as $nameArr => $arr) {
-			foreach ($arr as $key => $value) {
-					list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
-					$nameRu = $nameRu ?? $name;
-					$styleForm = '';
-
-					if ($typeField == 'hr') {
-						$html .= '<h3>' . $nameRu . '</h3>';
-						continue;
-					}
-
-
-					$html .= '
-                                <div class="form-field_add ' . $styleForm . '">
-                                <label class="label" for="' . $name . '">' . $nameRu . '</label>';
-
-					$nameValue = $nameArr . '[' . $name . ']';
-					$nameFiledSaved = $nameArr . '[' . $name . ']';
-
-					switch ($typeField) {
-						case 'text':
-							$valueSaved = $valueDefault ?? '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'checkbox':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
-								$valueSaved = 'checked';
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
-							break;
-
-						case 'date':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'number':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="number" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'select':
-							$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
-							foreach ($value as $k => $v) {
-								if (is_array($v) && isset($v['text'])) {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
-								} else {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
-								}
-							}
-							$html .= '</select>';
-							break;
-					}
-
-					$html .= '</div>';
-				}
-			}
+	/**
+	 * Возвращает HTML "Дополнительных настроек" для вкладки настроек службы доставки — тарифы,
+	 * данные отправителя/получателя, объединение мест по умолчанию, способ доставки до
+	 * терминала и т.п. Загружается лениво по клику на вкладку (см. assets/js/settings.js),
+	 * т.к. для части служб требует живых запросов к API eshoplogistic.ru. Сохраняются эти
+	 * поля не сюда, а вместе с остальной вкладкой через обычный сабмит #eslExportForm.
+	 */
+	public function getExportExtraFields()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
 		}
 
-		$checkSelf = '';
-		$checkTK = '';
-		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0) {
-			$checkSelf = 'selected';
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
 		}
-		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 1) {
-			$checkTK = 'selected';
-		}
-		$html .= '
-            <h4>Дополнительные настройки ТК.</h4>
-            <div class="form-field_add">
-                <label class="label">Способ доставки до терминала ТК</label>
-                 <select name="pick_up" class="form-value">
-                    <option value="0" ' . esc_attr($checkSelf) . '>Сами привезём на терминал транспортной компании</option>
-                    <option value="1" ' . esc_attr($checkTK) . '>Груз заберёт транспортная компания</option>
-                 </select>
-            </div>
-        ';
 
-		$html .= '</form>';
+		$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : '';
+
+		$methodDelivery = new ExportFileds();
+		$html = $methodDelivery->renderTabFields(mb_strtolower($type));
 
 		wp_send_json([
 			'success' => true,

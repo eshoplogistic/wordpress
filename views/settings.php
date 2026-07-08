@@ -1406,6 +1406,8 @@ $status_translate             = [
                                                 </div>
                                             </div>
 
+                                            <div class="esl-carrier-extra-fields" data-carrier="<?php echo esc_attr($carrierSlug); ?>" data-loaded="0"></div>
+
                                             <button type="button" class="wc-esl-add__button btn-primary" data-mode="<?php echo esc_attr($carrierSlug); ?>">
 												<?php esc_html_e( 'Настройка дополнительных услуг', 'eshoplogisticru' ) ?>
                                             </button>

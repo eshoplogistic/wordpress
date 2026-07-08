@@ -82,9 +82,9 @@ class Table extends WP_List_Table {
 		$records = array();
 		if($items){
             $optionsRepository  = new OptionsRepository();
-            $addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
+            $exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
-            if(isset($addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[merge_in_one]']) && $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[merge_in_one]']){
+            if(!empty($exportFormSettings['merge-in-one-' . $typeMethod['name']])){
                 $mergeRecords = array();
                 $i = 0;
                 $mergeRecordsKey = '';
@@ -134,22 +134,22 @@ class Table extends WP_List_Table {
                     $mergeRecords[$mergeRecordsKey]['quantityPre'] = $quantity;
                     $mergeRecords[$mergeRecordsKey]['price'] = ($price * $quantity) + $pricePre;
                     $mergeRecords[$mergeRecordsKey]['weight'] = ($weight * $quantity) + $weightPre;
-                    $mergeRecords[$mergeRecordsKey]['name'] = $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_name]'] ?? 'Товар';
+                    $mergeRecords[$mergeRecordsKey]['name'] = $exportFormSettings['default-stt-name-' . $typeMethod['name']] ?? 'Товар';
 
-                    if(isset($addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_width]']) && $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_width]']){
-                        $mergeRecords[$mergeRecordsKey]['width'] = $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_width]'];
+                    if(!empty($exportFormSettings['default-stt-width-' . $typeMethod['name']])){
+                        $mergeRecords[$mergeRecordsKey]['width'] = $exportFormSettings['default-stt-width-' . $typeMethod['name']];
                     }else{
                         $mergeRecords[$mergeRecordsKey]['width'] = ($width > $widthPre)?$width:$widthPre;
                     }
 
-                    if(isset($addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_length]']) && $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_length]']){
-                        $mergeRecords[$mergeRecordsKey]['length'] = $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_length]'];
+                    if(!empty($exportFormSettings['default-stt-length-' . $typeMethod['name']])){
+                        $mergeRecords[$mergeRecordsKey]['length'] = $exportFormSettings['default-stt-length-' . $typeMethod['name']];
                     }else{
                         $mergeRecords[$mergeRecordsKey]['length'] = ($length > $lengthPre)?$length:$lengthPre;
                     }
 
-                    if(isset($addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_height]']) && $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_height]']){
-                        $mergeRecords[$mergeRecordsKey]['height'] = $addFieldSaved[$typeMethod['name']]['export_stt_one_delivery[default_stt_one_delivery_height]'];
+                    if(!empty($exportFormSettings['default-stt-height-' . $typeMethod['name']])){
+                        $mergeRecords[$mergeRecordsKey]['height'] = $exportFormSettings['default-stt-height-' . $typeMethod['name']];
                     }else{
                         $mergeRecords[$mergeRecordsKey]['height'] = ($height > $heightPre)?$height:$heightPre;
                     }

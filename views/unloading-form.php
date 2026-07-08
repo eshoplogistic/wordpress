@@ -276,9 +276,9 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 }
 
                                 if($wc_esl_name === 'delivery-custom-cost'){
-                                    $wc_esl_takePaymentChecked = isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'])
-                                        ? ($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameArr.'[take_payment]'] == 'on')
-                                        : !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery]);
+                                    // Дефолт "взять оплату с получателя" настраивается в разрезе службы доставки
+                                    // (Настройки транспортных компаний), а не хранится отдельно по полю формы.
+                                    $wc_esl_takePaymentChecked = !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery]);
                                     $wc_esl_startDisabled = !$wc_esl_takePaymentChecked;
                                     $wc_esl_wrapperId = 'esl-cost-toggle-'.esc_attr($wc_esl_nameArr);
                                     $wc_esl_wrapperStyle = $wc_esl_startDisabled ? 'display:none' : '';
@@ -290,71 +290,39 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 
                                 <div class="form-field <?php echo esc_attr($wc_esl_styleForm); ?>"<?php echo $wc_esl_wrapperId ? ' id="' . esc_attr($wc_esl_wrapperId) . '"' : ''; ?><?php echo $wc_esl_wrapperStyle ? ' style="' . esc_attr($wc_esl_wrapperStyle) . '"' : ''; ?>>
                                     <label class="label" for="<?php echo esc_attr($wc_esl_fieldId); ?>"><?php echo esc_html($wc_esl_nameRu); ?></label>
-									<?php if ( $wc_esl_type === 'text' ):
-                                        $wc_esl_valueSaved = '';
-                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
-                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
-                                        }
-                                        ?>
+									<?php if ( $wc_esl_type === 'text' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
-                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>">
+                                               value="<?php echo esc_attr($wc_esl_value)?>">
 									<?php endif; ?>
-	                                <?php if ( $wc_esl_type === 'number' ):
-                                        $wc_esl_valueSaved = '';
-                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
-                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
-                                        }
-                                        ?>
+	                                <?php if ( $wc_esl_type === 'number' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="number"
-                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>" <?php echo $wc_esl_startDisabled ? 'disabled' : ''; ?>>
+                                               value="<?php echo esc_attr($wc_esl_value)?>" <?php echo $wc_esl_startDisabled ? 'disabled' : ''; ?>>
 	                                <?php endif; ?>
-	                                <?php if ( $wc_esl_type === 'time' ):
-                                        $wc_esl_valueSaved = '';
-                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
-                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
-                                        }
-                                        ?>
+	                                <?php if ( $wc_esl_type === 'time' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="time"
-                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>">
+                                               value="<?php echo esc_attr($wc_esl_value)?>">
 	                                <?php endif; ?>
 	                                <?php if ( $wc_esl_type === 'checkbox' ):
-                                        $wc_esl_valueSaved = '';
-                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved] == 'on'){
-                                            $wc_esl_valueSaved = 'checked';
-                                        } elseif ($wc_esl_name === 'take_payment' && !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery])) {
-                                            // Значение по умолчанию из настроек транспортных компаний, если по заказу ничего не сохранено.
+                                        $wc_esl_valueSaved = $wc_esl_value;
+                                        if ($wc_esl_name === 'take_payment' && !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDelivery])) {
+                                            // Значение по умолчанию из настроек транспортных компаний.
                                             $wc_esl_valueSaved = 'checked';
                                         }
                                         ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="checkbox" <?php echo esc_attr($wc_esl_valueSaved) ?>>
 	                                <?php endif; ?>
-	                                <?php if ( $wc_esl_type === 'date' ):
-                                        $wc_esl_valueSaved = '';
-                                        if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved])){
-                                            $wc_esl_valueSaved = $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved];
-                                        }
-                                        ?>
+	                                <?php if ( $wc_esl_type === 'date' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="date"
-                                               value="<?php echo esc_attr($wc_esl_valueSaved)?>">
+                                               value="<?php echo esc_attr($wc_esl_value)?>">
 	                                <?php endif; ?>
 									<?php if ( $wc_esl_type === 'select' ): ?>
                                         <select id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" form="unloading_form"
                                                 class="form-value">
 											<?php foreach ( $wc_esl_value as $wc_esl_k => $wc_esl_v ):?>
-                                                <?php if(is_array($wc_esl_v) && isset($wc_esl_v['text'])):
-                                                    $wc_esl_valueSaved = '';
-                                                    if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_k == $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]){
-                                                        $wc_esl_valueSaved = 'selected';
-                                                    }
-                                                    ?>
-                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>" <?php echo esc_html($wc_esl_valueSaved) ?>><?php echo esc_html($wc_esl_v['text']) ?></option>
-                                                <?php else:
-                                                    $wc_esl_valueSaved = '';
-                                                    if(isset($wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]) && $wc_esl_k == $wc_esl_addFieldSaved[$wc_esl_typeDelivery][$wc_esl_nameFiledSaved]){
-                                                        $wc_esl_valueSaved = 'selected';
-                                                    }
-                                                    ?>
-                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>" <?php echo esc_html($wc_esl_valueSaved) ?>><?php echo esc_html($wc_esl_v) ?></option>
+                                                <?php if(is_array($wc_esl_v) && isset($wc_esl_v['text'])): ?>
+                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>" <?php echo !empty($wc_esl_v['selected']) ? 'selected' : '' ?>><?php echo esc_html($wc_esl_v['text']) ?></option>
+                                                <?php else: ?>
+                                                    <option value="<?php echo esc_attr($wc_esl_k) ?>"><?php echo esc_html($wc_esl_v) ?></option>
                                                 <?php endif; ?>
 											<?php endforeach; ?>
                                         </select>
@@ -414,11 +382,12 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             </div>
                             <div class="form-field">
                                 <label class="label" for="pick_up">Способ доставки до терминала ТК:</label>
+								<?php $wc_esl_defaultPickUp = (string) ( $wc_esl_exportFormSettings['default-pick-up-' . $wc_esl_typeMethod['name']] ?? '' ); ?>
                                 <select id="pick_up" name="pick_up" form="unloading_form" class="form-value">
                                     <?php if($wc_esl_typeMethod['name'] != 'halva'): ?>
-                                    <option value="0" <?php echo ( isset( $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up'] ) && $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up']  == 0 ) ? 'selected' : ''?>>Сами привезём на терминал транспортной компании</option>
+                                    <option value="0" <?php echo ( $wc_esl_defaultPickUp === '0' ) ? 'selected' : ''?>>Сами привезём на терминал транспортной компании</option>
                                     <?php endif; ?>
-                                    <option value="1" <?php echo ( isset( $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up'] ) && $wc_esl_addFieldSaved[$wc_esl_typeMethod['name']]['pick_up']  == 1 ) ? 'selected' : ''?>>Груз заберёт транспортная компания</option>
+                                    <option value="1" <?php echo ( $wc_esl_defaultPickUp === '1' ) ? 'selected' : ''?>>Груз заберёт транспортная компания</option>
                                 </select>
                             </div>
                             <div class="form-field esl-pickup-terminal">

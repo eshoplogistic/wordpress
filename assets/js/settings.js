@@ -173,6 +173,87 @@ window.addEventListener('load', function(event) {
 	}
 });
 
+// Показ/скрытие полей "Настроек по умолчанию" на вкладке транспортной компании в
+// зависимости от типа отправителя/получателя — та же логика, что в форме выгрузки заказа
+// (см. eslSyncBaikalSenderLegal / eslSyncBaikalReceiverType / eslSyncPecomSenderType /
+// eslSyncPecomReceiverType в assets/js/settings_unloading.js), только здесь поля не
+// дизейблятся с приглушением, а скрываются целиком (это форма настроек по умолчанию,
+// а не форма конкретного заказа).
+function eslToggleTabFieldGroup(fieldNames, show) {
+	fieldNames.forEach(function (name) {
+		let input = document.querySelector('#eslCarrierTabsWrap [name="' + name + '"]');
+		let wrapper = input ? input.closest('.form-group') : null;
+		if (wrapper) {
+			wrapper.style.display = show ? '' : 'none';
+		}
+	});
+}
+
+function eslSyncBaikalTabSenderLegal(select) {
+	let isOrg = (select.value === '1');
+	eslToggleTabFieldGroup(['sender-company-baikal', 'sender-org-form-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'], isOrg);
+	eslToggleTabFieldGroup(['sender-identity-series-baikal', 'sender-identity-number-baikal'], !isOrg);
+}
+
+function eslSyncBaikalTabReceiverType(select) {
+	let value = select.value;
+	eslToggleTabFieldGroup(['receiver-passport-series-baikal', 'receiver-passport-number-baikal'], value === '1');
+	eslToggleTabFieldGroup(['receiver-inn-baikal', 'receiver-kpp-baikal'], value !== '' && value !== '1');
+}
+
+function eslSyncPecomTabSenderType(select) {
+	let showIdentity = (select.value === '1' || select.value === '2');
+	eslToggleTabFieldGroup([
+		'sender-identity-type-pecom', 'sender-identity-series-pecom', 'sender-identity-number-pecom',
+		'sender-identity-date-pecom', 'sender-identity-first-name-pecom', 'sender-identity-last-name-pecom',
+		'sender-identity-patronymic-pecom'
+	], showIdentity);
+	eslToggleTabFieldGroup(['sender-requisites-name-pecom', 'sender-requisites-inn-pecom'], !showIdentity);
+}
+
+function eslSyncPecomTabReceiverType(select) {
+	let showIdentity = (select.value === '1');
+	eslToggleTabFieldGroup([
+		'receiver-passport-series-pecom', 'receiver-passport-number-pecom',
+		'receiver-passport-date-issue-pecom', 'receiver-passport-date-birth-pecom', 'receiver-passport-org-pecom'
+	], showIdentity);
+	eslToggleTabFieldGroup(['receiver-requisites-inn-pecom', 'receiver-requisites-kpp-pecom'], !showIdentity);
+}
+
+function eslSyncCarrierTabToggles() {
+	let senderTypeBaikal = document.querySelector('#eslCarrierTabsWrap [name="sender-type-baikal"]');
+	if (senderTypeBaikal) {
+		eslSyncBaikalTabSenderLegal(senderTypeBaikal);
+	}
+
+	let receiverTypeBaikal = document.querySelector('#eslCarrierTabsWrap [name="receiver-type-baikal"]');
+	if (receiverTypeBaikal) {
+		eslSyncBaikalTabReceiverType(receiverTypeBaikal);
+	}
+
+	let senderTypePecom = document.querySelector('#eslCarrierTabsWrap [name="sender-entity-type-pecom"]');
+	if (senderTypePecom) {
+		eslSyncPecomTabSenderType(senderTypePecom);
+	}
+
+	let receiverTypePecom = document.querySelector('#eslCarrierTabsWrap [name="receiver-identity-type-pecom"]');
+	if (receiverTypePecom) {
+		eslSyncPecomTabReceiverType(receiverTypePecom);
+	}
+}
+
+document.addEventListener('change', function (e) {
+	if (e.target.matches('#eslCarrierTabsWrap [name="sender-type-baikal"]')) {
+		eslSyncBaikalTabSenderLegal(e.target);
+	} else if (e.target.matches('#eslCarrierTabsWrap [name="receiver-type-baikal"]')) {
+		eslSyncBaikalTabReceiverType(e.target);
+	} else if (e.target.matches('#eslCarrierTabsWrap [name="sender-entity-type-pecom"]')) {
+		eslSyncPecomTabSenderType(e.target);
+	} else if (e.target.matches('#eslCarrierTabsWrap [name="receiver-identity-type-pecom"]')) {
+		eslSyncPecomTabReceiverType(e.target);
+	}
+});
+
 function eslRun() {
 	let AdminSettingsEsl = {
 		enablePluginCheckbox: document.getElementById('enablePlugin'),
@@ -319,6 +400,21 @@ function eslRun() {
 					_self: this
 				}));
 			}
+
+			// Поля "Дополнительных настроек" каждой службы (тарифы, ОПФ, объединение мест
+			// и т.п.) грузятся лениво по клику на вкладку — часть служб дёргает живой API.
+			// Активная по умолчанию вкладка грузится сразу, остальные — при первом клике.
+			let _selfTabs = this;
+			document.querySelectorAll(this.carrierTabsWrapperSelector + ' .nav-link[data-toggle="tab"]').forEach(function (link) {
+				link.addEventListener('click', function () {
+					let targetSelector = link.getAttribute('href');
+					let pane = targetSelector ? document.querySelector(targetSelector) : null;
+					let container = pane ? pane.querySelector('.esl-carrier-extra-fields') : null;
+					_selfTabs.loadCarrierExtraFields(container);
+				});
+			});
+			this.loadCarrierExtraFields(document.querySelector(this.carrierTabsWrapperSelector + ' .tab-pane.show.active .esl-carrier-extra-fields'));
+			eslSyncCarrierTabToggles();
 			if(this.buttonAddFieldForm){
 				this.buttonAddFieldForm.addEventListener('click', this.submitAddFieldForm.bind({
 					_self: this
@@ -788,11 +884,6 @@ function eslRun() {
 
 			let _self = this._self;
 			let form = _self.exportForm;
-			let result = [];
-			let data = new FormData(form);
-			for (let [key, value] of data) {
-				result.push({name:key, value:value});
-			}
 
 			// У #eslExportForm две кнопки "Сохранить" в разных карточках — "Адрес
 			// отправителя" сверху и "Настройки транспортных компаний" снизу (там поля
@@ -804,7 +895,50 @@ function eslRun() {
 				: _self.exportWrapperSelector;
 			PreloaderEsl.show(_self.exportPreloaderTarget);
 
-			_self.changeExportForm(result);
+			// Сохранение вкладки — полная перезапись опции, поэтому перед сборкой
+			// FormData нужно гарантированно догрузить "Дополнительные настройки" всех
+			// служб, а не только той вкладки, которую мерчант успел открыть — иначе
+			// настройки ещё не открытых вкладок будут потеряны при сохранении.
+			_self.ensureAllCarrierExtraFieldsLoaded().then(function () {
+				let result = [];
+				let data = new FormData(form);
+				for (let [key, value] of data) {
+					result.push({name:key, value:value});
+				}
+
+				_self.changeExportForm(result);
+			});
+		},
+
+		loadCarrierExtraFields: function (containerEl) {
+			if (!containerEl || containerEl.getAttribute('data-loaded') === '1') {
+				return Promise.resolve();
+			}
+			containerEl.setAttribute('data-loaded', '1');
+
+			return new Promise(function (resolve) {
+				let data = {};
+				data.action = 'wc_esl_shipping_get_export_fields';
+				data.type = containerEl.getAttribute('data-carrier');
+				data.nonce = wc_esl_shipping_global.nonce;
+
+				HttpClientEsl.post(data, function (result) {
+					if (result && result.success === true) {
+						containerEl.innerHTML = result.data;
+						eslSyncCarrierTabToggles();
+					}
+					resolve();
+				});
+			});
+		},
+
+		ensureAllCarrierExtraFieldsLoaded: function () {
+			let _self = this;
+			let promises = [];
+			document.querySelectorAll(_self.carrierTabsWrapperSelector + ' .esl-carrier-extra-fields').forEach(function (containerEl) {
+				promises.push(_self.loadCarrierExtraFields(containerEl));
+			});
+			return Promise.all(promises);
 		},
 
 		changeExportForm: function (exportForm) {
