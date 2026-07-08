@@ -223,6 +223,11 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             </div>
 
 							<?php foreach ( $wc_esl_fieldDelivery as $wc_esl_nameArr => $wc_esl_arr ):
+								// "Объединить все грузовые места в одно" рендерится отдельно, под таблицей
+								// "Места" (section#content4) — см. ниже, как в moj_sklad ($result['content']['3']).
+								if ( $wc_esl_nameArr === 'order[combine_places]' ) {
+									continue;
+								}
 								?>
 
 								<?php foreach ( $wc_esl_arr as $wc_esl_key => $wc_esl_value ):
@@ -344,7 +349,7 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             $wc_esl_commentDoorOnly = $wc_esl_typeMethod['name'] === 'yandex';
                             ?>
                             <?php if ($wc_esl_showComment): ?>
-                            <div class="form-field<?php echo $wc_esl_commentDoorOnly ? ' esl-door-only' : ''; ?>">
+                            <div class="form-field form-field-full<?php echo $wc_esl_commentDoorOnly ? ' esl-door-only' : ''; ?>">
                                 <label class="label" for="comment">Комментарий:</label>
                                 <textarea class="form-value" id="comment" name="comment"></textarea>
                             </div>
@@ -499,6 +504,27 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                     </tr>
                                 </template>
                             </div>
+							<?php if ( isset( $wc_esl_fieldDelivery['order[combine_places]'] ) ): ?>
+                            <div class="esl-combine-places">
+								<?php foreach ( $wc_esl_fieldDelivery['order[combine_places]'] as $wc_esl_cpKey => $wc_esl_cpValue ):
+									$wc_esl_cpParts = explode( '||', $wc_esl_cpKey );
+									$wc_esl_cpName  = $wc_esl_cpParts[0];
+									$wc_esl_cpType  = $wc_esl_cpParts[1];
+									$wc_esl_cpLabel = $wc_esl_cpParts[2] ?? $wc_esl_cpName;
+									$wc_esl_cpId    = 'esl-order-combine-places-' . $wc_esl_cpName;
+									$wc_esl_cpNameAttr = 'order[combine_places][' . $wc_esl_cpName . ']';
+									?>
+                                <div class="form-field<?php echo $wc_esl_cpType === 'checkbox' ? ' checkbox-area' : ''; ?>">
+                                    <label class="label" for="<?php echo esc_attr( $wc_esl_cpId ); ?>"><?php echo esc_html( $wc_esl_cpLabel ); ?></label>
+									<?php if ( $wc_esl_cpType === 'checkbox' ): ?>
+                                        <input class="form-value" id="<?php echo esc_attr( $wc_esl_cpId ); ?>" name="<?php echo esc_attr( $wc_esl_cpNameAttr ); ?>" type="checkbox" <?php echo esc_attr( $wc_esl_cpValue ); ?>>
+									<?php else: ?>
+                                        <input class="form-value" id="<?php echo esc_attr( $wc_esl_cpId ); ?>" name="<?php echo esc_attr( $wc_esl_cpNameAttr ); ?>" type="text" value="<?php echo esc_attr( $wc_esl_cpValue ); ?>">
+									<?php endif; ?>
+                                </div>
+								<?php endforeach; ?>
+                            </div>
+							<?php endif; ?>
                         </div>
                     </section>
 

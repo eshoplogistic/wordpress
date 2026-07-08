@@ -220,7 +220,7 @@
 .modal-esl form textarea,
 .modal-esl form select {
     box-sizing: border-box;
-    width: 100%;
+    width: 100% !important;
     height: 38px;
     padding: 0 12px;
     border: 1px solid var(--esl-border) !important;
@@ -275,11 +275,17 @@
     cursor: not-allowed;
 }
 
-/* Tabs "Получатель" и "Отправитель" — responsive multi-column field grid. */
+/* Tabs "Получатель" и "Отправитель" — responsive multi-column field grid.
+   Explicit column count (3), not auto-fill: auto-fill picks ONE column count for the whole
+   container from minmax() math, so a row with fewer visible fields than that count doesn't
+   stretch to fill it — its last field's right edge falls short of rows that do fill every
+   column. A fixed repeat(3, 1fr) means every full row always spans the exact same width;
+   only a genuinely partial last row (field count not divisible by 3) looks shorter, which
+   is expected. Mobile media query further down collapses this to 1 column. */
 .modal-esl form #content1 .form-box,
 .modal-esl form #content2 .form-box {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 18px 20px;
     max-width: none;
     min-width: 0;
@@ -309,6 +315,16 @@
     padding: 10px 12px;
     display: block;
     resize: vertical;
+}
+
+/* grid-column only affects direct grid items — a <textarea> is a grandchild of .form-box
+   (nested inside its own .form-field wrapper div), so putting grid-column on the textarea
+   itself (as before) silently did nothing: the wrapper stayed a normal 1-column-wide grid
+   item and the textarea just filled that narrow cell. .checkbox-area works correctly next
+   to this because that class sits on the wrapper div itself, not on a child inside it —
+   .form-field-full (see views/unloading-form.php's "Комментарий" field) follows that same
+   pattern for the actual grid item. */
+.modal-esl form .form-field-full {
     grid-column: 1 / -1;
 }
 
@@ -415,7 +431,7 @@
 
 .modal-esl .esl-box_add {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 0 24px;
 }
 
@@ -440,6 +456,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    min-width: 0;
     margin: 0;
     padding: 10px 6px;
     border-bottom: 1px dashed var(--esl-border-soft);
@@ -552,6 +569,40 @@
     flex-direction: column;
     gap: 10px;
     padding: 10px;
+}
+
+/* "Объединить все грузовые места в одно" — рендерится под таблицей мест (см.
+   views/unloading-form.php#content4), поэтому нужен свой грид: базовый .form-field
+   (см. правило выше "content4's table cells... override this") тут голый display:block.
+   Flexbox с flex:1 1 0 (не grid) — габариты/вес всегда делят ширину строго пополам вне
+   зависимости от длины подписи или значения, без допущений про поведение грид-треков. */
+.modal-esl form #content4 .esl-combine-places {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 20px;
+    margin-top: 6px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.modal-esl form #content4 .esl-combine-places .form-field {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* #content4 в селекторе выше даёт ту же специфичность, что и голое .checkbox-area ниже —
+   без этого override чекбокс перестаёт занимать всю строку (см. аналогичный фикс для
+   #content1/#content2 выше). */
+.modal-esl form #content4 .esl-combine-places .checkbox-area {
+    flex: 1 1 100%;
+}
+
+.modal-esl form #content4 .esl-combine-places .label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--esl-text-muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .modal-esl .esl-places-table td.column-delete {

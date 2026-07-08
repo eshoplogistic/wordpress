@@ -293,8 +293,6 @@ class ExportFileds {
 		if ( $name === 'boxberry' ) {
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
-            if(!isset($exportFormSettings['combine-places-apply']))
-                $exportFormSettings['combine-places-apply'] = false;
 
 			$result = array(
 				'order' => array(
@@ -316,9 +314,9 @@ class ExportFileds {
 					), $exportFormSettings['order-issue-boxberry'] ?? '' )
 				),
 				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-boxberry'] ?? '') == 'on' ? 'checked' : '',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-boxberry']) ?? '',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-boxberry']) ?? ''
 				),
 			);
 		}
@@ -345,9 +343,9 @@ class ExportFileds {
 					), $exportFormSettings['type-order-sdek'] ?? '' ),
 				),
 				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-sdek'] ?? '') == 'on' ? 'checked' : '',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-sdek']) ?? '',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-sdek']) ?? ''
 				),
 				'receiver' => array(
 					'type||select||Тип получателя' => $this->selectOptions( array(
@@ -620,9 +618,9 @@ class ExportFileds {
 					'last_name||text||Фамилия получателя' => ($exportFormSettings['receiver-last-name-magnit']) ?? ''
 				),
 				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions'])??'',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight'])??''
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-magnit'] ?? '') == 'on' ? 'checked' : '',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-magnit']) ?? '',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-magnit']) ?? ''
 				),
 			);
 		}
@@ -733,9 +731,9 @@ class ExportFileds {
 					'costly||checkbox||Флаг «Ценный груз»' => ($exportFormSettings['order-costly-dpd'] ?? '') == 'on' ? 'checked' : '',
 				),
 				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => (isset($exportFormSettings['combine-places-apply']) && $exportFormSettings['combine-places-apply'] == 'on')?'checked':'',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => (isset($exportFormSettings['combine-places-dimensions']) && $exportFormSettings['combine-places-dimensions'])??'',
-					'weight||text||Вес итогового грузового места в кг' => (isset($exportFormSettings['combine-places-weight']) && $exportFormSettings['combine-places-weight'])??''
+					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-dpd'] ?? '') == 'on' ? 'checked' : '',
+					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-dpd']) ?? '',
+					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-dpd']) ?? ''
 				),
 				'delivery' => array(
 					'produce_date||date||Дата приёма груза' => $produce_date,
@@ -815,14 +813,14 @@ class ExportFileds {
 				'order.type'                        => 'order-type-boxberry',
 				'order.packing_type'                => 'order-packing-type-boxberry',
 				'order.issue'                        => 'order-issue-boxberry',
-				'order[combine_places].apply'        => 'combine-places-apply',
-				'order[combine_places].dimensions'   => 'combine-places-dimensions',
-				'order[combine_places].weight'       => 'combine-places-weight',
+				'order[combine_places].apply'        => 'combine-places-apply-boxberry',
+				'order[combine_places].dimensions'   => 'combine-places-dimensions-boxberry',
+				'order[combine_places].weight'       => 'combine-places-weight-boxberry',
 			),
 			'sdek' => array(
-				'order[combine_places].apply'        => 'combine-places-apply',
-				'order[combine_places].dimensions'   => 'combine-places-dimensions',
-				'order[combine_places].weight'       => 'combine-places-weight',
+				'order[combine_places].apply'        => 'combine-places-apply-sdek',
+				'order[combine_places].dimensions'   => 'combine-places-dimensions-sdek',
+				'order[combine_places].weight'       => 'combine-places-weight-sdek',
 				'receiver.type'                       => 'receiver-type-sdek',
 				'delivery.tariff'                     => 'delivery-tariff-sdek',
 			),
@@ -875,9 +873,9 @@ class ExportFileds {
 			),
 			'magnit' => array(
 				'receiver.last_name'                  => 'receiver-last-name-magnit',
-				'order[combine_places].apply'         => 'combine-places-apply',
-				'order[combine_places].dimensions'    => 'combine-places-dimensions',
-				'order[combine_places].weight'        => 'combine-places-weight',
+				'order[combine_places].apply'         => 'combine-places-apply-magnit',
+				'order[combine_places].dimensions'    => 'combine-places-dimensions-magnit',
+				'order[combine_places].weight'        => 'combine-places-weight-magnit',
 			),
 			'baikal' => array(
 				'receiver[identity].type'             => 'receiver-type-baikal',
@@ -890,9 +888,9 @@ class ExportFileds {
 				'receiver.email'                      => 'receiver-email-dpd',
 				'order.content'                        => 'order-content-dpd',
 				'order.costly'                          => 'order-costly-dpd',
-				'order[combine_places].apply'          => 'combine-places-apply',
-				'order[combine_places].dimensions'     => 'combine-places-dimensions',
-				'order[combine_places].weight'         => 'combine-places-weight',
+				'order[combine_places].apply'          => 'combine-places-apply-dpd',
+				'order[combine_places].dimensions'     => 'combine-places-dimensions-dpd',
+				'order[combine_places].weight'         => 'combine-places-weight-dpd',
 				'delivery.produce_time'                 => 'delivery-produce-time-dpd',
 				'delivery.tariff'                        => 'delivery-tariff-dpd',
 			),
