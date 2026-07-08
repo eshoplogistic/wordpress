@@ -1178,13 +1178,13 @@ $status_translate             = [
 								'fields' => array(
 									array( 'name' => 'sender-terminal-baikal', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'order-content-baikal', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти', 'type' => 'freight' ),
-									array( 'name' => 'sender-type-baikal', 'label' => 'Тип отправителя по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Юридическое лицо', 2 => 'Физическое лицо' ) ),
-									array( 'name' => 'sender-org-form-baikal', 'label' => 'Правовая форма (ОПФ) по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Физическое лицо', 5 => 'ООО', 6 => 'ОАО', 7 => 'ЗАО', 8 => 'ПАО', 9 => 'ИП', 12 => 'АО' ) ),
-									array( 'name' => 'sender-company-baikal', 'label' => 'Наименование организации' ),
-									array( 'name' => 'sender-inn-baikal', 'label' => 'ИНН организации' ),
-									array( 'name' => 'sender-kpp-baikal', 'label' => 'КПП организации' ),
-									array( 'name' => 'sender-identity-series-baikal', 'label' => 'Серия документа (для физ. лица)' ),
-									array( 'name' => 'sender-identity-number-baikal', 'label' => 'Номер документа (для физ. лица)' ),
+									array( 'name' => 'sender-type-baikal', 'label' => 'Тип отправителя по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Юридическое лицо', 2 => 'Физическое лицо' ), 'visibility_controller' => array( array( 'values' => array( '1' ), 'target' => 'baikal-sender-org' ), array( 'values' => array( '2' ), 'target' => 'baikal-sender-individual' ) ) ),
+									array( 'name' => 'sender-org-form-baikal', 'label' => 'Правовая форма (ОПФ) по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Физическое лицо', 5 => 'ООО', 6 => 'ОАО', 7 => 'ЗАО', 8 => 'ПАО', 9 => 'ИП', 12 => 'АО' ), 'visibility_group' => 'baikal-sender-org' ),
+									array( 'name' => 'sender-company-baikal', 'label' => 'Наименование организации', 'visibility_group' => 'baikal-sender-org' ),
+									array( 'name' => 'sender-inn-baikal', 'label' => 'ИНН организации', 'visibility_group' => 'baikal-sender-org' ),
+									array( 'name' => 'sender-kpp-baikal', 'label' => 'КПП организации', 'visibility_group' => 'baikal-sender-org' ),
+									array( 'name' => 'sender-identity-series-baikal', 'label' => 'Серия документа (для физ. лица)', 'visibility_group' => 'baikal-sender-individual' ),
+									array( 'name' => 'sender-identity-number-baikal', 'label' => 'Номер документа (для физ. лица)', 'visibility_group' => 'baikal-sender-individual' ),
 									array( 'name' => 'sender-time-from-baikal', 'label' => 'Интервал для забора груза c', 'type' => 'time' ),
 									array( 'name' => 'sender-time-to-baikal', 'label' => 'Интервал для забора груза до', 'type' => 'time' ),
 								),
@@ -1246,8 +1246,19 @@ $status_translate             = [
                                         <div class="tab-pane fade<?php echo esc_attr($carrierSlug === 'sdek' ? ' show active' : ''); ?>"
                                              id="esl-carrier-tab-<?php echo esc_attr($carrierSlug); ?>" role="tabpanel">
 
-											<?php foreach ( $carrierData['fields'] as $carrierField ): ?>
-                                                <div class="form-group row align-items-center mb-3">
+											<?php foreach ( $carrierData['fields'] as $carrierField ):
+												// Показ/скрытие полей по умолчанию (см. ExportFileds::tabVisibilityRules() —
+												// тот же приём для полей, которые рендерятся не там, а здесь, потому что
+												// это старые EXIST-DUP-поля вкладки, а не поля из общего рендерера).
+												$carrierWrapperKey = $carrierField['visibility_group'] ?? $carrierField['name'];
+												$carrierControllerAttrs = '';
+												foreach ( array_slice( $carrierField['visibility_controller'] ?? array(), 0, 2 ) as $carrierVisIndex => $carrierVisRule ) {
+													$carrierVisSuffix = $carrierVisIndex === 0 ? '' : ( $carrierVisIndex + 1 );
+													$carrierControllerAttrs .= ' data-esl-visible-target' . $carrierVisSuffix . '="' . esc_attr( $carrierVisRule['target'] ) . '"';
+													$carrierControllerAttrs .= ' data-esl-visible-value' . $carrierVisSuffix . '="' . esc_attr( implode( ',', $carrierVisRule['values'] ) ) . '"';
+												}
+												?>
+                                                <div class="form-group row align-items-center mb-3" data-esl-key="<?php echo esc_attr($carrierWrapperKey); ?>">
                                                     <label for="" class="col-sm-5 col-form-label">
 														<?php echo esc_html($carrierField['label']); ?>
 														<?php if ( ! empty( $carrierField['help'] ) ): ?>
@@ -1272,6 +1283,7 @@ $status_translate             = [
                                                                     placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
                                                                     name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                     value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                    <?php echo $carrierControllerAttrs; ?>
                                                             />
                                                             <div class="input-group-append">
                                                                 <button type="button" class="btn btn-primary esl-search-terminal"
@@ -1290,6 +1302,7 @@ $status_translate             = [
                                                                     placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
                                                                     name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                     value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                    <?php echo $carrierControllerAttrs; ?>
                                                             />
                                                             <div class="input-group-append">
                                                                 <button type="button" class="btn btn-primary esl-search-freight"
@@ -1300,7 +1313,7 @@ $status_translate             = [
                                                             </div>
                                                         </div>
 														<?php elseif ( $carrierFieldType === 'select' ): ?>
-                                                        <select class="form-control" form="eslExportForm" name="<?php echo esc_attr($carrierField['name']); ?>">
+                                                        <select class="form-control" form="eslExportForm" name="<?php echo esc_attr($carrierField['name']); ?>" <?php echo $carrierControllerAttrs; ?>>
 															<?php foreach ( (array) ( $carrierField['values'] ?? array() ) as $carrierOptValue => $carrierOptLabel ): ?>
                                                                 <option value="<?php echo esc_attr($carrierOptValue); ?>" <?php echo esc_attr( (string) $carrierFieldValue === (string) $carrierOptValue ? 'selected' : '' ); ?>>
 																	<?php echo esc_html($carrierOptLabel); ?>
@@ -1317,6 +1330,7 @@ $status_translate             = [
 														<?php endif; ?>
                                                                 name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                 value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                <?php echo $carrierControllerAttrs; ?>
                                                         />
 														<?php endif; ?>
                                                     </div>

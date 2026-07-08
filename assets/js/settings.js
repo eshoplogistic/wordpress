@@ -174,83 +174,39 @@ window.addEventListener('load', function(event) {
 });
 
 // Показ/скрытие полей "Настроек по умолчанию" на вкладке транспортной компании в
-// зависимости от типа отправителя/получателя — та же логика, что в форме выгрузки заказа
-// (см. eslSyncBaikalSenderLegal / eslSyncBaikalReceiverType / eslSyncPecomSenderType /
-// eslSyncPecomReceiverType в assets/js/settings_unloading.js), только здесь поля не
-// дизейблятся с приглушением, а скрываются целиком (это форма настроек по умолчанию,
-// а не форма конкретного заказа).
-function eslToggleTabFieldGroup(fieldNames, show) {
-	fieldNames.forEach(function (name) {
-		let input = document.querySelector('#eslCarrierTabsWrap [name="' + name + '"]');
-		let wrapper = input ? input.closest('.form-group') : null;
-		if (wrapper) {
-			wrapper.style.display = show ? '' : 'none';
-		}
+// зависимости от типа отправителя/получателя — универсальный механизм по образцу
+// moj_sklad (Modules/Iframe.php: visible_by_params_parent + wrapper_class), только через
+// data-атрибуты: управляющее поле несёт data-esl-visible-target(2)/data-esl-visible-value(2),
+// управляемые поля — data-esl-key с именем группы (см. ExportFileds::tabVisibilityRules()).
+// В отличие от формы выгрузки заказа (там поля дизейблятся с приглушением — см.
+// eslSyncBaikalSenderLegal и т.п. в assets/js/settings_unloading.js), здесь поля
+// скрываются целиком — это форма настроек по умолчанию, а не форма конкретного заказа.
+function eslApplyVisibilityRule(target, values, match) {
+	document.querySelectorAll('#eslCarrierTabsWrap [data-esl-key="' + target + '"]').forEach(function (wrapper) {
+		wrapper.style.display = match ? '' : 'none';
 	});
 }
 
-function eslSyncBaikalTabSenderLegal(select) {
-	let isOrg = (select.value === '1');
-	eslToggleTabFieldGroup(['sender-company-baikal', 'sender-org-form-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'], isOrg);
-	eslToggleTabFieldGroup(['sender-identity-series-baikal', 'sender-identity-number-baikal'], !isOrg);
+function eslSyncVisibilityController(el) {
+	let value = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+
+	if (el.dataset.eslVisibleTarget && el.dataset.eslVisibleValue !== undefined) {
+		let values = el.dataset.eslVisibleValue.split(',');
+		eslApplyVisibilityRule(el.dataset.eslVisibleTarget, values, values.includes(String(value)));
+	}
+	if (el.dataset.eslVisibleTarget2 && el.dataset.eslVisibleValue2 !== undefined) {
+		let values2 = el.dataset.eslVisibleValue2.split(',');
+		eslApplyVisibilityRule(el.dataset.eslVisibleTarget2, values2, values2.includes(String(value)));
+	}
 }
 
-function eslSyncBaikalTabReceiverType(select) {
-	let value = select.value;
-	eslToggleTabFieldGroup(['receiver-passport-series-baikal', 'receiver-passport-number-baikal'], value === '1');
-	eslToggleTabFieldGroup(['receiver-inn-baikal', 'receiver-kpp-baikal'], value !== '' && value !== '1');
-}
-
-function eslSyncPecomTabSenderType(select) {
-	let showIdentity = (select.value === '1' || select.value === '2');
-	eslToggleTabFieldGroup([
-		'sender-identity-type-pecom', 'sender-identity-series-pecom', 'sender-identity-number-pecom',
-		'sender-identity-date-pecom', 'sender-identity-first-name-pecom', 'sender-identity-last-name-pecom',
-		'sender-identity-patronymic-pecom'
-	], showIdentity);
-	eslToggleTabFieldGroup(['sender-requisites-name-pecom', 'sender-requisites-inn-pecom'], !showIdentity);
-}
-
-function eslSyncPecomTabReceiverType(select) {
-	let showIdentity = (select.value === '1');
-	eslToggleTabFieldGroup([
-		'receiver-passport-series-pecom', 'receiver-passport-number-pecom',
-		'receiver-passport-date-issue-pecom', 'receiver-passport-date-birth-pecom', 'receiver-passport-org-pecom'
-	], showIdentity);
-	eslToggleTabFieldGroup(['receiver-requisites-inn-pecom', 'receiver-requisites-kpp-pecom'], !showIdentity);
-}
-
-function eslSyncCarrierTabToggles() {
-	let senderTypeBaikal = document.querySelector('#eslCarrierTabsWrap [name="sender-type-baikal"]');
-	if (senderTypeBaikal) {
-		eslSyncBaikalTabSenderLegal(senderTypeBaikal);
-	}
-
-	let receiverTypeBaikal = document.querySelector('#eslCarrierTabsWrap [name="receiver-type-baikal"]');
-	if (receiverTypeBaikal) {
-		eslSyncBaikalTabReceiverType(receiverTypeBaikal);
-	}
-
-	let senderTypePecom = document.querySelector('#eslCarrierTabsWrap [name="sender-entity-type-pecom"]');
-	if (senderTypePecom) {
-		eslSyncPecomTabSenderType(senderTypePecom);
-	}
-
-	let receiverTypePecom = document.querySelector('#eslCarrierTabsWrap [name="receiver-identity-type-pecom"]');
-	if (receiverTypePecom) {
-		eslSyncPecomTabReceiverType(receiverTypePecom);
-	}
+function eslSyncAllVisibilityControllers() {
+	document.querySelectorAll('#eslCarrierTabsWrap [data-esl-visible-target]').forEach(eslSyncVisibilityController);
 }
 
 document.addEventListener('change', function (e) {
-	if (e.target.matches('#eslCarrierTabsWrap [name="sender-type-baikal"]')) {
-		eslSyncBaikalTabSenderLegal(e.target);
-	} else if (e.target.matches('#eslCarrierTabsWrap [name="receiver-type-baikal"]')) {
-		eslSyncBaikalTabReceiverType(e.target);
-	} else if (e.target.matches('#eslCarrierTabsWrap [name="sender-entity-type-pecom"]')) {
-		eslSyncPecomTabSenderType(e.target);
-	} else if (e.target.matches('#eslCarrierTabsWrap [name="receiver-identity-type-pecom"]')) {
-		eslSyncPecomTabReceiverType(e.target);
+	if (e.target.dataset && e.target.dataset.eslVisibleTarget && e.target.closest('#eslCarrierTabsWrap')) {
+		eslSyncVisibilityController(e.target);
 	}
 });
 
@@ -414,7 +370,7 @@ function eslRun() {
 				});
 			});
 			this.loadCarrierExtraFields(document.querySelector(this.carrierTabsWrapperSelector + ' .tab-pane.show.active .esl-carrier-extra-fields'));
-			eslSyncCarrierTabToggles();
+			eslSyncAllVisibilityControllers();
 			if(this.buttonAddFieldForm){
 				this.buttonAddFieldForm.addEventListener('click', this.submitAddFieldForm.bind({
 					_self: this
@@ -925,7 +881,7 @@ function eslRun() {
 				HttpClientEsl.post(data, function (result) {
 					if (result && result.success === true) {
 						containerEl.innerHTML = result.data;
-						eslSyncCarrierTabToggles();
+						eslSyncAllVisibilityControllers();
 					}
 					resolve();
 				});

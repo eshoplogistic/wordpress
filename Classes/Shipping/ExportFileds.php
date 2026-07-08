@@ -594,6 +594,7 @@ class ExportFileds {
 						'sender' => 'Отправитель',
 						'receiver' => 'Получатель',
 					), $exportFormSettings['order-payer-pecom'] ?? '' ),
+					'content||text||Характер груза' => ($exportFormSettings['order-content-pecom']) ?? '',
 				),
 				'delivery' => array(
 					'produce_date||date||Дата передачи груза' => $produce_date,
@@ -867,6 +868,7 @@ class ExportFileds {
 				'receiver[requisites].inn'                  => 'receiver-requisites-inn-pecom',
 				'receiver[requisites].kpp'                  => 'receiver-requisites-kpp-pecom',
 				'order.payer'                                => 'order-payer-pecom',
+				'order.content'                             => 'order-content-pecom',
 			),
 			'halva' => array(
 				'order.packing' => 'order-packing-halva',
@@ -916,10 +918,12 @@ class ExportFileds {
 	 * вкладки (см. Modules/Ajax.php::getExportExtraFields()).
 	 */
 	public function renderTabFields( $carrierSlug ) {
-		$map = $this->tabFieldMap( $carrierSlug );
+		$map           = $this->tabFieldMap( $carrierSlug );
+		$fieldDelivery = $this->exportFields( $carrierSlug );
+		$visibility    = $this->tabVisibilityRules( $carrierSlug, $fieldDelivery );
 
-		$html  = $this->renderTabFieldGroup( $this->exportFields( $carrierSlug ), $map );
-		$html .= $this->renderTabFieldGroup( $this->settingsExportForOneDelivery( $carrierSlug ), $map );
+		$html  = $this->renderTabFieldGroup( $fieldDelivery, $map, $visibility );
+		$html .= $this->renderTabFieldGroup( $this->settingsExportForOneDelivery( $carrierSlug ), $map, $visibility );
 
 		if ( $carrierSlug !== 'halva' ) {
 			$optionsRepository  = new OptionsRepository();
@@ -946,7 +950,91 @@ class ExportFileds {
 		return $html;
 	}
 
-	private function renderTabFieldGroup( array $fieldGroups, array $map ) {
+	/**
+	 * Правила показа/скрытия полей во вкладке — аналог механизма moj_sklad
+	 * (Modules/Iframe.php: visible_by_params_parent[2] + wrapper_class), только через
+	 * data-атрибуты вместо классов: у управляющего поля — data-esl-visible-target(2) +
+	 * data-esl-visible-value(2), у управляемых полей — data-esl-key с именем "группы"
+	 * (см. renderTabFieldGroup()/assets/js/settings.js::eslSyncVisibilityController()).
+	 *
+	 * 'groups' — flatKey => имя группы (для управляемых полей).
+	 * 'controllers' — flatKey управляющего поля => до двух правил array('values' => [...], 'target' => 'имя группы').
+	 */
+	private function tabVisibilityRules( $carrierSlug, array $fieldDelivery ) {
+		$groups      = array();
+		$controllers = array();
+
+		if ( $carrierSlug === 'baikal' ) {
+			foreach ( array( 'sender-company-baikal', 'sender-org-form-baikal', 'sender-inn-baikal', 'sender-kpp-baikal' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'baikal-sender-org';
+			}
+			foreach ( array( 'sender-identity-series-baikal', 'sender-identity-number-baikal' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'baikal-sender-individual';
+			}
+			// Тип отправителя: 1 = юр.лицо (реквизиты организации), 2 = физ.лицо (документ).
+			$controllers['sender-type-baikal'] = array(
+				array( 'values' => array( '1' ), 'target' => 'baikal-sender-org' ),
+				array( 'values' => array( '2' ), 'target' => 'baikal-sender-individual' ),
+			);
+
+			foreach ( array( 'receiver-passport-series-baikal', 'receiver-passport-number-baikal' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'baikal-receiver-individual';
+			}
+			foreach ( array( 'receiver-inn-baikal', 'receiver-kpp-baikal' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'baikal-receiver-org';
+			}
+			// Тип получателя — справочник ОПФ транспортной компании (динамический, из API):
+			// код '1' = физлицо (паспорт), любой другой заполненный код = организация (ИНН/КПП).
+			$opfOptions = $fieldDelivery['receiver[identity]']['type||select||Тип получателя'] ?? array();
+			$orgCodes   = array();
+			foreach ( array_keys( (array) $opfOptions ) as $code ) {
+				if ( (string) $code !== '' && (string) $code !== '1' ) {
+					$orgCodes[] = (string) $code;
+				}
+			}
+			$controllers['receiver-type-baikal'] = array(
+				array( 'values' => array( '1' ), 'target' => 'baikal-receiver-individual' ),
+				array( 'values' => $orgCodes, 'target' => 'baikal-receiver-org' ),
+			);
+		}
+
+		if ( $carrierSlug === 'pecom' ) {
+			foreach ( array( 'sender-requisites-name-pecom', 'sender-requisites-inn-pecom' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'pecom-sender-org';
+			}
+			foreach ( array(
+				'sender-identity-type-pecom', 'sender-identity-series-pecom', 'sender-identity-number-pecom',
+				'sender-identity-date-pecom', 'sender-identity-first-name-pecom', 'sender-identity-last-name-pecom',
+				'sender-identity-patronymic-pecom',
+			) as $flatKey ) {
+				$groups[ $flatKey ] = 'pecom-sender-identity';
+			}
+			// Тип отправителя: 1 = юр.лицо, 2 = ИП (реквизиты организации/ИП), 3 = физ.лицо (документ).
+			$controllers['sender-entity-type-pecom'] = array(
+				array( 'values' => array( '3' ), 'target' => 'pecom-sender-identity' ),
+				array( 'values' => array( '1', '2' ), 'target' => 'pecom-sender-org' ),
+			);
+
+			foreach ( array(
+				'receiver-passport-series-pecom', 'receiver-passport-number-pecom',
+				'receiver-passport-date-issue-pecom', 'receiver-passport-date-birth-pecom', 'receiver-passport-org-pecom',
+			) as $flatKey ) {
+				$groups[ $flatKey ] = 'pecom-receiver-identity';
+			}
+			foreach ( array( 'receiver-requisites-inn-pecom', 'receiver-requisites-kpp-pecom' ) as $flatKey ) {
+				$groups[ $flatKey ] = 'pecom-receiver-org';
+			}
+			// Тип получателя: 1 = физ.лицо (паспорт), 2 = ИП / 3 = юр.лицо (ИНН/КПП).
+			$controllers['receiver-identity-type-pecom'] = array(
+				array( 'values' => array( '1' ), 'target' => 'pecom-receiver-identity' ),
+				array( 'values' => array( '2', '3' ), 'target' => 'pecom-receiver-org' ),
+			);
+		}
+
+		return array( 'groups' => $groups, 'controllers' => $controllers );
+	}
+
+	private function renderTabFieldGroup( array $fieldGroups, array $map, array $visibility = array( 'groups' => array(), 'controllers' => array() ) ) {
 		$html = '';
 		foreach ( $fieldGroups as $nameArr => $arr ) {
 			if ( $nameArr === 'hr' ) {
@@ -970,17 +1058,35 @@ class ExportFileds {
 				if ( ! isset( $map[ $mapKey ] ) ) {
 					continue;
 				}
+				$flatKey = $map[ $mapKey ];
 
-				$html .= '<div class="form-group row align-items-center mb-3">
+				$wrapperKey  = $visibility['groups'][ $flatKey ] ?? $flatKey;
+				$controlAttr = $this->renderVisibilityControllerAttrs( $flatKey, $visibility['controllers'] );
+
+				$html .= '<div class="form-group row align-items-center mb-3" data-esl-key="' . esc_attr( $wrapperKey ) . '">
 					<label class="col-sm-5 col-form-label">' . esc_html( $label ) . '</label>
-					<div class="col-sm-5">' . $this->renderTabFieldInput( $map[ $mapKey ], $typeField, $value ) . '</div>
+					<div class="col-sm-5">' . $this->renderTabFieldInput( $flatKey, $typeField, $value, $controlAttr ) . '</div>
 				</div>';
 			}
 		}
 		return $html;
 	}
 
-	private function renderTabFieldInput( $flatKey, $typeField, $value ) {
+	private function renderVisibilityControllerAttrs( $flatKey, array $controllers ) {
+		if ( ! isset( $controllers[ $flatKey ] ) ) {
+			return '';
+		}
+
+		$attrs = '';
+		foreach ( array_slice( $controllers[ $flatKey ], 0, 2 ) as $index => $rule ) {
+			$suffix = $index === 0 ? '' : ( $index + 1 );
+			$attrs .= ' data-esl-visible-target' . $suffix . '="' . esc_attr( $rule['target'] ) . '"';
+			$attrs .= ' data-esl-visible-value' . $suffix . '="' . esc_attr( implode( ',', $rule['values'] ) ) . '"';
+		}
+		return $attrs;
+	}
+
+	private function renderTabFieldInput( $flatKey, $typeField, $value, $extraAttrs = '' ) {
 		$name = esc_attr( $flatKey );
 
 		switch ( $typeField ) {
@@ -993,23 +1099,23 @@ class ExportFileds {
 						$options .= '<option value="' . esc_attr( $optValue ) . '">' . esc_html( $optData ) . '</option>';
 					}
 				}
-				return '<select class="form-control" form="eslExportForm" name="' . $name . '">' . $options . '</select>';
+				return '<select class="form-control" form="eslExportForm" name="' . $name . '"' . $extraAttrs . '>' . $options . '</select>';
 
 			case 'checkbox':
 				$checked = ( $value === 'checked' ) ? 'checked' : '';
-				return '<input type="checkbox" form="eslExportForm" name="' . $name . '" ' . $checked . '>';
+				return '<input type="checkbox" form="eslExportForm" name="' . $name . '" ' . $checked . $extraAttrs . '>';
 
 			case 'number':
-				return '<input type="number" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+				return '<input type="number" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '"' . $extraAttrs . '>';
 
 			case 'date':
-				return '<input type="date" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+				return '<input type="date" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '"' . $extraAttrs . '>';
 
 			case 'time':
-				return '<input type="time" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+				return '<input type="time" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '"' . $extraAttrs . '>';
 
 			default:
-				return '<input type="text" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+				return '<input type="text" class="form-control" form="eslExportForm" name="' . $name . '" value="' . esc_attr( $value ) . '"' . $extraAttrs . '>';
 		}
 	}
 
