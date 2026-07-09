@@ -85,8 +85,12 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
-		echo $block_content;
+		// Шорткод обязан вернуть строку, а не напечатать её: WooCommerce
+		// прогоняет описание товара через do_shortcode() и в других
+		// контекстах (например, при формировании structured data для SEO),
+		// и echo здесь приводил к тому, что разметка виджета утекала в эти
+		// контексты вторым, незапрошенным экземпляром.
+		return $block_content;
 	}
 
 }
@@ -274,8 +278,9 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
-		echo $block_content;
+		// См. пояснение в shortcode_widget_button_handler() выше: шорткод
+		// должен вернуть строку, а не напечатать её.
+		return $block_content;
 	}
 
 }
