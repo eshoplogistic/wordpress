@@ -234,6 +234,7 @@ class ExportFileds {
 				),
 				'order' => array(
 					'content' => '',
+					'payer' => '',
 				),
 			);
 		}
@@ -684,8 +685,8 @@ class ExportFileds {
 				),
 				'receiver[identity]' => array(
 					'type||select||Тип получателя' => $this->selectOptions( $opfBaikal, $exportFormSettings['receiver-type-baikal'] ?? '' ),
-					'passport_series||text||Серия' => ($exportFormSettings['receiver-passport-series-baikal']) ?? '',
-					'passport_number||text||Номер' => ($exportFormSettings['receiver-passport-number-baikal']) ?? '',
+					'passport_series||text||Серия паспорта' => ($exportFormSettings['receiver-passport-series-baikal']) ?? '',
+					'passport_number||text||Номер паспорта' => ($exportFormSettings['receiver-passport-number-baikal']) ?? '',
 				),
 				'receiver[requisites]' => array(
 					'inn||text||ИНН' => ($exportFormSettings['receiver-inn-baikal']) ?? '',
@@ -700,6 +701,10 @@ class ExportFileds {
 				),
 				'order' => array(
 					'content||text||Характер груза' => ($exportFormSettings['order-content-baikal']) ?? '',
+					'payer||select||Плательщик за доставку' => $this->selectOptions( array(
+						'sender' => 'Отправитель',
+						'receiver' => 'Получатель',
+					), $exportFormSettings['sender-payer-baikal'] ?? '' ),
 				),
 			);
 		}
@@ -883,6 +888,7 @@ class ExportFileds {
 				'receiver[identity].passport_number'  => 'receiver-passport-number-baikal',
 				'receiver[requisites].inn'            => 'receiver-inn-baikal',
 				'receiver[requisites].kpp'            => 'receiver-kpp-baikal',
+				'order.payer'                          => 'sender-payer-baikal',
 			),
 			'dpd' => array(
 				'receiver.email'                      => 'receiver-email-dpd',
