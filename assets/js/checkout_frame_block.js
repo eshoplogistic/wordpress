@@ -103,6 +103,16 @@
     }
 
     /**
+     * Скрыть подсказку "Укажите город для расчёта доставки".
+     */
+    function hideCityTips() {
+        const tips = document.getElementById('tips-city-container');
+        if (tips) {
+            tips.style.display = 'none';
+        }
+    }
+
+    /**
      * Получить хеш/подпись события сервиса.
      * Используем objectHash.sha1 при наличии, иначе безопасный fallback через JSON.
      */
@@ -320,10 +330,20 @@
     /**
      * Поиск города
      */
-    function searchCity(query, callback, country = 'RU') {
+    function searchCity(query, callback, country = 'RU', typeFilter = false) {
         if (!query || query.length < 2) {
             callback([]);
             return;
+        }
+
+        const body = {
+            action: 'wc_esl_search_cities',
+            target: query,
+            currentCountry: country,
+            nonce: config.nonce
+        };
+        if (typeFilter) {
+            body.typeFilter = typeFilter;
         }
 
         fetch(config.ajaxUrl, {
@@ -331,12 +351,7 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-                action: 'wc_esl_search_cities',
-                target: query,
-                currentCountry: country,
-                nonce: config.nonce
-            })
+            body: new URLSearchParams(body)
         })
         .then(response => response.json())
         .then(data => {
@@ -547,6 +562,53 @@
         return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}">${htmlItems}</ul>`;
     }
 
+    /**
+     * Рендер результатов поиска для модалки #modal-esl-city, сгруппированных по региону
+     * (legacy-парность с renderCitiesModal/renderCitiesModalItem из checkout.js/checkout_frame_v2.js).
+     */
+    function renderCitiesModal(itemsByRegion, mode = 'shipping') {
+        const escapeAttr = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const entries = itemsByRegion && typeof itemsByRegion === 'object' ? Object.entries(itemsByRegion) : [];
+
+        if (entries.length === 0) {
+            return '';
+        }
+
+        const listId = `result_wc_esl_search_city_${mode}`;
+        let html = `<ul class="wc-esl-search-city-modal__list" id="${listId}" data-mode="${mode}">`;
+
+        entries.forEach(([region, items]) => {
+            html += `<div class="wc-esl-search-region-modal__list"><p class="title-region">${escapeHtml(region)}</p>`;
+            (Array.isArray(items) ? items : []).forEach((item) => {
+                const type = item.type || '';
+                const name = item.name || '';
+                const itemRegion = item.region || '';
+                const postcode = item.postal_code || '';
+                const fias = item.fias || '';
+                const label = `${type ? type + ' ' : ''}${name}${itemRegion ? ' - ' + itemRegion : ''}`;
+                const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
+                const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
+
+                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}</li>`;
+            });
+            html += '</div>';
+        });
+
+        html += '</ul>';
+
+        return html;
+    }
+
     function appendCityResultList(inputEl, mode, items) {
         clearCityResultList(mode);
 
@@ -629,16 +691,17 @@
     }
 
     function setupAddressSelectionForBlocks() {
+        // Настройка "Изменить способ выбора города": выключена — обычное поле WC Blocks
+        // с выпадающим списком результатов поиска прямо под ним (эта функция). Включена —
+        // вместо этого открывается отдельная модалка (setupCityModalForBlocks), поэтому
+        // здесь выходим, чтобы не показывать оба варианта поиска одновременно.
+        if (config.citySelectModal) {
+            return;
+        }
+
         const timers = { shipping: null, billing: null };
         let citySelectionInProgress = false;
         let suppressAutocompleteUntil = 0;
-
-        const hideCityTips = () => {
-            const tips = document.getElementById('tips-city-container');
-            if (tips) {
-                tips.style.display = 'none';
-            }
-        };
 
         const runSearch = (mode) => {
             if (Date.now() < suppressAutocompleteUntil) {
@@ -809,6 +872,222 @@
         document.addEventListener('mousedown', handleCitySelection, true);
         document.addEventListener('touchstart', handleCitySelection, true);
         document.addEventListener('click', handleCitySelection, true);
+    }
+
+    /**
+     * Настройка "Изменить способ выбора города" (включена): вместо текстового поля
+     * WC Blocks открывается модалка #modal-esl-city с поиском (legacy-парность с
+     * inputFocusCity/inputStartCityModal из checkout_frame_v2.js). Само поле остаётся
+     * в DOM (нужно checkout-стору), но визуально перекрывается кнопкой — тот же приём,
+     * что и в классическом чекауте (.esl-city-modal-active + .esl_city_button).
+     */
+    function setupCityModalForBlocks() {
+        if (!config.citySelectModal) {
+            return;
+        }
+
+        const modal = document.getElementById('modal-esl-city');
+        const searchInput = document.getElementById('esl_modal-search');
+        const resultContainer = document.getElementById('esl_result-search');
+
+        if (!modal || !searchInput || !resultContainer) {
+            return;
+        }
+
+        // Move modal to document.body to escape WooCommerce Blocks stacking contexts
+        // that would otherwise render above position:fixed elements (тот же приём,
+        // что и в initModal() для #modal-esl-frame чуть ниже по файлу).
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        // init() и initCheckoutShippingBlock() оба могут вызвать эту функцию на одной
+        // загрузке страницы (см. существующий двойной вызов setupAddressSelectionForBlocks
+        // выше) — без этого флага обработчики поиска/выбора навешивались бы дважды.
+        if (modal.dataset.eslModalBound) {
+            return;
+        }
+        modal.dataset.eslModalBound = '1';
+
+        let citySelectionInProgress = false;
+        let searchTimer = null;
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+        };
+
+        const openModal = (mode) => {
+            searchInput.setAttribute('data-mode', mode);
+            searchInput.value = '';
+            resultContainer.innerHTML = '';
+            modal.style.display = 'block';
+            searchInput.focus();
+        };
+
+        const attachOverlayButton = (inputEl, mode) => {
+            if (!inputEl || inputEl.dataset.eslCityModalBound) {
+                return;
+            }
+            inputEl.dataset.eslCityModalBound = '1';
+
+            const wrapper = inputEl.closest('.wc-block-components-text-input') || inputEl.parentElement;
+            if (!wrapper) {
+                return;
+            }
+            wrapper.classList.add('esl-city-modal-active');
+
+            // В отличие от classic (где лейбл — отдельный элемент снаружи враппера
+            // инпута), в блочной вёрстке лейбл "плавает" внутри того же враппера,
+            // что и сам input. Перекрывать весь враппер большой кнопкой (как в
+            // classic) нельзя — задевает лейбл, а точную геометрию input JS-ом не
+            // подгонишь надёжно (в момент навешивания поле может быть ещё не
+            // выложено браузером, offsetWidth/Height будут 0 — кнопка окажется
+            // невидимой и некликабельной). Поэтому сам input остаётся видимым
+            // (значение показывает он сам), просто становится readOnly, а открытие
+            // модалки вешается прямо на его клик — плюс маленькая иконка сбоку
+            // как визуальная подсказка.
+            inputEl.readOnly = true;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'esl_city_button';
+            button.setAttribute('data-mode', mode);
+            button.setAttribute('aria-label', 'Выбрать населённый пункт');
+            button.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                '<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>' +
+                '<path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>' +
+                '</svg>';
+
+            wrapper.appendChild(button);
+
+            const triggerModal = (event) => {
+                event.preventDefault();
+                openModal(mode);
+            };
+
+            // mousedown, а не click — иначе readOnly-поле успевает получить фокус
+            // и мигнуть кареткой перед открытием модалки.
+            inputEl.addEventListener('mousedown', triggerModal);
+            button.addEventListener('click', triggerModal);
+        };
+
+        attachOverlayButton(getCheckoutBillingCityElement(), 'billing');
+        attachOverlayButton(getCheckoutCityElement(), 'shipping');
+
+        const closeButton = modal.querySelector('.close_modal_window');
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        searchInput.addEventListener('keyup', () => {
+            const value = searchInput.value.trim();
+            const mode = searchInput.getAttribute('data-mode') || 'shipping';
+
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+
+            if (value.length < 2) {
+                resultContainer.innerHTML = '';
+                return;
+            }
+
+            searchTimer = setTimeout(() => {
+                const country = getCheckoutCountryValue();
+                searchCity(value, (itemsByRegion) => {
+                    resultContainer.innerHTML = renderCitiesModal(itemsByRegion, mode) ||
+                        '<button type="button" id="esl_modal_button-search">Выбрать данный населённый пункт</button>';
+                }, country, 'region');
+            }, 300);
+        });
+
+        resultContainer.addEventListener('click', (event) => {
+            const fallbackButton = event.target.closest('#esl_modal_button-search');
+            if (fallbackButton) {
+                const mode = searchInput.getAttribute('data-mode') || 'shipping';
+                const cityData = { city: searchInput.value.trim(), region: '', postcode: '', fias: '', services: [], raw: null };
+
+                if (mode === 'billing') {
+                    setCheckoutBillingAddressValues(cityData);
+                } else {
+                    setCheckoutAddressValues(cityData);
+                }
+                hideCityTips();
+                closeModal();
+                return;
+            }
+
+            const item = event.target.closest('.wc-esl-search-city-modal__item');
+            if (!item || citySelectionInProgress) {
+                return;
+            }
+
+            citySelectionInProgress = true;
+
+            const mode = item.getAttribute('data-mode') || searchInput.getAttribute('data-mode') || 'shipping';
+            const cityData = {
+                city: item.getAttribute('data-city') || '',
+                region: item.getAttribute('data-region') || '',
+                postcode: item.getAttribute('data-postcode') || '',
+                fias: item.getAttribute('data-fias') || '',
+                services: [],
+                raw: null
+            };
+
+            try {
+                cityData.services = JSON.parse(decodeURIComponent(item.getAttribute('data-services') || '%5B%5D'));
+            } catch (e) {
+                cityData.services = [];
+            }
+            try {
+                cityData.raw = JSON.parse(decodeURIComponent(item.getAttribute('data-payload') || '%7B%7D'));
+            } catch (e) {
+                cityData.raw = null;
+            }
+
+            if (mode === 'billing') {
+                setCheckoutBillingAddressValues(cityData);
+            } else {
+                setCheckoutAddressValues(cityData);
+            }
+            updateWidgetCityData(cityData);
+            hideCityTips();
+            closeModal();
+
+            const terminalsInput = document.getElementById('wcEslTerminals');
+            if (terminalsInput) {
+                terminalsInput.value = '[]';
+            }
+
+            setLoadingState(true);
+
+            const updateRequest = mode === 'billing'
+                ? requestBillingAddressUpdate(cityData)
+                : requestShippingAddressUpdate(cityData);
+
+            updateRequest
+                .then((response) => {
+                    if (!response || response.success !== true) {
+                        throw new Error('updateShippingAddress failed');
+                    }
+
+                    refreshCheckoutAfterShippingUpdate();
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                })
+                .catch((error) => {
+                    console.error('eShopLogistic: failed to update shipping address', error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
+                    citySelectionInProgress = false;
+                });
+        });
     }
 
     /**
@@ -1754,6 +2033,7 @@
             if (!config.checkoutFrameEnabled) {
                 handleShippingMethodChange();
                 setupAddressSelectionForBlocks();
+                setupCityModalForBlocks();
                 return;
             }
 
@@ -1945,6 +2225,7 @@
         initDefaultDelivery();
         ensureCheckoutShippingBlockInit();
         setupAddressSelectionForBlocks();
+        setupCityModalForBlocks();
         setupShippingMethodObserver();
         subscribeToWooEvents();
         handleShippingMethodChange();

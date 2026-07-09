@@ -98,7 +98,11 @@ body > .modal-esl-frame {
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 9999;
+    /* WC Blocks (@wordpress/components) поднимает z-index у floating-label полей
+       выше обычного document flow — тот же конфликт, из-за которого прелоадер
+       ниже в этом файле тоже задран до 999999. Обычного 9999 не хватает: сквозь
+       модалку видно, например, лейбл "Страна/регион". */
+    z-index: 999999;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .modal_content,
@@ -108,16 +112,31 @@ body > .modal-esl-frame .modal_content {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    z-index: 99999;
+    z-index: 1000000;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window,
 body > .modal-esl-frame .modal_content .close_modal_window {
-    color: #aaa;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #98a2b3;
+    background-color: transparent;
+    border-radius: 50%;
     float: right;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window:hover,
+body > .modal-esl-frame .modal_content .close_modal_window:hover {
+    background-color: #f2f4f7;
+    color: #d63638;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .title,
@@ -130,6 +149,95 @@ body > .modal-esl-frame #buttonModalDoor {
     position: relative;
     left: 50%;
     transform: translate(-50%, 0);
+}
+
+/* Legacy parity: city-select modal (#modal-esl-city) trigger overlay */
+#modal-esl-city .title {
+    padding-bottom: 0;
+}
+
+#modal-esl-city #esl_modal_button-search {
+    margin-top: 25px;
+}
+
+/* Поле остаётся видимым (значение показывает сам input), просто курсор
+   подсказывает, что это клик, а не набор текста — input становится readOnly
+   через JS (attachOverlayButton), не через CSS. */
+.wc-block-components-text-input.esl-city-modal-active input,
+.wc-block-components-address-form__city.esl-city-modal-active input {
+    cursor: pointer;
+    padding-right: 30px;
+}
+
+/* Маленькая иконка-подсказка в правом углу поля. Специально НЕ grows на весь
+   input (как в classic) — во враппере блочного поля вместе с input живёт ещё
+   и плавающий лейбл, а точную геометрию input вычислить через JS надёжно
+   нельзя (в момент навешивания поле может быть ещё не выложено браузером). */
+.esl_city_button {
+    position: absolute;
+    right: 8px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    box-shadow: none !important;
+}
+
+.esl_city_button svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Legacy parity: #modal-esl-city search input + results list
+   (порт из style.css — там же живут .wc-esl-search-city-modal__* /
+   .wc-esl-search-region-modal__*, но style.css на блочном чекауте не подключается) */
+#esl_modal-search {
+    width: 100%;
+    margin-top: 15px;
+}
+
+#esl_result-search {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.wc-esl-search-city-modal__list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wc-esl-search-city-modal__item {
+    cursor: pointer;
+    padding: 4px 9px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city-modal__item:hover {
+    background: #fafafa;
+}
+
+.wc-esl-search-region-modal__list {
+    display: inline-grid;
+    width: 49.9%;
+    padding-top: 30px;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.wc-esl-search-region-modal__list .title-region {
+    font-size: 16px;
+    font-weight: 600;
 }
 
 /* Preloader overlay — создаётся JS-ом на document.body, вне любого stacking context */

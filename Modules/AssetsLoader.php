@@ -211,6 +211,7 @@ class AssetsLoader implements ModuleInterface
 		$billingCityField = !empty($addForm['billingCity']) ? $addForm['billingCity'] : 'billing_city';
 		$shippingCityField = !empty($addForm['shippingCity']) ? $addForm['shippingCity'] : 'shipping_city';
 		$offAddressCheckEnabled = isset($addForm['offAddressCheck']) && $addForm['offAddressCheck'] === 'true';
+		$citySelectModalEnabled = isset($addForm['citySelectModal']) && $addForm['citySelectModal'] === 'true';
 
 		// Проверяем наличие опции
 		$isFrameEnabled = false;
@@ -234,6 +235,7 @@ class AssetsLoader implements ModuleInterface
 		$config_script .= '    "billingCityField": ' . json_encode($billingCityField) . ',' . "\n";
 		$config_script .= '    "shippingCityField": ' . json_encode($shippingCityField) . ',' . "\n";
 		$config_script .= '    "offAddressCheck": ' . json_encode($offAddressCheckEnabled) . ',' . "\n";
+		$config_script .= '    "citySelectModal": ' . json_encode($citySelectModalEnabled) . ',' . "\n";
 		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";
 		$config_script .= '};' . "\n";
 		$config_script .= 'console.log("✓ wcEslBlockFrontend injected:", window.wcEslBlockFrontend);' . "\n";

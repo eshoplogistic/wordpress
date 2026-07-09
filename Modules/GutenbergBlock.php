@@ -165,6 +165,8 @@ class GutenbergBlock implements ModuleInterface
                 $eslLoader = wp_get_attachment_image_url($addOption['eslLoader'], 'full');
             }
 
+            $citySelectModal = isset($addOption['citySelectModal']) && $addOption['citySelectModal'] === 'true';
+
             // Запускаем буферизацию вывода
             ob_start();
             ?>
@@ -248,6 +250,19 @@ class GutenbergBlock implements ModuleInterface
                 ?>
                 <input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(wp_json_encode($terminals)); ?>" />
                 <input type="hidden" name="wc-esl-api-key-ya" id="wcEslKeyYa" value="<?php echo esc_attr($apiKeyYa); ?>" />
+                <?php endif; ?>
+
+                <?php if ($citySelectModal): ?>
+                <div id="modal-esl-city" class="modal-esl-frame">
+                    <div class="modal_content">
+                        <div class="title">
+                            <span class="close_modal_window">×</span>
+                            <p><strong><?php echo esc_html__('Выберите свой населённый пункт', 'eshoplogisticru'); ?></strong><br><?php echo esc_html__('Начните ввод названия населённого пункта для поиска', 'eshoplogisticru'); ?></p>
+                        </div>
+                        <input id="esl_modal-search" value="" placeholder="<?php echo esc_attr__('Населенный пункт', 'eshoplogisticru'); ?>" data-mode="shipping">
+                        <div id="esl_result-search"></div>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
             <?php
