@@ -1285,6 +1285,7 @@ $status_translate             = [
                                                                     placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
                                                                     name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                     value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                    <?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr()-escaped pieces above ?>
                                                                     <?php echo $carrierControllerAttrs; ?>
                                                             />
                                                             <div class="input-group-append">
@@ -1304,6 +1305,7 @@ $status_translate             = [
                                                                     placeholder="<?php echo esc_attr($carrierField['placeholder'] ?? $carrierField['label']); ?>"
                                                                     name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                     value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                    <?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr()-escaped pieces above ?>
                                                                     <?php echo $carrierControllerAttrs; ?>
                                                             />
                                                             <div class="input-group-append">
@@ -1315,6 +1317,7 @@ $status_translate             = [
                                                             </div>
                                                         </div>
 														<?php elseif ( $carrierFieldType === 'select' ): ?>
+                                                        <?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $carrierControllerAttrs built from esc_attr()-escaped pieces above ?>
                                                         <select class="form-control" form="eslExportForm" name="<?php echo esc_attr($carrierField['name']); ?>" <?php echo $carrierControllerAttrs; ?>>
 															<?php foreach ( (array) ( $carrierField['values'] ?? array() ) as $carrierOptValue => $carrierOptLabel ): ?>
                                                                 <option value="<?php echo esc_attr($carrierOptValue); ?>" <?php echo esc_attr( (string) $carrierFieldValue === (string) $carrierOptValue ? 'selected' : '' ); ?>>
@@ -1332,6 +1335,7 @@ $status_translate             = [
 														<?php endif; ?>
                                                                 name="<?php echo esc_attr($carrierField['name']); ?>"
                                                                 value="<?php echo esc_attr($carrierFieldValue) ?>"
+                                                                <?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr()-escaped pieces above ?>
                                                                 <?php echo $carrierControllerAttrs; ?>
                                                         />
 														<?php endif; ?>
