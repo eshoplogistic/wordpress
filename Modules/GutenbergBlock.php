@@ -35,6 +35,32 @@ class GutenbergBlock implements ModuleInterface
         
         // Локализация frontend-скриптов
         add_action('wp_enqueue_scripts', [$this, 'localizeBlockScripts']);
+
+        // Автоподключение калькулятора к "голому" блочному чекауту (woocommerce/checkout
+        // без явно вставленного eshoplogisticru/checkout-shipping) — доинъектируем блок
+        // сразу после order-summary, туда же, куда он попадает при ручной вставке.
+        add_filter('render_block_woocommerce/checkout-order-summary-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
+    }
+
+    /**
+     * Доинъектирует калькулятор ESL в блочный checkout, если он не вставлен вручную.
+     *
+     * @param string $blockContent Отрендеренный HTML блока order-summary
+     * @param array  $block Данные блока
+     * @return string
+     */
+    public function injectCheckoutShippingBlock($blockContent, $block)
+    {
+        if (! is_checkout() || is_wc_endpoint_url('order-received')) {
+            return $blockContent;
+        }
+
+        // Явно вставленный блок уже сам всё отрендерит — не дублируем.
+        if (has_block('eshoplogisticru/checkout-shipping')) {
+            return $blockContent;
+        }
+
+        return $blockContent . $this->renderCheckoutShippingBlock([]);
     }
 
     /**

@@ -123,9 +123,10 @@ class AssetsLoader implements ModuleInterface
 		}
 
 		if(is_checkout() && empty( is_wc_endpoint_url('order-received'))) {
-			// Проверяем, используются ли блоки Gutenberg для доставки
-			$usingBlocks = has_block('eshoplogisticru/checkout-shipping') || 
-			               has_block('eshoplogisticru/checkout-form');
+			// Используются ли блоки Gutenberg для доставки — включает и явную вставку
+			// ESL-блока, и голый woocommerce/checkout (калькулятор теперь автоматически
+			// доинъектируется в order-summary через GutenbergBlock::injectCheckoutShippingBlock).
+			$usingBlocks = $usingBlocksCheckout;
 
 			// SDK cart виджета нужен только когда frame включён. Для блочного чекаута
 			// это не нужно: checkout_frame_block.js сам грузит и отслеживает SDK
