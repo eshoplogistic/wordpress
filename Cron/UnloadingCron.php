@@ -21,7 +21,7 @@ class UnloadingCron
 		$optionsRepository = new OptionsRepository();
 		$this->addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 
-		if(isset($this->addForm['cronStatusEnable'])){
+		if(isset($this->addForm['cronStatusEnable']) && $this->addForm['cronStatusEnable'] == 'true'){
 			add_filter( 'cron_schedules', [$this, 'cron_esl_custom_min']);
 
 			if( ! wp_next_scheduled( 'esl_update_status_cron' ) )

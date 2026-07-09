@@ -265,6 +265,12 @@
      * Управление видимостью полей адреса
      */
     function toggleAddressFields(show) {
+        // Настройка "Отключить скрытие полей адреса при выборе ПВЗ" — плагин не должен
+        // трогать видимость/доступность этих полей вообще (как и в классическом чекауте).
+        if (config.offAddressCheck) {
+            return;
+        }
+
         const addressFields = document.querySelectorAll(
             '#shipping_address_1_field, #shipping_address_2_field, ' +
             '.wc-block-components-address-form__address_1, ' +
