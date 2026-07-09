@@ -1070,13 +1070,33 @@ class UnloadingOrder implements ModuleInterface
                 return 'Статус не изменился';
             }
 
-            $result = $order->update_status($resultNameStatus);
+            try {
+                $result = $order->update_status($resultNameStatus);
+            } catch (\Exception $e) {
+                return 'Ошибка при обновлении статуса: ' . $e->getMessage();
+            }
+
             if ($result) {
                 return 'Статус обновлен';
             }
+
+            return sprintf('Ошибка при обновлении: WooCommerce не смог установить статус "%s"', $resultNameStatus);
         }
 
-        return 'Ошибка при обновлении';
+        $carrierCode = $id['state']['status']['code'] ?? null;
+        $carrierNumber = $id['state']['number'] ?? null;
+
+        if ($carrierCode !== null) {
+            return sprintf(
+                'Ошибка при обновлении: для статуса ТК с кодом "%s" не настроено сопоставление в настройках плагина',
+                $carrierCode
+            );
+        }
+
+        return sprintf(
+            'Ошибка при обновлении: не найдено сопоставление статуса для трек-номера "%s"',
+            $carrierNumber
+        );
 
     }
 

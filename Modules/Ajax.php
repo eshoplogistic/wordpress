@@ -1194,13 +1194,22 @@ class Ajax implements ModuleInterface
 		$status = $unloading->infoOrder($order_id, $order_type);
 		$isError = isset($status['success']) && $status['success'] === false;
 		if ($isError) {
-			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';
+			if (!empty($status['data']['messages'])) {
+				$result = esc_html($status['data']['messages']);
+			} elseif (!empty($status['data']['exception'])) {
+				$result = esc_html($status['data']['exception']);
+			} elseif (!empty($status['data']['errors'])) {
+				$errors = $status['data']['errors'];
+				$result = esc_html(is_array($errors) ? implode('; ', $errors) : $errors);
+			} else {
+				$result = 'Ошибка при получении данных';
+			}
 		} else {
 			$result = $unloading->updateStatusById($status, $order_id);
 			if ($result === false) {
 				$isError = true;
 				$result = __('Не удалось обновить статус: нет данных о статусе заказа у транспортной компании', 'eshoplogisticru');
-			} elseif ($result === 'Ошибка при обновлении') {
+			} elseif (is_string($result) && str_starts_with($result, 'Ошибка')) {
 				$isError = true;
 			}
 		}
