@@ -1034,6 +1034,24 @@ class UnloadingOrder implements ModuleInterface
         return wc_get_order_statuses();
     }
 
+    public static function getCarrierStatusNames()
+    {
+        return [
+            'accepted'   => 'Загружен в ЛК перевозчика',
+            'need_check' => 'Загружен в ЛК перевозчика, но требуется уточнения',
+            'created'    => 'Загружен в ЛК перевозчика и проверен',
+            'received'   => 'Принят на склад перевозчика',
+            'delivered'  => 'В доставке у перевозчика',
+            'awaiting'   => 'Ожидает самовывоза из ПВЗ/постамата',
+            'courier'    => 'Передан курьеру',
+            'taken'      => 'Доставлен',
+            'canceled'   => 'Отменен',
+            'return'     => 'Возвращается отправителю',
+            'returned'   => 'Возвращен отправителю',
+            'n/a'        => 'Не определён',
+        ];
+    }
+
     public function updateStatusById($id, $order_id, $first = false)
     {
         $optionsRepository = new OptionsRepository();
@@ -1087,9 +1105,12 @@ class UnloadingOrder implements ModuleInterface
         $carrierNumber = $id['state']['number'] ?? null;
 
         if ($carrierCode !== null) {
+            $carrierStatusNames = self::getCarrierStatusNames();
+            $carrierStatusName = $carrierStatusNames[$carrierCode] ?? $carrierCode;
+
             return sprintf(
-                'Ошибка при обновлении: для статуса ТК с кодом "%s" не настроено сопоставление в настройках плагина',
-                $carrierCode
+                'Ошибка при обновлении: для статуса ТК "%s" не настроено сопоставление в настройках плагина',
+                $carrierStatusName
             );
         }
 

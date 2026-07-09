@@ -3,6 +3,7 @@
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
+use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -39,20 +40,7 @@ $status_wp                    = isset( $wc_esl_status_wp ) ? $wc_esl_status_wp :
 $paymentGateways              = isset( $wc_esl_paymentGateways ) ? $wc_esl_paymentGateways : [];
 $add_field_form               = isset( $wc_esl_add_field_form ) ? $wc_esl_add_field_form : [];
 
-$status_translate             = [
-	'accepted'   => 'Загружен в ЛК перевозчика',
-	'need_check' => 'Загружен в ЛК перевозчика, но требуется уточнения',
-	'created'    => 'Загружен в ЛК перевозчика и проверен',
-	'received'   => 'Принят на склад перевозчика',
-	'delivered'  => 'В доставке у перевозчика',
-	'awaiting'   => 'Ожидает самовывоза из ПВЗ/постамата',
-	'courier'    => 'Передан курьеру',
-	'taken'      => 'Доставлен',
-	'canceled'   => 'Отменен',
-	'return'     => 'Возвращается отправителю',
-	'returned'   => 'Возвращен отправителю',
-	'n/a'        => 'Не определён',
-];
+$status_translate             = UnloadingOrder::getCarrierStatusNames();
 ?>
 
 <div id="wcEslSettings" class="wc-esl-settings">
