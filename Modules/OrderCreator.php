@@ -152,7 +152,7 @@ class OrderCreator implements ModuleInterface
 		}
 	}
 
-	private function getTerminalLocation(SessionService $sessionService)
+	public function getTerminalLocation(SessionService $sessionService)
 	{
 		$terminal = $sessionService->get('terminal_location');
 		if (is_string($terminal) && '' !== trim($terminal)) {
@@ -208,7 +208,7 @@ class OrderCreator implements ModuleInterface
 		return $frameAddress;
 	}
 
-	private function methodsIsEshopTerminal($methodId)
+	public function methodsIsEshopTerminal($methodId)
     {
         $explodedAtPrefix = explode(WC_ESL_PREFIX, $methodId);
 
