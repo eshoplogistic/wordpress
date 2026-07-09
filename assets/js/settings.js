@@ -233,7 +233,7 @@ function eslRun() {
 		addWrapperSelector: '.wc-esl-settings-others .card-body',
 		exportWrapperSelector: '.wc-esl-settings-export .card-body',
 		carrierTabsWrapperSelector: '#eslCarrierTabsWrap',
-		statusWrapperSelector: '.wc-esl-settings-status .card-body',
+		statusWrapperSelector: '#eslStatusFormWrap',
 		dimensionMeasurement: document.getElementById('dimensionMeasurement'),
 		addForm: document.getElementById('eslAddForm'),
 		exportForm: document.getElementById('eslExportForm'),

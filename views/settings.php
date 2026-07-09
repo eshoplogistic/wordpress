@@ -1498,7 +1498,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                             </div>
 
-                            <div class="card-body" id="eslExportFormWrap">
+                            <div class="card-body" id="eslStatusFormWrap">
                                 <div class="form-group row align-items-center mb-3">
                                     <div class="col-sm-12">
 
