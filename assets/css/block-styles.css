@@ -436,12 +436,6 @@ body > .modal-esl-frame #buttonModalDoor {
         background: #ffe0e0;
         border-color: #a33a3a;
     }
-
-    .wc-esl-product-calculator-block #eShopLogisticWidgetBlock {
-        background-color: #1e1e1e;
-        border-color: #444;
-        color: #ccc;
-    }
 }
 
 /* Accessibility improvements */

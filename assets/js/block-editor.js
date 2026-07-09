@@ -73,19 +73,19 @@
                     __('eshoplogistic', 'eshoplogisticru')
                 ]
             },
-            // {
-            //     name: 'eshoplogisticru/product-calculator',
-            //     title: __('eShopLogistic Product Shipping Calculator', 'eshoplogisticru'),
-            //     icon: 'calculator',
-            //     description: __('Display shipping calculator on product pages', 'eshoplogisticru'),
-            //     keywords: [
-            //         __('shipping', 'eshoplogisticru'),
-            //         __('delivery', 'eshoplogisticru'),
-            //         __('product', 'eshoplogisticru'),
-            //         __('calculator', 'eshoplogisticru'),
-            //         __('eshoplogistic', 'eshoplogisticru')
-            //     ]
-            // },
+            {
+                name: 'eshoplogisticru/product-calculator',
+                title: __('eShopLogistic Product Shipping Calculator', 'eshoplogisticru'),
+                icon: 'calculator',
+                description: __('Display shipping calculator on product pages', 'eshoplogisticru'),
+                keywords: [
+                    __('shipping', 'eshoplogisticru'),
+                    __('delivery', 'eshoplogisticru'),
+                    __('product', 'eshoplogisticru'),
+                    __('calculator', 'eshoplogisticru'),
+                    __('eshoplogistic', 'eshoplogisticru')
+                ]
+            },
             // {
             //     name: 'eshoplogisticru/cart-shipping',
             //     title: __('eShopLogistic Cart Shipping Widget', 'eshoplogisticru'),
@@ -230,10 +230,10 @@
         // Разрешаем вставку ESL checkout-блока ВНУТРЬ WooCommerce Checkout блока.
         registerCheckoutInnerBlockSupport(ESL_CHECKOUT_BLOCK);
         
-        if (blockCount === 4) {
-            console.log('%cAll 4 blocks are ready for use. They are fully interactive, can be selected, moved, and deleted.', 'color: #0073aa;');
+        if (blockCount === blocks.length) {
+            console.log('%cAll ' + blockCount + ' blocks are ready for use. They are fully interactive, can be selected, moved, and deleted.', 'color: #0073aa;');
         } else {
-            console.warn('%c⚠️ Expected 4 blocks but registered only ' + blockCount, 'color: #ff9800;');
+            console.warn('%c⚠️ Expected ' + blocks.length + ' blocks but registered only ' + blockCount, 'color: #ff9800;');
         }
     }
 

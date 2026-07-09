@@ -281,12 +281,12 @@ class GutenbergBlock implements ModuleInterface
         if (is_product()) {
             global $post;
             $product = wc_get_product($post->ID);
-            
+
             if (!$product) {
                 return '';
             }
 
-            $widgetKey = !empty($attributes['widgetKey']) 
+            $widgetKey = !empty($attributes['widgetKey'])
                 ? sanitize_text_field($attributes['widgetKey'])
                 : $this->optionsRepository->getOption('wc_esl_shipping_widget_key');
 
@@ -295,23 +295,66 @@ class GutenbergBlock implements ModuleInterface
             }
 
             $displayMode = $attributes['displayMode'] ?? 'button';
-            
+            $productData = $product->get_data();
+
+            if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
+            } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
+            } else {
+                $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
+            }
+            // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy filter name retained for backward compatibility.
+            $ip = apply_filters('wc_esl_get_ip', $ip);
+
+            $shippingHelper = new ShippingHelper();
+            $offers = [[
+                'article'    => $productData['id'],
+                'name'       => $productData['name'],
+                'count'      => 1,
+                'price'      => $productData['price'],
+                'weight'     => $productData['weight'],
+                'dimensions' => $shippingHelper->dimensionsOption($productData['length']) . '*' .
+                                $shippingHelper->dimensionsOption($productData['width']) . '*' .
+                                $shippingHelper->dimensionsOption($productData['height']),
+            ]];
+            $jsonOffers = htmlspecialchars(json_encode($offers));
+
             $html = '<div class="wc-esl-product-calculator-block" ' .
                     'data-widget-key="' . esc_attr($widgetKey) . '" ' .
                     'data-display-mode="' . esc_attr($displayMode) . '" ' .
                     'data-product-id="' . esc_attr($product->get_id()) . '">';
-            
+
             if ($displayMode === 'button') {
-                $html .= '<button class="wc-esl-calculator-trigger button button-primary">' .
-                        esc_html(__('Quick Order with Delivery', 'eshoplogisticru')) .
+                // Кнопка + модальный виджет — тот же контракт, что и у шорткода [esl_widget_button].
+                $widgetBut = $this->optionsRepository->getOption('wc_esl_shipping_widget_but');
+                $buttonLabel = $widgetBut ?: __('Заказать с доставкой', 'eshoplogisticru');
+
+                $html .= '<button type="button" data-esl-widget class="wc-esl-calculator-trigger button button-primary" data-title="' . esc_attr($buttonLabel) . '">' .
+                        esc_html($buttonLabel) .
                         '</button>';
+                $html .= '<div id="eShopLogisticWidgetModal" ' .
+                        'data-lazy-load="true" ' .
+                        'data-ip="' . esc_attr($ip) . '" ' .
+                        'data-key="' . esc_attr($widgetKey) . '" ' .
+                        'data-offers="' . $jsonOffers . '"></div>';
+
+                wp_enqueue_script('wc_esl_app_v2_js', 'https://api.esplc.ru/widgets/modal/app.js', [], WC_ESL_VERSION, true);
             } else {
+                // Инлайн-виджет — тот же контракт, что и у вкладки товара esl_product_widget_tab_content.
                 $html .= '<div id="eShopLogisticWidgetBlock" ' .
                         'data-lazy-load="true" ' .
-                        'data-widget-key="' . esc_attr($widgetKey) . '"></div>';
+                        'data-ip="' . esc_attr($ip) . '" ' .
+                        'data-key="' . esc_attr($widgetKey) . '" ' .
+                        'data-offers="' . $jsonOffers . '"></div>';
+
+                wp_enqueue_script('wc_esl_app_tab_v2_js', 'https://api.esplc.ru/widgets/block/app.js', [], WC_ESL_VERSION, true);
+                wp_enqueue_script('wc_esl_app_tab_js', WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js', [], WC_ESL_VERSION, true);
             }
-            
+
             $html .= '</div>';
+
+            wp_enqueue_style('wc_esl_style_frame_css', WC_ESL_PLUGIN_URL . 'assets/css/style-frame.css', [], WC_ESL_VERSION);
 
             return $html;
         }
