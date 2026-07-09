@@ -93,6 +93,11 @@ function eslRun() {
                 let obj = JSON.parse(xhr.responseText);
                 PreloaderEsl.hide('#woocommerce-order-esl-unloading');
                 PushEsl.addItem(obj.success ? 'success' : 'error', obj.data);
+                // Статус заказа изменился на сервере — перезагружаем страницу,
+                // чтобы карточка заказа отразила новый статус.
+                if (obj.success && obj.data === 'Статус обновлен') {
+                    window.location.reload();
+                }
             }
         },
         onCloseModal: function () {
