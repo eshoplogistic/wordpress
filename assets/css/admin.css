@@ -828,6 +828,32 @@
     border-color: var(--esl-accent-dark);
 }
 
+/* Confirm modal (#modal-esl-confirm) — replaces window.confirm() for the "remove uploaded
+   image" prompt (see EslConfirm in settings.js). */
+#modal-esl-confirm .modal_content {
+    max-width: 420px;
+    width: 90%;
+    margin: 12% auto;
+}
+
+#modal-esl-confirm .title {
+    padding-bottom: 15px;
+}
+
+#modal-esl-confirm .esl-confirm__message {
+    margin: 0 0 20px;
+    color: #1d2327;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+#modal-esl-confirm .esl-confirm__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 #modal-esl-terminal-search .esl-terminal-search-fields label {
     display: block;
     margin-bottom: .5rem;

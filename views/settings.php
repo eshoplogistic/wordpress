@@ -1559,6 +1559,20 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                     </div>
                     </div>
+
+                    <div id="modal-esl-confirm" class="modal-esl-frame">
+                        <div class="modal_content">
+                            <div class="title">
+                                <span class="close_modal_window">×</span>
+                                <p><strong><?php esc_html_e( 'Подтверждение', 'eshoplogisticru' ) ?></strong><br></p>
+                            </div>
+                            <p class="esl-confirm__message"></p>
+                            <div class="footer esl-confirm__footer">
+                                <button type="button" class="btn btn-secondary esl-confirm__cancel"><?php esc_html_e( 'Отмена', 'eshoplogisticru' ) ?></button>
+                                <button type="button" class="btn btn-primary esl-confirm__ok"><?php esc_html_e( 'Продолжить', 'eshoplogisticru' ) ?></button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,6 +1,63 @@
 window.addEventListener('load', function(event) {
 	eslRun()
 
+	// Модальное окно подтверждения (#modal-esl-confirm) — замена window.confirm(),
+	// чтобы диалог выглядел как остальные модалки страницы настроек, а не системный
+	// alert браузера.
+	window.EslConfirm = (function () {
+		let modal = null;
+		let messageEl = null;
+		let okBtn = null;
+		let cancelBtn = null;
+		let onConfirmCallback = null;
+
+		function hide() {
+			onConfirmCallback = null;
+			if (modal) {
+				modal.style.display = 'none';
+			}
+		}
+
+		function init() {
+			if (modal) {
+				return true;
+			}
+			modal = document.getElementById('modal-esl-confirm');
+			if (!modal) {
+				return false;
+			}
+			messageEl = modal.querySelector('.esl-confirm__message');
+			okBtn = modal.querySelector('.esl-confirm__ok');
+			cancelBtn = modal.querySelector('.esl-confirm__cancel');
+
+			okBtn.addEventListener('click', function () {
+				let callback = onConfirmCallback;
+				hide();
+				if (callback) {
+					callback();
+				}
+			});
+			cancelBtn.addEventListener('click', hide);
+
+			return true;
+		}
+
+		function show(message, onConfirm) {
+			if (!init()) {
+				// На случай, если разметка модалки почему-то не выведена на странице.
+				if (window.confirm(message)) {
+					onConfirm();
+				}
+				return;
+			}
+			messageEl.textContent = message;
+			onConfirmCallback = onConfirm;
+			modal.style.display = 'block';
+		}
+
+		return { show: show };
+	})();
+
 	let modalAddField = document.getElementById("modal-esl-add-field")
 	let contentAjax = document.getElementById("content-add-field_ajax")
 	let modalTerminalSearch = document.getElementById("modal-esl-terminal-search")
@@ -1103,11 +1160,12 @@ function sortableDelete(elem){
 
 			event.preventDefault();
 
-			if ( true == confirm( "Вы уверены?" ) ) {
-				const src = $(this).parent().prev().data('src');
-				$(this).parent().prev().attr('src', src);
-				$(this).prev().prev().val('');
-			}
+			const $button = $(this);
+
+			window.EslConfirm.show( "Вы уверены?", function () {
+				$button.parent().prev().attr('src', '');
+				$button.prev().prev().val('');
+			} );
 		});
 	});
 

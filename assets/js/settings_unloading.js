@@ -2,6 +2,70 @@ window.addEventListener('load', function(event) {
     eslRun()
 });
 
+// Модальное окно подтверждения (#modal-esl-confirm) — замена window.confirm(),
+// чтобы диалог выглядел как остальные модалки плагина, а не системный alert браузера.
+let EslConfirm = (function () {
+    let modal = null;
+    let messageEl = null;
+    let okBtn = null;
+    let cancelBtn = null;
+    let closeBtn = null;
+    let onConfirmCallback = null;
+
+    function hide() {
+        onConfirmCallback = null;
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function init() {
+        if (modal) {
+            return true;
+        }
+        modal = document.getElementById('modal-esl-confirm');
+        if (!modal) {
+            return false;
+        }
+        messageEl = modal.querySelector('.esl-confirm__message');
+        okBtn = modal.querySelector('.esl-confirm__ok');
+        cancelBtn = modal.querySelector('.esl-confirm__cancel');
+        closeBtn = modal.querySelector('.close_modal_window');
+
+        okBtn.addEventListener('click', function () {
+            let callback = onConfirmCallback;
+            hide();
+            if (callback) {
+                callback();
+            }
+        });
+        cancelBtn.addEventListener('click', hide);
+        closeBtn.addEventListener('click', hide);
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                hide();
+            }
+        });
+
+        return true;
+    }
+
+    function show(message, onConfirm) {
+        if (!init()) {
+            // На случай, если разметка модалки почему-то не выведена на странице.
+            if (window.confirm(message)) {
+                onConfirm();
+            }
+            return;
+        }
+        messageEl.textContent = message;
+        onConfirmCallback = onConfirm;
+        modal.style.display = 'block';
+    }
+
+    return { show: show };
+})();
+
 function eslRun() {
 
     //modal
@@ -55,29 +119,27 @@ function eslRun() {
             }
         },
         clickOnDelete: function (event) {
-            if (!window.confirm('Внимание! Все данные по выгрузке доставки будут безвозвратно удалены из заказа. Продолжить?')) {
-                return;
-            }
+            EslConfirm.show('Внимание! Все данные по выгрузке доставки будут безвозвратно удалены из заказа. Продолжить?', function () {
+                let order_id = document.getElementById("order_info_id").value
+                let order_type = document.getElementById("order_info_type").value
 
-            let order_id = document.getElementById("order_info_id").value
-            let order_type = document.getElementById("order_info_type").value
-
-            PreloaderEsl.show('#woocommerce-order-esl-unloading');
-            const xhr = new XMLHttpRequest()
-            xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
-            let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-            xhr.send(params)
-            xhr.onload = () => {
-                let obj = JSON.parse(xhr.responseText);
-                PreloaderEsl.hide('#woocommerce-order-esl-unloading');
-                PushEsl.addItem(obj.success ? 'success' : 'error', obj.msg);
-                // Локальное состояние заявки на сервере сброшено — перезагружаем,
-                // чтобы кнопки "Выгрузить"/"Удалить" сразу отразили новое состояние.
-                if (obj.success) {
-                    window.location.reload();
+                PreloaderEsl.show('#woocommerce-order-esl-unloading');
+                const xhr = new XMLHttpRequest()
+                xhr.open("POST", wc_esl_shipping_global.ajaxUrl);
+                let params = 'action=wc_esl_shipping_unloading_delete&order_id='+order_id+'&order_type='+order_type+'&esl_nonce='+wc_esl_shipping_global.eslNonce;
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+                xhr.send(params)
+                xhr.onload = () => {
+                    let obj = JSON.parse(xhr.responseText);
+                    PreloaderEsl.hide('#woocommerce-order-esl-unloading');
+                    PushEsl.addItem(obj.success ? 'success' : 'error', obj.msg);
+                    // Локальное состояние заявки на сервере сброшено — перезагружаем,
+                    // чтобы кнопки "Выгрузить"/"Удалить" сразу отразили новое состояние.
+                    if (obj.success) {
+                        window.location.reload();
+                    }
                 }
-            }
+            });
         },
         clickOnStatusUpdate: function (event) {
             let order_id = document.getElementById("order_info_id").value
@@ -179,25 +241,7 @@ function eslGetOrderSumMismatch(formData) {
 (function( $ ) {
 
     $( document ).ready( function( e ) {
-        $('#buttonModalUnload').click(function(e) {
-            e.preventDefault();
-
-            let formData = $('#unloading_form').serializeControls();
-            let mismatch = eslGetOrderSumMismatch(formData);
-            if (mismatch) {
-                let deviationSign = mismatch.deviation >= 0 ? '+' : '';
-                let confirmed = window.confirm(
-                    'Сумма стоимости мест не совпадает с суммой заказа.\n' +
-                    'Сумма мест: ' + mismatch.placesSum.toFixed(2) + ' руб.\n' +
-                    'Сумма заказа: ' + mismatch.orderSum.toFixed(2) + ' руб.\n' +
-                    'Отклонение: ' + deviationSign + mismatch.deviation.toFixed(2) + ' руб.\n' +
-                    'Продолжить выгрузку?'
-                );
-                if (!confirmed) {
-                    return;
-                }
-            }
-
+        function eslSubmitUnloadingForm(formData) {
             let data = JSON.stringify(formData, null, 2);
             PreloaderEsl.show('#unloading_form');
 
@@ -227,6 +271,28 @@ function eslGetOrderSumMismatch(formData) {
                     }
                 }
             });
+        }
+
+        $('#buttonModalUnload').click(function(e) {
+            e.preventDefault();
+
+            let formData = $('#unloading_form').serializeControls();
+            let mismatch = eslGetOrderSumMismatch(formData);
+            if (mismatch) {
+                let deviationSign = mismatch.deviation >= 0 ? '+' : '';
+                let message =
+                    'Сумма стоимости мест не совпадает с суммой заказа.\n' +
+                    'Сумма мест: ' + mismatch.placesSum.toFixed(2) + ' руб.\n' +
+                    'Сумма заказа: ' + mismatch.orderSum.toFixed(2) + ' руб.\n' +
+                    'Отклонение: ' + deviationSign + mismatch.deviation.toFixed(2) + ' руб.\n' +
+                    'Продолжить выгрузку?';
+                EslConfirm.show(message, function () {
+                    eslSubmitUnloadingForm(formData);
+                });
+                return;
+            }
+
+            eslSubmitUnloadingForm(formData);
         });
 
         $.fn.serializeControls = function() {

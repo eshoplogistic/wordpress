@@ -642,6 +642,40 @@
     transform: translateY(-1px);
 }
 
+/* Confirm modal (#modal-esl-confirm) — replaces window.confirm() for the "delete unloading"
+   and "order sum mismatch" prompts (see EslConfirm in settings_unloading.js). */
+#modal-esl-confirm .modal_content {
+    width: min(480px, 94vw);
+}
+
+#modal-esl-confirm .title .esl-modal-title__text svg {
+    color: var(--esl-warning);
+}
+
+#modal-esl-confirm main {
+    padding: 20px 0 24px;
+}
+
+#modal-esl-confirm main .esl-confirm__message {
+    margin: 0;
+    color: var(--esl-text);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.modal-esl .esl-confirm__footer {
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-esl .esl-confirm__footer .button {
+    min-width: 100px;
+    height: 36px;
+    border-radius: var(--esl-radius-sm);
+    font-weight: 600;
+}
+
 /* "Информация о заказе" popup (#modal-esl-info) — status/order-id rows injected via AJAX
    by Modules/UnloadingInfo.php. .esl-info-card groups .esl-info-row label/value pairs;
    .esl-info-alert is the error/empty state; .esl-info-note is an informational aside. */
