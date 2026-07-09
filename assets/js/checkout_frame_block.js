@@ -78,7 +78,18 @@
             preloader = document.createElement('div');
             preloader.id = PRELOADER_ID;
             preloader.className = 'wc-esl-block-preloader';
-            preloader.innerHTML = '<div class="wc-esl-block-preloader__spinner"></div>';
+
+            if (config.eslLoaderUrl) {
+                const img = document.createElement('img');
+                img.className = 'wc-esl-block-preloader__img';
+                img.src = config.eslLoaderUrl;
+                img.width = 150;
+                img.height = 150;
+                preloader.appendChild(img);
+            } else {
+                preloader.innerHTML = '<div class="wc-esl-block-preloader__spinner"></div>';
+            }
+
             preloader.style.display = 'none';
             document.body.appendChild(preloader);
         }

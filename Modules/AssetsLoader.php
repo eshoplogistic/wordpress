@@ -213,6 +213,11 @@ class AssetsLoader implements ModuleInterface
 		$offAddressCheckEnabled = isset($addForm['offAddressCheck']) && $addForm['offAddressCheck'] === 'true';
 		$citySelectModalEnabled = isset($addForm['citySelectModal']) && $addForm['citySelectModal'] === 'true';
 
+		$eslLoaderUrl = '';
+		if (!empty($addForm['eslLoader'])) {
+			$eslLoaderUrl = wp_get_attachment_image_url($addForm['eslLoader'], 'full') ?: '';
+		}
+
 		// Проверяем наличие опции
 		$isFrameEnabled = false;
 		if ( !empty($frameEnable) ) {
@@ -236,6 +241,7 @@ class AssetsLoader implements ModuleInterface
 		$config_script .= '    "shippingCityField": ' . json_encode($shippingCityField) . ',' . "\n";
 		$config_script .= '    "offAddressCheck": ' . json_encode($offAddressCheckEnabled) . ',' . "\n";
 		$config_script .= '    "citySelectModal": ' . json_encode($citySelectModalEnabled) . ',' . "\n";
+		$config_script .= '    "eslLoaderUrl": ' . json_encode($eslLoaderUrl) . ',' . "\n";
 		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";
 		$config_script .= '};' . "\n";
 		$config_script .= 'console.log("✓ wcEslBlockFrontend injected:", window.wcEslBlockFrontend);' . "\n";
