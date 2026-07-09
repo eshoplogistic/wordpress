@@ -1256,7 +1256,7 @@ class Ajax implements ModuleInterface
 			if (is_array($val)) {
 				$this->iteratorError($val);
 			} else {
-				$this->errorString .= $this->errorString . '<span>' . $val . '</span><br>';
+				$this->errorString .= '<span>&#8211;&nbsp;' . $val . '</span>';
 			}
 		}
 	}

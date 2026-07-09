@@ -1,7 +1,7 @@
 let PushEsl = {
     elementId: 'eslNotifications',
     element: '',
-    delay: 5000,
+    delay: 10000,
     items: [],
 
     init: function () {
@@ -75,8 +75,18 @@ let PushEsl = {
         let icon_el = document.createElement('i');
         icon_el.classList.add('esl-notifications__icon', 'fa', icon_class);
 
+        let close_el = document.createElement('span');
+        close_el.classList.add('esl-notifications__close');
+        close_el.innerHTML = '&times;';
+        close_el.setAttribute('aria-label', 'Закрыть');
+        close_el.addEventListener('click', function () {
+            PushEsl.deleteItem(id);
+            PushEsl.deleteElement(id);
+        });
+
         item.appendChild(icon_el);
         item.appendChild(msg_el);
+        item.appendChild(close_el);
         return item;
     },
 

@@ -431,11 +431,12 @@
 }
 
 .esl-notifications__item {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: start;
-    padding: .9em 1em;
+    padding: .9em 2.2em .9em 1em;
     margin-bottom: 1em;
     border-top: 3px solid;
 }
@@ -458,6 +459,7 @@
 .esl-notifications__icon {
     color: #FFFFFF;
     font-size: 21px;
+    margin-top: .1em;
     margin-right: .8em;
 }
 
@@ -466,6 +468,33 @@
     color: #000;
     font-size: .85em;
     font-weight: 500;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 0;
+}
+
+.esl-notifications__msg span {
+    display: block;
+}
+
+.esl-notifications__msg span:not(:last-child) {
+    margin-bottom: 1.2em;
+}
+
+.esl-notifications__close {
+    position: absolute;
+    top: .5em;
+    right: .6em;
+    color: #000;
+    opacity: .55;
+    font-size: 1.2em;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+}
+
+.esl-notifications__close:hover {
+    opacity: 1;
 }
 
 .esl-preloader {
