@@ -594,7 +594,7 @@ document.addEventListener('click', function (e) {
     printBtn.classList.add('esl-print-button--active');
 
     if (resultBox) {
-        resultBox.textContent = 'Загрузка…';
+        resultBox.innerHTML = '<div class="esl-spinner esl-spinner--sm" role="status"><span class="esl-spinner__label">Загрузка…</span></div>';
     }
 
     const xhr = new XMLHttpRequest();
