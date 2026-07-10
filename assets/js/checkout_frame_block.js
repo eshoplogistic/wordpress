@@ -1659,12 +1659,31 @@
             sendWidgetParams(root);
         }
 
-        // Ещё одна страховка с таймаутом
-        setTimeout(() => {
-            if (window.widgetInit && !root.dataset.paramsLoaded) {
+        // Ещё одна страховка с повтором. root.dataset.paramsLoaded фиксирует только
+        // факт отправки updateParamsRequest, а не то, что сам SDK был готов её
+        // полноценно обработать: на первой загрузке страницы SDK-виджет ещё
+        // подгружает свой собственный каталог служб (асинхронно, через свой API) —
+        // если наш updateParamsRequest долетает до этого момента, SDK обсчитывает
+        // только то немногое, что уже успело подгрузиться (обычно 1 запасная
+        // служба, Dostavista), и НЕ пересчитывает список повторно сам по себе.
+        // Обычный клик по кнопке "Выбрать способ доставки" срабатывает через
+        // несколько секунд после загрузки — этого достаточно, чтобы каталог SDK
+        // успел подгрузиться, и повторный (тот же самый) вызов sendWidgetParams
+        // внутри клика получает уже полный список. Поэтому здесь повторяем
+        // отправку безусловно (а не только пока paramsLoaded пуст) в течение
+        // нескольких секунд после монтирования — чтобы хотя бы одна попытка
+        // пришлась на момент, когда каталог SDK уже готов, без ожидания клика.
+        let paramsRetryAttempts = 0;
+        const paramsRetryInterval = setInterval(() => {
+            if (window.widgetInit) {
                 sendWidgetParams(root);
             }
-        }, 2000);
+
+            paramsRetryAttempts += 1;
+            if (paramsRetryAttempts >= 6) {
+                clearInterval(paramsRetryInterval);
+            }
+        }, 1000);
 
         function handleServiceChange(deliveryData) {
             const hasTerminalSelection = Boolean(
@@ -1831,7 +1850,7 @@
                 if (canCloseModal) {
                     const modal = document.getElementById('modal-esl-frame');
                     if (modal) {
-                        modal.style.display = 'none';
+                        setEslModalVisible(modal, false);
                     }
                 }
 
@@ -1885,8 +1904,28 @@
     }
 
     /**
+     * Показать/скрыть модалку выбора служб доставки без display:none и без
+     * visibility:hidden. #eShopLogisticWidgetCart живёт внутри этой модалки,
+     * и SDK виджета явно проверяет реальную видимость контейнера (подтверждено
+     * логами: сначала display:none, потом visibility:hidden — оба варианта
+     * SDK на загрузке страницы всё равно досчитывал только 1 запасную службу
+     * (Dostavista); полный список появлялся лишь после клика по кнопке,
+     * который переключает именно на visibility:visible). checkVisibility()-
+     * подобная проверка в SDK, судя по всему, учитывает display и visibility,
+     * но не opacity — поэтому прячем модалку через opacity:0 (CSS-видимость
+     * "visible" сохраняется) + pointer-events:none, и SDK досчитывает полный
+     * список сразу, не дожидаясь открытия модалки пользователем.
+     */
+    function setEslModalVisible(modal, visible) {
+        modal.style.display = 'block';
+        modal.style.opacity = visible ? '1' : '0';
+        modal.style.pointerEvents = visible ? 'auto' : 'none';
+    }
+
+    /**
      * Инициализация модального окна
      */
+
     function initModal() {
         const modal = document.getElementById('modal-esl-frame');
         if (!modal) return;
@@ -1897,14 +1936,15 @@
             document.body.appendChild(modal);
         }
 
-        // Legacy behavior: modal must stay hidden until user explicitly opens it.
-        modal.style.display = 'none';
+        // Legacy behavior: modal must stay hidden until user explicitly opens it
+        // (see setEslModalVisible for why this isn't display:none).
+        setEslModalVisible(modal, false);
 
         const closeButton = modal.querySelector('.close_modal_window');
         const doorButton = document.getElementById('buttonModalDoor');
 
         const closeModal = () => {
-            modal.style.display = 'none';
+            setEslModalVisible(modal, false);
         };
 
         if (closeButton) {
@@ -1925,7 +1965,7 @@
         const triggerButtons = document.querySelectorAll('.wc-esl-terminals__button');
         triggerButtons.forEach(button => {
             button.addEventListener('click', () => {
-                modal.style.display = 'block';
+                setEslModalVisible(modal, true);
 
                 // При открытии модалки сразу синхронизируем видимость door-кнопки
                 // с текущим режимом, чтобы она не ждала следующего события виджета.

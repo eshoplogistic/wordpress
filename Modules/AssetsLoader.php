@@ -225,8 +225,17 @@ class AssetsLoader implements ModuleInterface
 			$isFrameEnabled = in_array($frameEnable, ['yes', 'on', '1', 1, true], true);
 		}
 
+		// checkout_frame_block.js грузится динамически через loadExternalScript()
+		// в block-frontend.js, в обход wp_enqueue_script — поэтому не получает
+		// автоматический ?ver= от WordPress и кэшируется браузером по голому URL.
+		// WC_ESL_VERSION годами не бампается при правке этого файла, так что берём
+		// mtime — любое изменение файла само сбрасывает кэш.
+		$checkoutFrameBlockPath = WC_ESL_PLUGIN_DIR . 'assets/js/checkout_frame_block.js';
+		$checkoutFrameBlockVer = file_exists($checkoutFrameBlockPath) ? filemtime($checkoutFrameBlockPath) : WC_ESL_VERSION;
+
 		// Строим конфиг объект как JavaScript
 		$config_script = 'window.wcEslBlockFrontend = {' . "\n";
+		$config_script .= '    "checkoutFrameBlockVer": ' . json_encode($checkoutFrameBlockVer) . ',' . "\n";
 		$config_script .= '    "widgetKey": ' . json_encode($widgetKey) . ',' . "\n";
 		$config_script .= '    "apiKeyWCart": ' . json_encode($apiKeyWCart) . ',' . "\n";
 		$config_script .= '    "pluginUrl": ' . json_encode(WC_ESL_PLUGIN_URL) . ',' . "\n";
