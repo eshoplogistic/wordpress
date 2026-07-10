@@ -9,6 +9,10 @@
     // Глобальные переменные
     window.widgetInit = false;
     window.keyDelivery = 'door';
+    // 'door' выше — просто исходное значение на случай раннего чтения, а не сигнал
+    // о том, что виджет реально подтвердил курьерскую доставку. Пока это не так,
+    // getDeliveryType() не должен опираться на него для скрытия кнопки ПВЗ.
+    window.keyDeliveryResolved = false;
     let cityMain = false;
     let errorCity = 0;
     let eslWidget = null;
@@ -51,8 +55,15 @@
      */
     function initDefaultDelivery() {
         const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
-        
-        window.keyDelivery = shippingTerminal?.value ? 'terminal' : 'door';
+
+        // Непустое значение — это восстановленный из сессии выбор терминала, реальное
+        // подтверждение типа доставки. Пустое значение ничего не подтверждает (виджет
+        // мог просто ещё не отработать), поэтому keyDeliveryResolved в этом случае не
+        // трогаем — иначе кнопка ПВЗ для "mixed"-методов будет скрываться по умолчанию.
+        if (shippingTerminal?.value) {
+            window.keyDelivery = 'terminal';
+            window.keyDeliveryResolved = true;
+        }
     }
 
     /**
@@ -296,7 +307,10 @@
                 return 'door';
             }
 
-            return window.keyDelivery;
+            // Виджет ещё ни разу не подтвердил тип доставки (например, курьерский тариф
+            // не может посчитаться без адреса) — считаем тип неопределённым, а не 'door',
+            // иначе кнопка выбора ПВЗ скрывается навсегда и открыть виджет невозможно.
+            return window.keyDeliveryResolved ? window.keyDelivery : null;
         }
 
         return null;
@@ -903,6 +917,112 @@
         document.addEventListener('mousedown', handleCitySelection, true);
         document.addEventListener('touchstart', handleCitySelection, true);
         document.addEventListener('click', handleCitySelection, true);
+
+        // Автоподтверждение города при уходе с поля (autocomplete браузера или ввод без
+        // клика по подсказке): без этого fias так и не проставляется, и виджет навсегда
+        // остаётся без города, если пользователь заполнил адрес уже после того, как
+        // истекли начальные попытки инициализации виджета при загрузке страницы.
+        const confirmCityIfUnresolved = (mode) => {
+            if (citySelectionInProgress || Date.now() < suppressAutocompleteUntil) {
+                return;
+            }
+
+            const inputEl = mode === 'billing' ? getCheckoutBillingCityElement() : getCheckoutCityElement();
+            if (!inputEl) {
+                return;
+            }
+
+            const query = (inputEl.value || '').trim();
+            if (query.length < 3) {
+                return;
+            }
+
+            const cityInput = document.getElementById('widgetCityEsl');
+            if (cityInput && cityInput.value) {
+                try {
+                    const parsed = JSON.parse(cityInput.value);
+                    if (parsed && parsed.fias && (parsed.city === query || parsed.name === query)) {
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            const country = getCheckoutCountryValue();
+            searchCity(query, (items) => {
+                if (!items || items.length === 0 || citySelectionInProgress) {
+                    return;
+                }
+
+                const best = items[0];
+                const cityData = {
+                    city: best.city || best.name || query,
+                    region: best.region || '',
+                    postcode: best.postcode || '',
+                    fias: best.fias || '',
+                    services: best.services || [],
+                    raw: best
+                };
+
+                if (!cityData.fias) {
+                    return;
+                }
+
+                if (mode === 'billing') {
+                    setCheckoutBillingAddressValues(cityData);
+                } else {
+                    setCheckoutAddressValues(cityData);
+                }
+                updateWidgetCityData(cityData);
+                clearCityResultList(mode);
+                hideCityTips();
+
+                setLoadingState(true);
+
+                const updateRequest = mode === 'billing'
+                    ? requestBillingAddressUpdate(cityData)
+                    : requestShippingAddressUpdate(cityData);
+
+                updateRequest
+                    .then((response) => {
+                        if (!response || response.success !== true) {
+                            throw new Error('updateShippingAddress failed');
+                        }
+
+                        const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                        if (widgetRoot) {
+                            widgetRoot.dataset.paramsLoaded = '';
+                            sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                        }
+
+                        refreshCheckoutAfterShippingUpdate();
+                        document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                    })
+                    .catch((error) => {
+                        console.error('eShopLogistic: failed to update shipping address', error);
+                    })
+                    .finally(() => {
+                        setLoadingState(false);
+                    });
+            }, country);
+        };
+
+        document.addEventListener('blur', (event) => {
+            const target = event.target;
+            if (!target || !target.id) {
+                return;
+            }
+
+            const shippingCity = getCheckoutCityElement();
+            if (shippingCity && target.id === shippingCity.id) {
+                setTimeout(() => confirmCityIfUnresolved('shipping'), 300);
+                return;
+            }
+
+            const billingCity = getCheckoutBillingCityElement();
+            if (billingCity && target.id === billingCity.id) {
+                setTimeout(() => confirmCityIfUnresolved('billing'), 300);
+            }
+        }, true);
     }
 
     /**
@@ -1730,6 +1850,7 @@
 
             if (deliveryData?.typeDelivery) {
                 window.keyDelivery = deliveryData.typeDelivery;
+                window.keyDeliveryResolved = true;
 
                 // Legacy flow: кнопка door доступна только для door-режима.
                 if (doorButton) {
