@@ -14,6 +14,8 @@
     let eslWidget = null;
     let widgetSdkRequested = false;
     let loadingHideTimer = null;
+    let loadingSafetyTimer = null;
+    const LOADING_SAFETY_TIMEOUT_MS = 15000;
 
     /**
      * Запустить инициализацию CDN SDK вручную.
@@ -105,7 +107,25 @@
 
         if (isLoading) {
             preloader.style.display = 'block';
+
+            // Страховка от бесконечного прелоадера: если ни один из сценариев
+            // (SDK не загрузился из-за блокировщика, AJAX завис, событие виджета
+            // не пришло) не вызовет setLoadingState(false) сам, принудительно
+            // прячем прелоадер и показываем ошибку по таймауту.
+            if (!loadingSafetyTimer) {
+                loadingSafetyTimer = setTimeout(() => {
+                    loadingSafetyTimer = null;
+                    console.warn('eShopLogistic: preloader safety timeout reached, forcing hide');
+                    setLoadingState(false);
+                    showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
+                }, LOADING_SAFETY_TIMEOUT_MS);
+            }
         } else {
+            if (loadingSafetyTimer) {
+                clearTimeout(loadingSafetyTimer);
+                loadingSafetyTimer = null;
+            }
+
             loadingHideTimer = setTimeout(() => {
                 preloader.style.display = 'none';
                 loadingHideTimer = null;
@@ -1262,6 +1282,7 @@
 
         script.onerror = () => {
             console.error('❌ eShopLogistic: Failed to load widget SDK');
+            showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
         };
 
         document.head.appendChild(script);
@@ -1343,6 +1364,7 @@
             script.onerror = () => {
                 widgetSdkRequested = false;
                 console.error('eShopLogistic: failed to load widget SDK');
+                showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
             };
 
             if (!existingScript) {
