@@ -1,11 +1,11 @@
 === eShopLogistic Shipping Calculator ===
-Contributors: Moonshine
+Contributors: eshoplogistic
 Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 2.2.22
-License: GPLv2
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Integration with eShopLogistic service for WooCommerce. Supports 18+ delivery services with real-time shipping calculations.
