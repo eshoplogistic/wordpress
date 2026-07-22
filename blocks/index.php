@@ -6,7 +6,7 @@
  * Проверяет $_POST['checkout_context'] и маршрутизирует запрос соответствующим образом
  * Вызов wp_send_json_success() вызывает wp_die(), предотвращая выполнение legacy-обработчика
  *
- * @package eshoplogisticru
+ * @package eshoplogistic
  * @version 2.1.61
  */
 

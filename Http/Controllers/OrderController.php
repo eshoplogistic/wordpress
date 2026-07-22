@@ -38,16 +38,16 @@ class OrderController extends Controller {
 		$paymentMethodOptions = $optionsRepository->getOption( 'wc_esl_shipping_payment_methods' );
 		$this->listRequestParamsV2( $request );
 
-		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogisticru')]);
+		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogistic')]);
 
-		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', 'eshoplogisticru')]);
+		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', 'eshoplogistic')]);
 
-		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', 'eshoplogisticru')]);
+		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', 'eshoplogistic')]);
 
 		if ( empty( $this->offers ) || !is_array( $this->offers ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Товары в заказе не найдены', 'eshoplogisticru' )
+				'message' => __( 'Товары в заказе не найдены', 'eshoplogistic' )
 			] );
 		}
 
@@ -61,64 +61,64 @@ class OrderController extends Controller {
 		}
 
 		if ( empty( $this->name ) ) {
-			return $this->json( [ 'success' => false, 'message' => __( 'Имя не определено', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Имя не определено', 'eshoplogistic' ) ] );
 		}
 
 		if ( empty( $this->email ) || ! is_email( $this->email ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Email не определён или некорректен', 'eshoplogisticru' )
+				'message' => __( 'Email не определён или некорректен', 'eshoplogistic' )
 			] );
 		}
 
 		//if ( ! \WC_Validation::is_phone( $this->phone ) ) {
-		//	return $this->json( [ 'success' => false, 'message' => __( 'Телефон некорректен', 'eshoplogisticru' ) ] );
+		//	return $this->json( [ 'success' => false, 'message' => __( 'Телефон некорректен', 'eshoplogistic' ) ] );
 		//}
 
 		if ( empty( $this->city ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Город доставки не установлен', 'eshoplogisticru' )
+				'message' => __( 'Город доставки не установлен', 'eshoplogistic' )
 			] );
 		}
 
 		if ( empty( $this->addressForDelivery ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Адрес доставки не установлен', 'eshoplogisticru' )
+				'message' => __( 'Адрес доставки не установлен', 'eshoplogistic' )
 			] );
 		}
 
 		if ( empty( $this->selectedDelivery ) || empty( $this->idShipper ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Метод доставки не установлен', 'eshoplogisticru' )
+				'message' => __( 'Метод доставки не установлен', 'eshoplogistic' )
 			] );
 		}
 
 		if ( empty( $this->selectedPayment ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' )
+				'message' => __( 'Метод оплаты не установлен', 'eshoplogistic' )
 			] );
 		}
 
 		if ( ! isset( $this->costDelivery ) ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'Цена за доставку не установлена', 'eshoplogisticru' )
+				'message' => __( 'Цена за доставку не установлена', 'eshoplogistic' )
 			] );
 		}
 
 		if ( ! isset( $paymentMethodOptions ) ) {
-			return $this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogistic' ) ] );
 		}
 
 		if ( ! isset( $this->selectedPayment['key'] ) ) {
-			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogistic' ) ] );
 		}
 
-		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $this->addressForDelivery : $this->addressForDelivery;
+		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', 'eshoplogistic' ) . $this->addressForDelivery : $this->addressForDelivery;
 
 		$data['address']['billing'] = [
 			'first_name' => $this->name,
@@ -162,7 +162,7 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $data['payment_method']['id'] ) ) {
-			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogistic' ) ] );
 		}
 
 		$orderData = new OrderData( $data );
@@ -171,13 +171,13 @@ class OrderController extends Controller {
 		if ( ! $orderId ) {
 			return $this->json( [
 				'success' => false,
-				'message' => __( 'При создании заказа произошла ошибка', 'eshoplogisticru' )
+				'message' => __( 'При создании заказа произошла ошибка', 'eshoplogistic' )
 			] );
 		}
 
 		return $this->json( [
 			'success' => true,
-			'message'     => __( 'Заказ успешно создан', 'eshoplogisticru' ),
+			'message'     => __( 'Заказ успешно создан', 'eshoplogistic' ),
 			'data'    => $orderId
 		] );
 	}

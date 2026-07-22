@@ -148,7 +148,7 @@ class UnloadingOrder implements ModuleInterface
 
             add_meta_box(
                 'woocommerce-order-esl-unloading',
-                __('Параметры выгрузки', 'eshoplogisticru'),
+                __('Параметры выгрузки', 'eshoplogistic'),
                 [$this, 'order_meta_box_start_button'],
                 $screen,
                 'side',
@@ -200,7 +200,7 @@ class UnloadingOrder implements ModuleInterface
 
             add_meta_box(
                 'woocommerce-order-esl-unloading',
-                __('Параметры выгрузки', 'eshoplogisticru'),
+                __('Параметры выгрузки', 'eshoplogistic'),
                 [$this, 'order_meta_box_start_button'],
                 'shop_order',
                 'side',

@@ -7,7 +7,7 @@
  * Используется вместо базовой логики Modules/Ajax.php::updateShipping(), когда
  * Blocks checkout определяет, что нужно использовать оптимизированную обработку.
  *
- * @package eshoplogisticru
+ * @package eshoplogistic
  * @subpackage blocks
  */
 

@@ -62,54 +62,54 @@
         var blocks = [
             {
             name: ESL_CHECKOUT_BLOCK,
-                title: __('eShopLogistic Shipping Calculator (Checkout)', 'eshoplogisticru'),
+                title: __('eShopLogistic Shipping Calculator (Checkout)', 'eshoplogistic'),
                 icon: 'location',
-                description: __('Display shipping calculator on checkout page', 'eshoplogisticru'),
+                description: __('Display shipping calculator on checkout page', 'eshoplogistic'),
                 keywords: [
-                    __('shipping', 'eshoplogisticru'),
-                    __('delivery', 'eshoplogisticru'),
-                    __('calculator', 'eshoplogisticru'),
-                    __('checkout', 'eshoplogisticru'),
-                    __('eshoplogistic', 'eshoplogisticru')
+                    __('shipping', 'eshoplogistic'),
+                    __('delivery', 'eshoplogistic'),
+                    __('calculator', 'eshoplogistic'),
+                    __('checkout', 'eshoplogistic'),
+                    __('eshoplogistic', 'eshoplogistic')
                 ]
             },
             {
                 name: 'eshoplogisticru/product-calculator',
-                title: __('eShopLogistic Product Shipping Calculator', 'eshoplogisticru'),
+                title: __('eShopLogistic Product Shipping Calculator', 'eshoplogistic'),
                 icon: 'calculator',
-                description: __('Display shipping calculator on product pages', 'eshoplogisticru'),
+                description: __('Display shipping calculator on product pages', 'eshoplogistic'),
                 keywords: [
-                    __('shipping', 'eshoplogisticru'),
-                    __('delivery', 'eshoplogisticru'),
-                    __('product', 'eshoplogisticru'),
-                    __('calculator', 'eshoplogisticru'),
-                    __('eshoplogistic', 'eshoplogisticru')
+                    __('shipping', 'eshoplogistic'),
+                    __('delivery', 'eshoplogistic'),
+                    __('product', 'eshoplogistic'),
+                    __('calculator', 'eshoplogistic'),
+                    __('eshoplogistic', 'eshoplogistic')
                 ]
             },
             // {
             //     name: 'eshoplogisticru/cart-shipping',
-            //     title: __('eShopLogistic Cart Shipping Widget', 'eshoplogisticru'),
+            //     title: __('eShopLogistic Cart Shipping Widget', 'eshoplogistic'),
             //     icon: 'cart',
-            //     description: __('Display shipping widget on cart page', 'eshoplogisticru'),
+            //     description: __('Display shipping widget on cart page', 'eshoplogistic'),
             //     keywords: [
-            //         __('shipping', 'eshoplogisticru'),
-            //         __('cart', 'eshoplogisticru'),
-            //         __('delivery', 'eshoplogisticru'),
-            //         __('widget', 'eshoplogisticru'),
-            //         __('eshoplogistic', 'eshoplogisticru')
+            //         __('shipping', 'eshoplogistic'),
+            //         __('cart', 'eshoplogistic'),
+            //         __('delivery', 'eshoplogistic'),
+            //         __('widget', 'eshoplogistic'),
+            //         __('eshoplogistic', 'eshoplogistic')
             //     ]
             // },
             // {
             //     name: 'eshoplogisticru/checkout-form',
-            //     title: __('eShopLogistic Checkout Form', 'eshoplogisticru'),
+            //     title: __('eShopLogistic Checkout Form', 'eshoplogistic'),
             //     icon: 'edit-page',
-            //     description: __('Display checkout form with shipping options', 'eshoplogisticru'),
+            //     description: __('Display checkout form with shipping options', 'eshoplogistic'),
             //     keywords: [
-            //         __('checkout', 'eshoplogisticru'),
-            //         __('form', 'eshoplogisticru'),
-            //         __('shipping', 'eshoplogisticru'),
-            //         __('order', 'eshoplogisticru'),
-            //         __('eshoplogistic', 'eshoplogisticru')
+            //         __('checkout', 'eshoplogistic'),
+            //         __('form', 'eshoplogistic'),
+            //         __('shipping', 'eshoplogistic'),
+            //         __('order', 'eshoplogistic'),
+            //         __('eshoplogistic', 'eshoplogistic')
             //     ]
             // }
         ];

@@ -125,7 +125,7 @@ class GutenbergBlock implements ModuleInterface
         // Если настройка неполная, показываем заглушку
         if (empty($widgetKey) && empty($apiKeyWCart)) {
             return '<div class="wc-esl-checkout-shipping-block" style="padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 20px 0;">' .
-                   '<p style="color: #666;">' . esc_html__('eShopLogistic Shipping Calculator - Configuration required', 'eshoplogisticru') . '</p>' .
+                   '<p style="color: #666;">' . esc_html__('eShopLogistic Shipping Calculator - Configuration required', 'eshoplogistic') . '</p>' .
                    '</div>';
         }
         
@@ -181,10 +181,10 @@ class GutenbergBlock implements ModuleInterface
             $addOption = $this->optionsRepository->getOption('wc_esl_shipping_add_form');
             $pvzName = isset($addOption['pvzName']) && $addOption['pvzName'] 
                 ? $addOption['pvzName'] 
-                : __('Выбрать способ доставки и пункт самовывоза', 'eshoplogisticru');
+                : __('Выбрать способ доставки и пункт самовывоза', 'eshoplogistic');
 
             $count = 0;
-            $countText = __('службы', 'eshoplogisticru');
+            $countText = __('службы', 'eshoplogistic');
 
             $eslLoader = false;
             if (isset($addOption['eslLoader'])) {
@@ -211,7 +211,7 @@ class GutenbergBlock implements ModuleInterface
                 </div>
                 <div id="tips-city-container" style="display: none;">
                     <i class="ico">☓</i>
-                    <?php echo esc_html__('Укажите город для расчета доставки', 'eshoplogisticru'); ?>
+                    <?php echo esc_html__('Укажите город для расчета доставки', 'eshoplogistic'); ?>
                 </div>
 
                 <div id="wc-esl-terminals-wrap-button-shipping" class="wc-esl-terminals__container wc-esl-terminals__frame">
@@ -228,7 +228,7 @@ class GutenbergBlock implements ModuleInterface
                         <?php echo esc_html($pvzName); ?>
                     </button>
                     <p class="form-row form-row-wide validate-required wc_esl_shipping_terminal_field" id="wc_esl_shipping_terminal_field"<?php echo $terminalLocation ? '' : ' style="display:none;"'; ?>>
-                        <label for="wc_esl_shipping_terminal"><?php echo esc_html__('Пункт выдачи', 'eshoplogisticru'); ?> <abbr class="required" title="<?php echo esc_attr__('обязательное поле', 'eshoplogisticru'); ?>">*</abbr></label>
+                        <label for="wc_esl_shipping_terminal"><?php echo esc_html__('Пункт выдачи', 'eshoplogistic'); ?> <abbr class="required" title="<?php echo esc_attr__('обязательное поле', 'eshoplogistic'); ?>">*</abbr></label>
                         <span class="woocommerce-input-wrapper">
                             <input type="text" class="input-text" name="wc_esl_shipping_terminal" id="wc_esl_shipping_terminal" value="<?php echo esc_attr($terminalLocation); ?>" readonly>
                         </span>
@@ -254,7 +254,7 @@ class GutenbergBlock implements ModuleInterface
                             <input id='wc_esl_billing_terminal' value='<?php echo esc_attr($terminalLocation); ?>' type='hidden'>
                         </div>
                         <div class="footer">
-                            <input id="buttonModalDoor" type="button" value="<?php echo esc_attr__('Выбрать', 'eshoplogisticru'); ?>">
+                            <input id="buttonModalDoor" type="button" value="<?php echo esc_attr__('Выбрать', 'eshoplogistic'); ?>">
                         </div>
                     </div>
                 </div>
@@ -283,9 +283,9 @@ class GutenbergBlock implements ModuleInterface
                     <div class="modal_content">
                         <div class="title">
                             <span class="close_modal_window">×</span>
-                            <p><strong><?php echo esc_html__('Выберите свой населённый пункт', 'eshoplogisticru'); ?></strong><br><?php echo esc_html__('Начните ввод названия населённого пункта для поиска', 'eshoplogisticru'); ?></p>
+                            <p><strong><?php echo esc_html__('Выберите свой населённый пункт', 'eshoplogistic'); ?></strong><br><?php echo esc_html__('Начните ввод названия населённого пункта для поиска', 'eshoplogistic'); ?></p>
                         </div>
-                        <input id="esl_modal-search" value="" placeholder="<?php echo esc_attr__('Населенный пункт', 'eshoplogisticru'); ?>" data-mode="shipping">
+                        <input id="esl_modal-search" value="" placeholder="<?php echo esc_attr__('Населенный пункт', 'eshoplogistic'); ?>" data-mode="shipping">
                         <div id="esl_result-search"></div>
                     </div>
                 </div>
@@ -296,7 +296,7 @@ class GutenbergBlock implements ModuleInterface
         }
         
              // Для предпросмотра в редакторе админки показываем заглушку
-        return $this->renderBlockPlaceholder('wc-esl-checkout-shipping-block', __('Shipping Calculator (Checkout)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
+        return $this->renderBlockPlaceholder('wc-esl-checkout-shipping-block', __('Shipping Calculator (Checkout)', 'eshoplogistic'), __('Displays on checkout page', 'eshoplogistic'));
     }
 
     /**
@@ -354,7 +354,7 @@ class GutenbergBlock implements ModuleInterface
             if ($displayMode === 'button') {
                 // Кнопка + модальный виджет — тот же контракт, что и у шорткода [esl_widget_button].
                 $widgetBut = $this->optionsRepository->getOption('wc_esl_shipping_widget_but');
-                $buttonLabel = $widgetBut ?: __('Заказать с доставкой', 'eshoplogisticru');
+                $buttonLabel = $widgetBut ?: __('Заказать с доставкой', 'eshoplogistic');
 
                 $html .= '<button type="button" data-esl-widget class="wc-esl-calculator-trigger button button-primary" data-title="' . esc_attr($buttonLabel) . '">' .
                         esc_html($buttonLabel) .
@@ -385,7 +385,7 @@ class GutenbergBlock implements ModuleInterface
             return $html;
         }
 
-        return $this->renderBlockPlaceholder('wc-esl-product-calculator-block', __('Product Shipping Calculator', 'eshoplogisticru'), __('Displays on product pages', 'eshoplogisticru'));
+        return $this->renderBlockPlaceholder('wc-esl-product-calculator-block', __('Product Shipping Calculator', 'eshoplogistic'), __('Displays on product pages', 'eshoplogistic'));
     }
 
     /**
@@ -397,7 +397,7 @@ class GutenbergBlock implements ModuleInterface
             return '<div class="wc-esl-cart-shipping-block" data-block-type="cart-shipping"></div>';
         }
 
-        return $this->renderBlockPlaceholder('wc-esl-cart-shipping-block', __('Cart Shipping (Frame)', 'eshoplogisticru'), __('Displays on cart page', 'eshoplogisticru'));
+        return $this->renderBlockPlaceholder('wc-esl-cart-shipping-block', __('Cart Shipping (Frame)', 'eshoplogistic'), __('Displays on cart page', 'eshoplogistic'));
     }
 
     /**
@@ -410,7 +410,7 @@ class GutenbergBlock implements ModuleInterface
                    'data-form-type="' . esc_attr($attributes['formType'] ?? 'full') . '"></div>';
         }
 
-        return $this->renderBlockPlaceholder('wc-esl-checkout-form-block', __('Checkout Form (Legacy)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
+        return $this->renderBlockPlaceholder('wc-esl-checkout-form-block', __('Checkout Form (Legacy)', 'eshoplogistic'), __('Displays on checkout page', 'eshoplogistic'));
     }
 
     /**
@@ -467,7 +467,7 @@ class GutenbergBlock implements ModuleInterface
 
         wp_set_script_translations(
             'wc-esl-block-editor-js',
-            'eshoplogisticru',
+            'eshoplogistic',
             WC_ESL_PLUGIN_DIR . 'languages'
         );
 
@@ -477,23 +477,23 @@ class GutenbergBlock implements ModuleInterface
             'pluginUrl' => WC_ESL_PLUGIN_URL,
             'pluginDir' => WC_ESL_PLUGIN_DIR,
             'i18n' => [
-                'checkoutShipping' => __('Shipping Calculator (Checkout)', 'eshoplogisticru'),
-                'productCalculator' => __('Product Shipping Calculator', 'eshoplogisticru'),
-                'cartShipping' => __('Cart Shipping (Frame)', 'eshoplogisticru'),
-                'checkoutForm' => __('Checkout Form (Legacy)', 'eshoplogisticru'),
-                'displayMode' => __('Display Mode', 'eshoplogisticru'),
-                'button' => __('Button', 'eshoplogisticru'),
-                'inline' => __('Inline Widget', 'eshoplogisticru'),
-                'widgetKey' => __('Widget Key', 'eshoplogisticru'),
-                'widgetKeyHelp' => __('Leave empty to use default from settings', 'eshoplogisticru'),
-                'alignment' => __('Alignment', 'eshoplogisticru'),
-                'left' => __('Left', 'eshoplogisticru'),
-                'center' => __('Center', 'eshoplogisticru'),
-                'right' => __('Right', 'eshoplogisticru'),
-                'settings' => __('Settings', 'eshoplogisticru'),
-                'formType' => __('Form Type', 'eshoplogisticru'),
-                'full' => __('Full', 'eshoplogisticru'),
-                'compact' => __('Compact', 'eshoplogisticru'),
+                'checkoutShipping' => __('Shipping Calculator (Checkout)', 'eshoplogistic'),
+                'productCalculator' => __('Product Shipping Calculator', 'eshoplogistic'),
+                'cartShipping' => __('Cart Shipping (Frame)', 'eshoplogistic'),
+                'checkoutForm' => __('Checkout Form (Legacy)', 'eshoplogistic'),
+                'displayMode' => __('Display Mode', 'eshoplogistic'),
+                'button' => __('Button', 'eshoplogistic'),
+                'inline' => __('Inline Widget', 'eshoplogistic'),
+                'widgetKey' => __('Widget Key', 'eshoplogistic'),
+                'widgetKeyHelp' => __('Leave empty to use default from settings', 'eshoplogistic'),
+                'alignment' => __('Alignment', 'eshoplogistic'),
+                'left' => __('Left', 'eshoplogistic'),
+                'center' => __('Center', 'eshoplogistic'),
+                'right' => __('Right', 'eshoplogistic'),
+                'settings' => __('Settings', 'eshoplogistic'),
+                'formType' => __('Form Type', 'eshoplogistic'),
+                'full' => __('Full', 'eshoplogistic'),
+                'compact' => __('Compact', 'eshoplogistic'),
             ],
         ]);
     }

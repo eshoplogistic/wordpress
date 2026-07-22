@@ -34,7 +34,7 @@ class SettingsCron implements ModuleInterface
 	        }
 
 		} catch(\Exception $e) {
-			EslLogger::debug( __("WC eShopLogistic Cron Error: ", 'eshoplogisticru') . $e->getMessage() );
+			EslLogger::debug( __("WC eShopLogistic Cron Error: ", 'eshoplogistic') . $e->getMessage() );
 		}
 	}
 }

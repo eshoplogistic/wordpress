@@ -18,7 +18,7 @@
     "multiple": true,
     "anchor": false
   },
-  "textdomain": "eshoplogisticru",
+  "textdomain": "eshoplogistic",
   "attributes": {
     "widgetKey": {
       "type": "string",

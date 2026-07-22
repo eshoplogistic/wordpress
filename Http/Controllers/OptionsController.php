@@ -40,7 +40,7 @@ class OptionsController extends Controller
 		if (true !== $result) {
 			return $this->json([
 				'status' => 'error',
-				'msg'    => __('Ошибка сохранения настроек', 'eshoplogisticru')
+				'msg'    => __('Ошибка сохранения настроек', 'eshoplogistic')
 			]);
 		}
 
@@ -48,7 +48,7 @@ class OptionsController extends Controller
 		
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Настройки успешно сохранены', 'eshoplogisticru'),
+			'msg'    => __('Настройки успешно сохранены', 'eshoplogistic'),
 			'data'   => $this->options->getAll()
 		]);
 	}
@@ -63,7 +63,7 @@ class OptionsController extends Controller
 		if(empty($api_key)) {
 			return $this->json([
 				'status' => 'error',
-				'msg'    => __('API ключ пустой', 'eshoplogisticru')
+				'msg'    => __('API ключ пустой', 'eshoplogistic')
 			]);
 		}
 
@@ -114,7 +114,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('API ключ успешно сохранён', 'eshoplogisticru'),
+			'msg'    => __('API ключ успешно сохранён', 'eshoplogistic'),
 			'data'   => $this->options->getAll()
 		]);
 	}
@@ -134,7 +134,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogisticru'),
+			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_widget_key_wcart')
 		]);
 	}
@@ -154,7 +154,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogisticru'),
+			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_widget_key_ya')
 		]);
 	}
@@ -165,7 +165,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveWidgetSecretCode($secretCode) {
-		if(empty($secretCode)) return $this->json(['status' => 'error', 'msg' => __('Секретный код пустой', 'eshoplogisticru')]);
+		if(empty($secretCode)) return $this->json(['status' => 'error', 'msg' => __('Секретный код пустой', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -175,7 +175,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Секретный код успешно сохранён', 'eshoplogisticru'),
+			'msg'    => __('Секретный код успешно сохранён', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_widget_secret_code')
 		]);
 	}
@@ -186,7 +186,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveWidgetKey($key) {
-		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Ключ виджета пустой', 'eshoplogisticru')]);
+		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Ключ виджета пустой', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -196,7 +196,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogisticru'),
+			'msg'    => __('Ключ виджета успешно сохранён', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_widget_key')
 		]);
 	}
@@ -207,7 +207,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveWidgetBut($key) {
-		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogisticru')]);
+		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -217,7 +217,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Название виджета успешно сохранено', 'eshoplogisticru'),
+			'msg'    => __('Название виджета успешно сохранено', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_widget_but')
 		]);
 	}
@@ -228,7 +228,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveAddForm($key) {
-		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogisticru')]);
+		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -238,7 +238,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Доп. настройки успешно сохранены', 'eshoplogisticru'),
+			'msg'    => __('Доп. настройки успешно сохранены', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_add_form')
 		]);
 	}
@@ -249,7 +249,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveExportForm($key) {
-		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogisticru')]);
+		if(empty($key)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -259,7 +259,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Данные по выгрузке успешно сохранены', 'eshoplogisticru'),
+			'msg'    => __('Данные по выгрузке успешно сохранены', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_export_form')
 		]);
 	}
@@ -270,7 +270,7 @@ class OptionsController extends Controller
 	 * @return ResponseInterface
 	 */
 	public function saveAddFieldForm($addField) {
-		if(empty($addField)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogisticru')]);
+		if(empty($addField)) return $this->json(['status' => 'error', 'msg' => __('Название пустое', 'eshoplogistic')]);
 
 		$this->options->save([
 			'wc_esl_shipping' => [
@@ -280,7 +280,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Данные по выгрузке успешно сохранены', 'eshoplogisticru'),
+			'msg'    => __('Данные по выгрузке успешно сохранены', 'eshoplogistic'),
 			'data'   => $this->options->getOption('wc_esl_shipping_add_field_form')
 		]);
 	}
@@ -295,7 +295,7 @@ class OptionsController extends Controller
 
 		return $this->json([
 			'status' => 'success',
-			'msg'    => __('Выгрузка завершена', 'eshoplogisticru'),
+			'msg'    => __('Выгрузка завершена', 'eshoplogistic'),
 			'data'   => ''
 		]);
 	}

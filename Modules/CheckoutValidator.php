@@ -78,7 +78,7 @@ class CheckoutValidator implements ModuleInterface
         if ('' === $terminal) {
             throw new RouteException(
                 'esl_terminal_required',
-                __('Пункт выдачи доставки является обязательным полем.', 'eshoplogisticru'), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- static translated string, no user input.
+                __('Пункт выдачи доставки является обязательным полем.', 'eshoplogistic'), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- static translated string, no user input.
                 400
             );
         }

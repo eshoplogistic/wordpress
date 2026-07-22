@@ -45,7 +45,7 @@ class OrderCreator implements ModuleInterface
 
 		if(!$terminal) return;
 
-		$order->set_shipping_address_1(__("Пункт выдачи: ", 'eshoplogisticru') . $terminal);
+		$order->set_shipping_address_1(__("Пункт выдачи: ", 'eshoplogistic') . $terminal);
 	}
 
 	public function saveOrderShipping($item)
@@ -71,14 +71,14 @@ class OrderCreator implements ModuleInterface
 						$timeUnit = $shippingMethods[$shippingMethodId]['data']['terminal']['time']['unit'] ?? '';
 						$timeText = $shippingMethods[$shippingMethodId]['data']['terminal']['time']['text'] ?? '';
 						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
-						$item->update_meta_data(__("Срок доставки", 'eshoplogisticru'), $time);
+						$item->update_meta_data(__("Срок доставки", 'eshoplogistic'), $time);
 					}
 					if(isset($shippingMethods[$shippingMethodId]['time'])){
 						$timeVal = $shippingMethods[$shippingMethodId]['time']['value'] ?? '';
 						$timeUnit = $shippingMethods[$shippingMethodId]['time']['unit'] ?? '';
 						$timeText = $shippingMethods[$shippingMethodId]['time']['text'] ?? '';
 						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
-						$item->update_meta_data(__("Срок доставки", 'eshoplogisticru'), $time);
+						$item->update_meta_data(__("Срок доставки", 'eshoplogistic'), $time);
 					}
 				}else{
 					if(isset($shippingMethods[$shippingMethodId]['data']['door']['time'])){
@@ -86,14 +86,14 @@ class OrderCreator implements ModuleInterface
 						$timeUnit = $shippingMethods[$shippingMethodId]['data']['door']['time']['unit'] ?? '';
 						$timeText = $shippingMethods[$shippingMethodId]['data']['door']['time']['text'] ?? '';
 						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
-						$item->update_meta_data(__("Срок доставки", 'eshoplogisticru'), $time);
+						$item->update_meta_data(__("Срок доставки", 'eshoplogistic'), $time);
 					}
 					if(isset($shippingMethods[$shippingMethodId]['time'])){
 						$timeVal = $shippingMethods[$shippingMethodId]['time']['value'] ?? '';
 						$timeUnit = $shippingMethods[$shippingMethodId]['time']['unit'] ?? '';
 						$timeText = $shippingMethods[$shippingMethodId]['time']['text'] ?? '';
 						$time = $timeVal.' '.$timeUnit.' - '.$timeText;
-						$item->update_meta_data(__("Срок доставки", 'eshoplogisticru'), $time);
+						$item->update_meta_data(__("Срок доставки", 'eshoplogistic'), $time);
 					}
 				}
 			}
@@ -101,7 +101,7 @@ class OrderCreator implements ModuleInterface
 
 			if(!$terminal || !$this->methodsIsEshopTerminal($item->get_method_id())) return;
 
-			$item->update_meta_data(__("Пункт выдачи", 'eshoplogisticru'), $terminal);
+			$item->update_meta_data(__("Пункт выдачи", 'eshoplogistic'), $terminal);
 		} catch(\Exception $e) {
 			return;
 		}
@@ -132,12 +132,12 @@ class OrderCreator implements ModuleInterface
 					$timeVal  = $timeData['value'] ?? '';
 					$timeUnit = $timeData['unit']  ?? '';
 					$timeText = $timeData['text']  ?? '';
-					$item->update_meta_data( __( 'Срок доставки', 'eshoplogisticru' ), "{$timeVal} {$timeUnit} - {$timeText}" );
+					$item->update_meta_data( __( 'Срок доставки', 'eshoplogistic' ), "{$timeVal} {$timeUnit} - {$timeText}" );
 				}
 			}
 
 			if ( $terminal && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
-				$item->update_meta_data( __( 'Пункт выдачи', 'eshoplogisticru' ), $terminal );
+				$item->update_meta_data( __( 'Пункт выдачи', 'eshoplogistic' ), $terminal );
 			}
 
 			$item->save();
@@ -147,7 +147,7 @@ class OrderCreator implements ModuleInterface
 
 		// Адрес доставки — как в createOrder.
 		if ( $terminal && $shippingMethodId && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
-			$order->set_shipping_address_1( __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $terminal );
+			$order->set_shipping_address_1( __( 'Пункт выдачи: ', 'eshoplogistic' ) . $terminal );
 			$order->save();
 		}
 	}

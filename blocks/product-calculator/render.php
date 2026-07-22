@@ -30,7 +30,7 @@ if ( ! $wc_esl_widget_key ) {
 }
 
 $wc_esl_display_mode = $attributes['displayMode'] ?? 'button';
-$wc_esl_classes = 'wp-block-eshoplogisticru-product-calculator wc-esl-product-calculator-block';
+$wc_esl_classes = 'wp-block-eshoplogistic-product-calculator wc-esl-product-calculator-block';
 
 ?>
 <div class="<?php echo esc_attr( $wc_esl_classes ); ?>" 
@@ -39,7 +39,7 @@ $wc_esl_classes = 'wp-block-eshoplogisticru-product-calculator wc-esl-product-ca
      data-product-id="<?php echo esc_attr( $wc_esl_product->get_id() ); ?>">
     <?php if ( 'button' === $wc_esl_display_mode ) : ?>
         <button class="wc-esl-calculator-trigger button button-primary">
-            <?php echo esc_html( __( 'Quick Order with Delivery', 'eshoplogisticru' ) ); ?>
+            <?php echo esc_html( __( 'Quick Order with Delivery', 'eshoplogistic' ) ); ?>
         </button>
     <?php else : ?>
         <div id="eShopLogisticWidgetBlock" 

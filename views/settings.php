@@ -51,7 +51,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                 <div class="col-md-12">
                     <h1 class="wc-esl-settings__title">
                         <span class="dashicons dashicons-cart" aria-hidden="true"></span>
-						<?php esc_html_e( 'Настройки eShopLogistic Shipping', 'eshoplogisticru' ) ?>
+						<?php esc_html_e( 'Настройки eShopLogistic Shipping', 'eshoplogistic' ) ?>
                     </h1>
 					<?php if ( $moduleVersion ): ?>
                         <h4 class="wc-esl-settings__doc-link"><a href="https://wp-v2.eshoplogistic.ru/documentation-v2/" target="_blank">Документация по
@@ -92,17 +92,17 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     <div class="tab-pane fade show active" id="esl-top-tab-system" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
-							<?php esc_html_e('Основные настройки', 'eshoplogisticru' ) ?>
+							<?php esc_html_e('Основные настройки', 'eshoplogistic' ) ?>
 
                             <button class="btn btn-primary" id="updateCache">
-								<?php esc_html_e( 'Сбросить кэш', 'eshoplogisticru' ) ?>
+								<?php esc_html_e( 'Сбросить кэш', 'eshoplogistic' ) ?>
                             </button>
                         </div>
                         <div class="card-body">
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e( 'Включить / выключить', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Включить / выключить', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -120,7 +120,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e( 'Включить / выключить корзинный виджет', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Включить / выключить корзинный виджет', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -148,7 +148,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e( 'Включить / выключить стоимость доставки в сумме заказа', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Включить / выключить стоимость доставки в сумме заказа', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -166,7 +166,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e( 'Включить / выключить логирование запросов', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Включить / выключить логирование запросов', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <div class="custom-control custom-switch">
@@ -197,7 +197,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-5 col-form-label">
-									<?php esc_html_e('Единица измерения габаритов ', 'eshoplogisticru' ) ?>
+									<?php esc_html_e('Единица измерения габаритов ', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-5">
                                     <select id="dimensionMeasurement" name="dimension_measurement">
@@ -217,7 +217,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'API Ключ', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'API Ключ', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyForm">
@@ -225,14 +225,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'API Ключ', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'API Ключ', 'eshoplogistic' ) ?>"
                                                     id="apiKeyInput"
                                                     name="api_key"
                                                     value="<?php echo esc_attr( $api_key ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -248,7 +248,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							?>
                             <div class="form-group row align-items-center mb-3" <?php echo esc_attr($style) ?>>
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyWCartForm">
@@ -256,14 +256,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Ключ корзинного виджета', 'eshoplogistic' ) ?>"
                                                     id="apiKeyWCartInput"
                                                     name="api_key_wcart"
                                                     value="<?php echo esc_attr( $api_key_wcart ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -273,7 +273,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogistic' ) ?>
                                     <div class="help-tip">
                                         <p>
                                             Для активации поиска на яндекс картах
@@ -286,14 +286,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'API Ключ для яндекс карты', 'eshoplogistic' ) ?>"
                                                     id="apiKeyYaInput"
                                                     name="api_ya_key"
                                                     value="<?php echo esc_attr( $api_key_ya ) ?>"
                                             >
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -308,7 +308,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     <div class="tab-pane fade" id="esl-top-tab-payment" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
-							<?php esc_html_e( 'Настройки оплаты', 'eshoplogisticru' ) ?>
+							<?php esc_html_e( 'Настройки оплаты', 'eshoplogistic' ) ?>
                         </div>
 
                         <div class="card-body">
@@ -392,7 +392,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </table>
 
                                 <button class="btn btn-primary" type="submit">
-									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                 </button>
                             </form>
                         </div>
@@ -402,9 +402,9 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         <div class="card-header">
 							<?php
 							if ( $moduleVersion ) {
-								esc_html_e( 'Виджет в карточку товара', 'eshoplogisticru' );
+								esc_html_e( 'Виджет в карточку товара', 'eshoplogistic' );
 							} else {
-								esc_html_e( 'Виджет', 'eshoplogisticru' );
+								esc_html_e( 'Виджет', 'eshoplogistic' );
 							}
 							?>
                         </div>
@@ -412,7 +412,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         <div class="card-body" id="eslWidgetFormWrap">
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'Ключ виджета', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Ключ виджета', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetKeyForm">
@@ -420,14 +420,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'Ключ виджета', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Ключ виджета', 'eshoplogistic' ) ?>"
                                                     id="eslWidgetKey"
                                                     name="esl_widget_key"
                                                     value="<?php echo esc_attr( $widget_key ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e('Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e('Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -437,7 +437,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'Секретный код', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Секретный код', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetSecretCodeForm">
@@ -445,14 +445,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'Секретный код', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Секретный код', 'eshoplogistic' ) ?>"
                                                     id="eslWidgetSecretCode"
                                                     name="esl_widget_secret_code"
                                                     value="<?php echo esc_attr( $secret_code ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -462,7 +462,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                             <div class="form-group row align-items-center mb-3">
                                 <label for="" class="col-sm-2 col-form-label">
-									<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogistic' ) ?>
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetButForm">
@@ -470,14 +470,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <input
                                                     type="text"
                                                     class="form-control"
-                                                    placeholder="<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Название для кнопки виджета', 'eshoplogistic' ) ?>"
                                                     id="eslWidgetBut"
                                                     name="esl_widget_but"
                                                     value="<?php echo esc_attr( $widget_but ) ?>"
                                             />
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="submit">
-													<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -491,7 +491,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     <div class="tab-pane fade" id="esl-top-tab-extra" role="tabpanel">
                     <div class="card wc-esl-settings-others">
                         <div class="card-header">
-							<?php esc_html_e( 'Дополнительные настройки eShopLogistic', 'eshoplogisticru' ) ?>
+							<?php esc_html_e( 'Дополнительные настройки eShopLogistic', 'eshoplogistic' ) ?>
                         </div>
 
                         <div class="card-body" id="eslOthersFormWrap">
@@ -500,7 +500,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                     <form action="/" method="post" id="eslAddForm">
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-												<?php esc_html_e( 'Описание подсказки для списка городов', 'eshoplogisticru' ) ?>
+												<?php esc_html_e( 'Описание подсказки для списка городов', 'eshoplogistic' ) ?>
                                             </label>
 											<?php
 											$citiesTips = '';
@@ -510,7 +510,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 											?>
                                             <input
                                                     type="text"
-                                                    placeholder="<?php esc_html_e( 'Подсказка для выбора города', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Подсказка для выбора города', 'eshoplogistic' ) ?>"
                                                     name="citiesTips"
                                                     class="form-control col-sm-8"
                                                     value="<?php echo esc_attr( $citiesTips ) ?>"
@@ -519,7 +519,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $pvzName = '';
@@ -529,7 +529,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 		                                    ?>
                                             <input
                                                     type="text"
-                                                    placeholder="<?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Название кнопки для выбора ПВЗ', 'eshoplogistic' ) ?>"
                                                     name="pvzName"
                                                     class="form-control col-sm-8"
                                                     value="<?php echo esc_attr( $pvzName ) ?>"
@@ -538,7 +538,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-												<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogisticru' ) ?>
+												<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogistic' ) ?>
                                             </label>
 											<?php
 											$paymentCalc = '';
@@ -548,7 +548,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 											?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Контролировать способ оплаты', 'eshoplogistic' ) ?>"
                                                     name="paymentCalc"
                                                     class="col-sm-8 form-control checkbox"
 											<?php echo ( $paymentCalc == 'true' ) ? 'checked=checked' : ''; ?>
@@ -558,7 +558,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 										<?php if ( $moduleVersion ): ?>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e('Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogisticru' ) ?>
+													<?php esc_html_e('Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogistic' ) ?>
                                                 </label>
 												<?php
 												$checkDelivery = '';
@@ -568,7 +568,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 												?>
                                                 <input
                                                         type="checkbox"
-                                                        placeholder="<?php esc_html_e( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Разрешить оформлять заказ без выбора доставки (корзинный виджет)', 'eshoplogistic' ) ?>"
                                                         name="checkDelivery"
                                                         class="col-sm-8 form-control checkbox"
 												<?php echo ( $checkDelivery == 'true' ) ? 'checked=checked' : ''; ?>
@@ -577,7 +577,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogistic' ) ?>
                                                 </label>
 												<?php
 												$citySelectModal = '';
@@ -587,7 +587,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 												?>
                                                 <input
                                                         type="checkbox"
-                                                        placeholder="<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Изменить способ выбора города', 'eshoplogistic' ) ?>"
                                                         name="citySelectModal"
                                                         class="col-sm-8 form-control checkbox"
 												<?php echo ( $citySelectModal == 'true' ) ? 'checked=checked' : ''; ?>
@@ -604,7 +604,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 											?>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-		                                            <?php esc_html_e( 'Изображение для загрузки', 'eshoplogisticru' ) ?>
+		                                            <?php esc_html_e( 'Изображение для загрузки', 'eshoplogistic' ) ?>
                                                 </label>
                                                 <img src="<?php echo esc_url( $eslLodaerImg )?>" width="150"/>
                                                 <div class="ml-1">
@@ -618,7 +618,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Поле адреса доставки (Billing)', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Поле адреса доставки (Billing)', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $billingList = array();
@@ -643,7 +643,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Поле другого адреса доставки (Shipping)', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Поле другого адреса доставки (Shipping)', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $billingList = array();
@@ -668,7 +668,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $offAddressCheck = '';
@@ -678,7 +678,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 		                                    ?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Отключить скрытие полей адреса при выборе ПВЗ', 'eshoplogistic' ) ?>"
                                                     name="offAddressCheck"
                                                     class="col-sm-8 form-control checkbox"
 		                                    <?php echo ( $offAddressCheck == 'true' ) ? 'checked=checked' : ''; ?>
@@ -687,12 +687,12 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
 
                                         <div class="card-header">
-		                                    <?php esc_html_e( 'Планировщик выгрузки заказов', 'eshoplogisticru' ) ?>
+		                                    <?php esc_html_e( 'Планировщик выгрузки заказов', 'eshoplogistic' ) ?>
                                         </div>
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $cronStatusEnable = '';
@@ -702,7 +702,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 		                                    ?>
                                             <input
                                                     type="checkbox"
-                                                    placeholder="<?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Включить планировщик обновления статусов заказа', 'eshoplogistic' ) ?>"
                                                     name="cronStatusEnable"
                                                     class="col-sm-8 form-control checkbox"
 		                                    <?php echo ( $cronStatusEnable == 'true' ) ? 'checked=checked' : ''; ?>
@@ -711,7 +711,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Статусы заказов для работы планировщика', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Статусы заказов для работы планировщика', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $statusEnd = array();
@@ -738,7 +738,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                         <div class="input-group">
                                             <label for="" class="col-sm-4 col-form-label">
-			                                    <?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogisticru' ) ?>
+			                                    <?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogistic' ) ?>
                                             </label>
 		                                    <?php
 		                                    $cronStatusTime = '';
@@ -750,7 +750,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 		                                    ?>
                                             <input
                                                     type="number"
-                                                    placeholder="<?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogisticru' ) ?>"
+                                                    placeholder="<?php esc_html_e( 'Период обновления планировщика (в минутах)', 'eshoplogistic' ) ?>"
                                                     name="cronStatusTime"
                                                     class="col-sm-8 form-control"
                                                     min="60"
@@ -759,7 +759,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                         </div>
 
                                         <button class="btn btn-primary float-end" type="submit">
-											<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+											<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                         </button>
                                     </form>
                                 </div>
@@ -772,7 +772,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 					<?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-export">
                             <div class="card-header">
-								<?php esc_html_e( 'Настройки выгрузки заказов', 'eshoplogisticru' ) ?>
+								<?php esc_html_e( 'Настройки выгрузки заказов', 'eshoplogistic' ) ?>
                             </div>
 
                             <div class="card-body" id="eslExportFormWrap">
@@ -783,7 +783,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <hr>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Имя', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Имя', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -801,7 +801,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e('Имя', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e('Имя', 'eshoplogistic' ) ?>"
                                                         name="sender-name"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_name ) ?>"
@@ -809,7 +809,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Телефон', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Телефон', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -827,7 +827,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Телефон', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Телефон', 'eshoplogistic' ) ?>"
                                                         name="sender-phone"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_phone ) ?>"
@@ -835,7 +835,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>
+			                                        <?php esc_html_e( 'Название компании', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -853,7 +853,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Название компании', 'eshoplogistic' ) ?>"
                                                         name="sender-company"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_company ) ?>"
@@ -861,7 +861,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>
+			                                        <?php esc_html_e( 'Электронная почта', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -879,7 +879,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Электронная почта', 'eshoplogistic' ) ?>"
                                                         name="sender-email"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_email ) ?>"
@@ -888,7 +888,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Продавец: имя', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Продавец: имя', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -907,7 +907,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Имя продавца', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Имя продавца', 'eshoplogistic' ) ?>"
                                                         name="seller-name"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $seller_name ) ?>"
@@ -915,7 +915,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Продавец: телефон', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Продавец: телефон', 'eshoplogistic' ) ?>
                                                 </label>
 												<?php
 												$seller_phone = '';
@@ -926,7 +926,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Телефон продавца', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Телефон продавца', 'eshoplogistic' ) ?>"
                                                         name="seller-phone"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $seller_phone ) ?>"
@@ -935,7 +935,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Регион', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -953,7 +953,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Регион', 'eshoplogistic' ) ?>"
                                                         name="sender-region"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_region ) ?>"
@@ -961,7 +961,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Населённый пункт', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Населённый пункт', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -980,7 +980,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Населённый пункт:', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Населённый пункт:', 'eshoplogistic' ) ?>"
                                                         name="sender-city"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_city ) ?>"
@@ -989,7 +989,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Улица', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Улица', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1008,7 +1008,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Улица', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Улица', 'eshoplogistic' ) ?>"
                                                         name="sender-street"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_street ) ?>"
@@ -1017,7 +1017,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Здание', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Здание', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1036,7 +1036,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Здание', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Здание', 'eshoplogistic' ) ?>"
                                                         name="sender-house"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_house ) ?>"
@@ -1045,7 +1045,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Квартира / офис', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Квартира / офис', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1064,7 +1064,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                 <input
                                                         type="text"
                                                         class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Квартира / офис', 'eshoplogisticru' ) ?>"
+                                                        placeholder="<?php esc_html_e( 'Квартира / офис', 'eshoplogistic' ) ?>"
                                                         name="sender-room"
                                                         class="col-sm-8"
                                                         value="<?php echo esc_attr( $sender_house ) ?>"
@@ -1073,7 +1073,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Статус заказа сразу после выгрузки', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Статус заказа сразу после выгрузки', 'eshoplogistic' ) ?>
                                                     <label>
                                                         <div class="help-tip">
                                                             <p>
@@ -1093,7 +1093,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 												}
 												?>
                                                 <select name="after-unloading-status" class="form-control col-sm-8">
-                                                    <option value=""><?php esc_html_e( '-- Не выбрано --', 'eshoplogisticru' ) ?></option>
+                                                    <option value=""><?php esc_html_e( '-- Не выбрано --', 'eshoplogistic' ) ?></option>
 													<?php foreach ( $status_wp as $wc_esl_statusKey => $wc_esl_statusLabel ): ?>
                                                         <option value="<?php echo esc_attr($wc_esl_statusKey); ?>" <?php echo esc_attr($after_unloading_status === $wc_esl_statusKey ? 'selected' : ''); ?>><?php echo esc_html($wc_esl_statusLabel); ?></option>
 													<?php endforeach; ?>
@@ -1101,7 +1101,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
 
                                             <button class="btn btn-primary float-end" type="submit">
-												<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+												<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                             </button>
                                         </form>
                                     </div>
@@ -1213,7 +1213,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 						?>
                         <div class="card wc-esl-settings-status esl-section_add_field">
                             <div class="card-header">
-				                <?php esc_html_e( 'Настройки транспортных компаний', 'eshoplogisticru' ) ?>
+				                <?php esc_html_e( 'Настройки транспортных компаний', 'eshoplogistic' ) ?>
                             </div>
 
                             <div class="card-body" id="eslCarrierTabsWrap">
@@ -1280,7 +1280,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                                 <button type="button" class="btn btn-primary esl-search-terminal"
                                                                         data-service="<?php echo esc_attr($carrierSlug); ?>"
                                                                         data-target="<?php echo esc_attr($carrierField['name']); ?>">
-																	<?php esc_html_e( 'Поиск терминала', 'eshoplogisticru' ) ?>
+																	<?php esc_html_e( 'Поиск терминала', 'eshoplogistic' ) ?>
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -1300,7 +1300,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                                 <button type="button" class="btn btn-primary esl-search-freight"
                                                                         data-service="<?php echo esc_attr($carrierSlug); ?>"
                                                                         data-target="<?php echo esc_attr($carrierField['name']); ?>">
-																	<?php esc_html_e( 'Поиск', 'eshoplogisticru' ) ?>
+																	<?php esc_html_e( 'Поиск', 'eshoplogistic' ) ?>
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -1339,7 +1339,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 												?>
                                                 <div class="form-group row align-items-center mb-3">
                                                     <label for="" class="col-sm-5 col-form-label">
-														<?php esc_html_e( 'Заказчик перевозки (Деловые линии)', 'eshoplogisticru' ) ?>
+														<?php esc_html_e( 'Заказчик перевозки (Деловые линии)', 'eshoplogistic' ) ?>
                                                         <label>
                                                             <div class="help-tip">
                                                                 <p>
@@ -1363,7 +1363,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                                                     type="text"
                                                                     class="form-control"
                                                                     form="eslExportForm"
-                                                                    placeholder="<?php esc_html_e( 'UID', 'eshoplogisticru' ) ?>"
+                                                                    placeholder="<?php esc_html_e( 'UID', 'eshoplogistic' ) ?>"
                                                                     name="sender-uid-delline"
                                                                     value="<?php echo esc_attr( $sender_uid ) ?>"
                                                             />
@@ -1374,7 +1374,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="form-group row align-items-center mb-3">
                                                 <label for="" class="col-sm-5 col-form-label">
-													<?php esc_html_e( 'Способ оплаты заказа по умолчанию', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Способ оплаты заказа по умолчанию', 'eshoplogistic' ) ?>
                                                 </label>
                                                 <div class="col-sm-5">
 													<?php $defaultPaymentType = $export_form[ 'default-payment-type-' . $carrierSlug ] ?? ''; ?>
@@ -1391,7 +1391,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 											<?php if ( $carrierData['take_payment'] ): ?>
                                                 <div class="form-group row align-items-center mb-3">
                                                     <label for="" class="col-sm-5 col-form-label">
-														<?php esc_html_e( 'Взять оплату с получателя за доставку по умолчанию', 'eshoplogisticru' ) ?>
+														<?php esc_html_e( 'Взять оплату с получателя за доставку по умолчанию', 'eshoplogistic' ) ?>
                                                     </label>
                                                     <div class="col-sm-5">
                                                         <input type="checkbox"
@@ -1404,7 +1404,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="form-group row align-items-center mb-3">
                                                 <label for="" class="col-sm-5 col-form-label">
-													<?php esc_html_e( 'Нулевая объявленная стоимость по умолчанию', 'eshoplogisticru' ) ?>
+													<?php esc_html_e( 'Нулевая объявленная стоимость по умолчанию', 'eshoplogistic' ) ?>
                                                 </label>
                                                 <div class="col-sm-5">
                                                     <input type="checkbox"
@@ -1417,7 +1417,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             <div class="esl-carrier-extra-fields" data-carrier="<?php echo esc_attr($carrierSlug); ?>" data-loaded="0"></div>
 
                                             <button type="button" class="wc-esl-add__button btn-primary" data-mode="<?php echo esc_attr($carrierSlug); ?>">
-												<?php esc_html_e( 'Настройка дополнительных услуг', 'eshoplogisticru' ) ?>
+												<?php esc_html_e( 'Настройка дополнительных услуг', 'eshoplogistic' ) ?>
                                             </button>
                                         </div>
 									<?php endforeach; ?>
@@ -1426,7 +1426,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 <div class="form-group row align-items-center mb-3">
                                     <div class="col-sm-12">
                                         <button type="submit" form="eslExportForm" class="btn btn-primary float-end">
-                                            <?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+                                            <?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                         </button>
                                     </div>
                                 </div>
@@ -1452,9 +1452,9 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                         <p><strong>Выбор терминала ТК, в который вы будете сдавать заказы на доставку</strong><br></p>
                                     </div>
                                     <div class="esl-terminal-search-fields">
-                                        <label><?php esc_html_e( 'Для быстрого поиска укажите название улицы', 'eshoplogisticru' ) ?></label>
-                                        <input type="text" id="settlementTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Город или населённый пункт', 'eshoplogisticru' ) ?>">
-                                        <input type="text" id="addressTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Найти ПВЗ / постамат по его адресу', 'eshoplogisticru' ) ?>">
+                                        <label><?php esc_html_e( 'Для быстрого поиска укажите название улицы', 'eshoplogistic' ) ?></label>
+                                        <input type="text" id="settlementTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Город или населённый пункт', 'eshoplogistic' ) ?>">
+                                        <input type="text" id="addressTerminalSearch" class="form-control" placeholder="<?php esc_attr_e( 'Найти ПВЗ / постамат по его адресу', 'eshoplogistic' ) ?>">
                                     </div>
                                     <div id="content-terminal-search_ajax"></div>
                                     <div class="footer">
@@ -1467,10 +1467,10 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 <div class="modal_content">
                                     <div class="title">
                                         <span class="close_modal_window">×</span>
-                                        <p><strong><?php esc_html_e( 'Выбор характера груза', 'eshoplogisticru' ) ?></strong><br></p>
+                                        <p><strong><?php esc_html_e( 'Выбор характера груза', 'eshoplogistic' ) ?></strong><br></p>
                                     </div>
                                     <div class="esl-terminal-search-fields">
-                                        <input type="text" id="freightTypeSearch" class="form-control" placeholder="<?php esc_attr_e( 'Характер груза', 'eshoplogisticru' ) ?>">
+                                        <input type="text" id="freightTypeSearch" class="form-control" placeholder="<?php esc_attr_e( 'Характер груза', 'eshoplogistic' ) ?>">
                                     </div>
                                     <div id="content-freight-search_ajax"></div>
                                     <div class="footer">
@@ -1487,7 +1487,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 					<?php if ( $moduleVersion ): ?>
                         <div class="card wc-esl-settings-status esl-section_drag">
                             <div class="card-header">
-								<?php esc_html_e( 'Настройка статусов', 'eshoplogisticru' ) ?>
+								<?php esc_html_e( 'Настройка статусов', 'eshoplogistic' ) ?>
                                 <label>
                                     <div class="help-tip">
                                         <p>
@@ -1551,7 +1551,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                     </div>
                                 </div>
                                 <button class="btn btn-primary float-end" id="statusSave">
-									<?php esc_html_e( 'Сохранить', 'eshoplogisticru' ) ?>
+									<?php esc_html_e( 'Сохранить', 'eshoplogistic' ) ?>
                                 </button>
                             </div>
                         </div>
@@ -1564,12 +1564,12 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         <div class="modal_content">
                             <div class="title">
                                 <span class="close_modal_window">×</span>
-                                <p><strong><?php esc_html_e( 'Подтверждение', 'eshoplogisticru' ) ?></strong><br></p>
+                                <p><strong><?php esc_html_e( 'Подтверждение', 'eshoplogistic' ) ?></strong><br></p>
                             </div>
                             <p class="esl-confirm__message"></p>
                             <div class="footer esl-confirm__footer">
-                                <button type="button" class="btn btn-secondary esl-confirm__cancel"><?php esc_html_e( 'Отмена', 'eshoplogisticru' ) ?></button>
-                                <button type="button" class="btn btn-primary esl-confirm__ok"><?php esc_html_e( 'Продолжить', 'eshoplogisticru' ) ?></button>
+                                <button type="button" class="btn btn-secondary esl-confirm__cancel"><?php esc_html_e( 'Отмена', 'eshoplogistic' ) ?></button>
+                                <button type="button" class="btn btn-primary esl-confirm__ok"><?php esc_html_e( 'Продолжить', 'eshoplogistic' ) ?></button>
                             </div>
                         </div>
                     </div>

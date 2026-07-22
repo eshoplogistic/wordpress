@@ -29,29 +29,29 @@ class SessionService
 
     public function set($key, $value)
     {
-        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogisticru')));
+        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogistic')));
 
         WC()->session->set($this->prefix . $key, $value);
     }
 
     public function get($key)
     {
-        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogisticru')));
+        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogistic')));
 
         return WC()->session->get($this->prefix . $key);
     }
 
     public function drop($key)
     {
-        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogisticru')));
+        if(!isset(WC()->session)) throw new \Exception(esc_html(__("Сессия WooCommerce не инициализирована", 'eshoplogistic')));
 
-        if(!isset($this->sessionList[$key])) throw new \Exception(esc_html(__("Ключ не найден в текущей сессии", 'eshoplogisticru')));
+        if(!isset($this->sessionList[$key])) throw new \Exception(esc_html(__("Ключ не найден в текущей сессии", 'eshoplogistic')));
 
         $this->set($key, $this->sessionList[$key]);
     }
 
     public function save(array $data) {
-        if(empty($data)) throw new \Exception(esc_html(__("Данные для сохранения в сессии некорректны", 'eshoplogisticru')));
+        if(empty($data)) throw new \Exception(esc_html(__("Данные для сохранения в сессии некорректны", 'eshoplogistic')));
 
         foreach($data as $key => $value) {
             $this->set($key, $value);

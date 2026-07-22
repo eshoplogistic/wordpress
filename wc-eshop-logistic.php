@@ -17,7 +17,7 @@
  * Author URI:        https://eshoplogistic.ru/p747575
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       eshoplogisticru
+ * Text Domain:       eshoplogistic
  * Domain Path:       /languages
  */
 
@@ -46,7 +46,7 @@ define( 'WC_ESL_PLUGIN_DIR', plugin_dir_path(__FILE__) );
 
 define( 'WC_ESL_VERSION', '2.2.22' );
 
-define( 'WC_ESL_DOMAIN', 'eshoplogisticru' );
+define( 'WC_ESL_DOMAIN', 'eshoplogistic' );
 
 define( 'WC_ESL_PREFIX', 'wc_esl_' );
 

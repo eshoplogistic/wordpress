@@ -480,7 +480,7 @@ class Ajax implements ModuleInterface
 		$address    = isset($_POST['address']) ? sanitize_text_field(wp_unslash($_POST['address'])) : '';
 
 		if (!$service) {
-			wp_send_json_error(__('Не указана служба доставки', 'eshoplogisticru'));
+			wp_send_json_error(__('Не указана служба доставки', 'eshoplogistic'));
 			return;
 		}
 
@@ -533,7 +533,7 @@ class Ajax implements ModuleInterface
 		$name    = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
 
 		if (!$name) {
-			wp_send_json_error(__('Не указана строка поиска', 'eshoplogisticru'));
+			wp_send_json_error(__('Не указана строка поиска', 'eshoplogistic'));
 			return;
 		}
 
@@ -545,7 +545,7 @@ class Ajax implements ModuleInterface
 		if (empty($freightTypes)) {
 			wp_send_json([
 				'success' => true,
-				'data'    => '<b>' . esc_html__('По запросу не найдено ниодного подходящего варианта', 'eshoplogisticru') . '</b>',
+				'data'    => '<b>' . esc_html__('По запросу не найдено ниодного подходящего варианта', 'eshoplogistic') . '</b>',
 			]);
 			return;
 		}
@@ -655,11 +655,11 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is variable from wpdb object
 		$query = $wpdb->prepare("SELECT `option_name` AS `name` FROM " . $wpdb->options . " WHERE `option_name` LIKE %s ORDER BY `option_name`", $like);
 		$cache_key = 'wc_esl_transients_list';
-		$transients = wp_cache_get($cache_key, 'eshoplogisticru');
+		$transients = wp_cache_get($cache_key, 'eshoplogistic');
 		if ($transients === false) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared -- Intentional options table query for transient cleanup, query is prepared above.
 			$transients = $wpdb->get_results($query);
-			wp_cache_set($cache_key, $transients, 'eshoplogisticru', 60); // кэш на 60 секунд
+			wp_cache_set($cache_key, $transients, 'eshoplogistic', 60); // кэш на 60 секунд
 		}
 
 		if ($transients) {
@@ -679,7 +679,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $transients,
-			'msg' => __("Кэш успешно очищен", 'eshoplogisticru')
+			'msg' => __("Кэш успешно очищен", 'eshoplogistic')
 		]);
 	}
 
@@ -702,7 +702,7 @@ class Ajax implements ModuleInterface
 		if (is_null($formData)) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogistic')
 			]);
 		}
 
@@ -712,7 +712,7 @@ class Ajax implements ModuleInterface
 		if (!isset($params['esl_pay_type']) || !is_array($params['esl_pay_type'])) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogistic')
 			]);
 		}
 
@@ -729,7 +729,7 @@ class Ajax implements ModuleInterface
 		if (empty($payTypes)) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogisticru')
+				'msg' => __("Ошибка сохранения методов оплаты", 'eshoplogistic')
 			]);
 		}
 
@@ -743,7 +743,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $payTypes,
-			'msg' => __("Методы оплаты успешно сохранены", 'eshoplogisticru')
+			'msg' => __("Методы оплаты успешно сохранены", 'eshoplogistic')
 		]);
 	}
 
@@ -760,7 +760,7 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$terminal_code = isset($_POST['terminal_code']) ? sanitize_text_field(wp_unslash($_POST['terminal_code'])) : '';
 
-		if (!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogisticru')]);
+		if (!$terminal) wp_send_json(['success' => false, 'msg' => __("Некорректный адрес пункта выдачи", 'eshoplogistic')]);
 
 		$sessionService = new SessionService();
 		$sessionService->set('terminal_location', $terminal . '. Код пункта: ' . $terminal_code);
@@ -768,7 +768,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $terminal . '. Код пункта: ' . $terminal_code,
-			'msg' => __("Aдрес пункта выдачи успешно сохранён", 'eshoplogisticru')
+			'msg' => __("Aдрес пункта выдачи успешно сохранён", 'eshoplogistic')
 		]);
 	}
 
@@ -802,7 +802,7 @@ class Ajax implements ModuleInterface
 		wp_send_json([
 			'success' => true,
 			'data' => $terminals,
-			'msg' => __("Адрес скорректирован", 'eshoplogisticru')
+			'msg' => __("Адрес скорректирован", 'eshoplogistic')
 		]);
 	}
 
@@ -871,12 +871,12 @@ class Ajax implements ModuleInterface
 			wp_send_json([
 				'success' => true,
 				'data' => $sessionService->getAll(),
-				'msg' => __("Сессия успешно сброшена", 'eshoplogisticru')
+				'msg' => __("Сессия успешно сброшена", 'eshoplogistic')
 			]);
 		} catch (\Exception $e) {
 			wp_send_json([
 				'success' => false,
-				'msg' => __("Ошибка сброса кэша", 'eshoplogisticru')
+				'msg' => __("Ошибка сброса кэша", 'eshoplogistic')
 			]);
 		}
 	}
@@ -1073,7 +1073,7 @@ class Ajax implements ModuleInterface
 		} else {
 			wp_send_json([
 				'success' => true,
-				'msg' => __("Заказ создан", 'eshoplogisticru')
+				'msg' => __("Заказ создан", 'eshoplogistic')
 			]);
 		}
 	}
@@ -1107,8 +1107,8 @@ class Ajax implements ModuleInterface
 			'success' => !$isError,
 			'data' => $result,
 			'msg' => $isError
-				? (isset($result['data']['messages']) ? esc_html($result['data']['messages']) : esc_html__("Ошибка при удалении заказа для выгрузки", 'eshoplogisticru'))
-				: esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
+				? (isset($result['data']['messages']) ? esc_html($result['data']['messages']) : esc_html__("Ошибка при удалении заказа для выгрузки", 'eshoplogistic'))
+				: esc_html__("Удаление заказа для выгрузки", 'eshoplogistic')
 		]);
 	}
 
@@ -1169,7 +1169,7 @@ class Ajax implements ModuleInterface
 
 		wp_send_json([
 			'success' => true,
-			'msg' => esc_html__("Заказ создан", 'eshoplogisticru')
+			'msg' => esc_html__("Заказ создан", 'eshoplogistic')
 		]);
 	}
 
@@ -1208,7 +1208,7 @@ class Ajax implements ModuleInterface
 			$result = $unloading->updateStatusById($status, $order_id);
 			if ($result === false) {
 				$isError = true;
-				$result = __('Не удалось обновить статус: нет данных о статусе заказа у транспортной компании', 'eshoplogisticru');
+				$result = __('Не удалось обновить статус: нет данных о статусе заказа у транспортной компании', 'eshoplogistic');
 			} elseif (is_string($result) && str_starts_with($result, 'Ошибка')) {
 				$isError = true;
 			}
@@ -1247,13 +1247,13 @@ class Ajax implements ModuleInterface
 
 		$html = '';
 		if ($urlPrint) {
-			$html = '<a href="' . esc_url($urlPrint) . '" target="_blank" rel="noopener">' . esc_html__('Открыть печатную форму', 'eshoplogisticru') . '</a>';
+			$html = '<a href="' . esc_url($urlPrint) . '" target="_blank" rel="noopener">' . esc_html__('Открыть печатную форму', 'eshoplogistic') . '</a>';
 		}
 
 		wp_send_json([
 			'success' => (bool) $urlPrint,
 			'data' => $html,
-			'msg' => $urlPrint ? '' : esc_html__('Печатная форма не получена', 'eshoplogisticru')
+			'msg' => $urlPrint ? '' : esc_html__('Печатная форма не получена', 'eshoplogistic')
 		]);
 	}
 
