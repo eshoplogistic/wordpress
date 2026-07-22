@@ -697,7 +697,8 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		$formData = isset($_POST['formData']) ? sanitize_text_field(wp_unslash($_POST['formData'])) : null;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw formData is a serialized query string; sanitize_text_field() would strip %XX-encoded brackets and break parse_str(); values/keys are sanitized individually below.
+		$formData = isset($_POST['formData']) ? wp_unslash($_POST['formData']) : null;
 
 		if (is_null($formData)) {
 			wp_send_json([
