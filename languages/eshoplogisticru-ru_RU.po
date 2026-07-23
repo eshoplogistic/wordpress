@@ -1,0 +1,790 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: eShopLogistic Shipping Calculator 2.1.61\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/eshoplogistic\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-03-10T18:30:25+03:00\n"
+"PO-Revision-Date: 2026-03-10T18:30:25+03:00\n"
+"Language: ru\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: eshoplogisticru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. Plugin Name of the plugin
+#: wc-eshop-logistic.php
+msgid "eShopLogistic Shipping Calculator"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: wc-eshop-logistic.php
+msgid "https://wp.eshoplogistic.ru/"
+msgstr ""
+
+#. Description of the plugin
+#: wc-eshop-logistic.php
+msgid "Integration with eShopLogistic service for shipping calculation with multiple carriers: CDEK, DPD, Boxberry, IML, Post Russia, Delovye Linii, PEC, Dostavista, GTD, Baikal Service and others. Calculates delivery cost and time in cart and product card."
+msgstr ""
+
+#. Author of the plugin
+#: wc-eshop-logistic.php
+msgid "eShopLogistic"
+msgstr ""
+
+#. Author URI of the plugin
+#: wc-eshop-logistic.php
+msgid "https://eshoplogistic.ru/p747575"
+msgstr ""
+
+#: blocks/product-calculator/render.php:42
+#: Modules/GutenbergBlock.php:233
+msgid "Quick Order with Delivery"
+msgstr ""
+
+#: Classes/Shipping/Base.php:84
+msgid "Название"
+msgstr ""
+
+#: Classes/Shipping/Base.php:86
+msgid "Вы можете изменить название метода доставки, которое будет отображаться пользователям"
+msgstr ""
+
+#: Classes/Shipping/Base.php:103
+msgid "Кастомная доставка"
+msgstr ""
+
+#: Classes/Shipping/Base.php:106
+msgid "Выберите тип кастомной доставки, которую вы создали в кабинете eShopLogistic"
+msgstr ""
+
+#: Classes/Shipping/Base.php:203
+msgid "API ключ не установлен"
+msgstr ""
+
+#: Classes/Shipping/Base.php:206
+#: Http/Controllers/OrderController.php:81
+msgid "Город доставки не установлен"
+msgstr ""
+
+#: Classes/Table.php:31
+msgid "ID"
+msgstr ""
+
+#: Classes/Table.php:32
+#: views/settings.php:1124
+#: views/settings.php:1142
+msgid "Имя"
+msgstr ""
+
+#: Classes/Table.php:33
+msgid "Кол-во"
+msgstr ""
+
+#: Classes/Table.php:34
+msgid "Цена"
+msgstr ""
+
+#: Classes/Table.php:35
+msgid "Вес"
+msgstr ""
+
+#: Classes/Table.php:36
+msgid "Ширина"
+msgstr ""
+
+#: Classes/Table.php:37
+msgid "Длина"
+msgstr ""
+
+#: Classes/Table.php:38
+msgid "Высота"
+msgstr ""
+
+#: Classes/Table.php:39
+msgid "Удалить"
+msgstr ""
+
+#. translators: Hidden accessibility text.
+#: Classes/Table.php:241
+msgid "Select All"
+msgstr ""
+
+#. translators: Hidden accessibility text.
+#: Classes/Table.php:313
+msgid "Sort ascending."
+msgstr ""
+
+#. translators: Hidden accessibility text.
+#: Classes/Table.php:315
+msgid "Sort descending."
+msgstr ""
+
+#: Cron/SettingsCron.php:37
+msgid "WC eShopLogistic Cron Error: "
+msgstr ""
+
+#: globals.php:368
+msgid "Security verification failed"
+msgstr ""
+
+#: globals.php:372
+msgid "Product ID is required"
+msgstr ""
+
+#: globals.php:379
+msgid "Product not found"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:43
+msgid "Ошибка сохранения настроек"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:51
+msgid "Настройки успешно сохранены"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:66
+msgid "API ключ пустой"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:117
+msgid "API ключ успешно сохранён"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:137
+#: Http/Controllers/OptionsController.php:157
+#: Http/Controllers/OptionsController.php:199
+msgid "Ключ виджета успешно сохранён"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:168
+msgid "Секретный код пустой"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:178
+msgid "Секретный код успешно сохранён"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:189
+msgid "Ключ виджета пустой"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:210
+#: Http/Controllers/OptionsController.php:231
+#: Http/Controllers/OptionsController.php:252
+#: Http/Controllers/OptionsController.php:273
+msgid "Название пустое"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:220
+msgid "Название виджета успешно сохранено"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:241
+msgid "Доп. настройки успешно сохранены"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:262
+#: Http/Controllers/OptionsController.php:283
+msgid "Данные по выгрузке успешно сохранены"
+msgstr ""
+
+#: Http/Controllers/OptionsController.php:298
+msgid "Выгрузка завершена"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:50
+msgid "Товары в заказе не найдены"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:64
+msgid "Имя не определено"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:70
+msgid "Email не определён или некорректен"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:88
+msgid "Адрес доставки не установлен"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:95
+msgid "Метод доставки не установлен"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:102
+#: Http/Controllers/OrderController.php:118
+msgid "Метод оплаты не установлен"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:109
+msgid "Цена за доставку не установлена"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:114
+msgid "Методы оплаты не настроены"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:121
+#: Modules/OrderCreator.php:49
+#: Modules/OrderCreator.php:151
+msgid "Пункт выдачи: "
+msgstr ""
+
+#: Http/Controllers/OrderController.php:165
+msgid "Метод оплаты не найден"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:174
+msgid "При создании заказа произошла ошибка"
+msgstr ""
+
+#: Http/Controllers/OrderController.php:180
+msgid "Заказ успешно создан"
+msgstr ""
+
+#: Modules/Ajax.php:564
+msgid "Кэш успешно очищен"
+msgstr ""
+
+#: Modules/Ajax.php:587
+#: Modules/Ajax.php:597
+#: Modules/Ajax.php:610
+msgid "Ошибка сохранения методов оплаты"
+msgstr ""
+
+#: Modules/Ajax.php:624
+msgid "Методы оплаты успешно сохранены"
+msgstr ""
+
+#: Modules/Ajax.php:635
+msgid "Некорректный адрес пункта выдачи"
+msgstr ""
+
+#: Modules/Ajax.php:643
+msgid "Aдрес пункта выдачи успешно сохранён"
+msgstr ""
+
+#: Modules/Ajax.php:671
+msgid "Адрес скорректирован"
+msgstr ""
+
+#: Modules/Ajax.php:735
+msgid "Сессия успешно сброшена"
+msgstr ""
+
+#: Modules/Ajax.php:740
+msgid "Ошибка сброса кэша"
+msgstr ""
+
+#: Modules/Ajax.php:871
+#: Modules/Ajax.php:998
+msgid "Заказ создан"
+msgstr ""
+
+#: Modules/Ajax.php:899
+msgid "Удаление заказа для выгрузки"
+msgstr ""
+
+#: Modules/Checkout.php:240
+#: Modules/GutenbergBlock.php:162
+#: Modules/OrderCreator.php:105
+#: Modules/OrderCreator.php:141
+msgid "Пункт выдачи"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:90
+msgid "eShopLogistic Shipping Calculator - Configuration required"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:134
+msgid "Выбрать способ доставки и пункт самовывоза"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:137
+msgid "службы"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:145
+msgid "Укажите город для расчета доставки"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:162
+msgid "обязательное поле"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:187
+msgid "Выбрать"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:198
+#: Modules/GutenbergBlock.php:316
+msgid "Shipping Calculator (Checkout)"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:199
+msgid "Displays on checkout page"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:317
+msgid "Product Shipping Calculator"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:318
+msgid "Cart Shipping (Frame)"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:319
+msgid "Checkout Form (Legacy)"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:320
+msgid "Display Mode"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:321
+msgid "Button"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:322
+msgid "Inline Widget"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:323
+msgid "Widget Key"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:324
+msgid "Leave empty to use default from settings"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:325
+msgid "Alignment"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:326
+msgid "Left"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:327
+msgid "Center"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:328
+msgid "Right"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:329
+msgid "Settings"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:330
+msgid "Form Type"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:331
+msgid "Full"
+msgstr ""
+
+#: Modules/GutenbergBlock.php:332
+msgid "Compact"
+msgstr ""
+
+#: Modules/OptionsPage.php:46
+msgid "Настройки WC eShopLogistic"
+msgstr ""
+
+#: Modules/OrderCreator.php:75
+#: Modules/OrderCreator.php:82
+#: Modules/OrderCreator.php:90
+#: Modules/OrderCreator.php:97
+#: Modules/OrderCreator.php:136
+msgid "Срок доставки"
+msgstr ""
+
+#: Modules/Unloading.php:142
+#: Modules/Unloading.php:194
+msgid "Параметры выгрузки"
+msgstr ""
+
+#: views/checkout/time.php:8
+#: views/checkout/time.php:13
+msgid "Срок:"
+msgstr ""
+
+#: views/settings.php:65
+msgid "Настройки eShopLogistic Shipping"
+msgstr ""
+
+#: views/settings.php:86
+msgid "Основные настройки"
+msgstr ""
+
+#: views/settings.php:89
+msgid "Сбросить кэш"
+msgstr ""
+
+#: views/settings.php:96
+msgid "Включить / выключить"
+msgstr ""
+
+#: views/settings.php:114
+msgid "Включить / выключить корзинный виджет"
+msgstr ""
+
+#: views/settings.php:140
+msgid "Включить / выключить стоимость доставки в сумме заказа"
+msgstr ""
+
+#: views/settings.php:158
+msgid "Включить / выключить логирование запросов"
+msgstr ""
+
+#: views/settings.php:186
+msgid "Единица измерения габаритов "
+msgstr ""
+
+#: views/settings.php:206
+#: views/settings.php:214
+msgid "API Ключ"
+msgstr ""
+
+#: views/settings.php:221
+#: views/settings.php:252
+#: views/settings.php:277
+#: views/settings.php:379
+#: views/settings.php:414
+#: views/settings.php:439
+#: views/settings.php:464
+#: views/settings.php:744
+#: views/settings.php:1366
+#: views/settings.php:1442
+msgid "Сохранить"
+msgstr ""
+
+#: views/settings.php:237
+#: views/settings.php:245
+msgid "Ключ корзинного виджета"
+msgstr ""
+
+#: views/settings.php:262
+#: views/settings.php:270
+msgid "API Ключ для яндекс карты"
+msgstr ""
+
+#: views/settings.php:295
+msgid "Настройки оплаты"
+msgstr ""
+
+#: views/settings.php:389
+msgid "Виджет в карточку товара"
+msgstr ""
+
+#: views/settings.php:391
+msgid "Виджет"
+msgstr ""
+
+#: views/settings.php:399
+#: views/settings.php:407
+msgid "Ключ виджета"
+msgstr ""
+
+#: views/settings.php:424
+#: views/settings.php:432
+msgid "Секретный код"
+msgstr ""
+
+#: views/settings.php:449
+#: views/settings.php:457
+msgid "Название для кнопки виджета"
+msgstr ""
+
+#: views/settings.php:476
+msgid "Дополнительные настройки eShopLogistic"
+msgstr ""
+
+#: views/settings.php:485
+msgid "Описание подсказки для списка городов"
+msgstr ""
+
+#: views/settings.php:495
+msgid "Подсказка для выбора города"
+msgstr ""
+
+#: views/settings.php:504
+#: views/settings.php:514
+msgid "Название кнопки для выбора ПВЗ"
+msgstr ""
+
+#: views/settings.php:523
+#: views/settings.php:533
+msgid "Контролировать способ оплаты"
+msgstr ""
+
+#: views/settings.php:543
+#: views/settings.php:553
+msgid "Разрешить оформлять заказ без выбора доставки (корзинный виджет)"
+msgstr ""
+
+#: views/settings.php:562
+#: views/settings.php:572
+msgid "Изменить способ выбора города"
+msgstr ""
+
+#: views/settings.php:589
+msgid "Изображение для загрузки"
+msgstr ""
+
+#: views/settings.php:603
+msgid "Поле адреса доставки (Billing)"
+msgstr ""
+
+#: views/settings.php:628
+msgid "Поле другого адреса доставки (Shipping)"
+msgstr ""
+
+#: views/settings.php:653
+#: views/settings.php:663
+msgid "Отключить скрытие полей адреса при выборе ПВЗ"
+msgstr ""
+
+#: views/settings.php:672
+msgid "Планировщик выгрузки заказов"
+msgstr ""
+
+#: views/settings.php:677
+#: views/settings.php:687
+msgid "Включить планировщик обновления статусов заказа"
+msgstr ""
+
+#: views/settings.php:696
+msgid "Статусы заказов для работы планировщика"
+msgstr ""
+
+#: views/settings.php:723
+#: views/settings.php:735
+msgid "Период обновления планировщика (в минутах)"
+msgstr ""
+
+#: views/settings.php:755
+msgid "Настройки выгрузки заказов"
+msgstr ""
+
+#: views/settings.php:765
+msgid "Код терминала (СДЭК)"
+msgstr ""
+
+#: views/settings.php:785
+#: views/settings.php:813
+#: views/settings.php:841
+#: views/settings.php:869
+#: views/settings.php:897
+#: views/settings.php:925
+#: views/settings.php:953
+#: views/settings.php:981
+#: views/settings.php:1009
+msgid "Код терминала"
+msgstr ""
+
+#: views/settings.php:793
+msgid "Код терминала (Boxberry)"
+msgstr ""
+
+#: views/settings.php:821
+msgid "Код терминала (Яндекс)"
+msgstr ""
+
+#: views/settings.php:849
+msgid "Код терминала (5POST)"
+msgstr ""
+
+#: views/settings.php:877
+msgid "Код терминала (KIT)"
+msgstr ""
+
+#: views/settings.php:905
+msgid "Код терминала (Почта России)"
+msgstr ""
+
+#: views/settings.php:933
+msgid "Код терминала (ПЭК)"
+msgstr ""
+
+#: views/settings.php:961
+msgid "Код терминала (Магнит Пост)"
+msgstr ""
+
+#: views/settings.php:989
+msgid "Код терминала (Деловые линии)"
+msgstr ""
+
+#: views/settings.php:1018
+msgid "Заказчик перевозки (Деловые линии)"
+msgstr ""
+
+#: views/settings.php:1054
+msgid "UID"
+msgstr ""
+
+#: views/settings.php:1064
+msgid "Отправитель (Деловые линии)"
+msgstr ""
+
+#: views/settings.php:1087
+msgid "ID контрагента"
+msgstr ""
+
+#: views/settings.php:1095
+msgid "Название профиля отправителя (Kit)"
+msgstr ""
+
+#: views/settings.php:1113
+msgid "Название профиля отправителя"
+msgstr ""
+
+#: views/settings.php:1150
+#: views/settings.php:1168
+msgid "Телефон"
+msgstr ""
+
+#: views/settings.php:1176
+#: views/settings.php:1194
+msgid "Название компании"
+msgstr ""
+
+#: views/settings.php:1202
+#: views/settings.php:1220
+msgid "Электронная почта"
+msgstr ""
+
+#: views/settings.php:1228
+#: views/settings.php:1246
+msgid "Регион"
+msgstr ""
+
+#: views/settings.php:1254
+msgid "Населённый пункт"
+msgstr ""
+
+#: views/settings.php:1273
+msgid "Населённый пункт:"
+msgstr ""
+
+#: views/settings.php:1282
+#: views/settings.php:1301
+msgid "Улица"
+msgstr ""
+
+#: views/settings.php:1310
+#: views/settings.php:1329
+msgid "Здание"
+msgstr ""
+
+#: views/settings.php:1338
+#: views/settings.php:1357
+msgid "Квартира / офис"
+msgstr ""
+
+#: views/settings.php:1378
+msgid "Настройка статусов"
+msgstr ""
+
+#: views/settings.php:1451
+msgid "Дополнительные услуги"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+msgctxt "block title"
+msgid "Cart Shipping (Frame)"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+msgctxt "block description"
+msgid "Displays eShopLogistic shipping calculator in cart area"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+#: blocks/checkout-form/block.json
+#: blocks/checkout-shipping/block.json
+#: blocks/product-calculator/block.json
+msgctxt "block keyword"
+msgid "shipping"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+#: blocks/checkout-form/block.json
+#: blocks/checkout-shipping/block.json
+#: blocks/product-calculator/block.json
+msgctxt "block keyword"
+msgid "delivery"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+#: blocks/checkout-form/block.json
+#: blocks/checkout-shipping/block.json
+#: blocks/product-calculator/block.json
+msgctxt "block keyword"
+msgid "eshoplogistic"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+#: blocks/checkout-shipping/block.json
+#: blocks/product-calculator/block.json
+msgctxt "block keyword"
+msgid "calculator"
+msgstr ""
+
+#: blocks/cart-shipping/block.json
+msgctxt "block keyword"
+msgid "cart"
+msgstr ""
+
+#: blocks/checkout-form/block.json
+msgctxt "block title"
+msgid "Checkout Form (Legacy)"
+msgstr ""
+
+#: blocks/checkout-form/block.json
+msgctxt "block description"
+msgid "Legacy checkout form for backward compatibility"
+msgstr ""
+
+#: blocks/checkout-form/block.json
+#: blocks/checkout-shipping/block.json
+msgctxt "block keyword"
+msgid "checkout"
+msgstr ""
+
+#: blocks/checkout-form/block.json
+msgctxt "block keyword"
+msgid "form"
+msgstr ""
+
+#: blocks/checkout-shipping/block.json
+msgctxt "block title"
+msgid "Shipping Calculator (Checkout)"
+msgstr ""
+
+#: blocks/checkout-shipping/block.json
+msgctxt "block description"
+msgid "Displays eShopLogistic shipping calculator in checkout area"
+msgstr ""
+
+#: blocks/product-calculator/block.json
+msgctxt "block title"
+msgid "Product Shipping Calculator"
+msgstr ""
+
+#: blocks/product-calculator/block.json
+msgctxt "block description"
+msgid "Quick shipping calculator widget for product pages"
+msgstr ""
+
+#: blocks/product-calculator/block.json
+msgctxt "block keyword"
+msgid "product"
+msgstr ""

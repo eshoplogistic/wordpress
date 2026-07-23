@@ -12,13 +12,13 @@ $wc_esl_paperOptions = $wc_esl_paperOptions ?? array();
 ?>
 
 <div class="esl-print" data-service="<?php echo esc_attr( $wc_esl_deliveryName ); ?>">
-	<div class="esl-print__title"><?php echo esc_html__( 'Печатные формы:', 'eshoplogistic' ); ?></div>
+	<div class="esl-print__title"><?php echo esc_html__( 'Печатные формы:', 'eshoplogisticru' ); ?></div>
 
 	<?php if ( $wc_esl_paperOptions ) : ?>
 		<label class="esl-print__paper">
-			<?php echo esc_html__( 'Формат печати:', 'eshoplogistic' ); ?>
+			<?php echo esc_html__( 'Формат печати:', 'eshoplogisticru' ); ?>
 			<select class="esl-print-paper">
-				<option value=""><?php echo esc_html__( '- Не выбрано -', 'eshoplogistic' ); ?></option>
+				<option value=""><?php echo esc_html__( '- Не выбрано -', 'eshoplogisticru' ); ?></option>
 				<?php foreach ( $wc_esl_paperOptions as $wc_esl_paperValue ) : ?>
 					<option value="<?php echo esc_attr( $wc_esl_paperValue ); ?>"><?php echo esc_html( $wc_esl_paperValue ); ?></option>
 				<?php endforeach; ?>

@@ -370,18 +370,18 @@ if ( ! function_exists( 'wc_esl_get_product_data_for_blocks' ) ) {
     function wc_esl_get_product_data_for_blocks() {
         // Verify nonce
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wc_esl_block_nonce' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security verification failed', 'eshoplogistic' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security verification failed', 'eshoplogisticru' ) ) );
         }
 
         if ( ! isset( $_POST['product_id'] ) ) {
-            wp_send_json_error( array( 'message' => __( 'Product ID is required', 'eshoplogistic' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Product ID is required', 'eshoplogisticru' ) ) );
         }
 
         $product_id = intval( wp_unslash( $_POST['product_id'] ) );
         $product = wc_get_product( $product_id );
 
         if ( ! $product ) {
-            wp_send_json_error( array( 'message' => __( 'Product not found', 'eshoplogistic' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Product not found', 'eshoplogisticru' ) ) );
         }
 
         $shippingHelper = new ShippingHelper();

@@ -23,11 +23,11 @@ class ShippingMethodsRepository
 		$query = "SELECT * FROM {$this->table}";
 
 		$cache_key = 'wc_esl_shipping_methods_all';
-		$results = wp_cache_get($cache_key, 'eshoplogistic');
+		$results = wp_cache_get($cache_key, 'eshoplogisticru');
 		if ($results === false) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared -- Repository-level read query with object cache, table name is constant
 			$results = $wpdb->get_results( $query );
-			wp_cache_set($cache_key, $results, 'eshoplogistic', 60); // кэш на 60 секунд
+			wp_cache_set($cache_key, $results, 'eshoplogisticru', 60); // кэш на 60 секунд
 		}
 		return $results;
 	}
@@ -37,7 +37,7 @@ class ShippingMethodsRepository
 		global $wpdb;
 		$id = absint($id);
 		$cache_key = 'wc_esl_shipping_method_' . $id;
-		$result = wp_cache_get($cache_key, 'eshoplogistic');
+		$result = wp_cache_get($cache_key, 'eshoplogisticru');
 		if (false !== $result) {
 			return $result;
 		}
@@ -46,7 +46,7 @@ class ShippingMethodsRepository
 		$query = $wpdb->prepare("SELECT * FROM {$this->table} WHERE id = %d", $id);
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared -- Repository-level read query with object cache.
 		$result = $wpdb->get_row($query);
-		wp_cache_set($cache_key, $result, 'eshoplogistic', 60);
+		wp_cache_set($cache_key, $result, 'eshoplogisticru', 60);
 		return $result;
 	}
 }

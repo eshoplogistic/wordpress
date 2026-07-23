@@ -60,14 +60,14 @@ class OptionsPage implements ModuleInterface
 
 		printf(
 			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
-			esc_html__( 'eShopLogistic: не сопоставлены методы оплаты с методами оплаты сервиса (вкладка «Оплата и виджет») — это повлияет на расчёт стоимости доставки.', 'eshoplogistic' )
+			esc_html__( 'eShopLogistic: не сопоставлены методы оплаты с методами оплаты сервиса (вкладка «Оплата и виджет») — это повлияет на расчёт стоимости доставки.', 'eshoplogisticru' )
 		);
 	}
 
 	public function registerOptionsPage()
 	{
 		add_menu_page(
-			__( 'Настройки WC eShopLogistic', 'eshoplogistic' ),
+			__( 'Настройки WC eShopLogistic', 'eshoplogisticru' ),
 			'WC eShopLogistic',
 			'manage_options',
 			'wc_esl_options',

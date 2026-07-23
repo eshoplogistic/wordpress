@@ -19,15 +19,15 @@ class Table extends WP_List_Table {
 
 	function get_columns() {
 		return array(
-			'product_id'     => __( 'ID', 'eshoplogistic' ),
-			'name'   => __( 'Имя', 'eshoplogistic' ),
-			'quantity'  => __( 'Кол-во', 'eshoplogistic' ),
-			'price'  => __( 'Цена', 'eshoplogistic' ),
-			'weight' => __( 'Вес', 'eshoplogistic' ),
-			'width'  => __( 'Ширина', 'eshoplogistic' ),
-			'length' => __( 'Длина', 'eshoplogistic' ),
-			'height' => __( 'Высота', 'eshoplogistic' ),
-			'delete' => __( 'Удалить', 'eshoplogistic' ),
+			'product_id'     => __( 'ID', 'eshoplogisticru' ),
+			'name'   => __( 'Имя', 'eshoplogisticru' ),
+			'quantity'  => __( 'Кол-во', 'eshoplogisticru' ),
+			'price'  => __( 'Цена', 'eshoplogisticru' ),
+			'weight' => __( 'Вес', 'eshoplogisticru' ),
+			'width'  => __( 'Ширина', 'eshoplogisticru' ),
+			'length' => __( 'Длина', 'eshoplogisticru' ),
+			'height' => __( 'Высота', 'eshoplogisticru' ),
+			'delete' => __( 'Удалить', 'eshoplogisticru' ),
 		);
 	}
 
@@ -60,11 +60,11 @@ class Table extends WP_List_Table {
 		$query = "SELECT * FROM $wpdb->links ORDER BY $orderby $order LIMIT %d, %d";
 
 		$cache_key = 'wc_esl_table_totalitems_' . md5($query . $offset . $perpage);
-		$totalitems = wp_cache_get($cache_key, 'eshoplogistic');
+		$totalitems = wp_cache_get($cache_key, 'eshoplogisticru');
 		if ($totalitems === false) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Core links table count in admin list context, uses core $wpdb table name.
 			$totalitems = (int) $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->links");
-			wp_cache_set($cache_key, $totalitems, 'eshoplogistic', 60); // кэш на 60 секунд
+			wp_cache_set($cache_key, $totalitems, 'eshoplogisticru', 60); // кэш на 60 секунд
 		}
 		$totalpages = ceil($totalitems / $perpage);
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is built from static column/table names and class constants, not user input.

@@ -39,7 +39,7 @@ $wc_esl_classes = 'wp-block-eshoplogistic-product-calculator wc-esl-product-calc
      data-product-id="<?php echo esc_attr( $wc_esl_product->get_id() ); ?>">
     <?php if ( 'button' === $wc_esl_display_mode ) : ?>
         <button class="wc-esl-calculator-trigger button button-primary">
-            <?php echo esc_html( __( 'Quick Order with Delivery', 'eshoplogistic' ) ); ?>
+            <?php echo esc_html( __( 'Quick Order with Delivery', 'eshoplogisticru' ) ); ?>
         </button>
     <?php else : ?>
         <div id="eShopLogisticWidgetBlock" 

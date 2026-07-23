@@ -232,14 +232,14 @@ class Checkout implements ModuleInterface
                     type="button"
                     data-mode="<?php echo esc_attr($type) ?>"
             >
-			    <?php echo $sessionService->get('terminal_location') ? esc_html__('Выбрать другой пункт выдачи', 'eshoplogistic') : esc_html__('Выбрать пункт выдачи', 'eshoplogistic') ?>
+			    <?php echo $sessionService->get('terminal_location') ? esc_html__('Выбрать другой пункт выдачи', 'eshoplogisticru') : esc_html__('Выбрать пункт выдачи', 'eshoplogisticru') ?>
             </button>
 
 		    <?php
 		    woocommerce_form_field(
 			    "wc_esl_{$type}_terminal",
 			    array(
-				    'label' => __('Пункт выдачи', 'eshoplogistic'),
+				    'label' => __('Пункт выдачи', 'eshoplogisticru'),
 				    'required' => true,
 				    'custom_attributes' => array(
 					    'readonly' => true
@@ -352,9 +352,9 @@ class Checkout implements ModuleInterface
 			woocommerce_form_field(
 				"wc_esl_{$type}_terminal",
 				array(
-					'label' => esc_html__('Пункт выдачи', 'eshoplogistic'),
+					'label' => esc_html__('Пункт выдачи', 'eshoplogisticru'),
 					'required' => true,
-					'description' => esc_html__( 'Выберите на карте', 'eshoplogistic' ),
+					'description' => esc_html__( 'Выберите на карте', 'eshoplogisticru' ),
 					'custom_attributes' => array(
 						'readonly' => true
 					)

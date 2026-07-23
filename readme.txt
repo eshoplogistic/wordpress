@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.2.22
+Stable tag: 2.2.23
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,13 +92,17 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 
 == Changelog ==
 
+= 2.2.23 =
+* Shortened plugin display name to comply with WordPress.org directory guidelines (keyword stuffing removal).
+* Fixed WooCommerce-dependency notice to use admin_notices and proper translation strings instead of a direct echo.
+
 = 2.2.22 =
 * Public release preparation for the WordPress.org plugin directory.
 
 == Upgrade Notice ==
 
-= 2.2.22 =
-Initial public release on WordPress.org.
+= 2.2.23 =
+Guideline compliance fixes required for WordPress.org re-review.
 
 == Credits ==
 

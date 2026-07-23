@@ -253,7 +253,7 @@
 
         const normalized = String(methodName).toLowerCase();
         return normalized.indexOf('wc_esl_') !== -1 ||
-            normalized.indexOf('eshoplogistic') !== -1 ||
+            normalized.indexOf('eshoplogisticru') !== -1 ||
             normalized.indexOf('yandex') !== -1 ||
             normalized.indexOf('яндекс') !== -1;
     }
