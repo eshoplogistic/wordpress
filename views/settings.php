@@ -39,6 +39,11 @@ $status_form                  = isset( $wc_esl_status_form ) ? $wc_esl_status_fo
 $status_wp                    = isset( $wc_esl_status_wp ) ? $wc_esl_status_wp : [];
 $paymentGateways              = isset( $wc_esl_paymentGateways ) ? $wc_esl_paymentGateways : [];
 $add_field_form               = isset( $wc_esl_add_field_form ) ? $wc_esl_add_field_form : [];
+$account_blocked              = isset( $wc_esl_account_blocked ) ? $wc_esl_account_blocked : '';
+$account_sync_error           = ! empty( $wc_esl_account_sync_error ) ? $wc_esl_account_sync_error : '';
+$account_balance              = isset( $wc_esl_account_balance ) ? $wc_esl_account_balance : '';
+$account_paid_days            = isset( $wc_esl_account_paid_days ) ? $wc_esl_account_paid_days : '';
+$account_free_days            = isset( $wc_esl_account_free_days ) ? $wc_esl_account_free_days : '';
 
 $status_translate             = UnloadingOrder::getCarrierStatusNames();
 ?>
@@ -237,6 +242,46 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
+
+							<?php
+							// Ошибка синхронизации (например, "закончился баланс") означает, что мы не
+							// смогли получить свежее состояние аккаунта — показывать в этом случае старое
+							// сохранённое account_blocked как достоверный статус было бы обманчиво.
+							$statusBadgeClass = 'badge-success';
+							$statusBadgeText  = __( 'Активен', 'eshoplogisticru' );
+							if ( $account_sync_error ) {
+								$statusBadgeClass = 'badge-warning';
+								$statusBadgeText  = __( 'Ошибка синхронизации', 'eshoplogisticru' );
+							} elseif ( $account_blocked === '1' ) {
+								$statusBadgeClass = 'badge-danger';
+								$statusBadgeText  = __( 'Заблокирован', 'eshoplogisticru' );
+							}
+							?>
+                            <div class="form-group row align-items-center mb-3" id="apiKeyStatusBlock" <?php echo empty( $api_key ) ? 'style="display:none;"' : '' ?>>
+                                <label for="" class="col-sm-2 col-form-label">
+									<?php esc_html_e( 'Статус ключа', 'eshoplogisticru' ) ?>
+                                </label>
+                                <div class="col-sm-8">
+                                    <span id="apiKeyStatusBadge" class="badge <?php echo esc_attr( $statusBadgeClass ) ?>">
+										<?php echo esc_html( $statusBadgeText ) ?>
+                                    </span>
+                                    <span class="ml-3">
+										<?php esc_html_e( 'Баланс:', 'eshoplogisticru' ) ?>
+                                        <strong id="apiKeyStatusBalance"><?php echo esc_html( $account_balance ) ?></strong>
+                                    </span>
+                                    <span class="ml-3">
+										<?php esc_html_e( 'Платных дней:', 'eshoplogisticru' ) ?>
+                                        <strong id="apiKeyStatusPaidDays"><?php echo esc_html( $account_paid_days ) ?></strong>
+                                    </span>
+                                    <span class="ml-3">
+										<?php esc_html_e( 'Бесплатных дней:', 'eshoplogisticru' ) ?>
+                                        <strong id="apiKeyStatusFreeDays"><?php echo esc_html( $account_free_days ) ?></strong>
+                                    </span>
+                                    <div class="mt-2 text-danger" id="apiKeyStatusErrorMsg" <?php echo $account_sync_error ? '' : 'style="display:none;"' ?>>
+										<?php echo esc_html( $account_sync_error ) ?>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1491,8 +1536,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 <label>
                                     <div class="help-tip">
                                         <p>
-                                            Перетащите статус доставки в левую часть страницы. <br>Удалить новую связь
-                                            статусов можно после сохранения.
+                                            Перетащите статус доставки в левую часть страницы.
                                         </p>
                                     </div>
                                 </label>

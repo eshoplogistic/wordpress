@@ -115,6 +115,11 @@ class OptionsPage implements ModuleInterface
 			'wc_esl_status_form'     => $this->option->getOption('wc_esl_shipping_plugin_status_form'),
 			'wc_esl_status_wp'     => $this->unloading->getStatusWp(),
 			'wc_esl_add_field_form'     => $this->option->getOption('wc_esl_shipping_add_field_form'),
+			'wc_esl_account_blocked'   => $this->option->getOption('wc_esl_shipping_account_blocked'),
+			'wc_esl_account_sync_error' => $this->option->getOption('wc_esl_shipping_account_sync_error'),
+			'wc_esl_account_balance'   => $this->option->getOption('wc_esl_shipping_account_balance'),
+			'wc_esl_account_paid_days' => $this->option->getOption('wc_esl_shipping_account_paid_days'),
+			'wc_esl_account_free_days' => $this->option->getOption('wc_esl_shipping_account_free_days'),
 		);
 	}
 }

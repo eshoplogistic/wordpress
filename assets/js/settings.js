@@ -274,6 +274,12 @@ function eslRun() {
 		enablePluginLogCheckbox: document.getElementById('enablePluginLog'),
 		apiKeyInput: document.getElementById('apiKeyInput'),
 		apiKeyForm: document.getElementById('apiKeyForm'),
+		apiKeyStatusBlock: document.getElementById('apiKeyStatusBlock'),
+		apiKeyStatusBadge: document.getElementById('apiKeyStatusBadge'),
+		apiKeyStatusErrorMsg: document.getElementById('apiKeyStatusErrorMsg'),
+		apiKeyStatusBalance: document.getElementById('apiKeyStatusBalance'),
+		apiKeyStatusPaidDays: document.getElementById('apiKeyStatusPaidDays'),
+		apiKeyStatusFreeDays: document.getElementById('apiKeyStatusFreeDays'),
 		apiKeyWCartInput: document.getElementById('apiKeyWCartInput'),
 		apiKeyWCartForm: document.getElementById('apiKeyWCartForm'),
 		apiKeyYaInput: document.getElementById('apiKeyYaInput'),
@@ -612,16 +618,53 @@ function eslRun() {
 
 		callbackChangeApiKey: function (response) {
 			let _self = this._self;
-			if (response && response.status === 'success') {
-				PushEsl.addItem(response.status, response.msg);
-				// Обновляем значение в форме
-				if (response.data) {
-					_self.apiKeyInput.value = response.data;
+			if (response) {
+				PushEsl.addItem(response.status || 'error', response.msg || 'Ошибка сохранения');
+				let data = response.data || {};
+				// Обновляем значение в форме (ключ сохраняется, даже если запрос
+				// состояния аккаунта завершился ошибкой, например из-за баланса)
+				if (data.wc_esl_shipping_api_key) {
+					_self.apiKeyInput.value = data.wc_esl_shipping_api_key;
 				}
+				_self.updateApiKeyStatus(data);
 			} else {
-				PushEsl.addItem(response?.status || 'error', response?.msg || 'Ошибка сохранения');
+				PushEsl.addItem('error', 'Ошибка сохранения');
 			}
 			PreloaderEsl.hide(_self.generalOptionsWrapperSelector);
+		},
+
+		updateApiKeyStatus: function (data) {
+			let _self = this;
+
+			if (!_self.apiKeyStatusBlock) {
+				return;
+			}
+
+			_self.apiKeyStatusBlock.style.display = '';
+
+			let syncError = data.wc_esl_shipping_account_sync_error || '';
+			let blocked = data.wc_esl_shipping_account_blocked === '1';
+
+			_self.apiKeyStatusBadge.classList.remove('badge-danger', 'badge-success', 'badge-warning');
+			if (syncError) {
+				_self.apiKeyStatusBadge.textContent = 'Ошибка синхронизации';
+				_self.apiKeyStatusBadge.classList.add('badge-warning');
+			} else if (blocked) {
+				_self.apiKeyStatusBadge.textContent = 'Заблокирован';
+				_self.apiKeyStatusBadge.classList.add('badge-danger');
+			} else {
+				_self.apiKeyStatusBadge.textContent = 'Активен';
+				_self.apiKeyStatusBadge.classList.add('badge-success');
+			}
+
+			if (_self.apiKeyStatusErrorMsg) {
+				_self.apiKeyStatusErrorMsg.textContent = syncError;
+				_self.apiKeyStatusErrorMsg.style.display = syncError ? '' : 'none';
+			}
+
+			_self.apiKeyStatusBalance.textContent = data.wc_esl_shipping_account_balance || '';
+			_self.apiKeyStatusPaidDays.textContent = data.wc_esl_shipping_account_paid_days || '';
+			_self.apiKeyStatusFreeDays.textContent = data.wc_esl_shipping_account_free_days || '';
 		},
 
 		submitApiKeyWCartForm: function (event) {
