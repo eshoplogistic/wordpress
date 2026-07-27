@@ -2,6 +2,7 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Classes\Plugin;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
@@ -60,7 +61,27 @@ class GutenbergBlock implements ModuleInterface
             return $blockContent;
         }
 
+        if (!$this->isAccountUsable()) {
+            return $blockContent;
+        }
+
         return $blockContent . $this->renderCheckoutShippingBlock([]);
+    }
+
+    /**
+     * Аккаунт пригоден для расчёта доставки (ключ настроен, не заблокирован, последняя
+     * синхронизация состояния аккаунта не завершилась ошибкой — см. Classes\Plugin::isEnable()).
+     * Этот блок — Gutenberg-блок из tier-1 (always-on), в отличие от Modules\Shipping/Checkout
+     * он не гейтится автоматически при инициализации модулей, поэтому проверяем явно здесь,
+     * иначе виджет выбора ПВЗ продолжит работать в блочном чекауте, даже когда доставка отключена
+     * (см. случай "закончился баланс аккаунта").
+     *
+     * @return bool
+     */
+    private function isAccountUsable()
+    {
+        $plugin = new Plugin();
+        return $plugin->isEnable();
     }
 
     /**
@@ -131,6 +152,10 @@ class GutenbergBlock implements ModuleInterface
         
         // Полный виджет показываем только на реальной странице checkout
         if (is_checkout() && !is_wc_endpoint_url('order-received')) {
+            if (!$this->isAccountUsable()) {
+                return '';
+            }
+
             // Получаем данные сессии
             $sessionService = new SessionService();
             $shippingEsl = $sessionService->get('esl_shipping_frame');

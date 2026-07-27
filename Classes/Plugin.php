@@ -23,12 +23,14 @@ class Plugin
 		$apiKey          = $optionsRepository->getOption('wc_esl_shipping_api_key');
 		$paymentMethods  = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 		$accountBlocked  = $optionsRepository->getOption('wc_esl_shipping_account_blocked');
+		$accountSyncError = $optionsRepository->getOption('wc_esl_shipping_account_sync_error');
 
 		EslLogger::debug( '[ESL isEnable] checking plugin state', array(
-			'plugin_enable'   => $pluginEnable,
-			'api_key'         => empty( $apiKey ) ? 'EMPTY' : 'SET',
-			'payment_methods' => $paymentMethods,
-			'account_blocked' => $accountBlocked,
+			'plugin_enable'     => $pluginEnable,
+			'api_key'           => empty( $apiKey ) ? 'EMPTY' : 'SET',
+			'payment_methods'   => $paymentMethods,
+			'account_blocked'   => $accountBlocked,
+			'account_sync_error' => $accountSyncError,
 		) );
 
 		if ( $pluginEnable !== '1' ) {
@@ -52,6 +54,16 @@ class Plugin
 
 		if ( $accountBlocked === '1' ) {
 			EslLogger::debug( '[ESL isEnable] BLOCKED: account_blocked = 1' );
+			return false;
+		}
+
+		// Последняя попытка синхронизации состояния аккаунта (client/state) завершилась
+		// ошибкой (например, закончился баланс) — account_blocked при этом остаётся старым
+		// (последним достоверным) значением и не годится как гарантия, что аккаунт рабочий.
+		// Расчёт доставки в этом состоянии тоже, как правило, отказывает у службы, поэтому
+		// безопаснее отключить доставку, чем показывать виджет, который не сможет посчитать тариф.
+		if ( ! empty( $accountSyncError ) ) {
+			EslLogger::debug( '[ESL isEnable] BLOCKED: account_sync_error is set: ' . $accountSyncError );
 			return false;
 		}
 
