@@ -20,6 +20,15 @@ if ( ! $wc_esl_product ) {
     return '';
 }
 
+// Это блок из tier-1 (always-on), он не гейтится автоматически при инициализации
+// модулей (см. Modules\GutenbergBlock::isAccountUsable() / Classes\Plugin::isEnable()),
+// поэтому проверяем явно здесь — иначе кнопка/инлайн-виджет продолжают показываться
+// в карточке товара, даже когда ключ невалиден или аккаунт заблокирован/не синхронизирован.
+$wc_esl_plugin = new \eshoplogistic\WCEshopLogistic\Classes\Plugin();
+if ( ! $wc_esl_plugin->isEnable() ) {
+    return '';
+}
+
 $wc_esl_options_repo = new \eshoplogistic\WCEshopLogistic\DB\OptionsRepository();
 $wc_esl_widget_key = ! empty( $attributes['widgetKey'] ) 
     ? sanitize_text_field( $attributes['widgetKey'] )

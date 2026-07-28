@@ -345,6 +345,14 @@ class GutenbergBlock implements ModuleInterface
                 return '';
             }
 
+            // Как и checkout-shipping (см. isAccountUsable() выше), этот блок из tier-1
+            // (always-on) не гейтится автоматически при инициализации модулей, поэтому
+            // проверяем явно здесь — иначе кнопка/инлайн-виджет продолжают показываться
+            // в карточке товара, даже когда ключ невалиден или аккаунт заблокирован/не синхронизирован.
+            if (!$this->isAccountUsable()) {
+                return '';
+            }
+
             $displayMode = $attributes['displayMode'] ?? 'button';
             $productData = $product->get_data();
 
