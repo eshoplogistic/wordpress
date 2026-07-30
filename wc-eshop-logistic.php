@@ -5,16 +5,16 @@
  *
  *
  * @link              https://wp.eshoplogistic.ru/
- * @since             2.2.23
+ * @since             2.2.24
  * @package           WC_Eshop_Logistic
  *
  * @wordpress-plugin
  * Plugin Name:       eShopLogistic Shipping Calculator
  * Plugin URI:        https://wp.eshoplogistic.ru/
  * Description:       Integration with eShopLogistic service for shipping calculation with multiple carriers: CDEK, DPD, Boxberry, IML, Post Russia, Delovye Linii, PEC, Dostavista, GTD, Baikal Service and others. Calculates delivery cost and time in cart and product card.
- * Version:           2.2.23
+ * Version:           2.2.24
  * Author:            eShopLogistic
- * Author URI:        https://eshoplogistic.ru/p747575
+ * Author URI:        https://eshoplogistic.ru/
  * License:           GPLv2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       eshoplogisticru
@@ -50,13 +50,20 @@ define( 'WC_ESL_PLUGIN_ENTRY', __FILE__ );
 
 define( 'WC_ESL_PLUGIN_DIR', plugin_dir_path(__FILE__) );
 
-define( 'WC_ESL_VERSION', '2.2.23' );
+define( 'WC_ESL_VERSION', '2.2.24' );
 
 define( 'WC_ESL_DOMAIN', 'eshoplogisticru' );
 
 define( 'WC_ESL_PREFIX', 'wc_esl_' );
 
 define( 'WC_ESL_MIGRATOR_HISTORY_KEY', 'wc_esl_migrations_history' );
+
+// Versions <= 2.2.22 wrote raw API logs (incl. customer PII and API keys) to a
+// world-readable file inside the plugin directory. Remove any leftover copy on upgrade.
+$wc_esl_legacy_log = WC_ESL_PLUGIN_DIR . 'esl.log';
+if ( file_exists( $wc_esl_legacy_log ) ) {
+	wp_delete_file( $wc_esl_legacy_log );
+}
 
 include_once 'autoload.php';
 include_once 'globals.php';

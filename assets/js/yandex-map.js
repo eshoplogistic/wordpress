@@ -60,7 +60,7 @@ function eslRunMap() {
                     yandexMaps.createContainer()
                     yandexMaps.terminals = request.response.data
                     yandexMaps.destroyMap()
-                    ymaps.ready(yandexMaps.initMap)
+                    if (typeof ymaps !== 'undefined') ymaps.ready(yandexMaps.initMap)
                     document.getElementById('wcEslTerminals').value = JSON.stringify(request.response.data)
                 }
             })
@@ -196,13 +196,16 @@ function eslRunMap() {
             if(document.getElementById("wcEslKeyYa"))
                 apiKeyYa = document.getElementById('wcEslKeyYa').value
 
-            let paramsMap = ''
-            if(apiKeyYa){
-                paramsMap = '&apikey='+apiKeyYa;
+            // Без ключа Yandex Maps API инициализируется в ограниченном режиме и падает
+            // при попытке создать карту (см. yandexMaps.initMap) — не загружаем скрипт
+            // вовсе, чтобы не тянуть за собой эту ошибку; UI и так уже поддерживает
+            // состояние "без карты" (см. .without-map / destroyMap()).
+            if (!apiKeyYa) {
+                return;
             }
 
             let script = document.createElement('script')
-            script.setAttribute('src', 'https://api-maps.yandex.ru/2.1/?lang=ru_RU'+paramsMap)
+            script.setAttribute('src', 'https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey='+apiKeyYa)
             script.setAttribute('defer', '')
             document.head.appendChild(script)
         },
@@ -312,7 +315,7 @@ function eslRunMap() {
             if (parsedTerminals && parsedTerminals.length) {
                 yandexMaps.createContainer()
                 yandexMaps.terminals = parsedTerminals
-                ymaps.ready(yandexMaps.initMap)
+                if (typeof ymaps !== 'undefined') ymaps.ready(yandexMaps.initMap)
                 modalDom.open()
             } else {
                 // Открываем модал сразу, затем догружаем терминалы через AJAX
@@ -341,7 +344,11 @@ function eslRunMap() {
                             terminalsEl.value = JSON.stringify(data.data.terminals);
                             yandexMaps.createContainer();
                             yandexMaps.terminals = data.data.terminals;
-                            ymaps.ready(yandexMaps.initMap);
+                            if (typeof ymaps !== 'undefined') {
+                                ymaps.ready(yandexMaps.initMap);
+                            } else if (withoutMap) {
+                                withoutMap.style.display = '';
+                            }
                         } else {
                             if (withoutMap) withoutMap.style.display = '';
                         }
@@ -435,7 +442,11 @@ function eslRunMap() {
                 if (terminalsEl) terminalsEl.value = JSON.stringify(data.data.terminals);
                 yandexMaps.createContainer();
                 yandexMaps.terminals = data.data.terminals;
-                ymaps.ready(yandexMaps.initMap);
+                if (typeof ymaps !== 'undefined') {
+                    ymaps.ready(yandexMaps.initMap);
+                } else if (withoutMap) {
+                    withoutMap.style.display = '';
+                }
             } else {
                 if (withoutMap) withoutMap.style.display = '';
             }

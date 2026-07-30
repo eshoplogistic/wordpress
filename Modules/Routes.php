@@ -23,13 +23,19 @@ class Routes implements ModuleInterface
         register_rest_route( 'wc-esl/v1', '/order', array(
             'methods'  => 'POST',
             'callback' => [$this, 'createOrder'],
-            'permission_callback' => '__return_true' // Public endpoint for checkout
+            // Public: guest checkout has no WP user session to authorize against.
+            // Authorization is instead enforced inside OrderController::save() via the
+            // widget secret configured in plugin settings.
+            'permission_callback' => '__return_true'
         ));
 
 	    register_rest_route( 'wc-esl/v2', '/widget-data', array(
 		    'methods'  => 'POST',
 		    'callback' => [$this, 'widgetLogData'],
-		    'permission_callback' => '__return_true' // Public endpoint for widget logging
+		    // Public: called by the anonymous storefront widget. WidgetController::process()
+		    // restricts it to the "widget/*" method namespace so it cannot be used to reach
+		    // account/order-management API methods with the site's API key.
+		    'permission_callback' => '__return_true'
 	    ));
     }
 

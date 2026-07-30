@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: eShopLogistic Shipping Calculator 2.1.61\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/eshoplogistic\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/eshoplogisticru\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"

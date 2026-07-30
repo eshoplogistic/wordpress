@@ -211,6 +211,10 @@ class UnloadingOrder implements ModuleInterface
 
     public function esl_form_in_admin_bar()
     {
+        if (!current_user_can('edit_shop_orders')) {
+            return false;
+        }
+
         global $post, $pagenow;
 
         $shippingHelper = new ShippingHelper();

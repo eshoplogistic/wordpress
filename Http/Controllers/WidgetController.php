@@ -18,11 +18,15 @@ class WidgetController extends Controller {
 		$out    = [];
 		$method = $request->get_param( 'method' );
 
-		if ( ! empty( $method ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- REST API endpoint, nonce not required
-			$query_data = @$_POST;
+		// This endpoint proxies the eShopLogistic account API key to the external API on the
+		// caller's behalf, so only the public "widget/*" methods used by the storefront widgets
+		// may be called through it -- account/order-management methods must never be reachable
+		// from an unauthenticated public endpoint.
+		if ( ! empty( $method ) && strpos( trim( $method ), 'widget/' ) === 0 ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- public REST widget endpoint, no user session to tie a nonce to; ApiQuery() below still expects $data['offers'] slashed (it stripslashes() it itself), so it is intentionally not unslashed/sanitized here
+			$query_data = $_POST;
 			unset( $query_data['method'] );
-			$cache_key  = md5( $method . json_encode( $query_data ) );
+			$cache_key  = md5( $method . wp_json_encode( $query_data ) );
 			$cache_data = get_transient( $cache_key );
 
 			if ( ! empty( $cache_data ) ) {
@@ -41,7 +45,6 @@ class WidgetController extends Controller {
 
 		return $this->json( $out );
 	}
-
 
 	public function ApiQuery( string $method, array $data = [], string $raw = '' ) {
 		$optionsRepository = new OptionsRepository();

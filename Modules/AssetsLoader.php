@@ -270,7 +270,7 @@ class AssetsLoader implements ModuleInterface
 				'wc_esl_bootstrap_css',
 				WC_ESL_PLUGIN_URL . 'assets/css/bootstrap.min.css',
 				[],
-				'4.6.0'
+				'4.6.2'
 			);
 
 
@@ -292,7 +292,7 @@ class AssetsLoader implements ModuleInterface
 				'wc_esl_bootstrap_js',
 				WC_ESL_PLUGIN_URL . 'assets/js/bootstrap.min.js',
 				[],
-				'4.6.0',
+				'4.6.2',
 				true
 			);
 

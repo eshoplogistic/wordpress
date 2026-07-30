@@ -400,7 +400,7 @@ class GutenbergBlock implements ModuleInterface
 
                 wp_enqueue_script('wc_esl_app_v2_js', 'https://api.esplc.ru/widgets/modal/app.js', [], WC_ESL_VERSION, true);
             } else {
-                // Инлайн-виджет — тот же контракт, что и у вкладки товара esl_product_widget_tab_content.
+                // Инлайн-виджет — тот же контракт, что и у вкладки товара wc_esl_product_widget_tab_content.
                 $html .= '<div id="eShopLogisticWidgetBlock" ' .
                         'data-lazy-load="true" ' .
                         'data-ip="' . esc_attr($ip) . '" ' .

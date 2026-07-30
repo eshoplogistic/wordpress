@@ -38,11 +38,14 @@ class OrderController extends Controller {
 		$paymentMethodOptions = $optionsRepository->getOption( 'wc_esl_shipping_payment_methods' );
 		$this->listRequestParamsV2( $request );
 
-		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogisticru')]);
-
-		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', 'eshoplogisticru')]);
-
-		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', 'eshoplogisticru')]);
+		// This is a public checkout endpoint (guests have no WP session to authorize against),
+		// so authorization is done via the widget secret configured in plugin settings instead
+		// of permission_callback/nonce. Only enforced when the merchant has actually set a
+		// secret, so sites that never configured one keep working exactly as before.
+		$configuredSecret = $optionsRepository->getOption( 'wc_esl_shipping_widget_secret_code' );
+		if ( ! empty( $configuredSecret ) && ! hash_equals( (string) $configuredSecret, (string) $this->secretKey ) ) {
+			return $this->json( [ 'success' => false, 'message' => __( 'Ключи не совпадают', 'eshoplogisticru' ) ] );
+		}
 
 		if ( empty( $this->offers ) || !is_array( $this->offers ) ) {
 			return $this->json( [

@@ -13,11 +13,11 @@ class Footer implements ModuleInterface
 {
     public function init()
     {
-        add_shortcode('shortcode_widget_button', 'shortcode_widget_button_handler');
-        add_shortcode('shortcode_widget_button_tab', 'shortcode_widget_button_tab_handler');
-        add_shortcode('shortcode_widget_static', 'shortcode_widget_static_handler');
-        add_shortcode('shortcode_email_time_delivery', 'shortcode_widget_email_time_delivery');
-        add_shortcode('shortcode_email_status_delivery', 'shortcode_widget_email_status_delivery');
+        add_shortcode('shortcode_widget_button', 'wc_esl_shortcode_widget_button_handler');
+        add_shortcode('shortcode_widget_button_tab', 'wc_esl_shortcode_widget_button_tab_handler');
+        add_shortcode('shortcode_widget_static', 'wc_esl_shortcode_widget_static_handler');
+        add_shortcode('shortcode_email_time_delivery', 'wc_esl_shortcode_widget_email_time_delivery');
+        add_shortcode('shortcode_email_status_delivery', 'wc_esl_shortcode_widget_email_status_delivery');
 	    update_option( 'use_smilies', false );
         //add_action('wp_footer', [$this, 'addWidgetScript']);
     }

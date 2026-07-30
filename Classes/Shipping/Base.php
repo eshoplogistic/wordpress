@@ -214,10 +214,8 @@ class Base extends \WC_Shipping_Method
 				}
 			}
 
-			$cacheKey = str_replace(
-				' ',
-				'_',
-				WC_ESL_PREFIX . $data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
+			$cacheKey = WC_ESL_PREFIX . md5(
+				$data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
 			);
 
 			$response = get_transient($cacheKey);

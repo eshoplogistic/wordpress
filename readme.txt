@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.2.23
+Stable tag: 2.2.24
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,11 +86,23 @@ Only if you want to display pickup points on an interactive map — this is opti
 
 This plugin connects to the eShopLogistic service to provide its core shipping-calculation functionality. It communicates with the following third-party services:
 
-1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — used to calculate shipping rates and delivery times, retrieve pickup points, and export/track orders. Requests are sent when a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the [eShopLogistic Terms of Service](https://eshoplogistic.ru/) and [Privacy Policy](https://eshoplogistic.ru/).
-2. **eShopLogistic widget scripts** (`https://api.esplc.ru/widgets/*.js`) — small JavaScript widgets (cart/product/checkout shipping calculators) are loaded directly from the eShopLogistic domain so that carrier rate logic and pickup-point UI stay in sync with the account's service configuration without requiring a plugin update. This only runs on pages where a shipping widget is displayed.
-3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded only if you enable the interactive pickup-point map and provide a Yandex Maps API key in the plugin settings. See [Yandex Terms of Use](https://yandex.ru/legal/).
+1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
+2. **eShopLogistic widget scripts** (`https://api.esplc.ru/widgets/*.js`) — small JavaScript widgets (cart/product/checkout shipping calculators) are loaded directly from the eShopLogistic domain, in the visitor's browser, so that carrier rate logic and pickup-point UI stay in sync with the account's service configuration without requiring a plugin update. Once loaded, these scripts talk to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. This only runs on pages where a shipping widget is displayed. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above.
+3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded only if you enable the interactive pickup-point map and provide your own Yandex Maps API key in the plugin settings. When enabled, the visitor's browser loads the Yandex Maps JavaScript API to render pickup-point markers on a map. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
 
 == Changelog ==
+
+= 2.2.24 =
+* Fixed invalid Author URI.
+* Updated bundled Bootstrap to 4.6.2 (latest 4.x release).
+* Expanded the External Services disclosure with specific data-sent details and direct links to the eShopLogistic Terms of Service and Privacy Policy.
+* Restricted the public widget-data REST endpoint to the `widget/*` API method namespace so it can no longer be used to reach account/order-management API methods.
+* Re-enabled the widget secret-key check on the order-creation REST endpoint (enforced only when a secret is configured in settings).
+* Removed the raw API key from shipping-rate transient cache key names.
+* Added a capability check to the admin order-export panel to prevent unauthorized order data disclosure.
+* Sanitized the widget-data REST endpoint's POST payload before use.
+* Escaped remaining unescaped shortcode output attributes.
+* Renamed internal PHP callback function names to use the plugin's `wc_esl_` prefix consistently.
 
 = 2.2.23 =
 * Shortened plugin display name to comply with WordPress.org directory guidelines (keyword stuffing removal).
@@ -100,6 +112,9 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 * Public release preparation for the WordPress.org plugin directory.
 
 == Upgrade Notice ==
+
+= 2.2.24 =
+Security hardening and guideline compliance fixes required for WordPress.org re-review.
 
 = 2.2.23 =
 Guideline compliance fixes required for WordPress.org re-review.
