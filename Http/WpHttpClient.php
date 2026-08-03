@@ -55,25 +55,20 @@ class WpHttpClient implements HttpClient
 
 	/**
 	 * Fallback method for SSL certificate errors when wp_remote_post() fails.
-	 * Uses cURL directly to bypass SSL verification issues.
-	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init
-	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
-	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec
-	 * phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close
+	 * Retries via the WP HTTP API with certificate verification disabled,
+	 * instead of the default wp_remote_post() call in post() above.
 	 */
 	public function alternativeCurlPost( $url, $body = null ){
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, $url);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
-		$result = curl_exec($curl);
-		curl_close($curl);
+		$response = wp_remote_post( $url, [
+			'timeout'   => 10,
+			'sslverify' => false,
+			'body'      => $body,
+		] );
 
-		return $result;
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
+
+		return wp_remote_retrieve_body( $response );
 	}
-	// phpcs:enable WordPress.WP.AlternativeFunctions
 }

@@ -38,7 +38,7 @@ class BlocksCheckoutHandler {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitizeArray()
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitizeArray() below (json_decode() itself does not sanitize)
 		$rawData = isset($_POST['data']) ? wp_unslash($_POST['data']) : '';
 		$rawData = is_string($rawData) ? $rawData : '';
 
@@ -46,6 +46,8 @@ class BlocksCheckoutHandler {
 		if ( ! is_array($data) ) {
 			$data = [];
 		}
+		// Recursively sanitizes every decoded value with sanitize_text_field() -- required because
+		// json_decode() only parses JSON, it does not sanitize the resulting values.
 		$data = $this->sanitizeArray($data);
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via sanitize_text_field()
 		$data['city'] = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';

@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.2.24
+Stable tag: 2.2.25
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,10 +87,20 @@ Only if you want to display pickup points on an interactive map — this is opti
 This plugin connects to the eShopLogistic service to provide its core shipping-calculation functionality. It communicates with the following third-party services:
 
 1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
-2. **eShopLogistic widget scripts** (`https://api.esplc.ru/widgets/*.js`) — small JavaScript widgets (cart/product/checkout shipping calculators) are loaded directly from the eShopLogistic domain, in the visitor's browser, so that carrier rate logic and pickup-point UI stay in sync with the account's service configuration without requiring a plugin update. Once loaded, these scripts talk to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. This only runs on pages where a shipping widget is displayed. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above.
+2. **eShopLogistic embeddable widget bundle** (`https://api.esplc.ru/widgets/{cart,modal,block}/app.js`, which in turn loads a versioned, content-hashed JS/CSS bundle from the same `api.esplc.ru` domain) — this is a live, self-updating cart/product/checkout shipping-calculator UI, analogous to an embeddable live-chat widget: the eShopLogistic team ships UI updates to this bundle independently of plugin releases, and the asset filenames change with every such release, so they cannot be bundled statically inside the plugin without going stale. It is only loaded on pages where a shipping widget is displayed (product page, cart, checkout), and once loaded it talks to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above. A second, older widget UI (used for the product-tab "static" and "modal" display modes) is bundled locally inside the plugin (`assets/css/widget-*.css`, `assets/js/widget-*.js`) and is not loaded remotely.
 3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded only if you enable the interactive pickup-point map and provide your own Yandex Maps API key in the plugin settings. When enabled, the visitor's browser loads the Yandex Maps JavaScript API to render pickup-point markers on a map. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
+4. **DaData address suggestions** (`suggestions.dadata.ru`) — the locally-bundled product-tab/modal widget UI (see item 2) uses this service to suggest matching Russian addresses as the customer types their delivery address, so the visitor's browser sends the partial address text they are typing, together with an eShopLogistic-issued API token, directly to `suggestions.dadata.ru`. This only runs while the customer is actively typing in the delivery-address field of that widget. See [DaData Terms of Service](https://dadata.ru/terms/) and [DaData Privacy Policy](https://dadata.ru/privacy/).
+5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 2.2.25 =
+* Bundled the product-tab widget's CSS/JS locally instead of loading it from a remote domain at runtime.
+* Replaced direct cURL calls with the WordPress HTTP API (`wp_remote_post()`) in the widget-data proxy and the SSL-retry fallback.
+* Added per-IP rate limiting to the order-creation REST endpoint as an additional layer of protection alongside the optional widget secret.
+* Sanitized the widget-data REST endpoint's POST payload (all fields except the raw `offers` JSON, which is sanitized downstream).
+* Corrected the External Services disclosure to accurately describe the live, self-updating cart/checkout widget bundle.
+* Renamed an unused, non-prefixed legacy AJAX action; removed a dead reference to a third-party plugin's global variable.
 
 = 2.2.24 =
 * Fixed invalid Author URI.
@@ -112,6 +122,9 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 * Public release preparation for the WordPress.org plugin directory.
 
 == Upgrade Notice ==
+
+= 2.2.25 =
+Further security hardening and guideline compliance fixes required for WordPress.org re-review.
 
 = 2.2.24 =
 Security hardening and guideline compliance fixes required for WordPress.org re-review.

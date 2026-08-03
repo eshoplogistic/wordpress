@@ -5,8 +5,9 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('eShopLogisticWidgetBlock').dispatchEvent(new CustomEvent('eShopLogisticWidgetBlock:loadApp'))
         }, 1000)
     }else{
-        let css = ['https://api.eshoplogistic.ru/widget/static/v1/css/app.css'],
-            js = ['https://api.eshoplogistic.ru/widget/static/v1/js/chunk-vendors.js', 'https://api.eshoplogistic.ru/widget/static/v1/js/app.js'];
+        let base = window.wcEslPluginUrl || '',
+            css = [base + 'assets/css/widget-static.css'],
+            js = [base + 'assets/js/widget-static-vendors.js', base + 'assets/js/widget-static-app.js'];
 
         for (const path of css) {
             let style = document.createElement('link');

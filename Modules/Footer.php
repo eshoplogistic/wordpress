@@ -43,6 +43,7 @@ class Footer implements ModuleInterface
             WC_ESL_VERSION,
             true
         );
+        wp_add_inline_script( 'wc_esl_app_js', 'window.wcEslPluginUrl = ' . wp_json_encode( WC_ESL_PLUGIN_URL ) . ';', 'before' );
     }
 
 

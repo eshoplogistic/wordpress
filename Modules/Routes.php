@@ -24,8 +24,9 @@ class Routes implements ModuleInterface
             'methods'  => 'POST',
             'callback' => [$this, 'createOrder'],
             // Public: guest checkout has no WP user session to authorize against.
-            // Authorization is instead enforced inside OrderController::save() via the
-            // widget secret configured in plugin settings.
+            // OrderController::save() applies its own layered protection instead (merchant
+            // widget secret when configured, per-IP rate limiting, and server-derived product
+            // pricing) -- see the comment at the top of that method for details.
             'permission_callback' => '__return_true'
         ));
 

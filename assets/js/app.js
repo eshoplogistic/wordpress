@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function(){
-    let css = ['https://api.eshoplogistic.ru/widget/modal/v1/css/app.css'],
-        js = ['https://api.eshoplogistic.ru/widget/modal/v1/js/chunk-vendors.js','https://api.eshoplogistic.ru/widget/modal/v1/js/app.js'];
+    let base = window.wcEslPluginUrl || '',
+        css = [base + 'assets/css/widget-modal.css'],
+        js = [base + 'assets/js/widget-modal-vendors.js', base + 'assets/js/widget-modal-app.js'];
 
     for(const path of css){
         let style = document.createElement('link');

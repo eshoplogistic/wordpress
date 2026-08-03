@@ -23,8 +23,8 @@ class WidgetController extends Controller {
 		// may be called through it -- account/order-management methods must never be reachable
 		// from an unauthenticated public endpoint.
 		if ( ! empty( $method ) && strpos( trim( $method ), 'widget/' ) === 0 ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- public REST widget endpoint, no user session to tie a nonce to; ApiQuery() below still expects $data['offers'] slashed (it stripslashes() it itself), so it is intentionally not unslashed/sanitized here
-			$query_data = $_POST;
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- public REST widget endpoint, no user session to tie a nonce to
+			$query_data = $this->sanitizeQueryData( $_POST );
 			unset( $query_data['method'] );
 			$cache_key  = md5( $method . wp_json_encode( $query_data ) );
 			$cache_data = get_transient( $cache_key );
@@ -44,6 +44,31 @@ class WidgetController extends Controller {
 		}
 
 		return $this->json( $out );
+	}
+
+	/**
+	 * Sanitizes the raw $_POST payload before it's forwarded to the external API.
+	 *
+	 * The 'offers' field is left untouched -- ApiQuery() below still expects it
+	 * slashed (it stripslashes() + json_decode()s it itself), so unslashing or
+	 * sanitizing it here would corrupt the JSON payload.
+	 */
+	private function sanitizeQueryData( array $data ): array {
+		$sanitized = [];
+
+		foreach ( $data as $key => $value ) {
+			$key = sanitize_key( $key );
+
+			if ( 'offers' === $key ) {
+				$sanitized[ $key ] = $value;
+			} elseif ( is_array( $value ) ) {
+				$sanitized[ $key ] = $this->sanitizeQueryData( $value );
+			} else {
+				$sanitized[ $key ] = is_string( $value ) ? sanitize_text_field( wp_unslash( $value ) ) : $value;
+			}
+		}
+
+		return $sanitized;
 	}
 
 	public function ApiQuery( string $method, array $data = [], string $raw = '' ) {
@@ -68,55 +93,40 @@ class WidgetController extends Controller {
 			$apiUrl .= '/';
 		}
 
-		// Direct cURL for widget API communication
-		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init
-		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
-		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_exec
-		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_close
-		$curl = curl_init();
-		curl_setopt( $curl, CURLOPT_URL, $apiUrl . $method );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $curl, CURLOPT_TIMEOUT, 10 );
-		curl_setopt( $curl, CURLOPT_POST, 1 );
+		$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36';
+		$requestArgs = [ 'timeout' => 10 ];
+
 		if ( preg_match( '/widget/', $method ) ) {
 			# заказ из виджета отправляется в raw
 			if ( $method == 'widget/send' ) {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $raw );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-					'Content-Type: application/json'
-				] );
+				$requestArgs['body']    = $raw;
+				$requestArgs['headers'] = [
+					'User-Agent'   => $userAgent,
+					'Content-Type' => 'application/json',
+				];
 			} elseif ( $method == 'widget/calculation' ) {
 				$encoded        = json_decode( stripslashes( $data['offers'] ) );
 				$data['offers'] = json_encode( $encoded );
 				$data['debug']  = 1;
 				$calculation    = true;
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-				] );
+				$requestArgs['body']    = $data;
+				$requestArgs['headers'] = [ 'User-Agent' => $userAgent ];
 			} else {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-				] );
+				$requestArgs['body']    = $data;
+				$requestArgs['headers'] = [ 'User-Agent' => $userAgent ];
 			}
 		} else {
 			# выгрузка заказа в raw
 			if ( $method == 'delivery/order' ) {
-				$raw = json_encode( array_merge( $data, [ 'key' => $apiKey ] ) );
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $raw );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'Content-Type: application/json'
-				] );
+				$requestArgs['body']    = json_encode( array_merge( $data, [ 'key' => $apiKey ] ) );
+				$requestArgs['headers'] = [ 'Content-Type' => 'application/json' ];
 			} else {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, array_merge( $data, [ 'key' => $apiKey ] ) );
+				$requestArgs['body'] = array_merge( $data, [ 'key' => $apiKey ] );
 			}
 		}
 
-		$result = curl_exec( $curl );
-		curl_close( $curl );
-		// phpcs:enable WordPress.WP.AlternativeFunctions
+		$response = wp_remote_post( $apiUrl . $method, $requestArgs );
+		$result   = is_wp_error( $response ) ? '' : wp_remote_retrieve_body( $response );
 
 		if ( $result = json_decode( $result, 1 ) ) {
 			if ( is_array( $result ) ) {

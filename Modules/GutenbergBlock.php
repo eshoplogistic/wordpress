@@ -409,6 +409,7 @@ class GutenbergBlock implements ModuleInterface
 
                 wp_enqueue_script('wc_esl_app_tab_v2_js', 'https://api.esplc.ru/widgets/block/app.js', [], WC_ESL_VERSION, true);
                 wp_enqueue_script('wc_esl_app_tab_js', WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js', [], WC_ESL_VERSION, true);
+                wp_add_inline_script( 'wc_esl_app_tab_js', 'window.wcEslPluginUrl = ' . wp_json_encode( WC_ESL_PLUGIN_URL ) . ';', 'before' );
             }
 
             $html .= '</div>';

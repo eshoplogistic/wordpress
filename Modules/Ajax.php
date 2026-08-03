@@ -919,7 +919,7 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitize_array()
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitize_array() below (json_decode() itself does not sanitize)
 		$rawData = isset($_POST['data']) ? wp_unslash($_POST['data']) : '';
 		$rawData = is_string($rawData) ? $rawData : '';
 
@@ -928,6 +928,8 @@ class Ajax implements ModuleInterface
 			$data = [];
 		}
 
+		// Recursively sanitizes every decoded value with sanitize_text_field() -- required because
+		// json_decode() only parses JSON, it does not sanitize the resulting values.
 		$data = $this->sanitize_array($data);
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via wc_clean()
 		$data['city'] = isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '';
