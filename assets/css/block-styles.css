@@ -250,6 +250,69 @@ body > .modal-esl-frame #buttonModalDoor {
     font-weight: 600;
 }
 
+/* Legacy parity: eShopLogistic SDK widget theme overrides. Виджет монтируется в тот же
+   #eShopLogisticWidgetCart / #modal-esl-frame, что и в classic-чекауте (см.
+   checkout_frame_block.js), но эти размерные переопределения жили только в style.css,
+   которое на блочном чекауте не подключается — без них карточки служб/тарифов
+   рендерятся мельче/теснее, чем в legacy. */
+#eShopLogisticWidgetCart .eshoplogistic-widget-cart .eshoplogistic-theme {
+    font-size: 1.5rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__footer {
+    font-size: 1.5rem !important;
+    font-weight: 500;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-services-list {
+    max-height: 25rem !important;
+}
+
+#modal-esl-frame .footer {
+    padding-top: 15px;
+    border: 0;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info span {
+    font-size: 12px !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info img {
+    height: 2.2rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info p {
+    margin-bottom: 0 !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__title,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__price,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__time {
+    font-size: 1.42rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal_size-small {
+    max-width: 105rem !important;
+    margin-top: 1% !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__tariff {
+    margin-top: 10px !important;
+    font-size: 1.1rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__select-tariff {
+    font-size: 1rem !important;
+}
+
+@media (max-width: 641px) {
+    .eshoplogistic-widget-cart .eshoplogistic-theme-h2 {
+        margin-top: 1em;
+        font-size: 1em;
+        font-weight: 500;
+    }
+}
+
 /* Preloader overlay — создаётся JS-ом на document.body, вне любого stacking context */
 .wc-esl-block-preloader {
     position: fixed;

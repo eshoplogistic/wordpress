@@ -2171,10 +2171,16 @@
         }
 
         // Для Gutenberg блока: по умолчанию кнопка видна (блок специально для eShopLogistic)
-        // Скрываем только если явно выбран другой метод доставки или выбрана курьерская доставка
+        // Скрываем только если явно выбран другой (не ESL) метод доставки.
+        //
+        // Раньше сюда же добавлялось `|| deliveryType === 'door'` — но, в отличие от
+        // legacy-чекаута (changeVisibleElements() в checkout_frame_v2.js), где при door
+        // прячется #wc-esl-terminals-wrap-button-shipping, но взамен показывается
+        // #wc-esl-terminals-wrap-button-billing, в блочном чекауте это единственная
+        // кнопка-триггер модалки (см. GutenbergBlock.php). Скрыв её на door, пользователь
+        // терял единственный способ повторно открыть виджет и сменить способ доставки.
         if (hasEslBlock) {
-            // Скрываем кнопку ПВЗ если: не наш метод, или явно выбрана доставка до двери
-            const shouldHideTerminals = (currentMethod && !isEshop) || deliveryType === 'door';
+            const shouldHideTerminals = currentMethod && !isEshop;
             const shouldShowTerminals = !shouldHideTerminals;
 
             toggleTerminals(shouldShowTerminals, 'shipping');
