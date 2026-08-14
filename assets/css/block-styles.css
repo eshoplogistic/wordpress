@@ -17,6 +17,16 @@
     display: none;
 }
 
+/* Метод "Калькулятор доставки ESL" (wc_esl_frame_mixed) до выбора ПВЗ/службы в
+   виджете имеет cost = 0 (реальная цена ещё не рассчитана), и WooCommerce Blocks
+   безусловно подписывает любую нулевую ставку как "Бесплатно" — это вводит в
+   заблуждение, доставка не бесплатна. Если ставка действительно бесплатная,
+   плагин сам добавляет ": Бесплатно" в текст названия (Base.php/Shipping.php),
+   поэтому скрытие автоматической плашки WooCommerce не теряет информацию. */
+label.wc-block-components-radio-control__option:has(input[value^="wc_esl_frame_mixed"]) .wc-block-checkout__shipping-option--free {
+    display: none;
+}
+
 /* Legacy parity: city search UI */
 .wc-esl-checkout-shipping-block .wc-block-components-text-input {
     position: relative;
