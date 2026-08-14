@@ -568,6 +568,149 @@
         };
     }
 
+    let initialCityAutoConfirmScheduled = false;
+
+    /**
+     * Читает уже сохранённый город доставки из стора WC Blocks (wc/store/cart).
+     * Нужно в первую очередь: когда адрес уже заполнен/сохранён, WC Blocks
+     * показывает не форму с полями, а свёрнутую карточку-сводку с кнопкой
+     * "Изменить" — полей shipping_city/shipping-city в DOM в этот момент вообще
+     * нет, хотя адрес уже используется для расчёта доставки. Поле в DOM —
+     * fallback для classic-checkout и для развёрнутой формы Blocks.
+     */
+    function getPrefilledShippingCityQuery() {
+        try {
+            if (window.wp && window.wp.data && typeof window.wp.data.select === 'function') {
+                const cartSelect = window.wp.data.select('wc/store/cart');
+                const customerData = cartSelect && typeof cartSelect.getCustomerData === 'function'
+                    ? cartSelect.getCustomerData()
+                    : null;
+                const shippingAddress = customerData && customerData.shipping_address;
+                if (shippingAddress && shippingAddress.city) {
+                    return {
+                        city: String(shippingAddress.city).trim(),
+                        country: shippingAddress.country || 'RU'
+                    };
+                }
+            }
+        } catch (e) {}
+
+        const shippingCityEl = getCheckoutCityElement();
+        const city = shippingCityEl ? (shippingCityEl.value || '').trim() : '';
+        if (!city) {
+            return null;
+        }
+
+        return { city, country: getCheckoutCountryValue() };
+    }
+
+    /**
+     * Для авторизованного пользователя WC Blocks предзаполняет город доставки
+     * сохранённым адресом из профиля без событий input/blur, поэтому fias
+     * города плагина никогда не резолвится сам по себе и ESL-методы доставки
+     * не считаются (сессия пустая), пока пользователь не тронет поле города
+     * вручную. Работает независимо от режима выбора города (обычный
+     * автокомплит или модалка) — обе ветки читают/пишут одни и те же поля
+     * shipping_city/billing_city и widgetCityEsl.
+     */
+    function autoConfirmPrefilledCity(query, country) {
+        console.log('eShopLogistic: [auto-confirm] starting for prefilled city', query, country);
+
+        const cityInput = document.getElementById('widgetCityEsl');
+        if (cityInput && cityInput.value) {
+            try {
+                const parsed = JSON.parse(cityInput.value);
+                if (parsed && parsed.fias && (parsed.city === query || parsed.name === query)) {
+                    console.log('eShopLogistic: [auto-confirm] already resolved, skipping', parsed);
+                    return;
+                }
+            } catch (e) {}
+        }
+
+        searchCity(query, (items) => {
+            console.log('eShopLogistic: [auto-confirm] searchCity results', items);
+
+            if (!items || items.length === 0) {
+                console.warn('eShopLogistic: [auto-confirm] no search results for', query);
+                return;
+            }
+
+            const best = items[0];
+            const cityData = {
+                city: best.city || best.name || query,
+                region: best.region || '',
+                postcode: best.postcode || '',
+                fias: best.fias || '',
+                services: best.services || [],
+                raw: best
+            };
+
+            if (!cityData.fias) {
+                console.warn('eShopLogistic: [auto-confirm] best match has no fias', best);
+                return;
+            }
+
+            console.log('eShopLogistic: [auto-confirm] resolved cityData, sending update', cityData);
+
+            setCheckoutAddressValues(cityData);
+            updateWidgetCityData(cityData);
+
+            setLoadingState(true);
+
+            requestShippingAddressUpdate(cityData)
+                .then((response) => {
+                    console.log('eShopLogistic: [auto-confirm] requestShippingAddressUpdate response', response);
+
+                    if (!response || response.success !== true) {
+                        throw new Error('updateShippingAddress failed');
+                    }
+
+                    const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                    if (widgetRoot) {
+                        widgetRoot.dataset.paramsLoaded = '';
+                        sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                    }
+
+                    refreshCheckoutAfterShippingUpdate();
+                    console.log('eShopLogistic: [auto-confirm] refreshCheckoutAfterShippingUpdate triggered');
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                })
+                .catch((error) => {
+                    console.error('eShopLogistic: [auto-confirm] failed to auto-confirm prefilled city', error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
+                });
+        }, country);
+    }
+
+    function scheduleInitialCityAutoConfirm() {
+        if (initialCityAutoConfirmScheduled) {
+            console.log('eShopLogistic: [auto-confirm] already scheduled, skipping');
+            return;
+        }
+        initialCityAutoConfirmScheduled = true;
+
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts += 1;
+
+            const prefilled = getPrefilledShippingCityQuery();
+            console.log('eShopLogistic: [auto-confirm] poll attempt', attempts, prefilled);
+
+            if (prefilled && prefilled.city.length >= 3) {
+                clearInterval(interval);
+                autoConfirmPrefilledCity(prefilled.city, prefilled.country);
+                return;
+            }
+
+            if (attempts >= 10) {
+                console.warn('eShopLogistic: [auto-confirm] gave up, no prefilled city found after', attempts, 'attempts');
+                clearInterval(interval);
+            }
+        }, 500);
+    }
+
     function clearCityResultList(mode) {
         const list = document.getElementById(`result_wc_esl_search_city_${mode}`);
         if (list) {
@@ -2430,6 +2573,7 @@
         subscribeToWooEvents();
         handleShippingMethodChange();
         setupUseForBillingCheckbox();
+        scheduleInitialCityAutoConfirm();
     }
 
     /**

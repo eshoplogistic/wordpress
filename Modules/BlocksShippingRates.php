@@ -14,9 +14,15 @@ if (! defined('ABSPATH')) {
  * Обеспечивает работу расчета legacy-методов доставки в контексте WooCommerce Blocks Store API.
  *
  * ЗАЧЕМ НУЖНО:
- * Legacy Base::calculate_shipping() работает только когда is_checkout() возвращает true.
- * WooCommerce Blocks использует REST API, где is_checkout() возвращает false,
- * поэтому тарифы не рассчитываются.
+ * Legacy Base::calculate_shipping() исторически работал только когда is_checkout()
+ * возвращает true. Этот фильтр форсит is_checkout() для настоящих REST-запросов Store API
+ * (REST_REQUEST=true). Но при гидратации блока чекаута WooCommerce Blocks вызывает Store API
+ * контроллер напрямую в PHP (Checkout::render() → Hydration::get_rest_api_response_data()),
+ * минуя REST-диспетчер — REST_REQUEST там не выставляется, и этот фильтр эту ветку не покрывает.
+ * Так как WooCommerce кеширует посчитанные тарифы по хешу пакета вне зависимости от того, кто их
+ * запросил, Base::calculate_shipping() больше не гейтит расчёт на is_checkout() вообще — иначе
+ * непокрытый этой веткой сценарий кеширует пакет без ESL-тарифа, и тот не появляется больше нигде
+ * для этого сочетания город+корзина, пока хеш не изменится (см. Classes/Shipping/Base.php).
  *
  * @since 2.1.61
  */

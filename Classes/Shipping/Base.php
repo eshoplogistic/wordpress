@@ -119,19 +119,24 @@ class Base extends \WC_Shipping_Method
 	 */
 	public function calculate_shipping( $package = array() )
 	{
-		if(is_checkout()){
-			$optionsRepository = new OptionsRepository();
-			$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
-			if($frameEnable)
-			{
-				$rate = $this->calculate_shipping_frame($package);
-			}else{
-				$rate = $this->calculate_shipping_basic($package);
-			}
-
-			if($rate)
-				$this->add_rate( $rate );
+		// Не гейтим на is_checkout(): WooCommerce кеширует посчитанные тарифы в сессии по
+		// хешу пакета (город + состав корзины) вне зависимости от того, какая страница их
+		// запросила. is_checkout() ненадёжен как гейт здесь — при гидратации блока чекаута
+		// WooCommerce Blocks вызывает Store API контроллер напрямую в PHP, минуя REST-диспетчер
+		// (REST_REQUEST не выставляется), и is_checkout() там может быть false; если тариф
+		// в этот момент не посчитается, в кеше навсегда осядет пакет без ESL-метода, и он не
+		// появится больше нигде для этого сочетания город+корзина, пока хеш не изменится.
+		$optionsRepository = new OptionsRepository();
+		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
+		if($frameEnable)
+		{
+			$rate = $this->calculate_shipping_frame($package);
+		}else{
+			$rate = $this->calculate_shipping_basic($package);
 		}
+
+		if($rate)
+			$this->add_rate( $rate );
 	}
 
 

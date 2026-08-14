@@ -78,10 +78,46 @@ class Shipping implements ModuleInterface
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
 	    if ($frameEnable) {
-	        return $this->applyFrameRatesForBlocks($rates, $package);
+	        $rates = $this->applyFrameRatesForBlocks($rates, $package);
+	    } else {
+	        $rates = $this->filterRatesForLegacy($rates, $package);
 	    }
 
-	    return $this->filterRatesForLegacy($rates, $package);
+	    return $this->hideTerminalRatesOnCart($rates);
+    }
+
+    /**
+     * Скрывает ESL-тарифы типа "пункт выдачи" (terminal) на странице корзины.
+     *
+     * CONTEXT: legacy (non-frame) режим с отдельными Door/Terminal-методами.
+     * Инфраструктура выбора конкретного ПВЗ (кнопка + модалка с картой) рендерится
+     * только на чекауте — addTerminalsInput() висит на woocommerce_review_order_after_shipping,
+     * который на странице корзины не срабатывает. Начиная с версии, где
+     * Classes\Shipping\Base::calculate_shipping() перестал требовать is_checkout(),
+     * такой тариф теоретически может посчитаться и на корзине — но выбрать сам ПВЗ
+     * там будет нечем, поэтому тариф скрываем, сохраняя прежнее поведение корзины.
+     * Door-тарифы и frame-режим (тип mixed) это не затрагивает.
+     *
+     * @param array $rates Текущие тарифы доставки
+     * @return array
+     */
+    private function hideTerminalRatesOnCart($rates)
+    {
+        if (!is_cart()) {
+            return $rates;
+        }
+
+        $shippingHelper = new ShippingHelper();
+
+        foreach ($rates as $key => $rate) {
+            $methodId = is_object($rate) && method_exists($rate, 'get_method_id') ? $rate->get_method_id() : $key;
+
+            if ($shippingHelper->getTypeMethod($methodId) === 'terminal') {
+                unset($rates[$key]);
+            }
+        }
+
+        return $rates;
     }
 
     /**
