@@ -965,24 +965,6 @@ class ExportFileds {
 		$html  = $this->renderTabFieldGroup( $fieldDelivery, $map, $visibility );
 		$html .= $this->renderTabFieldGroup( $this->settingsExportForOneDelivery( $carrierSlug ), $map, $visibility );
 
-		if ( $carrierSlug !== 'halva' ) {
-			$optionsRepository  = new OptionsRepository();
-			$exportFormSettings = $optionsRepository->getOption( 'wc_esl_shipping_export_form' );
-			$pickUpKey          = 'default-pick-up-' . $carrierSlug;
-			$pickUp             = (string) ( $exportFormSettings[ $pickUpKey ] ?? '' );
-
-			$html .= '<h4>' . esc_html__( 'Дополнительные настройки ТК.', 'eshoplogisticru' ) . '</h4>';
-			$html .= '<div class="form-group row align-items-center mb-3">
-				<label class="col-sm-5 col-form-label">' . esc_html__( 'Способ доставки до терминала ТК по умолчанию', 'eshoplogisticru' ) . '</label>
-				<div class="col-sm-5">
-					<select class="form-control" form="eslExportForm" name="' . esc_attr( $pickUpKey ) . '">
-						<option value="0" ' . selected( $pickUp, '0', false ) . '>' . esc_html__( 'Сами привезём на терминал транспортной компании', 'eshoplogisticru' ) . '</option>
-						<option value="1" ' . selected( $pickUp, '1', false ) . '>' . esc_html__( 'Груз заберёт транспортная компания', 'eshoplogisticru' ) . '</option>
-					</select>
-				</div>
-			</div>';
-		}
-
 		if ( $html === '' ) {
 			$html = '<p>' . esc_html__( 'Дополнительных настроек для этой службы нет.', 'eshoplogisticru' ) . '</p>';
 		}

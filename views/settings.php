@@ -1165,38 +1165,38 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							'sdek'     => array(
 								'label' => 'СДЭК', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'yandex'   => array(
 								'label' => 'Яндекс', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'platform_id-yandex', 'label' => 'Код склада (Яндекс.Доставка)', 'help' => 'Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.' ),
 								),
 							),
 							'fivepost' => array(
 								'label' => '5POST', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'postrf'   => array(
 								'label' => 'Почта России', 'take_payment' => true,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'boxberry' => array(
 								'label' => 'Boxberry', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'delline'  => array(
 								'label' => 'Деловые линии', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-delline', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
 									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'type' => 'time' ),
 									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'type' => 'time' ),
@@ -1205,13 +1205,13 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							'pecom'    => array(
 								'label' => 'ПЭК', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'baikal'   => array(
 								'label' => 'Байкал Сервис', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-baikal', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-baikal', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'order-content-baikal', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти', 'type' => 'freight' ),
 									array( 'name' => 'sender-type-baikal', 'label' => 'Тип отправителя по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Юридическое лицо', 2 => 'Физическое лицо' ), 'visibility_controller' => array( array( 'values' => array( '1' ), 'target' => 'baikal-sender-org' ), array( 'values' => array( '2' ), 'target' => 'baikal-sender-individual' ) ) ),
 									array( 'name' => 'sender-org-form-baikal', 'label' => 'Правовая форма (ОПФ) по умолчанию', 'type' => 'select', 'values' => array( 1 => 'Физическое лицо', 5 => 'ООО', 6 => 'ОАО', 7 => 'ЗАО', 8 => 'ПАО', 9 => 'ИП', 12 => 'АО' ), 'visibility_group' => 'baikal-sender-org' ),
@@ -1227,7 +1227,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							'kit'      => array(
 								'label' => 'Кит', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-uid-kit', 'label' => 'Название профиля отправителя', 'help' => 'Доступен в личном кабинете Кит.' ),
 								),
 							),
@@ -1235,7 +1235,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							'magnit'   => array(
 								'label' => 'Магнит Пост', 'take_payment' => false,
 								'fields' => array(
-									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
 							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
@@ -1280,6 +1280,20 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 									<?php foreach ( $carrierTabs as $carrierSlug => $carrierData ): ?>
                                         <div class="tab-pane fade<?php echo esc_attr($carrierSlug === 'sdek' ? ' show active' : ''); ?>"
                                              id="esl-carrier-tab-<?php echo esc_attr($carrierSlug); ?>" role="tabpanel">
+
+											<?php if ( $carrierSlug !== 'halva' ): $carrierPickUp = (string) ( $export_form[ 'default-pick-up-' . $carrierSlug ] ?? '' ); ?>
+                                                <div class="form-group row align-items-center mb-3">
+                                                    <label for="" class="col-sm-5 col-form-label">
+														<?php esc_html_e( 'Способ доставки до терминала ТК по умолчанию', 'eshoplogisticru' ) ?>
+                                                    </label>
+                                                    <div class="col-sm-5">
+                                                        <select class="form-control" form="eslExportForm" name="default-pick-up-<?php echo esc_attr($carrierSlug); ?>">
+                                                            <option value="0" <?php echo esc_attr( selected( $carrierPickUp, '0', false ) ); ?>><?php esc_html_e( 'Сами привезём на терминал транспортной компании', 'eshoplogisticru' ) ?></option>
+                                                            <option value="1" <?php echo esc_attr( selected( $carrierPickUp, '1', false ) ); ?>><?php esc_html_e( 'Груз заберёт транспортная компания', 'eshoplogisticru' ) ?></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+											<?php endif; ?>
 
 											<?php foreach ( $carrierData['fields'] as $carrierField ):
 												// Показ/скрытие полей по умолчанию (см. ExportFileds::tabVisibilityRules() —
