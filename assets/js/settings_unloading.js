@@ -356,6 +356,12 @@ function eslSyncCostToggle(checkbox) {
         target.style.display = '';
         if (costInput) {
             costInput.disabled = false;
+            if (costInput.value === '') {
+                let priceInput = document.getElementById('esl-unload-price');
+                if (priceInput && priceInput.value !== '') {
+                    costInput.value = priceInput.value;
+                }
+            }
         }
     } else {
         target.style.display = 'none';

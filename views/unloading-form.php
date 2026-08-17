@@ -351,7 +351,7 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 
                             <div class="form-field">
                                 <label class="label" for="esl-unload-price">Стоимость доставки:</label>
-                                <input class="form-value" id="esl-unload-price" name="esl-unload-price" type="text"
+                                <input class="form-value" id="esl-unload-price" name="esl-unload-price" type="number"
                                        value="<?php echo esc_attr($wc_esl_orderData['shipping_total']); ?>">
                             </div>
 
