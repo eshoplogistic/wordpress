@@ -296,10 +296,17 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 								?>
 
                                 <div class="form-field <?php echo esc_attr($wc_esl_styleForm); ?>"<?php echo $wc_esl_wrapperId ? ' id="' . esc_attr($wc_esl_wrapperId) . '"' : ''; ?><?php echo $wc_esl_wrapperStyle ? ' style="' . esc_attr($wc_esl_wrapperStyle) . '"' : ''; ?>>
+									<?php if ( $wc_esl_type !== 'dnone' ): ?>
                                     <label class="label" for="<?php echo esc_attr($wc_esl_fieldId); ?>"><?php echo esc_html($wc_esl_nameRu); ?></label>
-									<?php if ( $wc_esl_type === 'text' ): ?>
+									<?php endif; ?>
+									<?php if ( $wc_esl_type === 'text' ):
+										// Тариф, полученный при расчёте доставки на чекауте (tariffView) — показываем, но не даём
+										// менять (аналогично блокировке поля тарифа в moj_sklad); реальное значение уходит отдельным
+										// полем 'tariff' (тип dnone), т.к. disabled-поля не попадают в форму при отправке.
+										$wc_esl_textDisabled = ($wc_esl_name === 'tariffView') ? 'disabled' : '';
+										?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
-                                               value="<?php echo esc_attr($wc_esl_value)?>">
+                                               value="<?php echo esc_attr($wc_esl_value)?>" <?php echo $wc_esl_textDisabled; ?>>
 									<?php endif; ?>
 	                                <?php if ( $wc_esl_type === 'number' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="number"
@@ -333,6 +340,10 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                                 <?php endif; ?>
 											<?php endforeach; ?>
                                         </select>
+									<?php endif; ?>
+									<?php if ( $wc_esl_type === 'dnone' ): ?>
+                                        <input class="form-value" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
+                                               value="<?php echo esc_attr($wc_esl_value)?>" style="display:none" form="unloading_form">
 									<?php endif; ?>
                                 </div>
 							    <?php endforeach; ?>

@@ -289,7 +289,53 @@ class ExportFileds {
 		return $options;
 	}
 
-	public function exportFields( $name, $shippingMethods = array(), $order = array() ) {
+	/**
+	 * Определяет тариф, реально применённый к заказу — не "самый дешёвый по своему типу"
+	 * (data.terminal/data.door), а тот, что покупатель подтвердил во всплывающем окне
+	 * "Выберите тариф" виджета. Виджет frame-чекаута (Blocks) передаёт бэкенду только режим
+	 * доставки (door/terminal) и итоговую цену — без кода тарифа (см.
+	 * checkout_frame_block.js::buildLegacyShippingFrameData() и
+	 * Base.php::calculate_shipping_frame()), поэтому сопоставляем цену конкретного тарифа из
+	 * полного списка data.tariffs.{mode} со стоимостью доставки, фактически выставленной заказу.
+	 *
+	 * Возвращает array('code' => string, 'name' => string); пустые строки, если определить
+	 * не удалось (например, заказ оформлен до появления data.tariffs в сессии).
+	 */
+	private function resolveOrderTariff( array $shippingMethods, $order, $deliveryType, array $tariffCatalog ) {
+		$mode = ( $deliveryType === 'door' ) ? 'door' : 'terminal';
+
+		$candidates = $shippingMethods['data']['tariffs'][ $mode ] ?? array();
+		if ( is_array( $candidates ) && $candidates && is_a( $order, 'WC_Order' ) ) {
+			$targetCost = (float) $order->get_shipping_total();
+			foreach ( $candidates as $candidate ) {
+				$price = $candidate['price']['value'] ?? null;
+				if ( $price !== null && (float) $price === $targetCost ) {
+					return array(
+						'code' => (string) ( $candidate['tariff']['code'] ?? '' ),
+						'name' => (string) ( $candidate['tariff']['name'] ?? '' ),
+					);
+				}
+			}
+		}
+
+		// Фолбэк: заказы без сохранённого data.tariffs (оформлены до этого фикса, либо цена не
+		// совпала ни с одним тарифом из списка) — прежнее поведение ("лучший по типу" тариф), а
+		// также легаси (не-frame) чекаут, где на каждую службу+тип регистрируется свой метод с
+		// единственным посчитанным тарифом (плоский ключ 'tariff', без вложенности в 'data').
+		$fallbackCode = $shippingMethods['data'][ $mode ]['tariff']['code']
+			?? $shippingMethods['tariff']['code']
+			?? '';
+		$fallbackName = $shippingMethods['data'][ $mode ]['tariff']['name']
+			?? $shippingMethods['tariff']['name']
+			?? '';
+		if ( $fallbackName === '' && $fallbackCode !== '' ) {
+			$fallbackName = $tariffCatalog[ $fallbackCode ] ?? '';
+		}
+
+		return array( 'code' => (string) $fallbackCode, 'name' => (string) $fallbackName );
+	}
+
+	public function exportFields( $name, $shippingMethods = array(), $order = array(), $deliveryType = '' ) {
 		$result = array();
 		if ( $name === 'boxberry' ) {
 			$optionsRepository = new OptionsRepository();
@@ -325,14 +371,11 @@ class ExportFileds {
 			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 			$tariffs          = $eshopLogisticApi->apiServiceTariffs( $name );
 			$tariffs          = $tariffs->data();
-			if ( isset( $shippingMethods['data']['terminal']['tariff'] ) || isset( $shippingMethods['tariff']['code'] ) ) {
-				$selectedTariffCode = $shippingMethods['data']['terminal']['tariff']['code'] ?? $shippingMethods['tariff']['code'];
-				if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
-					$value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
-					unset( $tariffs[ $selectedTariffCode ] );
-					$tariffs = $value + $tariffs;
-				}
-			}
+			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
+			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$selectedTariffCode = $tariffInfo['code'];
+			$selectedTariffLabel = $tariffInfo['name'];
 			$optionsRepository = new OptionsRepository();
 			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
@@ -356,7 +399,8 @@ class ExportFileds {
 					), $exportFormSettings['receiver-type-sdek'] ?? '' ),
 				),
 				'delivery' => array(
-					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-sdek'] ?? '' ),
+					'tariffView||text||Тариф' => $selectedTariffLabel,
+					'tariff||dnone' => $selectedTariffCode,
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
 					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				)
@@ -474,14 +518,11 @@ class ExportFileds {
 			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 			$tariffs          = $eshopLogisticApi->apiServiceTariffs( $name );
 			$tariffs          = $tariffs->data();
-			if ( isset( $shippingMethods['tariff'] ) ) {
-				$selectedTariffCode = $shippingMethods['tariff']['code'];
-				if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
-					$value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
-					unset( $tariffs[ $selectedTariffCode ] );
-					$tariffs = $value + $tariffs;
-				}
-			}
+			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
+			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$selectedTariffCode = $tariffInfo['code'];
+			$selectedTariffLabel = $tariffInfo['name'];
 
 			$index = '';
 			if($order){
@@ -494,7 +535,8 @@ class ExportFileds {
 
 			$result = array(
 				'delivery' => array(
-					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-postrf'] ?? '' ),
+					'tariffView||text||Тариф' => $selectedTariffLabel,
+					'tariff||dnone' => $selectedTariffCode,
 					'take_payment||checkbox||Взять оплату с получателя за доставку' => '',
 					'delivery-custom-cost||number||Сумма к взятию с получателя' => '',
 				),
@@ -718,14 +760,11 @@ class ExportFileds {
 			$date = new DateTime();
 			$date->modify('+1 day');
 			$produce_date = $date->format('Y-m-d');
-			if ( isset( $shippingMethods['tariff'] ) ) {
-				$selectedTariffCode = $shippingMethods['tariff']['code'];
-				if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
-					$value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
-					unset( $tariffs[ $selectedTariffCode ] );
-					$tariffs = $value + $tariffs;
-				}
-			}
+			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
+			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$selectedTariffCode = $tariffInfo['code'];
+			$selectedTariffLabel = $tariffInfo['name'];
 
 			$result = array(
 				'receiver' => array(
@@ -743,7 +782,8 @@ class ExportFileds {
 				'delivery' => array(
 					'produce_date||date||Дата приёма груза' => $produce_date,
 					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => ($exportFormSettings['delivery-produce-time-dpd']) ?? '',
-					'tariff||select||Тариф' => $this->selectOptions( $tariffs, $exportFormSettings['delivery-tariff-dpd'] ?? '' ),
+					'tariffView||text||Тариф' => $selectedTariffLabel,
+					'tariff||dnone' => $selectedTariffCode,
 				),
 			);
 		}
@@ -827,7 +867,6 @@ class ExportFileds {
 				'order[combine_places].dimensions'   => 'combine-places-dimensions-sdek',
 				'order[combine_places].weight'       => 'combine-places-weight-sdek',
 				'receiver.type'                       => 'receiver-type-sdek',
-				'delivery.tariff'                     => 'delivery-tariff-sdek',
 			),
 			'delline' => array(
 				'receiver.legal'                      => 'receiver-legal-delline',
@@ -846,9 +885,7 @@ class ExportFileds {
 				'delivery.variant'                     => 'delivery-variant-kit',
 				'delivery[location_from][pick_up_data].comment' => 'pickup-comment-kit',
 			),
-			'postrf' => array(
-				'delivery.tariff' => 'delivery-tariff-postrf',
-			),
+			'postrf' => array(),
 			'fivepost' => array(),
 			'yandex'   => array(),
 			'pecom'    => array(
@@ -898,7 +935,6 @@ class ExportFileds {
 				'order[combine_places].dimensions'     => 'combine-places-dimensions-dpd',
 				'order[combine_places].weight'         => 'combine-places-weight-dpd',
 				'delivery.produce_time'                 => 'delivery-produce-time-dpd',
-				'delivery.tariff'                        => 'delivery-tariff-dpd',
 			),
 			'integral' => array(),
 		);

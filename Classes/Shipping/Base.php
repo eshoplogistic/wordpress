@@ -406,6 +406,11 @@ class Base extends \WC_Shipping_Method
 			$shippingMethods[$this->id]['debug'] = ( $cache_data['debug'] ?? [] );
 			$shippingMethods[$this->id]['data']['terminal'] = ( $cache_data['data']['terminal'] ?? [] );
 			$shippingMethods[$this->id]['data']['door'] = ( $cache_data['data']['door'] ?? [] );
+			// Полный список тарифов по каждому типу доставки (не только "лучший" по цене) —
+			// нужен, чтобы форма выгрузки заказа могла показать именно тот тариф, который
+			// покупатель выбрал во всплывающем окне "Выберите тариф" виджета, а не автоматически
+			// самый дешёвый (см. Classes/Shipping/ExportFileds.php::resolveOrderTariff()).
+			$shippingMethods[$this->id]['data']['tariffs'] = ( $cache_data['data']['tariffs'] ?? [] );
 			$sessionService->set('shipping_methods', $shippingMethods);
 		}
 
