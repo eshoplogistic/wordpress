@@ -9,6 +9,7 @@ use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Classes\View;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Helpers\AddressParser;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 
@@ -379,6 +380,20 @@ class UnloadingOrder implements ModuleInterface
                     $district = $parsedAddress['district'];
                 }
 
+                // Регион получателя обычно приходит из debug-данных расчёта стоимости
+                // (esl_shipping_methods.debug.shipping_route.to.region), но для части служб/городов
+                // (например, городов федерального значения) API их не возвращает, и поле уходит
+                // на выгрузку пустым. У некоторых ТК (Байкал Сервис) это приводит к отказу в приёме
+                // заявки ("требуется указать адрес доставки"), даже когда указан код ПВЗ. Поле
+                // "state" в адресе WooCommerce у заказов, оформленных через виджет плагина,
+                // заполняется тем же региональным значением (см. Http/Controllers/OrderController::save()),
+                // поэтому используем его как резервный источник — тот же приём, что и для
+                // street/building/room выше.
+                $region = $this->shippingMethods['debug']['shipping_route']['to']['region'] ?? '';
+                if (!$region) {
+                    $region = (string) $order->get_shipping_state() ?: (string) $order->get_billing_state();
+                }
+
                 // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
                 echo View::render('unloading-form', [
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -416,7 +431,9 @@ class UnloadingOrder implements ModuleInterface
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                     'wc_esl_room' => $room,
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                    'wc_esl_district' => $district
+                    'wc_esl_district' => $district,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_region' => $region
                 ]);
             }
         }
@@ -457,6 +474,15 @@ class UnloadingOrder implements ModuleInterface
         $result = $eshopLogisticApi->apiExportCreate($defaultParamsCreate);
 
         if ($result->hasErrors()) {
+            // Логируем именно тот payload, который реально ушёл в API (defaultParamsCreate),
+            // а не сырые данные формы выгрузки ($data) — иначе по логу невозможно понять,
+            // какого поля не хватило ТК для отказа (например "требуется указать адрес доставки").
+            EslLogger::info('[ESL params_delivery_init] export failed', array(
+                'source' => 'esl-error-load-unloading',
+                'request' => $defaultParamsCreate,
+                'response' => $result->jsonSerialize(),
+            ));
+
             return $result;
         }
 

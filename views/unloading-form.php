@@ -186,7 +186,7 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             <div class="form-field">
                                 <label class="label" for="receiver-region">Регион:</label>
                                 <input class="form-value" id="receiver-region" name="receiver-region" type="text"
-                                       value="<?php echo( esc_attr($wc_esl_shippingMethods['debug']['shipping_route']['to']['region']) ?? '' ) ?>">
+                                       value="<?php echo esc_attr($wc_esl_region ?? '') ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="receiver-city">Населённый пункт:</label>
