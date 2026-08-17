@@ -176,6 +176,19 @@
     display: block;
 }
 
+/* "Выгрузить" sits in the tab bar row (next to the tab icons) and only makes sense on
+   the last tab ("Места"), where the place data actually gets confirmed before sending. */
+.modal-esl .esl-unload-top {
+    display: none;
+}
+
+.modal-esl #tab4:checked ~ .esl-unload-top {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 12px 0 0 auto;
+}
+
 .modal-esl form {
     flex: 1 1 100%;
     width: 100%;
@@ -634,7 +647,9 @@
     font-weight: 600;
 }
 
-/* Sticky action bar. */
+/* Sticky action bar (still used by the confirm modal's footer, see
+   #modal-esl-confirm .esl-confirm__footer — "Выгрузить" itself moved into the tab bar,
+   see .esl-unload-top above). */
 .modal-esl .footer {
     position: sticky;
     bottom: 0;
@@ -650,19 +665,19 @@
     position: static;
     left: auto;
     transform: none;
-    min-width: 200px;
+    min-width: 160px;
     height: 40px;
     padding: 0 20px;
     border-radius: var(--esl-radius-sm);
-    background: var(--esl-accent);
-    border-color: var(--esl-accent-dark);
+    background: var(--esl-success);
+    border-color: #007a22;
     font-weight: 600;
-    box-shadow: 0 2px 6px rgba(34, 113, 177, .3);
+    box-shadow: 0 2px 6px rgba(0, 163, 42, .3);
     transition: background-color .15s ease, transform .1s ease;
 }
 
 .modal-esl #buttonModalUnload:hover {
-    background: var(--esl-accent-dark);
+    background: #007a22;
     transform: translateY(-1px);
 }
 

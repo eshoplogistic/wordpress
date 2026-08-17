@@ -100,6 +100,8 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                     </svg></span>
                 </label>
 
+                <input id="buttonModalUnload" type="button" class="button button-primary esl-unload-top" value="Выгрузить">
+
                 <form action="#" id="unloading_form" class="unloading-form unloading-grid">
                     <input type="hidden" name="delivery_id" value="<?php echo esc_attr(mb_strtolower( isset($wc_esl_typeMethod['name']) ? $wc_esl_typeMethod['name'] : '' )); ?>">
                     <input type="hidden" name="order_id" value="<?php echo esc_attr(isset($wc_esl_orderData['id']) ? $wc_esl_orderData['id'] : ''); ?>">
@@ -572,10 +574,6 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             <p>Дополнительные услуги отсутствуют.</p>
 						<?php endif; ?>
                     </section>
-
-                    <div class="footer">
-                        <input id="buttonModalUnload" type="button" class="button button-primary" value="Выгрузить">
-                    </div>
                 </form>
 
             </main>
