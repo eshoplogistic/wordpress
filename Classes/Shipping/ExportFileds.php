@@ -30,11 +30,6 @@ class ExportFileds {
 			$result = array(
 				'order'    => array(
 					'type' => '',
-					'combine_places' => array(
-						'apply' => '',
-						'dimensions' => '',
-						'weight' => ''
-					)
 				),
 				'receiver' => array(
 					'type' => '',
@@ -385,11 +380,6 @@ class ExportFileds {
 						1 => 'Интернет-магазин',
 						2 => 'Доставка',
 					), $exportFormSettings['type-order-sdek'] ?? '' ),
-				),
-				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-sdek'] ?? '') == 'on' ? 'checked' : '',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-sdek']) ?? '',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-sdek']) ?? ''
 				),
 				'receiver' => array(
 					'type||select||Тип получателя' => $this->selectOptions( array(
@@ -863,9 +853,6 @@ class ExportFileds {
 				'order[combine_places].weight'       => 'combine-places-weight-boxberry',
 			),
 			'sdek' => array(
-				'order[combine_places].apply'        => 'combine-places-apply-sdek',
-				'order[combine_places].dimensions'   => 'combine-places-dimensions-sdek',
-				'order[combine_places].weight'       => 'combine-places-weight-sdek',
 				'receiver.type'                       => 'receiver-type-sdek',
 			),
 			'delline' => array(

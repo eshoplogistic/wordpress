@@ -603,40 +603,6 @@
     padding: 10px;
 }
 
-/* "Объединить все грузовые места в одно" — рендерится под таблицей мест (см.
-   views/unloading-form.php#content4), поэтому нужен свой грид: базовый .form-field
-   (см. правило выше "content4's table cells... override this") тут голый display:block.
-   Flexbox с flex:1 1 0 (не grid) — габариты/вес всегда делят ширину строго пополам вне
-   зависимости от длины подписи или значения, без допущений про поведение грид-треков. */
-.modal-esl form #content4 .esl-combine-places {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px 20px;
-    margin-top: 6px;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.modal-esl form #content4 .esl-combine-places .form-field {
-    flex: 1 1 0;
-    min-width: 0;
-}
-
-/* #content4 в селекторе выше даёт ту же специфичность, что и голое .checkbox-area ниже —
-   без этого override чекбокс перестаёт занимать всю строку (см. аналогичный фикс для
-   #content1/#content2 выше). */
-.modal-esl form #content4 .esl-combine-places .checkbox-area {
-    flex: 1 1 100%;
-}
-
-.modal-esl form #content4 .esl-combine-places .label {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--esl-text-muted);
-    font-size: 12px;
-    font-weight: 600;
-}
-
 .modal-esl .esl-places-table td.column-delete {
     text-align: center;
 }
