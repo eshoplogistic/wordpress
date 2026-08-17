@@ -58,6 +58,11 @@ define( 'WC_ESL_PREFIX', 'wc_esl_' );
 
 define( 'WC_ESL_MIGRATOR_HISTORY_KEY', 'wc_esl_migrations_history' );
 
+// Тестовая выгрузка: когда true, во все запросы к API (создание/инфо/печать заказа
+// в Modules\UnloadingOrder) добавляется 'fake' => 1 — переключатель одного места
+// для локального тестирования выгрузки без реального создания заказа у ТК.
+define( 'WC_ESL_FAKE_EXPORT', false );
+
 // Versions <= 2.2.22 wrote raw API logs (incl. customer PII and API keys) to a
 // world-readable file inside the plugin directory. Remove any leftover copy on upgrade.
 $wc_esl_legacy_log = WC_ESL_PLUGIN_DIR . 'esl.log';

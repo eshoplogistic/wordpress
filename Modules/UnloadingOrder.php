@@ -881,8 +881,9 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['delivery']['variant'] = $data['delivery_id'];
         }
 
-        //FAKE
-        //$defaultFields['fake'] = 1;
+        if (WC_ESL_FAKE_EXPORT) {
+            $defaultFields['fake'] = 1;
+        }
 
         return $defaultFields;
     }
@@ -963,8 +964,11 @@ class UnloadingOrder implements ModuleInterface
             'action' => $action,
             'order_id' => $id,
             'service' => $type,
-            //'fake' => 1
         );
+
+        if (WC_ESL_FAKE_EXPORT) {
+            $data['fake'] = 1;
+        }
 
         if($dataAdd){
             $data = array_merge($data, $dataAdd);
@@ -1039,8 +1043,11 @@ class UnloadingOrder implements ModuleInterface
             'action' => 'print',
             'order_id' => $carrierOrderId,
             'service' => $orderType,
-            //'fake' => 1,
         );
+
+        if (WC_ESL_FAKE_EXPORT) {
+            $data['fake'] = 1;
+        }
 
         if ($mode) {
             $data['mode'] = $mode;
