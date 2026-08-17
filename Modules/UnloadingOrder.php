@@ -985,7 +985,16 @@ class UnloadingOrder implements ModuleInterface
         $optionsRepository = new OptionsRepository();
         $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 
-        $id = $this->resolveCarrierOrderId($id);
+        $carrierOrderId = $this->getCarrierOrderId($id);
+        if ($carrierOrderId === null) {
+            return array(
+                'success' => false,
+                'data' => array(
+                    'messages' => __('Заказ ещё не выгружен в кабинет транспортной компании', 'eshoplogisticru'),
+                ),
+            );
+        }
+        $id = $carrierOrderId;
 
         $data = array(
             'key' => $apiKey,
@@ -1022,16 +1031,32 @@ class UnloadingOrder implements ModuleInterface
      */
     private function resolveCarrierOrderId($orderId)
     {
-        $id = $orderId;
+        return $this->getCarrierOrderId($orderId) ?? $orderId;
+    }
+
+    /**
+     * Как resolveCarrierOrderId(), но без фолбэка: null означает, что заказ ещё
+     * не выгружен в кабинет ТК (нет esl_shipping_methods.answer.order.id). Нужен
+     * отдельно для infoOrder() — там фолбэк на локальный order_id бессмысленен:
+     * такого заказа у ТК не существует, и get/tracking/delete с ним гарантированно
+     * вернут ошибку (для которой у ТК нет более осмысленного текста, чем "Ошибка
+     * получения данных от транспортной компании") вместо явного "не выгружен".
+     *
+     * @param int $orderId
+     *
+     * @return int|string|null
+     */
+    private function getCarrierOrderId($orderId)
+    {
         $order = wc_get_order($orderId);
         if (!$order) {
-            return $id;
+            return null;
         }
 
         $orderData = $order->get_data();
         $orderShippingId = reset($orderData['shipping_lines']);
         if (!$orderShippingId) {
-            return $id;
+            return null;
         }
         $orderShippingId = $orderShippingId->get_id();
 
@@ -1039,11 +1064,11 @@ class UnloadingOrder implements ModuleInterface
         if ($shippingMethod) {
             $shippingMethods = json_decode($shippingMethod, true);
             if (isset($shippingMethods['answer']['order']['id'])) {
-                $id = $shippingMethods['answer']['order']['id'];
+                return $shippingMethods['answer']['order']['id'];
             }
         }
 
-        return $id;
+        return null;
     }
 
     /**

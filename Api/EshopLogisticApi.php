@@ -167,6 +167,13 @@ class EshopLogisticApi
 
 		} catch ( ApiServiceException $e ) {
 
+			// Сетевые сбои (таймаут, DNS, разрыв соединения) не долетают до успешного
+			// $response выше и раньше нигде не логировались — запрос "терялся" молча,
+			// а в интерфейсе оставалась только общая ошибка без деталей.
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
+
 			return new ExceptionResponse( $e );
 		}
 	}
@@ -291,6 +298,10 @@ class EshopLogisticApi
 			return new ErrorResponse( $response );
 
 		} catch ( ApiServiceException $e ) {
+
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
 
 			return new ExceptionResponse( $e );
 		}
