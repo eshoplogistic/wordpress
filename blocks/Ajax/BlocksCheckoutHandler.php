@@ -66,6 +66,8 @@ class BlocksCheckoutHandler {
 
 		$frameChanged = $this->hasFrameChanged($previousFrame, $data);
 
+		$previousMode = isset($previousFrame['mode']) ? (string) $previousFrame['mode'] : '';
+
 		$mode = isset( $data['mode'] ) ? (string) $data['mode'] : '';
 		if ( $forceDoor ) {
 			$mode = 'door';
@@ -82,11 +84,19 @@ class BlocksCheckoutHandler {
 		// Сохранение в сессию
 		$sessionService->set('esl_shipping_frame', $data);
 
-		// Сбрасываем terminal_location только при явном выборе доставки до двери.
+		// Сбрасываем terminal_location и введённый покупателем адрес только при
+		// ВОЗВРАТЕ из terminal в door (предыдущий mode был именно 'terminal') —
+		// это единственный случай, когда в WC()->customer могла осесть
+		// terminal-заглушка/адрес ПВЗ, которую нельзя выдавать за адрес курьера.
+		// Не делаем этого при previousMode === '' (первая загрузка страницы —
+		// в customer может быть настоящий ранее сохранённый адрес, который
+		// нельзя стирать) и не делаем этого повторно, пока door уже выбран —
+		// иначе виджет, пересчитывающий тарифы при каждом открытии карточки
+		// службы, стирал бы адрес прямо во время его ввода покупателем.
 		// terminal_location устанавливается отдельным AJAX-запросом wc_esl_set_terminal_address.
 		// При выборе терминального сервиса (mode = 'terminal') конкретный ПВЗ ещё не выбран —
 		// сохранённый ранее терминал должен оставаться в сессии до явного выбора door-режима.
-		if ( $mode === 'door' ) {
+		if ( $mode === 'door' && $previousMode === 'terminal' ) {
 			$sessionService->drop('terminal_location');
 
 			$shippingState = $sessionService->get('shipping');
@@ -100,10 +110,13 @@ class BlocksCheckoutHandler {
 
 			$sessionService->set('shipping_adress', '');
 
-			if ( function_exists('WC') && WC()->customer ) {
-				WC()->customer->set_shipping_address_1('');
-				WC()->customer->save();
-			}
+			// WC()->customer->shipping_address_1 намеренно НЕ трогаем здесь: клиентский
+			// код (checkout_frame_block.js) при возврате в door сам восстанавливает
+			// реальный адрес курьера в поле формы (сохранённый перед тем, как поле
+			// заняла ПВЗ-заглушка), и это доходит до customer-объекта через штатное
+			// автосохранение блочного чекаута. Если стирать адрес здесь, это гонится
+			// наперегонки с последующим refreshCheckoutAfterShippingUpdate() на клиенте
+			// и может затереть только что восстановленное значение обратно в пусто.
 		}
 
 		// В контексте admin-ajax мы только сохраняем frame и сбрасываем кэш доставки.

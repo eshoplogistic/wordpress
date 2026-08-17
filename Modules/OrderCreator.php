@@ -221,7 +221,14 @@ class OrderCreator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-		if($typeServiceShipping === 'mixed') return true;
+		if($typeServiceShipping === 'mixed'){
+			$sessionService = new SessionService();
+			$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
+			if(isset($shippingFrame['mode']) && $shippingFrame['mode'] == 'terminal'){
+				return true;
+			}
+			return false;
+		}
         if($typeServiceShipping !== 'terminal') return false;
 
         return true;

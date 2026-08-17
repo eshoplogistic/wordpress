@@ -45,6 +45,18 @@
     let hashSelectService = '';
     let userInteractedWithWidget = false;
     let suppressCloseOnAutoSelect = true;
+    // Значение, которое наш код сам записал в поле адреса при выборе ПВЗ
+    // (плейсхолдер "Пункт выдачи" или реальный адрес терминала). Используется,
+    // чтобы при возврате в door отличить "это наш же ПВЗ-плейсхолдер, можно
+    // стереть" от "это настоящий адрес покупателя (введён вручную или пришёл
+    // с сервера при загрузке страницы), трогать нельзя". null - в поле сейчас
+    // не наш автозаполненный текст.
+    let lastAutoFilledAddressValue = null;
+    // Реальный адрес курьерской доставки, отложенный перед тем как поле было
+    // занято ПВЗ-плейсхолдером при переключении в terminal. Восстанавливается
+    // при обратном переключении на door, чтобы покупателю не пришлось вводить
+    // адрес заново после простого просмотра варианта "Самовывоз".
+    let savedDoorAddressValue = '';
     const MAX_WIDGET_INIT_TRIES = 3;
 
     // Конфигурация из WordPress  
@@ -1970,7 +1982,7 @@
             }
         }, 1000);
 
-        function handleServiceChange(deliveryData) {
+        function handleServiceChange(deliveryData, isExplicitSelection = false) {
             const hasTerminalSelection = Boolean(
                 deliveryData?.terminal &&
                 typeof deliveryData.terminal === 'object' &&
@@ -2004,20 +2016,74 @@
             // Для Blocks переключаем состояние адресных полей сразу после выбора
             // сервиса в виджете, даже если shipping method формально не изменился.
             const nextDeliveryType = deliveryData?.typeDelivery || (hasTerminalSelection ? 'terminal' : 'door');
+
+            // ВАЖНО: значение поля адреса (setInputValue) трогаем ТОЛЬКО при явном
+            // подтверждённом выборе службы (onSelectedService), а не при каждом
+            // onBalloonOpen. SDK виджета при пересчёте цен на модалке вызывает
+            // onBalloonOpen для КАЖДОЙ карточки службы по очереди (и door, и
+            // terminal), не только для той, что выбрал пользователь - поэтому
+            // здесь нельзя опираться на предыдущий тип доставки для принятия
+            // решения о зачистке поля, иначе поле стирается прямо во время
+            // открытия модалки/пересчёта, ещё до явного выбора.
+            if (!isExplicitSelection) {
+                if (nextDeliveryType === 'terminal' || nextDeliveryType === 'door') {
+                    toggleAddressFields(nextDeliveryType !== 'terminal');
+                }
+                return hasTerminalSelection;
+            }
+
             if (nextDeliveryType === 'terminal') {
                 const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+                const currentValue = (shippingAddressEl?.value || '').trim();
+
+                // Перед тем как занять поле плейсхолдером/адресом ПВЗ, откладываем
+                // то, что там было - если это не наш же предыдущий автозаполненный
+                // текст, значит это реальный адрес курьерской доставки (введён
+                // покупателем или подгружен с сервера), и его нужно вернуть при
+                // обратном переключении на door, а не оставлять пустым.
+                const isOwnPreviousValue = lastAutoFilledAddressValue !== null
+                    && currentValue === lastAutoFilledAddressValue.trim();
+                if (currentValue !== '' && !isOwnPreviousValue) {
+                    savedDoorAddressValue = currentValue;
+                }
+
                 const terminalAddressValue = (deliveryData?.terminal?.address || shippingTerminal?.value || '').trim();
+                const valueToSet = terminalAddressValue || 'Пункт выдачи';
 
                 // В Blocks address_1 остаётся обязательным в checkout store,
                 // поэтому для terminal перед отключением проставляем значение.
-                setInputValue(shippingAddressEl, terminalAddressValue || 'Пункт выдачи');
+                setInputValue(shippingAddressEl, valueToSet);
+                lastAutoFilledAddressValue = valueToSet;
                 clearAddressFieldError();
                 toggleAddressFields(false);
             } else if (nextDeliveryType === 'door') {
                 toggleAddressFields(true);
+
                 const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
-                setInputValue(shippingAddressEl, '');
-                clearAddressFieldError();
+                const currentValue = (shippingAddressEl?.value || '').trim();
+
+                // Заменяем поле, только если в нём осталось то, что ТУДА ЖЕ ранее
+                // записал наш собственный код для terminal-режима (плейсхолдер/адрес
+                // ПВЗ), либо оно уже пустое. lastConfirmedDeliveryType/window.keyDelivery
+                // как признак "мы уже были в door" ненадёжны: это переменные в памяти
+                // вкладки, которые сбрасываются при каждой перезагрузке страницы, а SDK
+                // виджета на монтировании сам авто-выбирает самую дешёвую службу и шлёт
+                // onSelectedService — из-за чего страница с уже сохранённым (с прошлой
+                // загрузки) адресом стирала его же при первой же авто-инициализации.
+                // Сверка с реальным значением поля работает независимо от перезагрузок:
+                // если там настоящий адрес (введённый покупателем или подгруженный с
+                // сервера), не трогаем его.
+                const isLeftoverPlaceholder = currentValue === ''
+                    || (lastAutoFilledAddressValue !== null && currentValue === lastAutoFilledAddressValue.trim());
+
+                if (isLeftoverPlaceholder) {
+                    // Восстанавливаем адрес, отложенный при переходе в terminal
+                    // (если он был), вместо того чтобы оставлять поле пустым.
+                    setInputValue(shippingAddressEl, savedDoorAddressValue || '');
+                    clearAddressFieldError();
+                }
+
+                lastAutoFilledAddressValue = null;
             }
 
             return hasTerminalSelection;
@@ -2102,7 +2168,7 @@
 
             const selectedHash = getServiceSignature(deliveryData);
             const frameData = buildLegacyShippingFrameData(deliveryData);
-            const hasTerminalSelection = handleServiceChange(deliveryData);
+            const hasTerminalSelection = handleServiceChange(deliveryData, true);
 
             const widgetData = getWidgetData();
             const cityName = getLegacyShippingCityName(widgetData);
