@@ -384,6 +384,8 @@ class UnloadingOrder implements ModuleInterface
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                     'wc_esl_orderData' => $orderData,
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'wc_esl_orderNumber' => $order->get_order_number(),
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                     'wc_esl_orderItems' => $orderItems,
                     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                     'wc_esl_orderShipping' => $orderShipping,
@@ -749,7 +751,7 @@ class UnloadingOrder implements ModuleInterface
             'sender' => array(
                 'name' => $data['sender-name'],
                 'phone' => $data['sender-phone'],
-                'company' => $data['sender-company'],
+                'company' => $exportFormSettings['sender-company'] ?? '',
                 'email' => $data['sender-email'],
             ),
             'delivery' => array(

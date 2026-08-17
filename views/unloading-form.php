@@ -29,6 +29,7 @@ $wc_esl_street             = isset( $wc_esl_street ) ? $wc_esl_street : '';
 $wc_esl_building           = isset( $wc_esl_building ) ? $wc_esl_building : '';
 $wc_esl_room               = isset( $wc_esl_room ) ? $wc_esl_room : '';
 $wc_esl_district           = isset( $wc_esl_district ) ? $wc_esl_district : '';
+$wc_esl_orderNumber        = isset( $wc_esl_orderNumber ) ? $wc_esl_orderNumber : '';
 
 $wc_esl_fulfillment = false;
 if(isset($wc_esl_infoApi['services']['pochtalion'])){
@@ -375,8 +376,8 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                         <div class="form-box">
                             <span class="form-box-title">Данные отправителя</span>
                             <div class="form-field">
-                                <label class="label" for="sender-custom-order-id">Свой номер заказа для ТК (необязательно):</label>
-                                <input class="form-value" id="sender-custom-order-id" name="sender-custom-order-id" type="text" value="">
+                                <label class="label" for="sender-custom-order-id">Номер заказа для ТК:</label>
+                                <input class="form-value" id="sender-custom-order-id" name="sender-custom-order-id" type="text" value="<?php echo esc_attr( $wc_esl_orderNumber ) ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-name">Имя:</label>
@@ -387,11 +388,6 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 <label class="label" for="sender-phone">Телефон:</label>
                                 <input class="form-value" id="sender-phone" name="sender-phone" type="text"
                                        value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-phone'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-phone']) : '' ?>">
-                            </div>
-                            <div class="form-field">
-                                <label class="label" for="sender-company">Название компании:</label>
-                                <input class="form-value" id="sender-company" name="sender-company" type="text"
-                                       value="<?php echo ( isset( $wc_esl_exportFormSettings['sender-company'] ) ) ? esc_attr($wc_esl_exportFormSettings['sender-company']) : '' ?>">
                             </div>
                             <div class="form-field">
                                 <label class="label" for="sender-email">Электронная почта:</label>
