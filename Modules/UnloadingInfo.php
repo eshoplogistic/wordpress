@@ -25,6 +25,7 @@ class UnloadingInfo
     {
         $unloadingOrder = new UnloadingOrder();
         $result = $unloadingOrder->infoOrder($orderId, $orderType);
+        $unloadingOrder->saveTrackingFromStatus($orderId, is_array($result) ? $result : []);
         $rows = '';
 
         $order = wc_get_order($orderId);
@@ -61,6 +62,9 @@ class UnloadingInfo
         }
         if (isset($result['state']['service_status']['description'])) {
             $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Описание:', 'eshoplogisticru') . '</span><span class="esl-info-row__value">' . esc_html($result['state']['service_status']['description']) . '</span></div>';
+        }
+        if (isset($result['state']['tracking'])) {
+            $rows .= '<div class="esl-info-row esl-info-row--copy"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-copy-control"><input type="text" value="' . esc_attr($result['state']['tracking']) . '" id="copyText2" disabled><button id="copyBut2" class="button button-primary esl-copy-btn" onclick="copyToClipboard(copyText2, this)">' . esc_html__('Скопировать трек', 'eshoplogisticru') . '</button></span></div>';
         }
 
         $html = $errorHtml;

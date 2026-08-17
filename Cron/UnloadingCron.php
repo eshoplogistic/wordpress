@@ -98,6 +98,7 @@ class UnloadingCron
             }else{
                 if(isset($tracking['status']['name']) && $shippingId){
                     wc_update_order_item_meta($shippingId, 'Статус заказа', $tracking['status']['name']);
+
                     if($shippingMethod){
                         $shippingMethod['tracking'] = $tracking;
                         $jsonArr = json_encode($shippingMethod, JSON_UNESCAPED_UNICODE);

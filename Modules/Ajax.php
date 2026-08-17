@@ -1208,6 +1208,7 @@ class Ajax implements ModuleInterface
 				$result = 'Ошибка при получении данных';
 			}
 		} else {
+			$unloading->saveTrackingFromStatus($order_id, is_array($status) ? $status : []);
 			$result = $unloading->updateStatusById($status, $order_id);
 			if ($result === false) {
 				$isError = true;

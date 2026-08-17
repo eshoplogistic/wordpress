@@ -591,10 +591,39 @@ class UnloadingOrder implements ModuleInterface
     {
         if (isset($resultTracking['state']['tracking'])) {
             $shippingMethods['tracking'] = $resultTracking['state']['tracking'];
-            wc_update_order_item_meta($orderShippingId, 'Трек-код', $resultTracking['state']['tracking']);
         }
 
         $this->saveShippingMethods($orderShippingId, $shippingMethods);
+    }
+
+    /**
+     * Сохраняет трек-код из ответа infoOrder('get'), если он там есть.
+     * Нужно для ручного обновления статуса (кнопка "Обновить" в карточке заказа,
+     * Ajax::unloadingStatusUpdate()) — этот путь раньше вызывал только
+     * updateStatusById() и трек-номер нигде не сохранял, в отличие от
+     * params_delivery_init()/Cron/UnloadingCron.php.
+     *
+     * @param int   $orderId
+     * @param array $status Ответ infoOrder('get'), т.е. $resultTracking из applyTrackingResult().
+     */
+    public function saveTrackingFromStatus($orderId, array $status)
+    {
+        if (!isset($status['state']['tracking'])) {
+            return;
+        }
+
+        $orderShippingId = $this->getOrderShippingItemId($orderId);
+        if (!$orderShippingId) {
+            return;
+        }
+
+        $shippingMethod = wc_get_order_item_meta($orderShippingId, 'esl_shipping_methods', $single = true);
+        $shippingMethods = $shippingMethod ? json_decode($shippingMethod, true) : [];
+        if (!is_array($shippingMethods)) {
+            $shippingMethods = [];
+        }
+
+        $this->applyTrackingResult($orderShippingId, $shippingMethods, $status);
     }
 
     /**
@@ -615,7 +644,6 @@ class UnloadingOrder implements ModuleInterface
         unset($shippingMethods['answer'], $shippingMethods['tracking'], $shippingMethods['pending_confirmation']);
 
         $this->saveShippingMethods($orderShippingId, $shippingMethods);
-        wc_delete_order_item_meta($orderShippingId, 'Трек-код');
     }
 
     /**
