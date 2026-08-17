@@ -11,21 +11,6 @@ class ExportFileds {
 
 	public function sendExportFields($name){
 		$result = array();
-		if ( $name === 'boxberry' ) {
-			$result = array(
-				'order' => array(
-					'barcode' => '',
-					'type' => '',
-					'packing_type' => '',
-					'issue'        => '',
-					'combine_places' => array(
-						'apply' => '',
-						'dimensions' => '',
-						'weight' => ''
-					)
-				)
-			);
-		}
 		if ( $name === 'sdek' ) {
 			$result = array(
 				'order'    => array(
@@ -332,36 +317,6 @@ class ExportFileds {
 
 	public function exportFields( $name, $shippingMethods = array(), $order = array(), $deliveryType = '' ) {
 		$result = array();
-		if ( $name === 'boxberry' ) {
-			$optionsRepository = new OptionsRepository();
-			$exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
-
-			$result = array(
-				'order' => array(
-					'barcode||text||Штрих-код посылки'        => ($exportFormSettings['order-barcode-boxberry']) ?? '',
-					'type||select||Тип отправления'         => $this->selectOptions( array(
-						0 => 'Посылка',
-						2 => 'Курьер Онлайн',
-						3 => 'Посылка Онлайн',
-						5 => 'Посылка 1й класс'
-					), $exportFormSettings['order-type-boxberry'] ?? '' ),
-					'packing_type||select||Тип упаковки' => $this->selectOptions( array(
-						1 => 'упаковка ИМ',
-						2 => 'упаковка Boxberry',
-					), $exportFormSettings['order-packing-type-boxberry'] ?? '' ),
-					'issue||select||Вид выдачи заказа'        => $this->selectOptions( array(
-						0 => 'выдача без вскрытия',
-						1 => 'выдача со вскрытием и проверкой комплектности',
-						2 => 'выдача части вложения'
-					), $exportFormSettings['order-issue-boxberry'] ?? '' )
-				),
-				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-boxberry'] ?? '') == 'on' ? 'checked' : '',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-boxberry']) ?? '',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-boxberry']) ?? ''
-				),
-			);
-		}
 		if ( $name === 'sdek' ) {
 			$eshopLogisticApi = new EshopLogisticApi( new WpHttpClient() );
 			$tariffs          = $eshopLogisticApi->apiServiceTariffs( $name );
@@ -797,7 +752,7 @@ class ExportFileds {
         // Одинаковый набор полей "объединения мест" для всех служб, у которых он есть —
         // отличаются только сохранённые значения (свой плоский ключ на каждую службу).
         $carriersWithOneDelivery = array(
-            'yandex', 'boxberry', 'sdek', 'fivepost', 'delline',
+            'yandex', 'sdek', 'fivepost', 'delline',
             'baikal', 'magnit', 'kit', 'postrf', 'dpd',
         );
 
@@ -843,15 +798,6 @@ class ExportFileds {
 		);
 
 		$map = array(
-			'boxberry' => array(
-				'order.barcode'                     => 'order-barcode-boxberry',
-				'order.type'                        => 'order-type-boxberry',
-				'order.packing_type'                => 'order-packing-type-boxberry',
-				'order.issue'                        => 'order-issue-boxberry',
-				'order[combine_places].apply'        => 'combine-places-apply-boxberry',
-				'order[combine_places].dimensions'   => 'combine-places-dimensions-boxberry',
-				'order[combine_places].weight'       => 'combine-places-weight-boxberry',
-			),
 			'sdek' => array(
 				'receiver.type'                       => 'receiver-type-sdek',
 			),
@@ -929,7 +875,7 @@ class ExportFileds {
 		$carrierMap = $map[ $carrierSlug ] ?? array();
 
 		$carriersWithOneDelivery = array(
-			'yandex', 'boxberry', 'sdek', 'fivepost', 'delline',
+			'yandex', 'sdek', 'fivepost', 'delline',
 			'baikal', 'magnit', 'kit', 'postrf', 'dpd',
 		);
 		if ( in_array( $carrierSlug, $carriersWithOneDelivery, true ) ) {

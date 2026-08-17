@@ -1187,12 +1187,6 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 								),
 							),
-							'boxberry' => array(
-								'label' => 'Boxberry', 'take_payment' => false,
-								'fields' => array(
-									array( 'name' => 'sender-terminal-boxberry', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
-								),
-							),
 							'delline'  => array(
 								'label' => 'Деловые линии', 'take_payment' => false,
 								'fields' => array(

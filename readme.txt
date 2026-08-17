@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.2.25
+Stable tag: 2.2.26
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ eShopLogistic is the official WordPress plugin for integrating your WooCommerce 
 
 This plugin offers comprehensive shipping integration with support for multiple Russian and international delivery services:
 - Display real-time shipping cost and delivery time calculations in shopping cart and product pages
-- Support for 18+ delivery carriers (CDEK, DPD, Post Russia, Dostavista, Boxberry, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and more)
+- Support for 18+ delivery carriers (CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and more)
 - Pickup point (PVZ) selection with interactive map
 - Automatic order export to carrier systems
 - Flexible shipping rules and adjustments
@@ -65,7 +65,7 @@ Yes. The plugin is a front-end/checkout integration for the eShopLogistic shippi
 
 = Which carriers are supported? =
 
-CDEK, DPD, Post Russia, Dostavista, Boxberry, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
+CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
 
 = Does it work with WooCommerce Blocks (Gutenberg) checkout? =
 
@@ -93,6 +93,9 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 2.2.26 =
+* Removed the Boxberry carrier (discontinued): the settings tab, its shipping methods, and its order-export field mapping. Already-exported orders that used Boxberry are still displayed correctly in the order history.
 
 = 2.2.25 =
 * Bundled the product-tab widget's CSS/JS locally instead of loading it from a remote domain at runtime.
