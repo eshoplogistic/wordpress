@@ -446,6 +446,11 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                             <div class="esl-places__main">
                                 <button id="buttonModalUnloadAdd" type="button" class="button button-primary"><?php esc_html_e( 'Добавить место', 'eshoplogisticru' ); ?></button>
                                 <table class="esl-places-table">
+                                    <colgroup>
+										<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
+                                            <col class="esl-col-<?php echo esc_attr( $wc_esl_colKey ); ?>">
+										<?php endforeach; ?>
+                                    </colgroup>
                                     <thead>
                                         <tr>
 											<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
@@ -469,6 +474,8 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                                                     <button type="button" class="esl-delete_table_elem" title="<?php esc_attr_e( 'Удалить место', 'eshoplogisticru' ); ?>">&times;</button>
 																<?php endif; ?>
                                                             </td>
+														<?php elseif ( $wc_esl_colKey === 'number' ): ?>
+                                                            <td class="column-number"><span class="esl-place-number"><?php echo esc_html( $wc_esl_rowIndex + 1 ); ?></span></td>
 														<?php else:
 															$wc_esl_cellValue = isset( $wc_esl_rec[ $wc_esl_colKey ] ) ? $wc_esl_rec[ $wc_esl_colKey ] : '';
 															if ( is_array( $wc_esl_cellValue ) || is_object( $wc_esl_cellValue ) ) {
@@ -494,6 +501,8 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 										<?php foreach ( $wc_esl_placesColumns as $wc_esl_colKey => $wc_esl_colLabel ): ?>
 											<?php if ( $wc_esl_colKey === 'delete' ): ?>
                                                 <td class="column-delete"><button type="button" class="esl-delete_table_elem" title="<?php esc_attr_e( 'Удалить место', 'eshoplogisticru' ); ?>">&times;</button></td>
+											<?php elseif ( $wc_esl_colKey === 'number' ): ?>
+                                                <td class="column-number"><span class="esl-place-number"></span></td>
 											<?php else: ?>
                                                 <td class="column-<?php echo esc_attr( $wc_esl_colKey ); ?>">
                                                     <input type="text" data-field="<?php echo esc_attr( $wc_esl_colKey ); ?>"

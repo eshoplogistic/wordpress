@@ -590,6 +590,10 @@ function eslPlacesRenumber(table) {
         tr.querySelectorAll('td input[data-field]').forEach(function (input) {
             input.name = 'products[' + index + '][' + input.getAttribute('data-field') + ']';
         });
+        var numberCell = tr.querySelector('.esl-place-number');
+        if (numberCell) {
+            numberCell.textContent = index + 1;
+        }
     });
 }
 

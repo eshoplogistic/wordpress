@@ -48,7 +48,7 @@
     flex-direction: column;
     background-color: var(--esl-bg);
     margin: 4vh auto;
-    width: min(940px, 94vw);
+    width: min(1100px, 96vw);
     max-height: 92vh;
     border: none;
     border-radius: var(--esl-radius);
@@ -501,9 +501,25 @@
 }
 
 .modal-esl .esl-places-table {
+    width: 100%;
+    table-layout: fixed;
     border: none;
     background: var(--esl-bg);
 }
+
+/* Column widths keyed to the <col> classes emitted from Table::get_columns() order
+   (see views/unloading-form.php) — "Наименование" gets the lion's share, the rest
+   (id/qty/price/dimensions/number/delete) stay narrow. Must sum to 100%. */
+.modal-esl .esl-col-number { width: 5%; }
+.modal-esl .esl-col-product_id { width: 8%; }
+.modal-esl .esl-col-name { width: 27%; }
+.modal-esl .esl-col-quantity { width: 7%; }
+.modal-esl .esl-col-price { width: 9%; }
+.modal-esl .esl-col-weight { width: 9%; }
+.modal-esl .esl-col-width { width: 9%; }
+.modal-esl .esl-col-length { width: 9%; }
+.modal-esl .esl-col-height { width: 9%; }
+.modal-esl .esl-col-delete { width: 8%; }
 
 .modal-esl .esl-places-table thead tr th,
 .modal-esl .esl-places-table tr th {
@@ -514,6 +530,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .modal-esl .esl-places-table tbody tr:hover {
@@ -606,8 +625,13 @@
 }
 
 .modal-esl .esl-places-table td.column-delete {
-    width: 44px;
     text-align: center;
+}
+
+.modal-esl .esl-places-table td.column-number {
+    text-align: center;
+    color: var(--esl-text-muted);
+    font-weight: 600;
 }
 
 /* Sticky action bar. */

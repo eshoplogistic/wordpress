@@ -19,8 +19,9 @@ class Table extends WP_List_Table {
 
 	function get_columns() {
 		return array(
+			'number'     => __( '№', 'eshoplogisticru' ),
 			'product_id'     => __( 'ID', 'eshoplogisticru' ),
-			'name'   => __( 'Имя', 'eshoplogisticru' ),
+			'name'   => __( 'Наименование', 'eshoplogisticru' ),
 			'quantity'  => __( 'Кол-во', 'eshoplogisticru' ),
 			'price'  => __( 'Цена', 'eshoplogisticru' ),
 			'weight' => __( 'Вес', 'eshoplogisticru' ),
