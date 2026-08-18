@@ -851,6 +851,12 @@ class UnloadingOrder implements ModuleInterface
                 && $data['delivery']['delivery-custom-cost'] !== ''
             ) {
                 $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
+
+                // Ставка НДС для этой суммы — своя настройка (sdek: «Ваша ставка НДС»), как в moj_sklad,
+                // приоритетнее общей delivery-vat_rate выше, но только если она вообще задана оператором.
+                if (isset($exportFormSettings['cost-custom-delivery-' . $deliveryId]) && $exportFormSettings['cost-custom-delivery-' . $deliveryId] !== '') {
+                    $defaultFields['delivery']['vat_rate'] = $exportFormSettings['cost-custom-delivery-' . $deliveryId];
+                }
             }
             unset($data['delivery']['take_payment'], $data['delivery']['delivery-custom-cost']);
         }

@@ -1113,6 +1113,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'label' => 'СДЭК', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'cost-custom-delivery-sdek', 'label' => 'Ваша ставка НДС', 'help' => 'Применяется при выгрузке в СДЭК к грузовым местам в случае если место не равно товару из заказа и нужно передать в СДЭК ставку НДС к стоимости места. А также для суммы из поля «Взять оплату с получателя за доставку».', 'type' => 'select', 'values' => array( '-1' => 'Без НДС', '0' => '0%', '5' => '5%', '7' => '7%', '10' => '10%', '22' => '22%' ) ),
 									array( 'name' => 'seller-name-sdek', 'label' => 'Истинный продавец', 'help' => 'Наименование истинного продавца. Отображается в накладных.' ),
 									array( 'name' => 'seller-phone-sdek', 'label' => 'Телефон истинного продавца', 'help' => 'Телефон истинного продавца. Отображается в накладных.' ),
 								),
