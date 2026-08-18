@@ -213,15 +213,21 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 
                             <?php
                             // Способ оплаты по умолчанию настраивается в разрезе службы доставки (Настройки транспортных компаний).
-                            $wc_esl_defaultPaymentType = $wc_esl_exportFormSettings['default-payment-type-' . mb_strtolower($wc_esl_typeMethod['name'])] ?? '';
+                            // Как в moj_sklad: только "Заказ предоплачен" / "Оплата при получении" — эти два значения
+                            // отличает сама ТК, остальные варианты (были раньше) для неё неразличимы.
+                            $wc_esl_typeDeliverySlug = mb_strtolower($wc_esl_typeMethod['name']);
+                            $wc_esl_defaultPaymentType = $wc_esl_exportFormSettings['default-payment-type-' . $wc_esl_typeDeliverySlug] ?? '';
+                            $wc_esl_takePaymentDefault = !empty($wc_esl_exportFormSettings['default-take-payment-' . $wc_esl_typeDeliverySlug]);
                             ?>
                             <div class="form-field">
                                 <label class="label" for="payment_type">Способ оплаты заказа:</label>
-                                <select id="payment_type" name="payment_type" form="unloading_form" class="form-value">
-                                    <option value="already_paid" <?php echo esc_attr($wc_esl_defaultPaymentType === 'already_paid' ? 'selected' : ''); ?>>Заказ уже оплачен</option>
-                                    <option value="cash_on_receipt" <?php echo esc_attr($wc_esl_defaultPaymentType === 'cash_on_receipt' ? 'selected' : ''); ?>>Наличными при получении</option>
-                                    <option value="card_on_receipt" <?php echo esc_attr($wc_esl_defaultPaymentType === 'card_on_receipt' ? 'selected' : ''); ?>>Картой при получении</option>
-                                    <option value="cashless" <?php echo esc_attr($wc_esl_defaultPaymentType === 'cashless' ? 'selected' : ''); ?>>Безналичный расчет</option>
+                                <select id="payment_type" name="payment_type" form="unloading_form" class="form-value"
+                                        data-esl-take-payment-default="<?php echo esc_attr($wc_esl_takePaymentDefault ? '1' : '0'); ?>">
+                                    <?php if ($wc_esl_defaultPaymentType !== 'already_paid' && $wc_esl_defaultPaymentType !== 'cash_on_receipt'): ?>
+                                    <option value="" selected>-- Не выбрано --</option>
+                                    <?php endif; ?>
+                                    <option value="already_paid" <?php echo esc_attr($wc_esl_defaultPaymentType === 'already_paid' ? 'selected' : ''); ?>>Заказ предоплачен</option>
+                                    <option value="cash_on_receipt" <?php echo esc_attr($wc_esl_defaultPaymentType === 'cash_on_receipt' ? 'selected' : ''); ?>>Оплата при получении</option>
                                 </select>
                             </div>
 

@@ -383,6 +383,39 @@ window.addEventListener('load', function () {
     document.querySelectorAll('.esl-take-payment-toggle input[type="checkbox"]').forEach(eslSyncCostToggle);
 });
 
+// Как в moj_sklad (setTakePaymentByDefault): если для службы включена настройка "Взять оплату
+// с получателя за доставку по умолчанию" и оператор выбрал "Заказ предоплачен" — сама включаем
+// чекбокс "Взять оплату..." и раскрываем/заполняем поле суммы, вместо того чтобы полагаться на
+// оператора вспомнить это руками при каждой выгрузке.
+function eslSyncTakePaymentDefault(select) {
+    if (select.id !== 'payment_type' || select.value !== 'already_paid') {
+        return;
+    }
+    if (select.getAttribute('data-esl-take-payment-default') !== '1') {
+        return;
+    }
+
+    let form = select.closest('#unloading_form');
+    if (!form) {
+        return;
+    }
+
+    let takePaymentCheckbox = form.querySelector('.esl-take-payment-toggle input[type="checkbox"]');
+    if (!takePaymentCheckbox || takePaymentCheckbox.checked) {
+        return;
+    }
+
+    takePaymentCheckbox.checked = true;
+    eslSyncCostToggle(takePaymentCheckbox);
+}
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('#unloading_form select[name="payment_type"]')) {
+        return;
+    }
+    eslSyncTakePaymentDefault(e.target);
+});
+
 // Поле "Тип доставки" (delivery_type) определяет, какие поля получателя актуальны —
 // как в moj_sklad: для ПВЗ (terminal) нужны "Код ПВЗ"/"Адрес ПВЗ", а "Улица"/"Здание"/
 // "Квартира" (и комментарий у Яндекс.Доставки) не нужны, и наоборот для курьера (door).

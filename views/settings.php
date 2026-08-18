@@ -1191,12 +1191,13 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 							),
 						);
 
+						// Как в moj_sklad: только два реальных способа оплаты (остальные два, ранее
+						// показанные тут, ТК не различает так, как нужно "Взять оплату с получателя
+						// за доставку" — см. eslSyncTakePaymentDefault() в settings_unloading.js).
 						$carrierPaymentTypeOptions = array(
 							''                => '-- Не выбрано --',
-							'already_paid'    => 'Заказ уже оплачен',
-							'cash_on_receipt' => 'Наличными при получении',
-							'card_on_receipt' => 'Картой при получении',
-							'cashless'        => 'Безналичный расчет',
+							'already_paid'    => 'Заказ предоплачен',
+							'cash_on_receipt' => 'Оплата при получении',
 						);
 						?>
                         <div class="card wc-esl-settings-status esl-section_add_field">

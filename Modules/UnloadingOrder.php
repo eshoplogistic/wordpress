@@ -839,9 +839,17 @@ class UnloadingOrder implements ModuleInterface
         }
 
         // Опция «Взять оплату с получателя за доставку» (sdek/postrf/fivepost/yandex) — переопределяет стоимость доставки,
-        // передаваемую в ТК, суммой, которую нужно получить с покупателя. Служебные ключи не должны попасть в итоговый payload.
+        // передаваемую в ТК, суммой, которую нужно получить с покупателя. Как в moj_sklad, применяется
+        // только когда заказ отмечен предоплаченным (payment_type === 'already_paid') — именно для этого
+        // сценария ("товар оплачен на сайте, но доставку курьер должен взять при получении") ТК и различает
+        // эту сумму отдельно от общего способа оплаты заказа. Служебные ключи не должны попасть в payload.
         if (isset($data['delivery']) && is_array($data['delivery'])) {
-            if (!empty($data['delivery']['take_payment']) && isset($data['delivery']['delivery-custom-cost']) && $data['delivery']['delivery-custom-cost'] !== '') {
+            if (
+                ($data['payment_type'] ?? '') === 'already_paid'
+                && !empty($data['delivery']['take_payment'])
+                && isset($data['delivery']['delivery-custom-cost'])
+                && $data['delivery']['delivery-custom-cost'] !== ''
+            ) {
                 $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
             }
             unset($data['delivery']['take_payment'], $data['delivery']['delivery-custom-cost']);
