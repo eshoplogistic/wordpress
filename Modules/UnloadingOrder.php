@@ -882,9 +882,12 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['complement'] = $data['complement'];
         }
 
-        // Продавец — общие для магазина данные (не завязаны на конкретную ТК), заполняются в настройках плагина.
-        $sellerName = $exportFormSettings['seller-name'] ?? '';
-        $sellerPhone = $exportFormSettings['seller-phone'] ?? '';
+        // Продавец — реквизиты "истинного продавца", если он отличается от отправителя.
+        // По ТК, а не общие для магазина: если заполнить их глобально, они утекут во все
+        // службы разом и СДЭК/другие ТК зарегистрируют заказ как поступивший от третьей
+        // стороны, а не от отправителя (см. moj_sklad: seller-name-{deliveryId}).
+        $sellerName = $exportFormSettings['seller-name-' . $deliveryId] ?? '';
+        $sellerPhone = $exportFormSettings['seller-phone-' . $deliveryId] ?? '';
         if ($sellerName !== '' || $sellerPhone !== '') {
             $defaultFields['seller'] = array(
                 'name' => $sellerName,

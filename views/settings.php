@@ -927,53 +927,6 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Продавец: имя', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Передаётся некоторым ТК как отдельные реквизиты продавца (не отправителя груза).
-                                                                Заполните, если это требуется вашей транспортной компанией.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-												<?php
-												$seller_name = '';
-												if ( isset( $export_form['seller-name'] ) ) {
-													$seller_name = $export_form['seller-name'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Имя продавца', 'eshoplogisticru' ) ?>"
-                                                        name="seller-name"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $seller_name ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
-													<?php esc_html_e( 'Продавец: телефон', 'eshoplogisticru' ) ?>
-                                                </label>
-												<?php
-												$seller_phone = '';
-												if ( isset( $export_form['seller-phone'] ) ) {
-													$seller_phone = $export_form['seller-phone'];
-												}
-												?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Телефон продавца', 'eshoplogisticru' ) ?>"
-                                                        name="seller-phone"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $seller_phone ) ?>"
-                                                />
-                                            </div>
-
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
 													<?php esc_html_e( 'Регион', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1160,6 +1113,8 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'label' => 'СДЭК', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-sdek', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'seller-name-sdek', 'label' => 'Истинный продавец', 'help' => 'Наименование истинного продавца. Отображается в накладных.' ),
+									array( 'name' => 'seller-phone-sdek', 'label' => 'Телефон истинного продавца', 'help' => 'Телефон истинного продавца. Отображается в накладных.' ),
 								),
 							),
 							'yandex'   => array(
