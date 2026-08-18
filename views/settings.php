@@ -58,13 +58,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         <span class="dashicons dashicons-cart" aria-hidden="true"></span>
 						<?php esc_html_e( 'Настройки eShopLogistic Shipping', 'eshoplogisticru' ) ?>
                     </h1>
-					<?php if ( $moduleVersion ): ?>
-                        <h4 class="wc-esl-settings__doc-link"><a href="https://wp-v2.eshoplogistic.ru/documentation-v2/" target="_blank">Документация по
-                                настройке</a></h4>
-					<?php else: ?>
-                        <h4 class="wc-esl-settings__doc-link"><a href="https://wp-v2.eshoplogistic.ru/documentation/" target="_blank">Документация по
-                                настройке</a></h4>
-					<?php endif; ?>
+                    <h4 class="wc-esl-settings__doc-link"><a href="https://wp.eshoplogistic.ru/documentation/" target="_blank">Документация по настройке</a></h4>
                 </div>
             </div>
         </div>
