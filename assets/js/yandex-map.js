@@ -57,11 +57,9 @@ function eslRunMap() {
             request.addEventListener("readystatechange", () => {
 
                 if (request.readyState === 4 && request.status === 200 && request.response.data) {
-                    yandexMaps.createContainer()
-                    yandexMaps.terminals = request.response.data
                     yandexMaps.destroyMap()
-                    if (typeof ymaps !== 'undefined') ymaps.ready(yandexMaps.initMap)
                     document.getElementById('wcEslTerminals').value = JSON.stringify(request.response.data)
+                    yandexMaps.renderTerminals(request.response.data)
                 }
             })
 
@@ -72,7 +70,8 @@ function eslRunMap() {
     let ID_MODAL = 'wc_esl_yandex_map',
         YANDEX_MAP_CONTAINER_ID = 'wc_esl_yandex_map_container',
         YANDEX_MAP_CONTAINER_ID_FOR_MAP = 'wc_esl-modal-yandex-map-wrap',
-        YANDEX_MAP_CONTAINER_ID_FOR_ADDRESS = 'wc_esl-modal-yandex-map-address'
+        YANDEX_MAP_CONTAINER_ID_FOR_ADDRESS = 'wc_esl-modal-yandex-map-address',
+        LIST_CONTAINER_ID = 'wc_esl-modal-yandex-map-list'
 
     let modalDom = {
         initLayout: {
@@ -88,7 +87,7 @@ function eslRunMap() {
                 return result
             },
             createColForMap: function () {
-                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}"><div class="wc-esl-map-preloader" style="display:none;"><div class="wc-esl-map-preloader__spinner"></div><p class="wc-esl-map-preloader__text">Загрузка пунктов выдачи...</p></div><h4 class="without-map">Пункты выдачи не найдены</h4></div>`
+                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}"><div class="wc-esl-map-preloader" style="display:none;"><div class="wc-esl-map-preloader__spinner"></div><p class="wc-esl-map-preloader__text">Загрузка пунктов выдачи...</p></div><h4 class="without-map">Пункты выдачи не найдены</h4><div id="${LIST_CONTAINER_ID}" class="wc-esl-terminals-list" style="display:none;"></div></div>`
 
                 return col
             },
@@ -196,18 +195,88 @@ function eslRunMap() {
             if(document.getElementById("wcEslKeyYa"))
                 apiKeyYa = document.getElementById('wcEslKeyYa').value
 
-            // Без ключа Yandex Maps API инициализируется в ограниченном режиме и падает
-            // при попытке создать карту (см. yandexMaps.initMap) — не загружаем скрипт
-            // вовсе, чтобы не тянуть за собой эту ошибку; UI и так уже поддерживает
-            // состояние "без карты" (см. .without-map / destroyMap()).
-            if (!apiKeyYa) {
-                return;
-            }
-
+            // Ключ Yandex Maps API нужен только для поиска по карте (searchControl,
+            // см. yandexMaps.initMap) — сама карта и метки терминалов работают и без
+            // него, поэтому скрипт грузим всегда, добавляя apikey только если он задан.
             let script = document.createElement('script')
-            script.setAttribute('src', 'https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey='+apiKeyYa)
+            let src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU'
+            if (apiKeyYa) src += '&apikey=' + encodeURIComponent(apiKeyYa)
+            script.setAttribute('src', src)
             script.setAttribute('defer', '')
             document.head.appendChild(script)
+        },
+        // Единая точка входа для отображения полученных терминалов: если карта
+        // доступна (задан ключ Yandex Maps) — рисуем метки, иначе — показываем
+        // терминалы простым списком (см. showFallback), а не просто "не найдены".
+        renderTerminals: function (terminals) {
+            terminals = terminals || []
+            yandexMaps.terminals = terminals
+            if (terminals.length && typeof ymaps !== 'undefined') {
+                yandexMaps.createContainer()
+                ymaps.ready(yandexMaps.initMap)
+            } else {
+                yandexMaps.showFallback(terminals)
+            }
+        },
+        showFallback: function (terminals) {
+            let withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map')
+            let listWrap = document.getElementById(LIST_CONTAINER_ID)
+            if (terminals && terminals.length) {
+                if (withoutMap) withoutMap.style.display = 'none'
+                yandexMaps.renderTerminalsList(terminals)
+                if (listWrap) listWrap.style.display = ''
+            } else {
+                if (listWrap) {
+                    listWrap.innerHTML = ''
+                    listWrap.style.display = 'none'
+                }
+                if (withoutMap) withoutMap.style.display = ''
+            }
+        },
+        renderTerminalsList: function (terminals) {
+            let listWrap = document.getElementById(LIST_CONTAINER_ID)
+            if (!listWrap) return
+
+            listWrap.innerHTML = ''
+            let ul = document.createElement('ul')
+            ul.classList.add('wc-esl-terminals-list__items')
+
+            terminals.forEach(function (terminal) {
+                let li = document.createElement('li')
+                li.classList.add('wc-esl-terminals-list__item')
+
+                let address = document.createElement('div')
+                address.classList.add('wc-esl-terminals-list__address')
+                address.textContent = terminal.address || ''
+                li.appendChild(address)
+
+                if (terminal.note) {
+                    let note = document.createElement('div')
+                    note.classList.add('wc-esl-terminals-list__note')
+                    note.textContent = terminal.note
+                    li.appendChild(note)
+                }
+
+                if (terminal.workTime) {
+                    let work = document.createElement('div')
+                    work.classList.add('wc-esl-terminals-list__worktime')
+                    work.textContent = 'Время работы: ' + terminal.workTime
+                    li.appendChild(work)
+                }
+
+                let button = document.createElement('button')
+                button.setAttribute('type', 'button')
+                button.classList.add('btn', 'btn-success', 'wc-esl-terminals-list__select')
+                button.textContent = 'Забрать отсюда'
+                button.addEventListener('click', function () {
+                    esl.setTerminal(terminal)
+                })
+                li.appendChild(button)
+
+                ul.appendChild(li)
+            })
+
+            listWrap.appendChild(ul)
         },
         createContainer: function () {
             let container = document.createElement('div'),
@@ -226,6 +295,8 @@ function eslRunMap() {
                 if (withoutMap) withoutMap.style.display = 'none';
                 var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
                 if (preloader) preloader.style.display = 'none';
+                var listWrap = document.getElementById(LIST_CONTAINER_ID);
+                if (listWrap) { listWrap.innerHTML = ''; listWrap.style.display = 'none'; }
 
                 let defaultControls = ['zoomControl']
                 let apiKeyYa = document.getElementById('wcEslKeyYa').value
@@ -302,6 +373,8 @@ function eslRunMap() {
             if (withoutMap) withoutMap.style.display = '';
             var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
             if (preloader) preloader.style.display = 'none';
+            var listWrap = document.getElementById(LIST_CONTAINER_ID);
+            if (listWrap) { listWrap.innerHTML = ''; listWrap.style.display = 'none'; }
         }
     }
     yandexMaps.initApi()
@@ -313,9 +386,7 @@ function eslRunMap() {
             var parsedTerminals = [];
             try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
             if (parsedTerminals && parsedTerminals.length) {
-                yandexMaps.createContainer()
-                yandexMaps.terminals = parsedTerminals
-                if (typeof ymaps !== 'undefined') ymaps.ready(yandexMaps.initMap)
+                yandexMaps.renderTerminals(parsedTerminals)
                 modalDom.open()
             } else {
                 // Открываем модал сразу, затем догружаем терминалы через AJAX
@@ -342,20 +413,14 @@ function eslRunMap() {
                         if (preloader) preloader.style.display = 'none';
                         if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
                             terminalsEl.value = JSON.stringify(data.data.terminals);
-                            yandexMaps.createContainer();
-                            yandexMaps.terminals = data.data.terminals;
-                            if (typeof ymaps !== 'undefined') {
-                                ymaps.ready(yandexMaps.initMap);
-                            } else if (withoutMap) {
-                                withoutMap.style.display = '';
-                            }
+                            yandexMaps.renderTerminals(data.data.terminals);
                         } else {
-                            if (withoutMap) withoutMap.style.display = '';
+                            yandexMaps.showFallback([]);
                         }
                     })
                     .catch(function() {
                         if (preloader) preloader.style.display = 'none';
-                        if (withoutMap) withoutMap.style.display = '';
+                        yandexMaps.showFallback([]);
                     });
                 } else {
                     if (preloader) preloader.style.display = 'none';
@@ -375,15 +440,15 @@ function eslRunMap() {
         },
     }
 
-    let els_terminals_buttons = document.getElementsByClassName('wc-esl-terminals__button')
-
-    if (els_terminals_buttons) {
-
-        for (let i = 0; i < els_terminals_buttons.length; i++) {
-            els_terminals_buttons[i].addEventListener('click', bindEvents.clickOnTerminals, false);
+    // Делегирование клика: WooCommerce пересоздаёт блок способов доставки при
+    // update_checkout (например, при смене города), и прямой addEventListener на
+    // найденных при загрузке кнопках теряется вместе со старым DOM-узлом.
+    document.addEventListener('click', function (event) {
+        let button = event.target.closest && event.target.closest('.wc-esl-terminals__button');
+        if (button) {
+            bindEvents.clickOnTerminals(event);
         }
-
-    }
+    });
 
     let esl_filters = document.getElementsByClassName('filter-map-esl')
 
@@ -440,20 +505,14 @@ function eslRunMap() {
             if (preloader) preloader.style.display = 'none';
             if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
                 if (terminalsEl) terminalsEl.value = JSON.stringify(data.data.terminals);
-                yandexMaps.createContainer();
-                yandexMaps.terminals = data.data.terminals;
-                if (typeof ymaps !== 'undefined') {
-                    ymaps.ready(yandexMaps.initMap);
-                } else if (withoutMap) {
-                    withoutMap.style.display = '';
-                }
+                yandexMaps.renderTerminals(data.data.terminals);
             } else {
-                if (withoutMap) withoutMap.style.display = '';
+                yandexMaps.showFallback([]);
             }
         })
         .catch(function () {
             if (preloader) preloader.style.display = 'none';
-            if (withoutMap) withoutMap.style.display = '';
+            yandexMaps.showFallback([]);
         });
     });
 
