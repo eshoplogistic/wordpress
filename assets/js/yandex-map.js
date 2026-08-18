@@ -190,6 +190,7 @@ function eslRunMap() {
     let yandexMaps = {
         terminals: [],
         settings: {},
+        mapInstance: null,
         initApi: function () {
             let apiKeyYa = ''
             if(document.getElementById("wcEslKeyYa"))
@@ -279,6 +280,12 @@ function eslRunMap() {
             listWrap.appendChild(ul)
         },
         createContainer: function () {
+            // renderTerminals() может вызываться несколько раз подряд для одного открытия
+            // модалки (мгновенная отрисовка закешированных терминалов, затем — свежих из
+            // AJAX-ответа) — не создаём дублирующий контейнер с тем же id, а пересоздаём его.
+            let previous = document.getElementById(YANDEX_MAP_CONTAINER_ID)
+            if (previous) previous.remove()
+
             let container = document.createElement('div'),
                 modalBody = document.getElementById(ID_MODAL).querySelector('.modal__body  #' + YANDEX_MAP_CONTAINER_ID_FOR_MAP);
             container.setAttribute('id', YANDEX_MAP_CONTAINER_ID)
@@ -303,6 +310,14 @@ function eslRunMap() {
                 if(apiKeyYa)
                     defaultControls = ['zoomControl', 'searchControl']
 
+                // Уничтожаем предыдущий инстанс карты (если он был) перед созданием нового —
+                // иначе при повторном вызове initMap (см. renderTerminals) получаем два
+                // наложенных друг на друга рендера карты.
+                if (yandexMaps.mapInstance) {
+                    yandexMaps.mapInstance.destroy()
+                    yandexMaps.mapInstance = null
+                }
+
                 var map = new ymaps.Map(YANDEX_MAP_CONTAINER_ID, {
                     center: [yandexMaps.terminals[0]['lat'], yandexMaps.terminals[0]['lon']],
                     zoom: zoom,
@@ -310,6 +325,7 @@ function eslRunMap() {
                 }, {
                     suppressMapOpenBlock: true,
                 })
+                yandexMaps.mapInstance = map
 
                 // map.behaviors.disable('scrollZoom')
                 yandexMaps.createPlacemarks(yandexMaps.terminals, map)
@@ -366,6 +382,10 @@ function eslRunMap() {
 
         },
         destroyMap: function () {
+            if (yandexMaps.mapInstance) {
+                yandexMaps.mapInstance.destroy()
+                yandexMaps.mapInstance = null
+            }
             if (document.getElementById(YANDEX_MAP_CONTAINER_ID)) {
                 document.getElementById(YANDEX_MAP_CONTAINER_ID).remove()
             }
@@ -385,47 +405,56 @@ function eslRunMap() {
             if (!terminalsEl) return;
             var parsedTerminals = [];
             try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
+
+            modalDom.open();
+
+            var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+            var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+
             if (parsedTerminals && parsedTerminals.length) {
-                yandexMaps.renderTerminals(parsedTerminals)
-                modalDom.open()
+                // Быстро показываем закешированное значение, не дожидаясь ответа сервера.
+                yandexMaps.renderTerminals(parsedTerminals);
             } else {
-                // Открываем модал сразу, затем догружаем терминалы через AJAX
-                modalDom.open();
-                var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
                 if (withoutMap) withoutMap.style.display = 'none';
-                var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
                 if (preloader) preloader.style.display = 'flex';
-                var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
-                    ? wc_esl_shipping_global.ajaxUrl
-                    : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
-                    ? wcEslBlockFrontend.ajaxUrl
-                    : null;
-                if (ajaxUrl) {
-                    var formData = new URLSearchParams();
-                    formData.append('action', 'wc_esl_get_terminals');
-                    fetch(ajaxUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: formData.toString()
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (preloader) preloader.style.display = 'none';
-                        if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
-                            terminalsEl.value = JSON.stringify(data.data.terminals);
-                            yandexMaps.renderTerminals(data.data.terminals);
-                        } else {
-                            yandexMaps.showFallback([]);
-                        }
-                    })
-                    .catch(function() {
-                        if (preloader) preloader.style.display = 'none';
-                        yandexMaps.showFallback([]);
-                    });
-                } else {
+            }
+
+            // В любом случае перепроверяем свежими данными с сервера: #wcEslTerminals
+            // мог остаться от предыдущего города, а событие wc-esl-city-changed не
+            // гарантированно ловит каждую смену города (например, при программном
+            // изменении поля без диспатча события) — так что полагаться только на кэш
+            // нельзя, актуальность должен подтверждать сам сервер при каждом открытии.
+            var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
+                ? wc_esl_shipping_global.ajaxUrl
+                : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
+                ? wcEslBlockFrontend.ajaxUrl
+                : null;
+            if (ajaxUrl) {
+                var formData = new URLSearchParams();
+                formData.append('action', 'wc_esl_get_terminals');
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
                     if (preloader) preloader.style.display = 'none';
-                    if (withoutMap) withoutMap.style.display = '';
-                }
+                    if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
+                        terminalsEl.value = JSON.stringify(data.data.terminals);
+                        yandexMaps.renderTerminals(data.data.terminals);
+                    } else {
+                        terminalsEl.value = '[]';
+                        yandexMaps.showFallback([]);
+                    }
+                })
+                .catch(function() {
+                    if (preloader) preloader.style.display = 'none';
+                    if (!parsedTerminals.length) yandexMaps.showFallback([]);
+                });
+            } else {
+                if (preloader) preloader.style.display = 'none';
+                if (!parsedTerminals.length && withoutMap) withoutMap.style.display = '';
             }
         },
         onCloseModal: function () {
@@ -470,8 +499,14 @@ function eslRunMap() {
     //     esl.setTerminal( event.detail.address )
     // });
 
-    // Смена города в checkout: если модалка открыта — перезагрузить терминалы.
+    // Смена города в checkout: закешированные в #wcEslTerminals терминалы относятся
+    // к старому городу — сбрасываем кэш всегда, иначе при следующем открытии модалки
+    // clickOnTerminals() покажет их как есть, не сделав новый запрос (см. ниже).
+    // Если модалка уже открыта — сразу перезагружаем терминалы.
     document.addEventListener('wc-esl-city-changed', function () {
+        var terminalsElOnChange = document.getElementById('wcEslTerminals');
+        if (terminalsElOnChange) terminalsElOnChange.value = '[]';
+
         var modal = document.getElementById(ID_MODAL);
         if (!modal || !modal.classList.contains('modal__show')) return;
 

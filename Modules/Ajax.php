@@ -967,24 +967,66 @@ class Ajax implements ModuleInterface
 			? $shippingMethods[$chosenMethod]['terminals']
 			: [];
 
-		// Если сессия пуста (WC Blocks Store API использует отдельную сессию),
-		// перезапускаем calculate_shipping_basic() напрямую в контексте браузерного
-		// AJAX-запроса. Ответ ESL API уже закеширован в transient — вызов будет быстрым.
-		if (empty($terminals) && WC()->cart) {
+		// WC Blocks Store API пересчитывает доставку в собственной сессии, поэтому то,
+		// что уже лежит в WC()->session->get('shipping_methods'), может относиться к
+		// городу/адресу, который был актуален на момент последнего запроса через
+		// classic-сессию, а не к текущему выбору пользователя — просто непустой список
+		// не значит "актуальный". Поэтому всегда пересчитываем напрямую в контексте
+		// браузерного AJAX-запроса; ответ ESL API уже закеширован в transient по городу,
+		// так что при неизменившемся адресе вызов остаётся дешёвым.
+		if (WC()->cart) {
 			$packages = WC()->cart->get_shipping_packages();
 			if (!empty($packages)) {
 				$package = reset($packages);
 				$methodInstances = WC()->shipping() ? WC()->shipping()->load_shipping_methods($package) : [];
+
+				// calculate_shipping_basic() сам определяет billing/shipping-режим только
+				// по $_POST['post_data']['ship_to_different_address'], которого в этом
+				// "голом" AJAX-запросе нет — из-за этого пересчёт всегда уходил в billing-
+				// адрес (wc_esl_billing), даже когда актуальный адрес лежит в wc_esl_shipping.
+				//
+				// Сессионный флаг mode_shipping тут не годится в качестве замены: он общий
+				// на всю сессию и просто хранит режим последнего РЕАЛЬНОГО расчёта — если
+				// в той же сессии до этого открывался блочный чекаут (который безусловно
+				// выставляет mode_shipping='shipping', см. GutenbergBlock/BlocksCheckoutHandler),
+				// он "протечёт" и в легаси-чекаут с выключенным чекбоксом "Доставка по
+				// другому адресу", где реально нужен billing.
+				//
+				// Вместо этого сверяемся с городом пакета доставки ($package['destination']),
+				// который WooCommerce считает заново на каждый запрос из WC()->customer и
+				// всегда корректно учитывает текущее состояние чекбоксa (когда он выключен,
+				// сам WC копирует billing-адрес в shipping) — это единственный источник,
+				// не зависящий от истории сессии. Терминалы ищутся по городу, поэтому для
+				// выбора режима достаточно сравнения на уровне города, без учёта улицы/дома.
+				$savedPostData = isset($_POST['post_data']) ? $_POST['post_data'] : null;
+				$destinationCity = isset($package['destination']['city']) ? trim(mb_strtolower($package['destination']['city'])) : '';
+				if ($destinationCity !== '') {
+					$shippingState = $sessionService->get('shipping') ?: [];
+					$shippingCity  = isset($shippingState['city']) ? trim(mb_strtolower($shippingState['city'])) : '';
+					if ($shippingCity !== '' && $shippingCity === $destinationCity) {
+						// phpcs:ignore WordPress.Security.NonceVerification.Missing -- internal recalculation input, not read as user request data
+						$_POST['post_data'] = 'ship_to_different_address=1';
+					}
+				}
+
 				foreach ($methodInstances as $method) {
 					if ($method->id === $chosenMethod && method_exists($method, 'calculate_shipping_basic')) {
 						$method->calculate_shipping_basic($package);
 						break;
 					}
 				}
+
+				if ($savedPostData !== null) {
+					// phpcs:ignore WordPress.Security.NonceVerification.Missing -- restoring original request state
+					$_POST['post_data'] = $savedPostData;
+				} else {
+					unset($_POST['post_data']);
+				}
+
 				$shippingMethods = $sessionService->get('shipping_methods') ?: [];
-				$terminals = isset($shippingMethods[$chosenMethod]['terminals'])
-					? $shippingMethods[$chosenMethod]['terminals']
-					: [];
+				if (isset($shippingMethods[$chosenMethod]['terminals'])) {
+					$terminals = $shippingMethods[$chosenMethod]['terminals'];
+				}
 			}
 		}
 
