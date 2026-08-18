@@ -83,7 +83,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                             <a class="nav-link" id="esl-top-tab-export-btn" data-toggle="tab" href="#esl-top-tab-export" role="tab"><span class="dashicons dashicons-upload"></span>Выгрузка заказов</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-status-btn" data-toggle="tab" href="#esl-top-tab-status" role="tab"><span class="dashicons dashicons-update"></span>Синхронизация статусов</a>
+                            <a class="nav-link" id="esl-top-tab-status-btn" data-toggle="tab" href="#esl-top-tab-status" role="tab"><span class="dashicons dashicons-update"></span>Настройка соответствия статусов</a>
                         </li>
                     </ul>
 
@@ -530,7 +530,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     <div class="tab-pane fade" id="esl-top-tab-extra" role="tabpanel">
                     <div class="card wc-esl-settings-others">
                         <div class="card-header">
-							<?php esc_html_e( 'Дополнительные настройки eShopLogistic', 'eshoplogisticru' ) ?>
+							<?php esc_html_e( 'Дополнительные настройки', 'eshoplogisticru' ) ?>
                         </div>
 
                         <div class="card-body" id="eslOthersFormWrap">
@@ -726,7 +726,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
 
                                         <div class="card-header">
-		                                    <?php esc_html_e( 'Планировщик выгрузки заказов', 'eshoplogisticru' ) ?>
+		                                    <?php esc_html_e( 'Планировщик обновления статусов', 'eshoplogisticru' ) ?>
                                         </div>
 
                                         <div class="input-group">
