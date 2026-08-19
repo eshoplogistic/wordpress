@@ -314,7 +314,7 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
 										$wc_esl_textDisabled = ($wc_esl_name === 'tariffView') ? 'disabled' : '';
 										?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="text"
-                                               value="<?php echo esc_attr($wc_esl_value)?>" <?php echo $wc_esl_textDisabled; ?>>
+                                               value="<?php echo esc_attr($wc_esl_value)?>" <?php echo esc_attr($wc_esl_textDisabled); ?>>
 									<?php endif; ?>
 	                                <?php if ( $wc_esl_type === 'number' ): ?>
                                         <input class="form-value" id="<?php echo esc_attr($wc_esl_fieldId); ?>" name="<?php echo esc_attr($wc_esl_nameArr)?>[<?php echo esc_attr($wc_esl_name) ?>]" type="number"

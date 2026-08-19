@@ -998,6 +998,7 @@ class Ajax implements ModuleInterface
 				// сам WC копирует billing-адрес в shipping) — это единственный источник,
 				// не зависящий от истории сессии. Терминалы ищутся по городу, поэтому для
 				// выбора режима достаточно сравнения на уровне города, без учёта улицы/дома.
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- saving raw request state verbatim to restore it below, not consumed as trusted input
 				$savedPostData = isset($_POST['post_data']) ? $_POST['post_data'] : null;
 				$destinationCity = isset($package['destination']['city']) ? trim(mb_strtolower($package['destination']['city'])) : '';
 				if ($destinationCity !== '') {
