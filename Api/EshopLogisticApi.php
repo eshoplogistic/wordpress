@@ -9,6 +9,7 @@ use eshoplogistic\WCEshopLogistic\Http\Response\CollectionResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ErrorResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ExceptionResponse;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 if ( ! defined('ABSPATH') ) {
 	exit;
@@ -155,16 +156,23 @@ class EshopLogisticApi
 			if($this->eslLog == '1'){
 				$this->eslWriteLog( $response, $data );
 			}
-			if ( isset($response['success']) && $response['success'] || ($response['http_status'] == 200) ) {
+			if ( is_array($response) && ( (isset($response['success']) && $response['success']) || (isset($response['http_status']) && $response['http_status'] == 200) ) ) {
 				if(isset($response['debug']))
 					$response['data']['debug'] = $response['debug'];
 
-				return new CollectionResponse( $response['data'] );
+				return new CollectionResponse( $response['data'] ?? [] );
 			}
 
 			return new ErrorResponse( $response );
 
 		} catch ( ApiServiceException $e ) {
+
+			// Сетевые сбои (таймаут, DNS, разрыв соединения) не долетают до успешного
+			// $response выше и раньше нигде не логировались — запрос "терялся" молча,
+			// а в интерфейсе оставалась только общая ошибка без деталей.
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
 
 			return new ExceptionResponse( $e );
 		}
@@ -203,42 +211,47 @@ class EshopLogisticApi
 		return $this->apiBaseUrl['v2'];
 	}
 
+	/**
+	 * Пишет запрос/ответ ESL API в стандартный логгер WooCommerce (источник "wc-esl-shipping",
+	 * WooCommerce > Статус > Журналы), а не в текстовый файл внутри папки плагина — файл был
+	 * доступен по прямой публичной ссылке без авторизации и мог раскрывать API-ключ и ПДн
+	 * покупателей (адрес, телефон, email) кому угодно, кто знает URL.
+	 *
+	 * Формат: короткая сводка первой строкой (action/service/order_id — чтобы можно было
+	 * понять "что за запрос и откуда" не разворачивая JSON), а request/response передаются
+	 * вторым аргументом ($context) через общий хелпер EslLogger. Это тот же механизм, которым
+	 * пользуется ядро WooCommerce для лога "place-order-debug": логгер (LogHandlerFileV2)
+	 * дописывает " CONTEXT: {json}" в конец строки, а страница просмотра лога сворачивает его
+	 * в блок "Дополнительный контекст" — вместо того, чтобы выводить сырой JSON прямо в тексте лога.
+	 *
+	 * @param mixed  $log  Ответ API (обычно массив, декодированный из JSON).
+	 * @param mixed  $type Данные запроса (если переданы, добавляются в лог вместе с URL запроса).
+	 */
 	public function eslWriteLog($log, $type = '') {
 		if(isset($type['target']))
 			return false;
 
-		$d = gmdate("j-M-Y H:i:s") . ' UTC';
-		$header = ' ####################### ';
-		$plugin = WP_PLUGIN_DIR . '/eshoplogisticru';
-		if(is_dir( $plugin )){
-			$path = $plugin.'/esl.log';
-			if (file_exists($path)) {
-				$size = filesize($path);
-				$sizeMb = round($size / 1024 / 1024, 2);
-				if($sizeMb > 10){
-					file_put_contents($path, '');
-				}
-			}
+		$isRequestArray = is_array($type) || is_object($type);
+		$requestArr = $isRequestArray ? (array) $type : array();
 
-			if (is_array($log) || is_object($log)) {
-				if (is_object($log)) {
-					$log = (array) $log;
-				}
-				if($type){
-					$urlRequest = $this->apiUrl;
-					$tmp['sendRequest'] = $type;
-					$tmp['sendRequest']['url'] = $urlRequest;
-					array_unshift($log, $tmp);
-				}
-				$encodedLog = wp_json_encode($log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-				if (false === $encodedLog) {
-					$encodedLog = 'Failed to encode log payload';
-				}
-				file_put_contents($path, $header . $d . $header . $encodedLog . PHP_EOL, FILE_APPEND);
-			} else {
-				file_put_contents($path, $header . $d . $header . (string) $log . PHP_EOL, FILE_APPEND);
-			}
+		$orderId = $requestArr['order_id'] ?? $requestArr['order']['id'] ?? '';
+		$summary = sprintf(
+			'ESL API%s%s%s | %s',
+			isset($requestArr['action']) ? ' action=' . $requestArr['action'] : '',
+			isset($requestArr['service']) ? ' service=' . $requestArr['service'] : '',
+			$orderId !== '' ? ' order_id=' . $orderId : '',
+			$this->apiUrl
+		);
+
+		$context = array('source' => 'wc-esl-shipping');
+
+		if ($isRequestArray && $requestArr) {
+			$context['request'] = $requestArr;
 		}
+
+		$context['response'] = (is_array($log) || is_object($log)) ? (array) $log : (string) $log;
+
+		EslLogger::info($summary, $context);
 	}
 
 	public function geo($ip = '')
@@ -271,7 +284,11 @@ class EshopLogisticApi
 		try {
 			$response = $this->sendRequest( $data );
 
-			if ( $response['http_status'] == 200 && isset($response['data']['state']['number'])) {
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( $response, $data );
+			}
+
+			if ( is_array($response) && ($response['http_status'] ?? null) == 200 && isset($response['data']['state']['number'])) {
 				return new CollectionResponse( $response['data'] );
 			}
 
@@ -281,6 +298,10 @@ class EshopLogisticApi
 			return new ErrorResponse( $response );
 
 		} catch ( ApiServiceException $e ) {
+
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
 
 			return new ExceptionResponse( $e );
 		}
@@ -322,6 +343,57 @@ class EshopLogisticApi
 	{
 		$this->generateApiUrl('service/counterparties');
 		$data['service'] = $service;
+
+		return $this->sendLoadRequest($data);
+	}
+
+	/**
+	 * Справочник организационно-правовых форм для служб, которым он требуется (например, Деловые линии).
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceOpf()
+	{
+		$this->generateApiUrl('service/opf');
+
+		return $this->sendLoadRequest(array());
+	}
+
+	/**
+	 * Поиск терминалов/ПВЗ службы доставки (используется для подсказки кода терминала отправителя).
+	 *
+	 * @param string $service
+	 * @param string $settlement
+	 * @param string $region
+	 * @param string $address
+	 * @param bool   $onlyBranches
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceTerminals($service, $settlement = '', $region = '', $address = '', $onlyBranches = false)
+	{
+		$this->generateApiUrl('service/terminals');
+		$data['service'] = $service;
+		if ($settlement) $data['settlement'] = $settlement;
+		if ($region) $data['region'] = $region;
+		if ($address) $data['address'] = $address;
+		if ($onlyBranches) $data['only_branches'] = 1;
+
+		return $this->sendLoadRequest($data);
+	}
+
+	/**
+	 * Поиск варианта "Характер груза" по названию (например, для Байкал Сервиса) — подсказка
+	 * при заполнении соответствующего поля в настройках ТК.
+	 *
+	 * @param string $name    Строка поиска.
+	 * @param string $service Слаг службы доставки.
+	 */
+	public function apiFreightTypes($name, $service = '')
+	{
+		$this->generateApiUrl('service/freighttypes');
+		$data['name'] = $name;
+		if ($service) $data['service'] = $service;
 
 		return $this->sendLoadRequest($data);
 	}

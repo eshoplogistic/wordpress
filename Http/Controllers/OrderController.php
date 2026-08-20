@@ -3,6 +3,7 @@
 namespace eshoplogistic\WCEshopLogistic\Http\Controllers;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ResponseInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\Foundation\Controller;
 use eshoplogistic\WCEshopLogistic\Models\OrderData;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
@@ -38,11 +39,22 @@ class OrderController extends Controller {
 		$paymentMethodOptions = $optionsRepository->getOption( 'wc_esl_shipping_payment_methods' );
 		$this->listRequestParamsV2( $request );
 
-		// if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || ($_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest')) return $this->json(['success' => false, 'message' => __('Проверка на HTTP_X_REQUESTED_WITH завершилась неудачно', 'eshoplogisticru')]);
+		// Public checkout endpoint by design (guests have no WP session/nonce to authorize
+		// against) -- protected instead by three independent layers:
+		// 1) the merchant's widget secret below, when configured;
+		// 2) a per-IP rate limit (see checkRateLimit()) that bounds abuse even when it isn't;
+		// 3) OrderData::save() always re-derives product prices from wc_get_product(), so a
+		//    forged request can only spoof the shipping-cost line and lands as an 'on-hold'
+		//    order awaiting manual merchant review -- it can never checkout at an attacker
+		//    controlled price.
+		if ( ! $this->checkRateLimit() ) {
+			return $this->json( [ 'success' => false, 'message' => __( 'Слишком много запросов, попробуйте позже', 'eshoplogisticru' ) ] );
+		}
 
-		//if($secretKey !== $optionsRepository->getOption('wc_esl_shipping_widget_secret_code')) return $this->json(['success' => false, 'message' => __('Ключи не совпадают', 'eshoplogisticru')]);
-
-		//if($queryMode !== 'widget') return $this->json(['success' => false, 'message' => __('Контекст запроса не определен как `widget`', 'eshoplogisticru')]);
+		$configuredSecret = $optionsRepository->getOption( 'wc_esl_shipping_widget_secret_code' );
+		if ( ! empty( $configuredSecret ) && ! hash_equals( (string) $configuredSecret, (string) $this->secretKey ) ) {
+			return $this->json( [ 'success' => false, 'message' => __( 'Ключи не совпадают', 'eshoplogisticru' ) ] );
+		}
 
 		if ( empty( $this->offers ) || !is_array( $this->offers ) ) {
 			return $this->json( [
@@ -111,11 +123,11 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $paymentMethodOptions ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Методы оплаты не настроены', 'eshoplogisticru' ) ] );
 		}
 
 		if ( ! isset( $this->selectedPayment['key'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не установлен', 'eshoplogisticru' ) ] );
 		}
 
 		$address = ( $this->selectedDelivery['key'] === 'terminal' ) ? __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $this->addressForDelivery : $this->addressForDelivery;
@@ -162,14 +174,14 @@ class OrderController extends Controller {
 		}
 
 		if ( ! isset( $data['payment_method']['id'] ) ) {
-			$this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
+			return $this->json( [ 'success' => false, 'message' => __( 'Метод оплаты не найден', 'eshoplogisticru' ) ] );
 		}
 
 		$orderData = new OrderData( $data );
 		$orderId   = $orderData->save();
 
 		if ( ! $orderId ) {
-			$this->json( [
+			return $this->json( [
 				'success' => false,
 				'message' => __( 'При создании заказа произошла ошибка', 'eshoplogisticru' )
 			] );
@@ -180,6 +192,30 @@ class OrderController extends Controller {
 			'message'     => __( 'Заказ успешно создан', 'eshoplogisticru' ),
 			'data'    => $orderId
 		] );
+	}
+
+	/**
+	 * Limits anonymous order-creation requests to 10 per IP per 10 minutes, independently of
+	 * whether a widget secret is configured.
+	 */
+	private function checkRateLimit(): bool {
+		$shippingHelper = new ShippingHelper();
+		$ip             = $shippingHelper->get_the_user_ip();
+
+		if ( empty( $ip ) ) {
+			return true;
+		}
+
+		$transientKey = 'wc_esl_order_rl_' . md5( $ip );
+		$requests     = (int) get_transient( $transientKey );
+
+		if ( $requests >= 10 ) {
+			return false;
+		}
+
+		set_transient( $transientKey, $requests + 1, 10 * MINUTE_IN_SECONDS );
+
+		return true;
 	}
 
 	private function listRequestParamsV1( $request ) {

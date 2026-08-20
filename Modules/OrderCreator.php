@@ -152,7 +152,7 @@ class OrderCreator implements ModuleInterface
 		}
 	}
 
-	private function getTerminalLocation(SessionService $sessionService)
+	public function getTerminalLocation(SessionService $sessionService)
 	{
 		$terminal = $sessionService->get('terminal_location');
 		if (is_string($terminal) && '' !== trim($terminal)) {
@@ -208,7 +208,7 @@ class OrderCreator implements ModuleInterface
 		return $frameAddress;
 	}
 
-	private function methodsIsEshopTerminal($methodId)
+	public function methodsIsEshopTerminal($methodId)
     {
         $explodedAtPrefix = explode(WC_ESL_PREFIX, $methodId);
 
@@ -221,7 +221,14 @@ class OrderCreator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-		if($typeServiceShipping === 'mixed') return true;
+		if($typeServiceShipping === 'mixed'){
+			$sessionService = new SessionService();
+			$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
+			if(isset($shippingFrame['mode']) && $shippingFrame['mode'] == 'terminal'){
+				return true;
+			}
+			return false;
+		}
         if($typeServiceShipping !== 'terminal') return false;
 
         return true;

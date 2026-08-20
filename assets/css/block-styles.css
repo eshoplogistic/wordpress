@@ -8,6 +8,25 @@
     border: 0;
 }
 
+/* Скрыть legacy-прелоадер (рендерится PHP как часть блока для паритета с classic
+   checkout) — в блочном чекауте его никто не показывает/не скрывает через JS
+   (это делает assets/css/style.css через классы body.load/.loaded_hiding, но
+   style.css намеренно не подключается на блочном чекауте). Без этого правила
+   спиннер виден постоянно, независимо от результата загрузки виджета. */
+.wc-esl-checkout-shipping-block .preloader {
+    display: none;
+}
+
+/* Метод "Калькулятор доставки ESL" (wc_esl_frame_mixed) до выбора ПВЗ/службы в
+   виджете имеет cost = 0 (реальная цена ещё не рассчитана), и WooCommerce Blocks
+   безусловно подписывает любую нулевую ставку как "Бесплатно" — это вводит в
+   заблуждение, доставка не бесплатна. Если ставка действительно бесплатная,
+   плагин сам добавляет ": Бесплатно" в текст названия (Base.php/Shipping.php),
+   поэтому скрытие автоматической плашки WooCommerce не теряет информацию. */
+label.wc-block-components-radio-control__option:has(input[value^="wc_esl_frame_mixed"]) .wc-block-checkout__shipping-option--free {
+    display: none;
+}
+
 /* Legacy parity: city search UI */
 .wc-esl-checkout-shipping-block .wc-block-components-text-input {
     position: relative;
@@ -89,7 +108,11 @@ body > .modal-esl-frame {
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 9999;
+    /* WC Blocks (@wordpress/components) поднимает z-index у floating-label полей
+       выше обычного document flow — тот же конфликт, из-за которого прелоадер
+       ниже в этом файле тоже задран до 999999. Обычного 9999 не хватает: сквозь
+       модалку видно, например, лейбл "Страна/регион". */
+    z-index: 999999;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .modal_content,
@@ -99,16 +122,31 @@ body > .modal-esl-frame .modal_content {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    z-index: 99999;
+    z-index: 1000000;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window,
 body > .modal-esl-frame .modal_content .close_modal_window {
-    color: #aaa;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #98a2b3;
+    background-color: transparent;
+    border-radius: 50%;
     float: right;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window:hover,
+body > .modal-esl-frame .modal_content .close_modal_window:hover {
+    background-color: #f2f4f7;
+    color: #d63638;
 }
 
 .wc-esl-checkout-shipping-block .modal-esl-frame .title,
@@ -121,6 +159,158 @@ body > .modal-esl-frame #buttonModalDoor {
     position: relative;
     left: 50%;
     transform: translate(-50%, 0);
+}
+
+/* Legacy parity: city-select modal (#modal-esl-city) trigger overlay */
+#modal-esl-city .title {
+    padding-bottom: 0;
+}
+
+#modal-esl-city #esl_modal_button-search {
+    margin-top: 25px;
+}
+
+/* Поле остаётся видимым (значение показывает сам input), просто курсор
+   подсказывает, что это клик, а не набор текста — input становится readOnly
+   через JS (attachOverlayButton), не через CSS. */
+.wc-block-components-text-input.esl-city-modal-active input,
+.wc-block-components-address-form__city.esl-city-modal-active input {
+    cursor: pointer;
+    padding-right: 30px;
+}
+
+/* Маленькая иконка-подсказка в правом углу поля. Специально НЕ grows на весь
+   input (как в classic) — во враппере блочного поля вместе с input живёт ещё
+   и плавающий лейбл, а точную геометрию input вычислить через JS надёжно
+   нельзя (в момент навешивания поле может быть ещё не выложено браузером). */
+.esl_city_button {
+    position: absolute;
+    right: 8px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    box-shadow: none !important;
+}
+
+.esl_city_button svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Legacy parity: #modal-esl-city search input + results list
+   (порт из style.css — там же живут .wc-esl-search-city-modal__* /
+   .wc-esl-search-region-modal__*, но style.css на блочном чекауте не подключается) */
+#esl_modal-search {
+    width: 100%;
+    margin-top: 15px;
+}
+
+#esl_result-search {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.wc-esl-search-city-modal__list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wc-esl-search-city-modal__item {
+    cursor: pointer;
+    padding: 4px 9px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city-modal__item:hover {
+    background: #fafafa;
+}
+
+.wc-esl-search-region-modal__list {
+    display: inline-grid;
+    width: 49.9%;
+    padding-top: 30px;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.wc-esl-search-region-modal__list .title-region {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Legacy parity: eShopLogistic SDK widget theme overrides. Виджет монтируется в тот же
+   #eShopLogisticWidgetCart / #modal-esl-frame, что и в classic-чекауте (см.
+   checkout_frame_block.js), но эти размерные переопределения жили только в style.css,
+   которое на блочном чекауте не подключается — без них карточки служб/тарифов
+   рендерятся мельче/теснее, чем в legacy. */
+#eShopLogisticWidgetCart .eshoplogistic-widget-cart .eshoplogistic-theme {
+    font-size: 1.5rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__footer {
+    font-size: 1.5rem !important;
+    font-weight: 500;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-services-list {
+    max-height: 25rem !important;
+}
+
+#modal-esl-frame .footer {
+    padding-top: 15px;
+    border: 0;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info span {
+    font-size: 12px !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info img {
+    height: 2.2rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info p {
+    margin-bottom: 0 !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__title,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__price,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__time {
+    font-size: 1.42rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal_size-small {
+    max-width: 105rem !important;
+    margin-top: 1% !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__tariff {
+    margin-top: 10px !important;
+    font-size: 1.1rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__select-tariff {
+    font-size: 1rem !important;
+}
+
+@media (max-width: 641px) {
+    .eshoplogistic-widget-cart .eshoplogistic-theme-h2 {
+        margin-top: 1em;
+        font-size: 1em;
+        font-weight: 500;
+    }
 }
 
 /* Preloader overlay — создаётся JS-ом на document.body, вне любого stacking context */
@@ -147,6 +337,16 @@ body > .modal-esl-frame #buttonModalDoor {
     border-top-color: #337ab7;
     border-radius: 50%;
     animation: esl-block-spin 0.8s linear infinite;
+}
+
+.wc-esl-block-preloader__img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    margin-top: -75px;
+    margin-left: -75px;
 }
 
 @keyframes esl-block-spin {
@@ -308,12 +508,6 @@ body > .modal-esl-frame #buttonModalDoor {
         color: #ba3939;
         background: #ffe0e0;
         border-color: #a33a3a;
-    }
-
-    .wc-esl-product-calculator-block #eShopLogisticWidgetBlock {
-        background-color: #1e1e1e;
-        border-color: #444;
-        color: #ccc;
     }
 }
 

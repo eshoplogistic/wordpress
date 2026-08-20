@@ -24,7 +24,7 @@ class OptionsPage implements ModuleInterface
 	private $paymentGateways;
 
 	/**
-	 * @var Unloading $unloading
+	 * @var UnloadingOrder $unloading
 	 */
 	private $unloading;
 
@@ -32,12 +32,36 @@ class OptionsPage implements ModuleInterface
 	{
 		$this->option = new OptionsRepository();
 		$this->paymentGateways = new PaymentGatewaysRepository();
-		$this->unloading = new Unloading();
+		$this->unloading = new UnloadingOrder();
 	}
 
 	public function init()
 	{
 		add_action( 'admin_menu', [$this, 'registerOptionsPage'], 99 );
+		add_action( 'admin_notices', [$this, 'renderPaymentMethodsNotice'] );
+	}
+
+	public function renderPaymentMethodsNotice()
+	{
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check, no state change.
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		if ( $page !== 'wc_esl_options' || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$pluginEnable   = $this->option->getOption( 'wc_esl_shipping_plugin_enable' );
+		$apiKey         = $this->option->getOption( 'wc_esl_shipping_api_key' );
+		$paymentMethods = $this->option->getOption( 'wc_esl_shipping_payment_methods' );
+
+		if ( $pluginEnable !== '1' || empty( $apiKey ) || ! empty( $paymentMethods ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+			esc_html__( 'eShopLogistic: не сопоставлены методы оплаты с методами оплаты сервиса (вкладка «Оплата и виджет») — это повлияет на расчёт стоимости доставки.', 'eshoplogisticru' )
+		);
 	}
 
 	public function registerOptionsPage()
@@ -91,6 +115,11 @@ class OptionsPage implements ModuleInterface
 			'wc_esl_status_form'     => $this->option->getOption('wc_esl_shipping_plugin_status_form'),
 			'wc_esl_status_wp'     => $this->unloading->getStatusWp(),
 			'wc_esl_add_field_form'     => $this->option->getOption('wc_esl_shipping_add_field_form'),
+			'wc_esl_account_blocked'   => $this->option->getOption('wc_esl_shipping_account_blocked'),
+			'wc_esl_account_sync_error' => $this->option->getOption('wc_esl_shipping_account_sync_error'),
+			'wc_esl_account_balance'   => $this->option->getOption('wc_esl_shipping_account_balance'),
+			'wc_esl_account_paid_days' => $this->option->getOption('wc_esl_shipping_account_paid_days'),
+			'wc_esl_account_free_days' => $this->option->getOption('wc_esl_shipping_account_free_days'),
 		);
 	}
 }

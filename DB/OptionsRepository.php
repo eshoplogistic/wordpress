@@ -28,6 +28,7 @@ class OptionsRepository
 			'wc_esl_shipping_account_balance' => '0',
 			'wc_esl_shipping_account_paid_days' => '0',
 			'wc_esl_shipping_account_free_days' => '0',
+			'wc_esl_shipping_account_sync_error' => '',
 			'wc_esl_shipping_account_services' => [],
 			'wc_esl_shipping_account_settings' => [],
 			'wc_esl_shipping_account_init_services' => [],

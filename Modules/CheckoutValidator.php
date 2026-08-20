@@ -8,6 +8,7 @@ use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
+use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 
 if ( ! defined('ABSPATH') ) {
     exit;
@@ -19,6 +20,12 @@ class CheckoutValidator implements ModuleInterface
     {
         add_action('woocommerce_checkout_process', [$this, 'validateFields']);
         add_filter('woocommerce_checkout_fields', [$this, 'removeDefaultFieldsFromValidation'], 99);
+
+        // WooCommerce Blocks / Store API: аналог validateFields() для блочного чекаута.
+        // Приоритет 5, чтобы отработать раньше OrderCreator::processBlocksOrder (10) —
+        // при выброшенном исключении оставшиеся колбэки этого хука не выполняются,
+        // заказ не создаётся лишний раз без выбранного ПВЗ.
+        add_action('woocommerce_store_api_checkout_order_processed', [$this, 'validateBlocksOrder'], 5, 1);
 
         add_filter('default_checkout_billing_address_1', [$this, 'clearCheckoutField'], 10, 2);
         add_filter('default_checkout_billing_address_2', [$this, 'clearCheckoutField'], 10, 2);
@@ -44,6 +51,37 @@ class CheckoutValidator implements ModuleInterface
         $type = $this->getTypeToValidate();
 
         $this->validateTerminalField($type);
+    }
+
+    /**
+     * @param \WC_Order $order
+     */
+    public function validateBlocksOrder($order)
+    {
+        $optionsRepository = new OptionsRepository();
+        $checkDelivery = $optionsRepository->getOption('wc_esl_shipping_add_form');
+        if (isset($checkDelivery['checkDelivery']) && $checkDelivery['checkDelivery'] === 'true') return;
+
+        $shippingMethodId = null;
+        foreach ($order->get_items('shipping') as $item) {
+            $shippingMethodId = $item->get_method_id();
+        }
+
+        if (!$shippingMethodId) return;
+
+        $orderCreator = new OrderCreator();
+        if (!$orderCreator->methodsIsEshopTerminal($shippingMethodId)) return;
+
+        $sessionService = new SessionService();
+        $terminal = $orderCreator->getTerminalLocation($sessionService);
+
+        if ('' === $terminal) {
+            throw new RouteException(
+                'esl_terminal_required',
+                __('Пункт выдачи доставки является обязательным полем.', 'eshoplogisticru'), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- static translated string, no user input.
+                400
+            );
+        }
     }
 
     private function validateTerminalField($mode) {

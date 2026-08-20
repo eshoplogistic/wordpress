@@ -527,7 +527,8 @@ function isNumeric(value) {
                 data: {
                     action: 'wc_esl_update_shipping_address',
                     ...cityData,
-                    mode
+                    mode,
+                    nonce: wc_esl_shipping_global.nonce
                 },
                 dataType: 'json',
                 success: function (response) {
@@ -810,6 +811,17 @@ function isNumeric(value) {
 
         },
         confirm: async function (response) {
+            const serviceData = response.service && response.service.responseData
+                ? response.service.responseData[response.typeDelivery]
+                : undefined
+
+            if (!serviceData) {
+                // Тариф для этого типа доставки ещё не посчитан (например, курьер ждёт адрес) —
+                // виджет повторно вызовет onSelectedService, когда данные будут готовы.
+                console.log('ESL: нет данных тарифа для "' + response.typeDelivery + '", выбор пропущен')
+                return
+            }
+
             let esldata = {
                 price: 0,
                 time: '',
@@ -834,12 +846,12 @@ function isNumeric(value) {
                 esldata.deliveryMethods = response.deliveryMethods
             }
 
-            let time = response.service.responseData[response.typeDelivery].time
+            let time = serviceData.time
 
-            esldata.price = response.service.responseData[response.typeDelivery].price
+            esldata.price = serviceData.price
             esldata.time = time.value + ' ' + time.unit
-            if (response.service.responseData[response.typeDelivery].comment) {
-                esldata.comment += '<br>' + response.service.responseData[response.typeDelivery].comment
+            if (serviceData.comment) {
+                esldata.comment += '<br>' + serviceData.comment
             }
 
             if (typeof response.terminal == 'object') {
@@ -858,7 +870,7 @@ function isNumeric(value) {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}`)
+            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}&nonce=${wc_esl_shipping_global.nonce}`)
 
             request.addEventListener("readystatechange", () => {
 

@@ -45,7 +45,7 @@
 
             // Загружаем скрипт checkout frame-блока, если он еще не загружен
             if (!window.wcEslCheckoutBlock) {
-                loadExternalScript(wcEslConfig.pluginUrl + 'assets/js/checkout_frame_block.js', function() {
+                loadExternalScript(wcEslConfig.pluginUrl + 'assets/js/checkout_frame_block.js?ver=' + encodeURIComponent(wcEslConfig.checkoutFrameBlockVer || ''), function() {
                     if (window.wcEslCheckoutBlock) {
                         const widgetContainer = block.querySelector('#eShopLogisticWidgetCart');
                         if (widgetContainer && window.wcEslCheckoutBlock.initWidget) {

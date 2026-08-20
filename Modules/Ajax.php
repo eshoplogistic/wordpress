@@ -4,6 +4,7 @@ namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OptionsController;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\SessionController;
@@ -79,8 +80,12 @@ class Ajax implements ModuleInterface
 		add_action('wp_ajax_wc_esl_shipping_save_status_form', [$this, 'unloadingStatus']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_status_update', [$this, 'unloadingStatusUpdate']);
 		add_action('wp_ajax_wc_esl_shipping_unloading_delete', [$this, 'unloadingDelete']);
+		add_action('wp_ajax_wc_esl_shipping_unloading_print', [$this, 'unloadingPrint']);
 		add_action('wp_ajax_wc_esl_shipping_get_add_field', [$this, 'getAddField']);
 		add_action('wp_ajax_wc_esl_shipping_save_add_field', [$this, 'saveAddField']);
+		add_action('wp_ajax_wc_esl_shipping_get_export_fields', [$this, 'getExportExtraFields']);
+		add_action('wp_ajax_wc_esl_shipping_search_terminal', [$this, 'searchTerminalAdmin']);
+		add_action('wp_ajax_wc_esl_shipping_search_freight', [$this, 'searchFreightAdmin']);
 	}
 
 	public function changeEnablePlugin()
@@ -453,9 +458,121 @@ class Ajax implements ModuleInterface
 		]);
 	}
 
+	/**
+	 * Поиск терминалов ТК для настроек плагина (подсказка кода терминала отправителя).
+	 */
+	public function searchTerminalAdmin()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$service    = isset($_POST['service']) ? sanitize_text_field(wp_unslash($_POST['service'])) : '';
+		$settlement = isset($_POST['settlement']) ? sanitize_text_field(wp_unslash($_POST['settlement'])) : '';
+		$address    = isset($_POST['address']) ? sanitize_text_field(wp_unslash($_POST['address'])) : '';
+
+		if (!$service) {
+			wp_send_json_error(__('Не указана служба доставки', 'eshoplogisticru'));
+			return;
+		}
+
+		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+		$result = $eshopLogisticApi->apiServiceTerminals($service, $settlement, '', $address, $service === 'pecom');
+
+		$terminals = $result->hasErrors() ? array() : $result->data();
+
+		if (empty($terminals)) {
+			wp_send_json([
+				'success' => true,
+				'data'    => '<b>По запросу не найдено ниодного подходящего пункта самовывоза</b>',
+			]);
+			return;
+		}
+
+		$html = '<ul class="esl-terminal-search-modal__list">';
+		foreach ($terminals as $terminal) {
+			if (!isset($terminal['code'])) continue;
+			$html .= '<li class="esl-terminal-search-modal__item" data-code="' . esc_attr($terminal['code']) . '">'
+				. esc_html($terminal['name'] ?? '')
+				. ' <small>' . esc_html($terminal['settlement'] ?? '') . ', ' . esc_html($terminal['address'] ?? '') . '</small></li>';
+		}
+		$html .= '</ul>';
+
+		wp_send_json([
+			'success' => true,
+			'data'    => $html,
+		]);
+	}
+
+	/**
+	 * Поиск варианта "Характер груза" для настроек ТК (например, Байкал Сервис).
+	 */
+	public function searchFreightAdmin()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$service = isset($_POST['service']) ? sanitize_text_field(wp_unslash($_POST['service'])) : '';
+		$name    = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
+
+		if (!$name) {
+			wp_send_json_error(__('Не указана строка поиска', 'eshoplogisticru'));
+			return;
+		}
+
+		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
+		$result = $eshopLogisticApi->apiFreightTypes($name, $service);
+
+		$freightTypes = $result->hasErrors() ? array() : $result->data();
+
+		if (empty($freightTypes)) {
+			wp_send_json([
+				'success' => true,
+				'data'    => '<b>' . esc_html__('По запросу не найдено ниодного подходящего варианта', 'eshoplogisticru') . '</b>',
+			]);
+			return;
+		}
+
+		$html = '<ul class="esl-freight-search-modal__list">';
+		foreach ($freightTypes as $freightType) {
+			if (!isset($freightType['code'])) continue;
+			$html .= '<li class="esl-freight-search-modal__item" data-code="' . esc_attr($freightType['code']) . '" data-title="' . esc_attr($freightType['name'] ?? '') . '">'
+				. esc_html($freightType['name'] ?? '') . '</li>';
+		}
+		$html .= '</ul>';
+
+		wp_send_json([
+			'success' => true,
+			'data'    => $html,
+		]);
+	}
+
 	public function updateShippingAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$fias = isset($_POST['fias']) ? sanitize_text_field(wp_unslash($_POST['fias'])) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$city = isset($_POST['city']) ? sanitize_text_field(wp_unslash($_POST['city'])) : '';
@@ -580,6 +697,7 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw formData is a serialized query string; sanitize_text_field() would strip %XX-encoded brackets and break parse_str(); values/keys are sanitized individually below.
 		$formData = isset($_POST['formData']) ? wp_unslash($_POST['formData']) : null;
 
 		if (is_null($formData)) {
@@ -632,7 +750,13 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$terminal = isset($_POST['terminal']) ? sanitize_text_field(wp_unslash($_POST['terminal'])) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$terminal_code = isset($_POST['terminal_code']) ? sanitize_text_field(wp_unslash($_POST['terminal_code'])) : '';
@@ -651,7 +775,13 @@ class Ajax implements ModuleInterface
 
 	public function setTerminalFilter()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
 		$filters = isset($_POST['filters']) ? sanitize_text_field(wp_unslash($_POST['filters'])) : '';
 		$filters =  json_decode(stripslashes($filters), true);
 		$terminals = array();
@@ -729,7 +859,12 @@ class Ajax implements ModuleInterface
 
 	public function resetShippingAddress()
 	{
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Public AJAX endpoint for session reset functionality
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
 		try {
 			$sessionService = new SessionService();
 			$sessionService->dropAll();
@@ -784,7 +919,7 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitize_array()
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data sanitized after json_decode via sanitize_array() below (json_decode() itself does not sanitize)
 		$rawData = isset($_POST['data']) ? wp_unslash($_POST['data']) : '';
 		$rawData = is_string($rawData) ? $rawData : '';
 
@@ -793,6 +928,8 @@ class Ajax implements ModuleInterface
 			$data = [];
 		}
 
+		// Recursively sanitizes every decoded value with sanitize_text_field() -- required because
+		// json_decode() only parses JSON, it does not sanitize the resulting values.
 		$data = $this->sanitize_array($data);
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via wc_clean()
 		$data['city'] = isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '';
@@ -830,24 +967,67 @@ class Ajax implements ModuleInterface
 			? $shippingMethods[$chosenMethod]['terminals']
 			: [];
 
-		// Если сессия пуста (WC Blocks Store API использует отдельную сессию),
-		// перезапускаем calculate_shipping_basic() напрямую в контексте браузерного
-		// AJAX-запроса. Ответ ESL API уже закеширован в transient — вызов будет быстрым.
-		if (empty($terminals) && WC()->cart) {
+		// WC Blocks Store API пересчитывает доставку в собственной сессии, поэтому то,
+		// что уже лежит в WC()->session->get('shipping_methods'), может относиться к
+		// городу/адресу, который был актуален на момент последнего запроса через
+		// classic-сессию, а не к текущему выбору пользователя — просто непустой список
+		// не значит "актуальный". Поэтому всегда пересчитываем напрямую в контексте
+		// браузерного AJAX-запроса; ответ ESL API уже закеширован в transient по городу,
+		// так что при неизменившемся адресе вызов остаётся дешёвым.
+		if (WC()->cart) {
 			$packages = WC()->cart->get_shipping_packages();
 			if (!empty($packages)) {
 				$package = reset($packages);
 				$methodInstances = WC()->shipping() ? WC()->shipping()->load_shipping_methods($package) : [];
+
+				// calculate_shipping_basic() сам определяет billing/shipping-режим только
+				// по $_POST['post_data']['ship_to_different_address'], которого в этом
+				// "голом" AJAX-запросе нет — из-за этого пересчёт всегда уходил в billing-
+				// адрес (wc_esl_billing), даже когда актуальный адрес лежит в wc_esl_shipping.
+				//
+				// Сессионный флаг mode_shipping тут не годится в качестве замены: он общий
+				// на всю сессию и просто хранит режим последнего РЕАЛЬНОГО расчёта — если
+				// в той же сессии до этого открывался блочный чекаут (который безусловно
+				// выставляет mode_shipping='shipping', см. GutenbergBlock/BlocksCheckoutHandler),
+				// он "протечёт" и в легаси-чекаут с выключенным чекбоксом "Доставка по
+				// другому адресу", где реально нужен billing.
+				//
+				// Вместо этого сверяемся с городом пакета доставки ($package['destination']),
+				// который WooCommerce считает заново на каждый запрос из WC()->customer и
+				// всегда корректно учитывает текущее состояние чекбоксa (когда он выключен,
+				// сам WC копирует billing-адрес в shipping) — это единственный источник,
+				// не зависящий от истории сессии. Терминалы ищутся по городу, поэтому для
+				// выбора режима достаточно сравнения на уровне города, без учёта улицы/дома.
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- saving raw request state verbatim to restore it below, not consumed as trusted input
+				$savedPostData = isset($_POST['post_data']) ? $_POST['post_data'] : null;
+				$destinationCity = isset($package['destination']['city']) ? trim(mb_strtolower($package['destination']['city'])) : '';
+				if ($destinationCity !== '') {
+					$shippingState = $sessionService->get('shipping') ?: [];
+					$shippingCity  = isset($shippingState['city']) ? trim(mb_strtolower($shippingState['city'])) : '';
+					if ($shippingCity !== '' && $shippingCity === $destinationCity) {
+						// phpcs:ignore WordPress.Security.NonceVerification.Missing -- internal recalculation input, not read as user request data
+						$_POST['post_data'] = 'ship_to_different_address=1';
+					}
+				}
+
 				foreach ($methodInstances as $method) {
 					if ($method->id === $chosenMethod && method_exists($method, 'calculate_shipping_basic')) {
 						$method->calculate_shipping_basic($package);
 						break;
 					}
 				}
+
+				if ($savedPostData !== null) {
+					// phpcs:ignore WordPress.Security.NonceVerification.Missing -- restoring original request state
+					$_POST['post_data'] = $savedPostData;
+				} else {
+					unset($_POST['post_data']);
+				}
+
 				$shippingMethods = $sessionService->get('shipping_methods') ?: [];
-				$terminals = isset($shippingMethods[$chosenMethod]['terminals'])
-					? $shippingMethods[$chosenMethod]['terminals']
-					: [];
+				if (isset($shippingMethods[$chosenMethod]['terminals'])) {
+					$terminals = $shippingMethods[$chosenMethod]['terminals'];
+				}
 			}
 		}
 
@@ -914,16 +1094,16 @@ class Ajax implements ModuleInterface
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
 		$data = isset($_POST['data']) ? $this->sanitize_array(wp_unslash($_POST['data'])) : null;
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$resultParams = $unloading->params_delivery_init($data);
 
 		if ($resultParams->hasErrors()) {
 			$error = $resultParams->jsonSerialize();
 
-			$logger = wc_get_logger();
-			$context = array('source' => 'esl-error-load-unloading');
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Debug logging for error tracking
-			$logger->info(print_r($error, true),  $context);
+			EslLogger::info( '[ESL unloadingEnable] validation errors', array(
+				'source' => 'esl-error-load-unloading',
+				'error'  => $error,
+			) );
 
 			if (isset($error['data']['errors'])) {
 				$this->iteratorError($error['data']['errors']);
@@ -961,13 +1141,20 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$result = $unloading->infoOrder($order_id, $order_type, 'delete');
+		$isError = isset($result['success']) && $result['success'] === false;
+
+		if (!$isError) {
+			$unloading->clearLocalShipment($order_id);
+		}
 
 		wp_send_json([
-			'success' => true,
+			'success' => !$isError,
 			'data' => $result,
-			'msg' => esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
+			'msg' => $isError
+				? (isset($result['data']['messages']) ? esc_html($result['data']['messages']) : esc_html__("Ошибка при удалении заказа для выгрузки", 'eshoplogisticru'))
+				: esc_html__("Удаление заказа для выгрузки", 'eshoplogisticru')
 		]);
 	}
 
@@ -988,49 +1175,11 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
-		$result = $unloading->infoOrder($order_id, $order_type);
-		$html = '';
-
-		$order = wc_get_order($order_id);
-		$orderShippings = $order ? $order->get_shipping_methods() : [];
-		$shippingMethod = '';
-		foreach ($orderShippings as $key => $item) {
-			$shippingMethod = wc_get_order_item_meta($item->get_id(), 'esl_shipping_methods', $single = true);
-		}
-
-		if (isset($result['data']['messages'])) {
-			$html = '<div class="esl-status_infoTitle">' . esc_html($result['data']['messages']) . '</div>';
-		}
-		if (isset($result['state']['number'])) {
-			$html .= '<div class="esl-status_infoTitle">Номер заказа: <input type="text" value="' . esc_attr($result['state']['number']) . '" id="copyText1" disabled><button id="copyBut1" class="button button-primary" onclick="copyToClipboard(copyText1, this)">Скопировать номер</button></div>';
-		}
-		if (isset($shippingMethod) && $shippingMethod) {
-			$shippingMethods = json_decode($shippingMethod, true);
-			if (isset($shippingMethods['answer']['order']['id'])) {
-				$html .= '<div class="esl-status_infoTitle">Идентификатор заказа в системе "' . esc_html($order_type) . '": ' . esc_html($shippingMethods['answer']['order']['id']) . '</div>';
-			}
-		}
-		if (isset($result['order']['orderId'])) {
-			$html .= '<div class="esl-status_infoTitle">Идентификатор заказа: ' . esc_html($result['order']['orderId']) . '</div>';
-		}
-		if (isset($result['state'])) {
-			$html .= '<div class="esl-status_info">Текущий статус: ' . esc_html($result['state']['status']['description']) . '</div>';
-		}
-		if (isset($result['state']['service_status']['description'])) {
-			$html .= '<br><div class="esl-status_info">Описание: ' . esc_html($result['state']['service_status']['description']) . '</div>';
-		}
-
-		$print = $unloading->returnPrint();
-		if ($print)
-			$html .= $print;
-
-		if (!$html)
-			$html = '<div class="esl-status_infoTitle">Ошибка при загрузке данных.</div>';
+		$unloadingInfo = new UnloadingInfo();
 
 		wp_send_json([
 			'success' => true,
-			'data' => $html,
+			'data' => $unloadingInfo->initReturn($order_id, $order_type),
 			'msg' => ''
 		]);
 	}
@@ -1087,18 +1236,71 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		$status = $unloading->infoOrder($order_id, $order_type);
-		if (isset($status['success']) && $status['success'] === false) {
-			$result = isset($status['data']['messages']) ? esc_html($status['data']['messages']) : 'Ошибка при получении данных';
+		$isError = isset($status['success']) && $status['success'] === false;
+		if ($isError) {
+			if (!empty($status['data']['messages'])) {
+				$result = esc_html($status['data']['messages']);
+			} elseif (!empty($status['data']['exception'])) {
+				$result = esc_html($status['data']['exception']);
+			} elseif (!empty($status['data']['errors'])) {
+				$errors = $status['data']['errors'];
+				$result = esc_html(is_array($errors) ? implode('; ', $errors) : $errors);
+			} else {
+				$result = 'Ошибка при получении данных';
+			}
 		} else {
+			$unloading->saveTrackingFromStatus($order_id, is_array($status) ? $status : []);
 			$result = $unloading->updateStatusById($status, $order_id);
+			if ($result === false) {
+				$isError = true;
+				$result = __('Не удалось обновить статус: нет данных о статусе заказа у транспортной компании', 'eshoplogisticru');
+			} elseif (is_string($result) && str_starts_with($result, 'Ошибка')) {
+				$isError = true;
+			}
 		}
 
 		wp_send_json([
-			'success' => true,
+			'success' => !$isError,
 			'data' => $result,
 			'msg' => ""
+		]);
+	}
+
+	public function unloadingPrint()
+	{
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified via wp_verify_nonce in the conditional
+		if (
+			!isset($_POST['order_id']) ||
+			!isset($_POST['order_type']) ||
+			!isset($_POST['esl_nonce']) ||
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['esl_nonce'])), 'esl_unloading_action') ||
+			!current_user_can('manage_woocommerce')
+		) {
+			wp_send_json_error('Недостаточно прав или неверный nonce');
+		}
+
+		$order_id = absint(wp_unslash($_POST['order_id']));
+		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
+		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : '';
+		$paper = isset($_POST['paper']) ? sanitize_text_field(wp_unslash($_POST['paper'])) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$unloading = new UnloadingOrder();
+		$result = $unloading->printOrder($order_id, $order_type, $mode, $paper);
+
+		$urlPrint = !empty($result['success']) ? ($result['url'] ?? '') : '';
+
+		$html = '';
+		if ($urlPrint) {
+			$html = '<a href="' . esc_url($urlPrint) . '" target="_blank" rel="noopener">' . esc_html__('Открыть печатную форму', 'eshoplogisticru') . '</a>';
+		}
+
+		wp_send_json([
+			'success' => (bool) $urlPrint,
+			'data' => $html,
+			'msg' => $urlPrint ? '' : esc_html__('Печатная форма не получена', 'eshoplogisticru')
 		]);
 	}
 
@@ -1110,7 +1312,7 @@ class Ajax implements ModuleInterface
 			if (is_array($val)) {
 				$this->iteratorError($val);
 			} else {
-				$this->errorString .= $this->errorString . '<span>' . $val . '</span><br>';
+				$this->errorString .= '<span>&#8211;&nbsp;' . $val . '</span>';
 			}
 		}
 	}
@@ -1143,8 +1345,6 @@ class Ajax implements ModuleInterface
 		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
 		$additionalFields = $eshopLogisticApi->apiExportAdditional($additional);
 		$addFieldSaved = $optionsRepository->getOption('wc_esl_shipping_add_field_form');
-		$methodDelivery = new ExportFileds();
-		$fieldDelivery  = $methodDelivery->exportFields(mb_strtolower($type));
 
 		$html = '<form action="/" method="post" id="eslAddFieldForm" data-type="' . esc_attr($type) . '">';
 		if (is_object($additionalFields) && method_exists($additionalFields, 'hasErrors') && $additionalFields->hasErrors()) {
@@ -1154,6 +1354,7 @@ class Ajax implements ModuleInterface
 				$additionalFields = $additionalFields->data();
 			}
 			// Если $additionalFields уже массив, ничего не делаем
+			$hasFields = false;
 			if (is_array($additionalFields)) {
 				$additionalFieldsRu = array(
 					'packages'  => 'Упаковка',
@@ -1162,10 +1363,10 @@ class Ajax implements ModuleInterface
 					'other'     => 'Другие услуги',
 				);
 				$type = mb_strtolower($type);
-				$html .= '<div class="esl-box_add">';
+				$fieldsHtml = '<div class="esl-box_add">';
 				foreach ($additionalFields as $key => $value) {
 					$title = ($additionalFieldsRu[$key]) ?? $key;
-					$html .= '<p>' . esc_html($title) . '</p>';
+					$groupHtml = '';
 					if (is_array($value)) {
 						foreach ($value as $k => $v) {
 							if (!isset($v['name']))
@@ -1174,207 +1375,67 @@ class Ajax implements ModuleInterface
 							if (isset($addFieldSaved[$type][$k]) && $addFieldSaved[$type][$k] != '0') {
 								$valueSaved = $addFieldSaved[$type][$k];
 							}
-							$html .= '<div class="form-field_add">';
-							$html .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
+							$groupHtml .= '<div class="form-field_add">';
+							$groupHtml .= '<label class="label" for="' . esc_attr($k) . '">' . esc_html($v['name']) . '</label>';
 							if ($v['type'] === 'integer') {
-								$html .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
+								$groupHtml .= '<input class="form-value_add" type="number" name="' . esc_attr($k) . '" value="' . esc_attr($valueSaved) . '" max="' . esc_attr($v['max_value']) . '">';
 							} else {
 								$check = '';
 								if ($valueSaved != '0')
 									$check = 'checked="checked"';
-								$html .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
+								$groupHtml .= '<input class="form-value_add" name="' . esc_attr($k) . '" type="checkbox" ' . $check . '>';
 							}
-							$html .= '</div>';
+							$groupHtml .= '</div>';
 						}
 					} // если $value не массив, ничего не делаем
+					if ($groupHtml !== '') {
+						$hasFields = true;
+						$fieldsHtml .= '<p>' . esc_html($title) . '</p>' . $groupHtml;
+					}
 				}
-				$html .= '</div>';
+				$fieldsHtml .= '</div>';
+			}
+			if ($hasFields) {
+				$html .= $fieldsHtml;
 			} else {
-				$html .= '<p>Дополнительные услуги отсутствуют.</p>';
+				$html .= '<p><strong>Дополнительные услуги отсутствуют.</strong></p>';
 			}
 		}
-
-		if ($fieldDelivery) {
-			$html .= ' <h4>Дополнительные настройки выгрузки ТК.</h4>';
-			// Внешний цикл по массиву полей
-			foreach ($fieldDelivery as $nameArr => $arr) {
-				// Внутренний цикл по каждому полю
-				foreach ($arr as $key => $value) {
-					// Разбиваем ключ на части
-					list($name, $typeField, $nameRu) = explode('||', $key);
-					$nameRu = $nameRu ?? $name;
-					$styleForm = '';
-
-					// Устанавливаем специальный класс для чекбоксов
-					if ($typeField === 'checkbox') {
-						$styleForm = 'checkbox-area';
-					}
-
-					// Выводим контейнер поля формы
-					$html .= '
-                                <div class="form-field_add ' . esc_attr($styleForm) . '">
-                                <label class="label" for="' . esc_attr($name) . '">' . esc_html($nameRu) . '</label>
-                                ';
-
-
-					$nameValue = $nameArr . '[' . $name . ']';
-					$nameFiledSaved = $nameArr . '[' . $name . ']';
-					// Генерируем соответствующее поле ввода
-					switch ($typeField) {
-						case 'text':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'checkbox':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
-							$valueSaved = 'checked';
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
-						break;
-
-					case 'date':
-						$valueSaved = '';
-						if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-							$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-						}
-						$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
-						break;
-
-					case 'select':
-						$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
-						// Цикл по опциям селекта
-						if (is_array($value)) {
-							foreach ($value as $k => $v) {
-								if (is_array($v) && isset($v['text'])) {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
-								} else {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
-								}
-							}
-						}
-						$html .= '</select>';
-						break;
-				}
-
-				$html .= '</div>';
-			}
-		}
-	}
-
-	$sttExForOneDelivery  = $methodDelivery->settingsExportForOneDelivery(mb_strtolower($type));
-
-	if ($sttExForOneDelivery) {
-		foreach ($sttExForOneDelivery as $nameArr => $arr) {
-			foreach ($arr as $key => $value) {
-					list($name, $typeField, $nameRu, $valueDefault) = explode('||', $key);
-					$nameRu = $nameRu ?? $name;
-					$styleForm = '';
-
-					if ($typeField == 'hr') {
-						$html .= '<h3>' . $nameRu . '</h3>';
-						continue;
-					}
-
-
-					$html .= '
-                                <div class="form-field_add ' . $styleForm . '">
-                                <label class="label" for="' . $name . '">' . $nameRu . '</label>';
-
-					$nameValue = $nameArr . '[' . $name . ']';
-					$nameFiledSaved = $nameArr . '[' . $name . ']';
-
-					switch ($typeField) {
-						case 'text':
-							$valueSaved = $valueDefault ?? '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="text" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'checkbox':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved]) && $addFieldSaved[$type][$nameFiledSaved] == 'on') {
-								$valueSaved = 'checked';
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="checkbox" ' . esc_attr($valueSaved) . '>';
-							break;
-
-						case 'date':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="date" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'number':
-							$valueSaved = '';
-							if (isset($addFieldSaved[$type][$nameFiledSaved])) {
-								$valueSaved = $addFieldSaved[$type][$nameFiledSaved];
-							}
-							$html .= '<input class="form-value" name="' . esc_attr($nameValue) . '" type="number" value="' . esc_attr($valueSaved) . '">';
-							break;
-
-						case 'select':
-							$html .= '<select class="form-value" name="' . esc_attr($nameValue) . '">';
-							foreach ($value as $k => $v) {
-								if (is_array($v) && isset($v['text'])) {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v['text']) . '</option>';
-								} else {
-									$valueSaved = '';
-									if (isset($addFieldSaved[$type][$nameFiledSaved]) && $k == $addFieldSaved[$type][$nameFiledSaved]) {
-										$valueSaved = 'selected';
-									}
-									$html .= '<option value="' . esc_attr($k) . '" ' . esc_attr($valueSaved) . '>' . esc_html($v) . '</option>';
-								}
-							}
-							$html .= '</select>';
-							break;
-					}
-
-					$html .= '</div>';
-				}
-			}
-		}
-
-		$checkSelf = '';
-		$checkTK = '';
-		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 0) {
-			$checkSelf = 'selected';
-		}
-		if (isset($addFieldSaved[$type]['pick_up']) && $addFieldSaved[$type]['pick_up'] == 1) {
-			$checkTK = 'selected';
-		}
-		$html .= '
-            <h4>Дополнительные настройки ТК.</h4>
-            <div class="form-field_add">
-                <label class="label">Способ доставки до терминала ТК</label>
-                 <select name="pick_up" class="form-value">
-                    <option value="0" ' . esc_attr($checkSelf) . '>Сами привезём на терминал транспортной компании</option>
-                    <option value="1" ' . esc_attr($checkTK) . '>Груз заберёт транспортная компания</option>
-                 </select>
-            </div>
-        ';
 
 		$html .= '</form>';
+
+		wp_send_json([
+			'success' => true,
+			'data' => $html,
+			'msg' => ""
+		]);
+	}
+
+	/**
+	 * Возвращает HTML "Дополнительных настроек" для вкладки настроек службы доставки — тарифы,
+	 * данные отправителя/получателя, объединение мест по умолчанию, способ доставки до
+	 * терминала и т.п. Загружается лениво по клику на вкладку (см. assets/js/settings.js),
+	 * т.к. для части служб требует живых запросов к API eshoplogistic.ru. Сохраняются эти
+	 * поля не сюда, а вместе с остальной вкладкой через обычный сабмит #eslExportForm.
+	 */
+	public function getExportExtraFields()
+	{
+		// Nonce verification
+		if( !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-esl-shipping') ) {
+			wp_send_json_error('Security check failed');
+			return;
+		}
+
+		// Permission check
+		if( !current_user_can('manage_woocommerce') ) {
+			wp_send_json_error('Insufficient permissions');
+			return;
+		}
+
+		$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : '';
+
+		$methodDelivery = new ExportFileds();
+		$html = $methodDelivery->renderTabFields(mb_strtolower($type));
 
 		wp_send_json([
 			'success' => true,

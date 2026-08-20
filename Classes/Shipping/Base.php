@@ -13,6 +13,7 @@ use eshoplogistic\WCEshopLogistic\Services\CalculationService;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Helpers\ConflictPluginsHelper;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 class Base extends \WC_Shipping_Method
 {
@@ -118,19 +119,24 @@ class Base extends \WC_Shipping_Method
 	 */
 	public function calculate_shipping( $package = array() )
 	{
-		if(is_checkout()){
-			$optionsRepository = new OptionsRepository();
-			$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
-			if($frameEnable)
-			{
-				$rate = $this->calculate_shipping_frame($package);
-			}else{
-				$rate = $this->calculate_shipping_basic($package);
-			}
-
-			if($rate)
-				$this->add_rate( $rate );
+		// Не гейтим на is_checkout(): WooCommerce кеширует посчитанные тарифы в сессии по
+		// хешу пакета (город + состав корзины) вне зависимости от того, какая страница их
+		// запросила. is_checkout() ненадёжен как гейт здесь — при гидратации блока чекаута
+		// WooCommerce Blocks вызывает Store API контроллер напрямую в PHP, минуя REST-диспетчер
+		// (REST_REQUEST не выставляется), и is_checkout() там может быть false; если тариф
+		// в этот момент не посчитается, в кеше навсегда осядет пакет без ESL-метода, и он не
+		// появится больше нигде для этого сочетания город+корзина, пока хеш не изменится.
+		$optionsRepository = new OptionsRepository();
+		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
+		if($frameEnable)
+		{
+			$rate = $this->calculate_shipping_frame($package);
+		}else{
+			$rate = $this->calculate_shipping_basic($package);
 		}
+
+		if($rate)
+			$this->add_rate( $rate );
 	}
 
 
@@ -197,8 +203,6 @@ class Base extends \WC_Shipping_Method
 			}
 		}
 
-		$logger = new \WC_Logger();
-
 		try {
 			if(!$apiKey) throw new \Exception(__("API ключ не установлен", 'eshoplogisticru'));
 			//if(!$payment) throw new \Exception(__("Метод оплаты не установлен", 'eshoplogisticru'));
@@ -215,10 +219,8 @@ class Base extends \WC_Shipping_Method
 				}
 			}
 
-			$cacheKey = str_replace(
-				' ',
-				'_',
-				WC_ESL_PREFIX . $data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
+			$cacheKey = WC_ESL_PREFIX . md5(
+				$data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
 			);
 
 			$response = get_transient($cacheKey);
@@ -276,7 +278,7 @@ class Base extends \WC_Shipping_Method
 		} catch(\Exception $e) {
 			unset($shippingMethods[$this->id]);
 
-			$logger->debug($e->getMessage());
+			EslLogger::debug( '[ESL calculate_shipping_basic] ' . $e->getMessage() );
 		}
 
 		$sessionService->set('shipping_methods', $shippingMethods);
@@ -404,6 +406,11 @@ class Base extends \WC_Shipping_Method
 			$shippingMethods[$this->id]['debug'] = ( $cache_data['debug'] ?? [] );
 			$shippingMethods[$this->id]['data']['terminal'] = ( $cache_data['data']['terminal'] ?? [] );
 			$shippingMethods[$this->id]['data']['door'] = ( $cache_data['data']['door'] ?? [] );
+			// Полный список тарифов по каждому типу доставки (не только "лучший" по цене) —
+			// нужен, чтобы форма выгрузки заказа могла показать именно тот тариф, который
+			// покупатель выбрал во всплывающем окне "Выберите тариф" виджета, а не автоматически
+			// самый дешёвый (см. Classes/Shipping/ExportFileds.php::resolveOrderTariff()).
+			$shippingMethods[$this->id]['data']['tariffs'] = ( $cache_data['data']['tariffs'] ?? [] );
 			$sessionService->set('shipping_methods', $shippingMethods);
 		}
 

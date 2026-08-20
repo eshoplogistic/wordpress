@@ -9,10 +9,17 @@
     // Глобальные переменные
     window.widgetInit = false;
     window.keyDelivery = 'door';
+    // 'door' выше — просто исходное значение на случай раннего чтения, а не сигнал
+    // о том, что виджет реально подтвердил курьерскую доставку. Пока это не так,
+    // getDeliveryType() не должен опираться на него для скрытия кнопки ПВЗ.
+    window.keyDeliveryResolved = false;
     let cityMain = false;
     let errorCity = 0;
     let eslWidget = null;
     let widgetSdkRequested = false;
+    let loadingHideTimer = null;
+    let loadingSafetyTimer = null;
+    const LOADING_SAFETY_TIMEOUT_MS = 15000;
 
     /**
      * Запустить инициализацию CDN SDK вручную.
@@ -38,6 +45,18 @@
     let hashSelectService = '';
     let userInteractedWithWidget = false;
     let suppressCloseOnAutoSelect = true;
+    // Значение, которое наш код сам записал в поле адреса при выборе ПВЗ
+    // (плейсхолдер "Пункт выдачи" или реальный адрес терминала). Используется,
+    // чтобы при возврате в door отличить "это наш же ПВЗ-плейсхолдер, можно
+    // стереть" от "это настоящий адрес покупателя (введён вручную или пришёл
+    // с сервера при загрузке страницы), трогать нельзя". null - в поле сейчас
+    // не наш автозаполненный текст.
+    let lastAutoFilledAddressValue = null;
+    // Реальный адрес курьерской доставки, отложенный перед тем как поле было
+    // занято ПВЗ-плейсхолдером при переключении в terminal. Восстанавливается
+    // при обратном переключении на door, чтобы покупателю не пришлось вводить
+    // адрес заново после простого просмотра варианта "Самовывоз".
+    let savedDoorAddressValue = '';
     const MAX_WIDGET_INIT_TRIES = 3;
 
     // Конфигурация из WordPress  
@@ -48,8 +67,15 @@
      */
     function initDefaultDelivery() {
         const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
-        
-        window.keyDelivery = shippingTerminal?.value ? 'terminal' : 'door';
+
+        // Непустое значение — это восстановленный из сессии выбор терминала, реальное
+        // подтверждение типа доставки. Пустое значение ничего не подтверждает (виджет
+        // мог просто ещё не отработать), поэтому keyDeliveryResolved в этом случае не
+        // трогаем — иначе кнопка ПВЗ для "mixed"-методов будет скрываться по умолчанию.
+        if (shippingTerminal?.value) {
+            window.keyDelivery = 'terminal';
+            window.keyDeliveryResolved = true;
+        }
     }
 
     /**
@@ -77,12 +103,67 @@
             preloader = document.createElement('div');
             preloader.id = PRELOADER_ID;
             preloader.className = 'wc-esl-block-preloader';
-            preloader.innerHTML = '<div class="wc-esl-block-preloader__spinner"></div>';
+
+            if (config.eslLoaderUrl) {
+                const img = document.createElement('img');
+                img.className = 'wc-esl-block-preloader__img';
+                img.src = config.eslLoaderUrl;
+                img.width = 150;
+                img.height = 150;
+                preloader.appendChild(img);
+            } else {
+                preloader.innerHTML = '<div class="wc-esl-block-preloader__spinner"></div>';
+            }
+
             preloader.style.display = 'none';
             document.body.appendChild(preloader);
         }
 
-        preloader.style.display = isLoading ? 'block' : 'none';
+        // Небольшая задержка перед скрытием (а не мгновенное display:none) сглаживает
+        // мигание прелоадера, когда подряд идёт несколько быстрых show/hide (разные
+        // AJAX-запросы завершаются почти одновременно). Если за это время придёт новый
+        // "show" — просто отменяем скрытие, не моргая.
+        if (loadingHideTimer) {
+            clearTimeout(loadingHideTimer);
+            loadingHideTimer = null;
+        }
+
+        if (isLoading) {
+            preloader.style.display = 'block';
+
+            // Страховка от бесконечного прелоадера: если ни один из сценариев
+            // (SDK не загрузился из-за блокировщика, AJAX завис, событие виджета
+            // не пришло) не вызовет setLoadingState(false) сам, принудительно
+            // прячем прелоадер и показываем ошибку по таймауту.
+            if (!loadingSafetyTimer) {
+                loadingSafetyTimer = setTimeout(() => {
+                    loadingSafetyTimer = null;
+                    console.warn('eShopLogistic: preloader safety timeout reached, forcing hide');
+                    setLoadingState(false);
+                    showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
+                }, LOADING_SAFETY_TIMEOUT_MS);
+            }
+        } else {
+            if (loadingSafetyTimer) {
+                clearTimeout(loadingSafetyTimer);
+                loadingSafetyTimer = null;
+            }
+
+            loadingHideTimer = setTimeout(() => {
+                preloader.style.display = 'none';
+                loadingHideTimer = null;
+            }, 250);
+        }
+    }
+
+    /**
+     * Скрыть подсказку "Укажите город для расчёта доставки".
+     */
+    function hideCityTips() {
+        const tips = document.getElementById('tips-city-container');
+        if (tips) {
+            tips.style.display = 'none';
+        }
     }
 
     /**
@@ -105,9 +186,9 @@
      */
     function getCurrentCheckoutCityName() {
         try {
-            // 1. Кастомный ID поля из настроек
-            const shippingFieldRef = document.getElementById('eslShippingCityFields');
-            const shippingFieldId = shippingFieldRef && shippingFieldRef.value ? shippingFieldRef.value : null;
+            // 1. Кастомный ID поля из настроек (передаётся в конфиге, т.к. в Blocks
+            // скрытые input'ы легаси-чекаута #eslShippingCityFields не рендерятся)
+            const shippingFieldId = config.shippingCityField || '';
             if (shippingFieldId) {
                 const el = document.getElementById(shippingFieldId);
                 if (el && el.value) return el.value;
@@ -184,7 +265,7 @@
 
         const normalized = String(methodName).toLowerCase();
         return normalized.indexOf('wc_esl_') !== -1 ||
-            normalized.indexOf('eshoplogistic') !== -1 ||
+            normalized.indexOf('eshoplogisticru') !== -1 ||
             normalized.indexOf('yandex') !== -1 ||
             normalized.indexOf('яндекс') !== -1;
     }
@@ -215,8 +296,35 @@
 
         if (methodName.indexOf('_door') !== -1) return 'door';
         if (methodName.indexOf('_terminal') !== -1) return 'terminal';
-        if (methodName.indexOf('_mixed') !== -1) return window.keyDelivery;
-        
+        if (methodName.indexOf('_mixed') !== -1) {
+            // window.keyDelivery по умолчанию равен 'door', пока покупатель ни разу
+            // не открывал модалку выбора — это не значит, что он выбрал доставку до
+            // двери. Если тариф "mixed"-метода уже выбран (в т.ч. восстановлен из
+            // сессии) и его подпись явно указывает на ПВЗ/терминал, доверяем подписи,
+            // иначе кнопка выбора ПВЗ ошибочно скрывается для терминального тарифа.
+            const selectedRadio = document.querySelector(
+                '.wc-block-components-shipping-rates-control input[type="radio"]:checked, ' +
+                'input[type="radio"][name*="shipping_method"]:checked, ' +
+                'input[type="radio"][name*="shipping-rate"]:checked'
+            );
+            const label = (selectedRadio?.closest('label')?.textContent || '').toLowerCase();
+
+            if (label.indexOf('пункт выдачи') !== -1 ||
+                label.indexOf('терминал') !== -1 ||
+                label.indexOf('самовывоз') !== -1) {
+                return 'terminal';
+            }
+
+            if (label.indexOf('курьер') !== -1 || label.indexOf('до двери') !== -1) {
+                return 'door';
+            }
+
+            // Виджет ещё ни разу не подтвердил тип доставки (например, курьерский тариф
+            // не может посчитаться без адреса) — считаем тип неопределённым, а не 'door',
+            // иначе кнопка выбора ПВЗ скрывается навсегда и открыть виджет невозможно.
+            return window.keyDeliveryResolved ? window.keyDelivery : null;
+        }
+
         return null;
     }
 
@@ -224,6 +332,12 @@
      * Управление видимостью полей адреса
      */
     function toggleAddressFields(show) {
+        // Настройка "Отключить скрытие полей адреса при выборе ПВЗ" — плагин не должен
+        // трогать видимость/доступность этих полей вообще (как и в классическом чекауте).
+        if (config.offAddressCheck) {
+            return;
+        }
+
         const addressFields = document.querySelectorAll(
             '#shipping_address_1_field, #shipping_address_2_field, ' +
             '.wc-block-components-address-form__address_1, ' +
@@ -273,10 +387,20 @@
     /**
      * Поиск города
      */
-    function searchCity(query, callback, country = 'RU') {
+    function searchCity(query, callback, country = 'RU', typeFilter = false) {
         if (!query || query.length < 2) {
             callback([]);
             return;
+        }
+
+        const body = {
+            action: 'wc_esl_search_cities',
+            target: query,
+            currentCountry: country,
+            nonce: config.nonce
+        };
+        if (typeFilter) {
+            body.typeFilter = typeFilter;
         }
 
         fetch(config.ajaxUrl, {
@@ -284,12 +408,7 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-                action: 'wc_esl_search_cities',
-                target: query,
-                currentCountry: country,
-                nonce: config.nonce
-            })
+            body: new URLSearchParams(body)
         })
         .then(response => response.json())
         .then(data => {
@@ -316,10 +435,7 @@
     }
 
     function getCheckoutCityElement() {
-        const customRefId = 'eslShippingCityFields';
-        const customRef = document.getElementById(customRefId);
-        const customId = customRef && customRef.value ? customRef.value : '';
-
+        const customId = config.shippingCityField || '';
         const fallbackIds = ['shipping_city', 'shipping-city'];
 
         const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
@@ -327,10 +443,7 @@
     }
 
     function getCheckoutBillingCityElement() {
-        const customRefId = 'eslBillingCityFields';
-        const customRef = document.getElementById(customRefId);
-        const customId = customRef && customRef.value ? customRef.value : '';
-
+        const customId = config.billingCityField || '';
         const fallbackIds = ['billing_city', 'billing-city'];
 
         const ids = customId ? [customId, ...fallbackIds] : fallbackIds;
@@ -467,6 +580,149 @@
         };
     }
 
+    let initialCityAutoConfirmScheduled = false;
+
+    /**
+     * Читает уже сохранённый город доставки из стора WC Blocks (wc/store/cart).
+     * Нужно в первую очередь: когда адрес уже заполнен/сохранён, WC Blocks
+     * показывает не форму с полями, а свёрнутую карточку-сводку с кнопкой
+     * "Изменить" — полей shipping_city/shipping-city в DOM в этот момент вообще
+     * нет, хотя адрес уже используется для расчёта доставки. Поле в DOM —
+     * fallback для classic-checkout и для развёрнутой формы Blocks.
+     */
+    function getPrefilledShippingCityQuery() {
+        try {
+            if (window.wp && window.wp.data && typeof window.wp.data.select === 'function') {
+                const cartSelect = window.wp.data.select('wc/store/cart');
+                const customerData = cartSelect && typeof cartSelect.getCustomerData === 'function'
+                    ? cartSelect.getCustomerData()
+                    : null;
+                const shippingAddress = customerData && customerData.shipping_address;
+                if (shippingAddress && shippingAddress.city) {
+                    return {
+                        city: String(shippingAddress.city).trim(),
+                        country: shippingAddress.country || 'RU'
+                    };
+                }
+            }
+        } catch (e) {}
+
+        const shippingCityEl = getCheckoutCityElement();
+        const city = shippingCityEl ? (shippingCityEl.value || '').trim() : '';
+        if (!city) {
+            return null;
+        }
+
+        return { city, country: getCheckoutCountryValue() };
+    }
+
+    /**
+     * Для авторизованного пользователя WC Blocks предзаполняет город доставки
+     * сохранённым адресом из профиля без событий input/blur, поэтому fias
+     * города плагина никогда не резолвится сам по себе и ESL-методы доставки
+     * не считаются (сессия пустая), пока пользователь не тронет поле города
+     * вручную. Работает независимо от режима выбора города (обычный
+     * автокомплит или модалка) — обе ветки читают/пишут одни и те же поля
+     * shipping_city/billing_city и widgetCityEsl.
+     */
+    function autoConfirmPrefilledCity(query, country) {
+        console.log('eShopLogistic: [auto-confirm] starting for prefilled city', query, country);
+
+        const cityInput = document.getElementById('widgetCityEsl');
+        if (cityInput && cityInput.value) {
+            try {
+                const parsed = JSON.parse(cityInput.value);
+                if (parsed && parsed.fias && (parsed.city === query || parsed.name === query)) {
+                    console.log('eShopLogistic: [auto-confirm] already resolved, skipping', parsed);
+                    return;
+                }
+            } catch (e) {}
+        }
+
+        searchCity(query, (items) => {
+            console.log('eShopLogistic: [auto-confirm] searchCity results', items);
+
+            if (!items || items.length === 0) {
+                console.warn('eShopLogistic: [auto-confirm] no search results for', query);
+                return;
+            }
+
+            const best = items[0];
+            const cityData = {
+                city: best.city || best.name || query,
+                region: best.region || '',
+                postcode: best.postcode || '',
+                fias: best.fias || '',
+                services: best.services || [],
+                raw: best
+            };
+
+            if (!cityData.fias) {
+                console.warn('eShopLogistic: [auto-confirm] best match has no fias', best);
+                return;
+            }
+
+            console.log('eShopLogistic: [auto-confirm] resolved cityData, sending update', cityData);
+
+            setCheckoutAddressValues(cityData);
+            updateWidgetCityData(cityData);
+
+            setLoadingState(true);
+
+            requestShippingAddressUpdate(cityData)
+                .then((response) => {
+                    console.log('eShopLogistic: [auto-confirm] requestShippingAddressUpdate response', response);
+
+                    if (!response || response.success !== true) {
+                        throw new Error('updateShippingAddress failed');
+                    }
+
+                    const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                    if (widgetRoot) {
+                        widgetRoot.dataset.paramsLoaded = '';
+                        sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                    }
+
+                    refreshCheckoutAfterShippingUpdate();
+                    console.log('eShopLogistic: [auto-confirm] refreshCheckoutAfterShippingUpdate triggered');
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                })
+                .catch((error) => {
+                    console.error('eShopLogistic: [auto-confirm] failed to auto-confirm prefilled city', error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
+                });
+        }, country);
+    }
+
+    function scheduleInitialCityAutoConfirm() {
+        if (initialCityAutoConfirmScheduled) {
+            console.log('eShopLogistic: [auto-confirm] already scheduled, skipping');
+            return;
+        }
+        initialCityAutoConfirmScheduled = true;
+
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts += 1;
+
+            const prefilled = getPrefilledShippingCityQuery();
+            console.log('eShopLogistic: [auto-confirm] poll attempt', attempts, prefilled);
+
+            if (prefilled && prefilled.city.length >= 3) {
+                clearInterval(interval);
+                autoConfirmPrefilledCity(prefilled.city, prefilled.country);
+                return;
+            }
+
+            if (attempts >= 10) {
+                console.warn('eShopLogistic: [auto-confirm] gave up, no prefilled city found after', attempts, 'attempts');
+                clearInterval(interval);
+            }
+        }, 500);
+    }
+
     function clearCityResultList(mode) {
         const list = document.getElementById(`result_wc_esl_search_city_${mode}`);
         if (list) {
@@ -506,6 +762,53 @@
         return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}">${htmlItems}</ul>`;
     }
 
+    /**
+     * Рендер результатов поиска для модалки #modal-esl-city, сгруппированных по региону
+     * (legacy-парность с renderCitiesModal/renderCitiesModalItem из checkout.js/checkout_frame_v2.js).
+     */
+    function renderCitiesModal(itemsByRegion, mode = 'shipping') {
+        const escapeAttr = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const entries = itemsByRegion && typeof itemsByRegion === 'object' ? Object.entries(itemsByRegion) : [];
+
+        if (entries.length === 0) {
+            return '';
+        }
+
+        const listId = `result_wc_esl_search_city_${mode}`;
+        let html = `<ul class="wc-esl-search-city-modal__list" id="${listId}" data-mode="${mode}">`;
+
+        entries.forEach(([region, items]) => {
+            html += `<div class="wc-esl-search-region-modal__list"><p class="title-region">${escapeHtml(region)}</p>`;
+            (Array.isArray(items) ? items : []).forEach((item) => {
+                const type = item.type || '';
+                const name = item.name || '';
+                const itemRegion = item.region || '';
+                const postcode = item.postal_code || '';
+                const fias = item.fias || '';
+                const label = `${type ? type + ' ' : ''}${name}${itemRegion ? ' - ' + itemRegion : ''}`;
+                const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
+                const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
+
+                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}</li>`;
+            });
+            html += '</div>';
+        });
+
+        html += '</ul>';
+
+        return html;
+    }
+
     function appendCityResultList(inputEl, mode, items) {
         clearCityResultList(mode);
 
@@ -529,7 +832,7 @@
             region: cityData.region || '',
             postcode: cityData.postcode || '',
             mode: updateMode,
-            nonce: config.nonce || ''
+            nonce: config.shippingNonce || config.nonce || ''
         });
 
         const services = cityData.services;
@@ -566,7 +869,7 @@
             region: cityData.region || '',
             postcode: cityData.postcode || '',
             mode: 'billing',
-            nonce: config.nonce || ''
+            nonce: config.shippingNonce || config.nonce || ''
         });
 
         const services = cityData.services;
@@ -588,16 +891,17 @@
     }
 
     function setupAddressSelectionForBlocks() {
+        // Настройка "Изменить способ выбора города": выключена — обычное поле WC Blocks
+        // с выпадающим списком результатов поиска прямо под ним (эта функция). Включена —
+        // вместо этого открывается отдельная модалка (setupCityModalForBlocks), поэтому
+        // здесь выходим, чтобы не показывать оба варианта поиска одновременно.
+        if (config.citySelectModal) {
+            return;
+        }
+
         const timers = { shipping: null, billing: null };
         let citySelectionInProgress = false;
         let suppressAutocompleteUntil = 0;
-
-        const hideCityTips = () => {
-            const tips = document.getElementById('tips-city-container');
-            if (tips) {
-                tips.style.display = 'none';
-            }
-        };
 
         const runSearch = (mode) => {
             if (Date.now() < suppressAutocompleteUntil) {
@@ -768,6 +1072,328 @@
         document.addEventListener('mousedown', handleCitySelection, true);
         document.addEventListener('touchstart', handleCitySelection, true);
         document.addEventListener('click', handleCitySelection, true);
+
+        // Автоподтверждение города при уходе с поля (autocomplete браузера или ввод без
+        // клика по подсказке): без этого fias так и не проставляется, и виджет навсегда
+        // остаётся без города, если пользователь заполнил адрес уже после того, как
+        // истекли начальные попытки инициализации виджета при загрузке страницы.
+        const confirmCityIfUnresolved = (mode) => {
+            if (citySelectionInProgress || Date.now() < suppressAutocompleteUntil) {
+                return;
+            }
+
+            const inputEl = mode === 'billing' ? getCheckoutBillingCityElement() : getCheckoutCityElement();
+            if (!inputEl) {
+                return;
+            }
+
+            const query = (inputEl.value || '').trim();
+            if (query.length < 3) {
+                return;
+            }
+
+            const cityInput = document.getElementById('widgetCityEsl');
+            if (cityInput && cityInput.value) {
+                try {
+                    const parsed = JSON.parse(cityInput.value);
+                    if (parsed && parsed.fias && (parsed.city === query || parsed.name === query)) {
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            const country = getCheckoutCountryValue();
+            searchCity(query, (items) => {
+                if (!items || items.length === 0 || citySelectionInProgress) {
+                    return;
+                }
+
+                const best = items[0];
+                const cityData = {
+                    city: best.city || best.name || query,
+                    region: best.region || '',
+                    postcode: best.postcode || '',
+                    fias: best.fias || '',
+                    services: best.services || [],
+                    raw: best
+                };
+
+                if (!cityData.fias) {
+                    return;
+                }
+
+                if (mode === 'billing') {
+                    setCheckoutBillingAddressValues(cityData);
+                } else {
+                    setCheckoutAddressValues(cityData);
+                }
+                updateWidgetCityData(cityData);
+                clearCityResultList(mode);
+                hideCityTips();
+
+                setLoadingState(true);
+
+                const updateRequest = mode === 'billing'
+                    ? requestBillingAddressUpdate(cityData)
+                    : requestShippingAddressUpdate(cityData);
+
+                updateRequest
+                    .then((response) => {
+                        if (!response || response.success !== true) {
+                            throw new Error('updateShippingAddress failed');
+                        }
+
+                        const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                        if (widgetRoot) {
+                            widgetRoot.dataset.paramsLoaded = '';
+                            sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                        }
+
+                        refreshCheckoutAfterShippingUpdate();
+                        document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                    })
+                    .catch((error) => {
+                        console.error('eShopLogistic: failed to update shipping address', error);
+                    })
+                    .finally(() => {
+                        setLoadingState(false);
+                    });
+            }, country);
+        };
+
+        document.addEventListener('blur', (event) => {
+            const target = event.target;
+            if (!target || !target.id) {
+                return;
+            }
+
+            const shippingCity = getCheckoutCityElement();
+            if (shippingCity && target.id === shippingCity.id) {
+                setTimeout(() => confirmCityIfUnresolved('shipping'), 300);
+                return;
+            }
+
+            const billingCity = getCheckoutBillingCityElement();
+            if (billingCity && target.id === billingCity.id) {
+                setTimeout(() => confirmCityIfUnresolved('billing'), 300);
+            }
+        }, true);
+    }
+
+    /**
+     * Настройка "Изменить способ выбора города" (включена): вместо текстового поля
+     * WC Blocks открывается модалка #modal-esl-city с поиском (legacy-парность с
+     * inputFocusCity/inputStartCityModal из checkout_frame_v2.js). Само поле остаётся
+     * в DOM (нужно checkout-стору), но визуально перекрывается кнопкой — тот же приём,
+     * что и в классическом чекауте (.esl-city-modal-active + .esl_city_button).
+     */
+    function setupCityModalForBlocks() {
+        if (!config.citySelectModal) {
+            return;
+        }
+
+        const modal = document.getElementById('modal-esl-city');
+        const searchInput = document.getElementById('esl_modal-search');
+        const resultContainer = document.getElementById('esl_result-search');
+
+        if (!modal || !searchInput || !resultContainer) {
+            return;
+        }
+
+        // Move modal to document.body to escape WooCommerce Blocks stacking contexts
+        // that would otherwise render above position:fixed elements (тот же приём,
+        // что и в initModal() для #modal-esl-frame чуть ниже по файлу).
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        // init() и initCheckoutShippingBlock() оба могут вызвать эту функцию на одной
+        // загрузке страницы (см. существующий двойной вызов setupAddressSelectionForBlocks
+        // выше) — без этого флага обработчики поиска/выбора навешивались бы дважды.
+        if (modal.dataset.eslModalBound) {
+            return;
+        }
+        modal.dataset.eslModalBound = '1';
+
+        let citySelectionInProgress = false;
+        let searchTimer = null;
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+        };
+
+        const openModal = (mode) => {
+            searchInput.setAttribute('data-mode', mode);
+            searchInput.value = '';
+            resultContainer.innerHTML = '';
+            modal.style.display = 'block';
+            searchInput.focus();
+        };
+
+        const attachOverlayButton = (inputEl, mode) => {
+            if (!inputEl || inputEl.dataset.eslCityModalBound) {
+                return;
+            }
+            inputEl.dataset.eslCityModalBound = '1';
+
+            const wrapper = inputEl.closest('.wc-block-components-text-input') || inputEl.parentElement;
+            if (!wrapper) {
+                return;
+            }
+            wrapper.classList.add('esl-city-modal-active');
+
+            // В отличие от classic (где лейбл — отдельный элемент снаружи враппера
+            // инпута), в блочной вёрстке лейбл "плавает" внутри того же враппера,
+            // что и сам input. Перекрывать весь враппер большой кнопкой (как в
+            // classic) нельзя — задевает лейбл, а точную геометрию input JS-ом не
+            // подгонишь надёжно (в момент навешивания поле может быть ещё не
+            // выложено браузером, offsetWidth/Height будут 0 — кнопка окажется
+            // невидимой и некликабельной). Поэтому сам input остаётся видимым
+            // (значение показывает он сам), просто становится readOnly, а открытие
+            // модалки вешается прямо на его клик — плюс маленькая иконка сбоку
+            // как визуальная подсказка.
+            inputEl.readOnly = true;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'esl_city_button';
+            button.setAttribute('data-mode', mode);
+            button.setAttribute('aria-label', 'Выбрать населённый пункт');
+            button.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                '<path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>' +
+                '<path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>' +
+                '</svg>';
+
+            wrapper.appendChild(button);
+
+            const triggerModal = (event) => {
+                event.preventDefault();
+                openModal(mode);
+            };
+
+            // mousedown, а не click — иначе readOnly-поле успевает получить фокус
+            // и мигнуть кареткой перед открытием модалки.
+            inputEl.addEventListener('mousedown', triggerModal);
+            button.addEventListener('click', triggerModal);
+        };
+
+        attachOverlayButton(getCheckoutBillingCityElement(), 'billing');
+        attachOverlayButton(getCheckoutCityElement(), 'shipping');
+
+        const closeButton = modal.querySelector('.close_modal_window');
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        searchInput.addEventListener('keyup', () => {
+            const value = searchInput.value.trim();
+            const mode = searchInput.getAttribute('data-mode') || 'shipping';
+
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+
+            if (value.length < 2) {
+                resultContainer.innerHTML = '';
+                return;
+            }
+
+            searchTimer = setTimeout(() => {
+                const country = getCheckoutCountryValue();
+                searchCity(value, (itemsByRegion) => {
+                    resultContainer.innerHTML = renderCitiesModal(itemsByRegion, mode) ||
+                        '<button type="button" id="esl_modal_button-search">Выбрать данный населённый пункт</button>';
+                }, country, 'region');
+            }, 300);
+        });
+
+        resultContainer.addEventListener('click', (event) => {
+            const fallbackButton = event.target.closest('#esl_modal_button-search');
+            if (fallbackButton) {
+                const mode = searchInput.getAttribute('data-mode') || 'shipping';
+                const cityData = { city: searchInput.value.trim(), region: '', postcode: '', fias: '', services: [], raw: null };
+
+                if (mode === 'billing') {
+                    setCheckoutBillingAddressValues(cityData);
+                } else {
+                    setCheckoutAddressValues(cityData);
+                }
+                hideCityTips();
+                closeModal();
+                return;
+            }
+
+            const item = event.target.closest('.wc-esl-search-city-modal__item');
+            if (!item || citySelectionInProgress) {
+                return;
+            }
+
+            citySelectionInProgress = true;
+
+            const mode = item.getAttribute('data-mode') || searchInput.getAttribute('data-mode') || 'shipping';
+            const cityData = {
+                city: item.getAttribute('data-city') || '',
+                region: item.getAttribute('data-region') || '',
+                postcode: item.getAttribute('data-postcode') || '',
+                fias: item.getAttribute('data-fias') || '',
+                services: [],
+                raw: null
+            };
+
+            try {
+                cityData.services = JSON.parse(decodeURIComponent(item.getAttribute('data-services') || '%5B%5D'));
+            } catch (e) {
+                cityData.services = [];
+            }
+            try {
+                cityData.raw = JSON.parse(decodeURIComponent(item.getAttribute('data-payload') || '%7B%7D'));
+            } catch (e) {
+                cityData.raw = null;
+            }
+
+            if (mode === 'billing') {
+                setCheckoutBillingAddressValues(cityData);
+            } else {
+                setCheckoutAddressValues(cityData);
+            }
+            updateWidgetCityData(cityData);
+            hideCityTips();
+            closeModal();
+
+            const terminalsInput = document.getElementById('wcEslTerminals');
+            if (terminalsInput) {
+                terminalsInput.value = '[]';
+            }
+
+            setLoadingState(true);
+
+            const updateRequest = mode === 'billing'
+                ? requestBillingAddressUpdate(cityData)
+                : requestShippingAddressUpdate(cityData);
+
+            updateRequest
+                .then((response) => {
+                    if (!response || response.success !== true) {
+                        throw new Error('updateShippingAddress failed');
+                    }
+
+                    refreshCheckoutAfterShippingUpdate();
+                    document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
+                })
+                .catch((error) => {
+                    console.error('eShopLogistic: failed to update shipping address', error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
+                    citySelectionInProgress = false;
+                });
+        });
     }
 
     /**
@@ -781,7 +1407,8 @@
             body: new URLSearchParams({
                 action: 'wc_esl_set_terminal_address',
                 terminal: terminalAddress,
-                terminal_code: terminalCode || ''
+                terminal_code: terminalCode || '',
+                nonce: config.shippingNonce || config.nonce || ''
             })
         }).then(r => r.json());
     }
@@ -930,6 +1557,7 @@
 
         script.onerror = () => {
             console.error('❌ eShopLogistic: Failed to load widget SDK');
+            showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
         };
 
         document.head.appendChild(script);
@@ -1011,6 +1639,7 @@
             script.onerror = () => {
                 widgetSdkRequested = false;
                 console.error('eShopLogistic: failed to load widget SDK');
+                showError('Не удалось загрузить виджет доставки. Обновите страницу или попробуйте позже.');
             };
 
             if (!existingScript) {
@@ -1327,14 +1956,33 @@
             sendWidgetParams(root);
         }
 
-        // Ещё одна страховка с таймаутом
-        setTimeout(() => {
-            if (window.widgetInit && !root.dataset.paramsLoaded) {
+        // Ещё одна страховка с повтором. root.dataset.paramsLoaded фиксирует только
+        // факт отправки updateParamsRequest, а не то, что сам SDK был готов её
+        // полноценно обработать: на первой загрузке страницы SDK-виджет ещё
+        // подгружает свой собственный каталог служб (асинхронно, через свой API) —
+        // если наш updateParamsRequest долетает до этого момента, SDK обсчитывает
+        // только то немногое, что уже успело подгрузиться (обычно 1 запасная
+        // служба, Dostavista), и НЕ пересчитывает список повторно сам по себе.
+        // Обычный клик по кнопке "Выбрать способ доставки" срабатывает через
+        // несколько секунд после загрузки — этого достаточно, чтобы каталог SDK
+        // успел подгрузиться, и повторный (тот же самый) вызов sendWidgetParams
+        // внутри клика получает уже полный список. Поэтому здесь повторяем
+        // отправку безусловно (а не только пока paramsLoaded пуст) в течение
+        // нескольких секунд после монтирования — чтобы хотя бы одна попытка
+        // пришлась на момент, когда каталог SDK уже готов, без ожидания клика.
+        let paramsRetryAttempts = 0;
+        const paramsRetryInterval = setInterval(() => {
+            if (window.widgetInit) {
                 sendWidgetParams(root);
             }
-        }, 2000);
 
-        function handleServiceChange(deliveryData) {
+            paramsRetryAttempts += 1;
+            if (paramsRetryAttempts >= 6) {
+                clearInterval(paramsRetryInterval);
+            }
+        }, 1000);
+
+        function handleServiceChange(deliveryData, isExplicitSelection = false) {
             const hasTerminalSelection = Boolean(
                 deliveryData?.terminal &&
                 typeof deliveryData.terminal === 'object' &&
@@ -1357,6 +2005,7 @@
 
             if (deliveryData?.typeDelivery) {
                 window.keyDelivery = deliveryData.typeDelivery;
+                window.keyDeliveryResolved = true;
 
                 // Legacy flow: кнопка door доступна только для door-режима.
                 if (doorButton) {
@@ -1367,20 +2016,74 @@
             // Для Blocks переключаем состояние адресных полей сразу после выбора
             // сервиса в виджете, даже если shipping method формально не изменился.
             const nextDeliveryType = deliveryData?.typeDelivery || (hasTerminalSelection ? 'terminal' : 'door');
+
+            // ВАЖНО: значение поля адреса (setInputValue) трогаем ТОЛЬКО при явном
+            // подтверждённом выборе службы (onSelectedService), а не при каждом
+            // onBalloonOpen. SDK виджета при пересчёте цен на модалке вызывает
+            // onBalloonOpen для КАЖДОЙ карточки службы по очереди (и door, и
+            // terminal), не только для той, что выбрал пользователь - поэтому
+            // здесь нельзя опираться на предыдущий тип доставки для принятия
+            // решения о зачистке поля, иначе поле стирается прямо во время
+            // открытия модалки/пересчёта, ещё до явного выбора.
+            if (!isExplicitSelection) {
+                if (nextDeliveryType === 'terminal' || nextDeliveryType === 'door') {
+                    toggleAddressFields(nextDeliveryType !== 'terminal');
+                }
+                return hasTerminalSelection;
+            }
+
             if (nextDeliveryType === 'terminal') {
                 const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
+                const currentValue = (shippingAddressEl?.value || '').trim();
+
+                // Перед тем как занять поле плейсхолдером/адресом ПВЗ, откладываем
+                // то, что там было - если это не наш же предыдущий автозаполненный
+                // текст, значит это реальный адрес курьерской доставки (введён
+                // покупателем или подгружен с сервера), и его нужно вернуть при
+                // обратном переключении на door, а не оставлять пустым.
+                const isOwnPreviousValue = lastAutoFilledAddressValue !== null
+                    && currentValue === lastAutoFilledAddressValue.trim();
+                if (currentValue !== '' && !isOwnPreviousValue) {
+                    savedDoorAddressValue = currentValue;
+                }
+
                 const terminalAddressValue = (deliveryData?.terminal?.address || shippingTerminal?.value || '').trim();
+                const valueToSet = terminalAddressValue || 'Пункт выдачи';
 
                 // В Blocks address_1 остаётся обязательным в checkout store,
                 // поэтому для terminal перед отключением проставляем значение.
-                setInputValue(shippingAddressEl, terminalAddressValue || 'Пункт выдачи');
+                setInputValue(shippingAddressEl, valueToSet);
+                lastAutoFilledAddressValue = valueToSet;
                 clearAddressFieldError();
                 toggleAddressFields(false);
             } else if (nextDeliveryType === 'door') {
                 toggleAddressFields(true);
+
                 const shippingAddressEl = getFieldElement(['shipping_address_1', 'shipping-address_1']);
-                setInputValue(shippingAddressEl, '');
-                clearAddressFieldError();
+                const currentValue = (shippingAddressEl?.value || '').trim();
+
+                // Заменяем поле, только если в нём осталось то, что ТУДА ЖЕ ранее
+                // записал наш собственный код для terminal-режима (плейсхолдер/адрес
+                // ПВЗ), либо оно уже пустое. lastConfirmedDeliveryType/window.keyDelivery
+                // как признак "мы уже были в door" ненадёжны: это переменные в памяти
+                // вкладки, которые сбрасываются при каждой перезагрузке страницы, а SDK
+                // виджета на монтировании сам авто-выбирает самую дешёвую службу и шлёт
+                // onSelectedService — из-за чего страница с уже сохранённым (с прошлой
+                // загрузки) адресом стирала его же при первой же авто-инициализации.
+                // Сверка с реальным значением поля работает независимо от перезагрузок:
+                // если там настоящий адрес (введённый покупателем или подгруженный с
+                // сервера), не трогаем его.
+                const isLeftoverPlaceholder = currentValue === ''
+                    || (lastAutoFilledAddressValue !== null && currentValue === lastAutoFilledAddressValue.trim());
+
+                if (isLeftoverPlaceholder) {
+                    // Восстанавливаем адрес, отложенный при переходе в terminal
+                    // (если он был), вместо того чтобы оставлять поле пустым.
+                    setInputValue(shippingAddressEl, savedDoorAddressValue || '');
+                    clearAddressFieldError();
+                }
+
+                lastAutoFilledAddressValue = null;
             }
 
             return hasTerminalSelection;
@@ -1453,9 +2156,19 @@
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
             const deliveryData = event.detail;
+            const responseData = deliveryData?.service?.responseData?.[deliveryData?.typeDelivery];
+
+            if (!responseData) {
+                // Тариф для этого типа доставки ещё не посчитан (например, курьер ждёт
+                // ввода адреса) — не сохраняем это как выбор, иначе в сессию уйдёт
+                // подтверждённая ставка с ценой 0, которая переживёт перезагрузку страницы.
+                console.log('ESL: нет данных тарифа для "' + (deliveryData?.typeDelivery || '') + '", выбор пропущен');
+                return;
+            }
+
             const selectedHash = getServiceSignature(deliveryData);
             const frameData = buildLegacyShippingFrameData(deliveryData);
-            const hasTerminalSelection = handleServiceChange(deliveryData);
+            const hasTerminalSelection = handleServiceChange(deliveryData, true);
 
             const widgetData = getWidgetData();
             const cityName = getLegacyShippingCityName(widgetData);
@@ -1489,7 +2202,7 @@
                 if (canCloseModal) {
                     const modal = document.getElementById('modal-esl-frame');
                     if (modal) {
-                        modal.style.display = 'none';
+                        setEslModalVisible(modal, false);
                     }
                 }
 
@@ -1543,8 +2256,28 @@
     }
 
     /**
+     * Показать/скрыть модалку выбора служб доставки без display:none и без
+     * visibility:hidden. #eShopLogisticWidgetCart живёт внутри этой модалки,
+     * и SDK виджета явно проверяет реальную видимость контейнера (подтверждено
+     * логами: сначала display:none, потом visibility:hidden — оба варианта
+     * SDK на загрузке страницы всё равно досчитывал только 1 запасную службу
+     * (Dostavista); полный список появлялся лишь после клика по кнопке,
+     * который переключает именно на visibility:visible). checkVisibility()-
+     * подобная проверка в SDK, судя по всему, учитывает display и visibility,
+     * но не opacity — поэтому прячем модалку через opacity:0 (CSS-видимость
+     * "visible" сохраняется) + pointer-events:none, и SDK досчитывает полный
+     * список сразу, не дожидаясь открытия модалки пользователем.
+     */
+    function setEslModalVisible(modal, visible) {
+        modal.style.display = 'block';
+        modal.style.opacity = visible ? '1' : '0';
+        modal.style.pointerEvents = visible ? 'auto' : 'none';
+    }
+
+    /**
      * Инициализация модального окна
      */
+
     function initModal() {
         const modal = document.getElementById('modal-esl-frame');
         if (!modal) return;
@@ -1555,14 +2288,15 @@
             document.body.appendChild(modal);
         }
 
-        // Legacy behavior: modal must stay hidden until user explicitly opens it.
-        modal.style.display = 'none';
+        // Legacy behavior: modal must stay hidden until user explicitly opens it
+        // (see setEslModalVisible for why this isn't display:none).
+        setEslModalVisible(modal, false);
 
         const closeButton = modal.querySelector('.close_modal_window');
         const doorButton = document.getElementById('buttonModalDoor');
 
         const closeModal = () => {
-            modal.style.display = 'none';
+            setEslModalVisible(modal, false);
         };
 
         if (closeButton) {
@@ -1583,7 +2317,7 @@
         const triggerButtons = document.querySelectorAll('.wc-esl-terminals__button');
         triggerButtons.forEach(button => {
             button.addEventListener('click', () => {
-                modal.style.display = 'block';
+                setEslModalVisible(modal, true);
 
                 // При открытии модалки сразу синхронизируем видимость door-кнопки
                 // с текущим режимом, чтобы она не ждала следующего события виджета.
@@ -1601,7 +2335,18 @@
                     if (widgetContainer) {
                         // Даём время на отрисовку модального окна
                         setTimeout(() => {
-                            reinitWidget(widgetContainer);
+                            // Виджет уже загружен и работает (обычно — с самой загрузки
+                            // страницы): полный reinitWidget() здесь сносит уже готовый
+                            // SDK и запускает новый экземпляр с нуля, из-за чего повторный
+                            // поиск города/служб может не успеть завершиться до конца и
+                            // показать неполный список (например, только Dostavista) —
+                            // именно поэтому раньше требовался повторный ввод города.
+                            // Если виджет уже жив — просто обновляем ему параметры.
+                            if (widgetSdkLoaded && window.widgetInit && eslWidget) {
+                                sendWidgetParams(widgetContainer);
+                            } else {
+                                reinitWidget(widgetContainer);
+                            }
                         }, 100);
                     }
                 }
@@ -1635,10 +2380,16 @@
         }
 
         // Для Gutenberg блока: по умолчанию кнопка видна (блок специально для eShopLogistic)
-        // Скрываем только если явно выбран другой метод доставки или выбрана курьерская доставка
+        // Скрываем только если явно выбран другой (не ESL) метод доставки.
+        //
+        // Раньше сюда же добавлялось `|| deliveryType === 'door'` — но, в отличие от
+        // legacy-чекаута (changeVisibleElements() в checkout_frame_v2.js), где при door
+        // прячется #wc-esl-terminals-wrap-button-shipping, но взамен показывается
+        // #wc-esl-terminals-wrap-button-billing, в блочном чекауте это единственная
+        // кнопка-триггер модалки (см. GutenbergBlock.php). Скрыв её на door, пользователь
+        // терял единственный способ повторно открыть виджет и сменить способ доставки.
         if (hasEslBlock) {
-            // Скрываем кнопку ПВЗ если: не наш метод, или явно выбрана доставка до двери
-            const shouldHideTerminals = (currentMethod && !isEshop) || deliveryType === 'door';
+            const shouldHideTerminals = currentMethod && !isEshop;
             const shouldShowTerminals = !shouldHideTerminals;
 
             toggleTerminals(shouldShowTerminals, 'shipping');
@@ -1691,6 +2442,7 @@
             if (!config.checkoutFrameEnabled) {
                 handleShippingMethodChange();
                 setupAddressSelectionForBlocks();
+                setupCityModalForBlocks();
                 return;
             }
 
@@ -1706,6 +2458,20 @@
 
             // Инициализировать модальное окно
             initModal();
+
+            // Синхронизировать видимость кнопки ПВЗ с уже выбранным (восстановленным
+            // из сессии) способом доставки — иначе кнопка остаётся скрытой до первого
+            // ручного клика по radio, хотя нужный ESL-метод уже выбран. Список radio
+            // от WooCommerce Blocks рендерится React'ом асинхронно и может ещё не
+            // существовать в момент первого вызова, поэтому повторяем несколько раз.
+            let syncAttempts = 0;
+            const syncInterval = setInterval(() => {
+                handleShippingMethodChange();
+                syncAttempts += 1;
+                if (syncAttempts >= 6) {
+                    clearInterval(syncInterval);
+                }
+            }, 500);
         });
     }
 
@@ -1868,10 +2634,12 @@
         initDefaultDelivery();
         ensureCheckoutShippingBlockInit();
         setupAddressSelectionForBlocks();
+        setupCityModalForBlocks();
         setupShippingMethodObserver();
         subscribeToWooEvents();
         handleShippingMethodChange();
         setupUseForBillingCheckbox();
+        scheduleInitialCityAutoConfirm();
     }
 
     /**

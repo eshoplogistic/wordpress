@@ -15,9 +15,9 @@ if ( ! function_exists( 'wc_esl_shipping_get_option' ) ) {
 
 }
 
-if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
+if ( ! function_exists( 'wc_esl_shortcode_widget_button_handler' ) ) {
 
-	function shortcode_widget_button_handler( $atts, $content = null, $code = "" ) {
+	function wc_esl_shortcode_widget_button_handler( $atts, $content = null, $code = "" ) {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
 		$widgetBut         = $optionsRepository->getOption( 'wc_esl_shipping_widget_but' );
@@ -85,24 +85,27 @@ if ( ! function_exists( 'shortcode_widget_button_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
-		echo $block_content;
+		// Шорткод обязан вернуть строку, а не напечатать её: WooCommerce
+		// прогоняет описание товара через do_shortcode() и в других
+		// контекстах (например, при формировании structured data для SEO),
+		// и echo здесь приводил к тому, что разметка виджета утекала в эти
+		// контексты вторым, незапрошенным экземпляром.
+		return $block_content;
 	}
 
 }
 
-if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
+if ( ! function_exists( 'wc_esl_shortcode_widget_button_tab_handler' ) ) {
 
 
-	function shortcode_widget_button_tab_handler($atts) {
+	function wc_esl_shortcode_widget_button_tab_handler($atts) {
 		if(isset($atts['key']))
 			$GLOBALS['wc_esl_widget_tab_key'] = sanitize_text_field(wp_unslash($atts['key']));
 
-		add_filter( 'woocommerce_product_tabs', 'esl_product_widget_tab', 25 );
+		add_filter( 'woocommerce_product_tabs', 'wc_esl_product_widget_tab', 25 );
 	}
 
-	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name retained for backwards compatibility.
-	function esl_product_widget_tab( $tabs ) {
+	function wc_esl_product_widget_tab( $tabs ) {
 
 		$optionsRepository = new OptionsRepository();
 		$widgetBut         = $optionsRepository->getOption( 'wc_esl_shipping_widget_but' );
@@ -110,15 +113,14 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 		$tabs['esl_product_widget_tab'] = array(
 			'title'    => $widgetBut,
 			'priority' => 25,
-			'callback' => 'esl_product_widget_tab_content',
+			'callback' => 'wc_esl_product_widget_tab_content',
 		);
 
 		return $tabs;
 
 	}
 
-	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name retained for backwards compatibility.
-	function esl_product_widget_tab_content() {
+	function wc_esl_product_widget_tab_content() {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
 		$widgetKey = isset($GLOBALS['wc_esl_widget_tab_key']) ? sanitize_text_field($GLOBALS['wc_esl_widget_tab_key']) : $widgetKey;
@@ -183,6 +185,7 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 				WC_ESL_VERSION,
 				true
 			);
+			wp_add_inline_script( 'wc_esl_app_tab_js', 'window.wcEslPluginUrl = ' . wp_json_encode( WC_ESL_PLUGIN_URL ) . ';', 'before' );
 
 	wp_enqueue_style(
 		'wc_esl_style_frame_css',
@@ -197,9 +200,9 @@ if ( ! function_exists( 'shortcode_widget_button_tab_handler' ) ) {
 
 }
 
-if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
+if ( ! function_exists( 'wc_esl_shortcode_widget_static_handler' ) ) {
 
-	function shortcode_widget_static_handler( $atts, $content = null, $code = "" ) {
+	function wc_esl_shortcode_widget_static_handler( $atts, $content = null, $code = "" ) {
 		$optionsRepository = new OptionsRepository();
 		$widgetKey         = $optionsRepository->getOption( 'wc_esl_shipping_widget_key' );
 		$widgetKey = isset($atts['key']) ? sanitize_text_field($atts['key']) : $widgetKey;
@@ -245,9 +248,9 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 
 		$block_content = '<div id="eShopLogisticWidgetBlock"
 						    data-lazy-load="true"
-						    data-ip="' . apply_filters( 'wc_esl_get_ip', $ip ) . '"
-						    data-key="'.$widgetKey.'"
-						    data-offers="'.$jsonItem.'">
+						    data-ip="' . esc_attr( apply_filters( 'wc_esl_get_ip', $ip ) ) . '"
+						    data-key="'.esc_attr($widgetKey).'"
+						    data-offers="'.esc_attr($jsonItem).'">
 						</div>';
 
 		$block_content .= '<button type="button" class="hidden" id="wtpbtn" data-widget-load="">Заказать с доставкой</button>';
@@ -274,14 +277,15 @@ if ( ! function_exists( 'shortcode_widget_static_handler' ) ) {
 			WC_ESL_VERSION
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are escaped within $block_content construction
-		echo $block_content;
+		// См. пояснение в wc_esl_shortcode_widget_button_handler() выше: шорткод
+		// должен вернуть строку, а не напечатать её.
+		return $block_content;
 	}
 
 }
 
-if ( ! function_exists( 'shortcode_widget_email_time_delivery' ) ) {
-	function shortcode_widget_email_time_delivery( $atts, $content = null, $code = "" ) {
+if ( ! function_exists( 'wc_esl_shortcode_widget_email_time_delivery' ) ) {
+	function wc_esl_shortcode_widget_email_time_delivery( $atts, $content = null, $code = "" ) {
 		if(!isset($atts['id']))
 			return false;
 
@@ -299,8 +303,8 @@ if ( ! function_exists( 'shortcode_widget_email_time_delivery' ) ) {
 	}
 }
 
-if ( ! function_exists( 'shortcode_widget_email_status_delivery' ) ) {
-    function shortcode_widget_email_status_delivery( $atts, $content = null, $code = "" ) {
+if ( ! function_exists( 'wc_esl_shortcode_widget_email_status_delivery' ) ) {
+    function wc_esl_shortcode_widget_email_status_delivery( $atts, $content = null, $code = "" ) {
         if(!isset($atts['id']))
             return false;
 
@@ -354,8 +358,8 @@ if ( ! function_exists( 'wc_esl_get_product_data_ajax' ) ) {
         ) );
     }
 
-    add_action( 'wp_ajax_get_product_data', 'wc_esl_get_product_data_ajax' );
-    add_action( 'wp_ajax_nopriv_get_product_data', 'wc_esl_get_product_data_ajax' );
+    add_action( 'wp_ajax_wc_esl_get_product_data_legacy', 'wc_esl_get_product_data_ajax' );
+    add_action( 'wp_ajax_nopriv_wc_esl_get_product_data_legacy', 'wc_esl_get_product_data_ajax' );
 }
 
 /**

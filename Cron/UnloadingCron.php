@@ -2,7 +2,8 @@
 namespace eshoplogistic\WCEshopLogistic\Cron;
 
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
-use eshoplogistic\WCEshopLogistic\Modules\Unloading;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
+use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
 
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -20,7 +21,7 @@ class UnloadingCron
 		$optionsRepository = new OptionsRepository();
 		$this->addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 
-		if(isset($this->addForm['cronStatusEnable'])){
+		if(isset($this->addForm['cronStatusEnable']) && $this->addForm['cronStatusEnable'] == 'true'){
 			add_filter( 'cron_schedules', [$this, 'cron_esl_custom_min']);
 
 			if( ! wp_next_scheduled( 'esl_update_status_cron' ) )
@@ -35,7 +36,7 @@ class UnloadingCron
 
 	public function updateStatus(){
 
-		$unloading = new Unloading();
+		$unloading = new UnloadingOrder();
 		//$wpStatuses = $unloading->getStatusWp();
 		$wpStatusesKeys = array();
 		if(isset($this->addForm['statusEnd'])){
@@ -97,6 +98,7 @@ class UnloadingCron
             }else{
                 if(isset($tracking['status']['name']) && $shippingId){
                     wc_update_order_item_meta($shippingId, 'Статус заказа', $tracking['status']['name']);
+
                     if($shippingMethod){
                         $shippingMethod['tracking'] = $tracking;
                         $jsonArr = json_encode($shippingMethod, JSON_UNESCAPED_UNICODE);
@@ -105,10 +107,10 @@ class UnloadingCron
                 }
             }
 
-			$logger = wc_get_logger();
-			$context = array( 'source' => 'esl-info-cron-status' );
-			$statusLog = wp_json_encode($status, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			$logger->info( false !== $statusLog ? $statusLog : 'Failed to encode status log',  $context);
+			EslLogger::info( '[ESL updateStatus] order_id=' . $orderId, array(
+				'source' => 'esl-info-cron-status',
+				'status'  => $status,
+			) );
 		}
 
 	}

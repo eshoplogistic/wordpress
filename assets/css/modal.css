@@ -112,6 +112,44 @@
     to { transform: rotate(360deg); }
 }
 
+.without-map {
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    top: 50%;
+}
+
+.wc-esl-terminals-list__items {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.wc-esl-terminals-list__item {
+    padding: 12px 9px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-terminals-list__address {
+    font-weight: 600;
+}
+
+.wc-esl-terminals-list__note,
+.wc-esl-terminals-list__worktime {
+    color: rgb(134, 134, 134);
+    font-size: 0.9em;
+    margin-top: 2px;
+}
+
+.wc-esl-terminals-list__select {
+    margin-top: 8px;
+}
+
 .modal__footer {
     display: flex;
     align-items: center;

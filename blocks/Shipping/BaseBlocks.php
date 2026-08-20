@@ -3,6 +3,7 @@
 namespace eshoplogistic\WCEshopLogistic\Blocks\Shipping;
 
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 if ( ! defined('ABSPATH')) {
 	exit;
@@ -40,12 +41,20 @@ class BaseBlocks
 
 		$optionsRepository = new OptionsRepository();
 		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
-		
-		if($frameEnable)
-		{
-			$rate = $shippingMethod->calculate_shipping_frame($package);
-		}else{
-			$rate = $shippingMethod->calculate_shipping_basic($package);
+
+		try {
+			if($frameEnable)
+			{
+				$rate = $shippingMethod->calculate_shipping_frame($package);
+			}else{
+				$rate = $shippingMethod->calculate_shipping_basic($package);
+			}
+		} catch(\Exception $e) {
+			EslLogger::debug( '[ESL BaseBlocks::calculateForBlocks] ' . $e->getMessage(), [
+				'frame_enable' => $frameEnable,
+				'method_id'    => is_object($shippingMethod) && method_exists($shippingMethod, 'getSlug') ? $shippingMethod->getSlug() : null,
+			] );
+			throw $e;
 		}
 
 		return $rate;

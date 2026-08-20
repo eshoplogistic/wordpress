@@ -19,7 +19,8 @@ function eslRunMap() {
             const params = new URLSearchParams({
                 action: 'wc_esl_set_terminal_address',
                 terminal: terminal.address,
-                terminal_code: terminal.code || ''
+                terminal_code: terminal.code || '',
+                nonce: wc_esl_shipping_global.nonce
             });
             request.send(params.toString())
 
@@ -51,16 +52,14 @@ function eslRunMap() {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send('action=wc_esl_set_terminal_filter&filters='+JSON.stringify(filters))
+            request.send('action=wc_esl_set_terminal_filter&filters='+encodeURIComponent(JSON.stringify(filters))+'&nonce='+wc_esl_shipping_global.nonce)
 
             request.addEventListener("readystatechange", () => {
 
                 if (request.readyState === 4 && request.status === 200 && request.response.data) {
-                    yandexMaps.createContainer()
-                    yandexMaps.terminals = request.response.data
                     yandexMaps.destroyMap()
-                    ymaps.ready(yandexMaps.initMap)
                     document.getElementById('wcEslTerminals').value = JSON.stringify(request.response.data)
+                    yandexMaps.renderTerminals(request.response.data)
                 }
             })
 
@@ -71,7 +70,8 @@ function eslRunMap() {
     let ID_MODAL = 'wc_esl_yandex_map',
         YANDEX_MAP_CONTAINER_ID = 'wc_esl_yandex_map_container',
         YANDEX_MAP_CONTAINER_ID_FOR_MAP = 'wc_esl-modal-yandex-map-wrap',
-        YANDEX_MAP_CONTAINER_ID_FOR_ADDRESS = 'wc_esl-modal-yandex-map-address'
+        YANDEX_MAP_CONTAINER_ID_FOR_ADDRESS = 'wc_esl-modal-yandex-map-address',
+        LIST_CONTAINER_ID = 'wc_esl-modal-yandex-map-list'
 
     let modalDom = {
         initLayout: {
@@ -87,7 +87,7 @@ function eslRunMap() {
                 return result
             },
             createColForMap: function () {
-                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}"><div class="wc-esl-map-preloader" style="display:none;"><div class="wc-esl-map-preloader__spinner"></div><p class="wc-esl-map-preloader__text">Загрузка пунктов выдачи...</p></div><h4 class="without-map">Пункты выдачи не найдены</h4></div>`
+                let col = `<div id="${YANDEX_MAP_CONTAINER_ID_FOR_MAP}"><div class="wc-esl-map-preloader" style="display:none;"><div class="wc-esl-map-preloader__spinner"></div><p class="wc-esl-map-preloader__text">Загрузка пунктов выдачи...</p></div><h4 class="without-map">Пункты выдачи не найдены</h4><div id="${LIST_CONTAINER_ID}" class="wc-esl-terminals-list" style="display:none;"></div></div>`
 
                 return col
             },
@@ -190,22 +190,102 @@ function eslRunMap() {
     let yandexMaps = {
         terminals: [],
         settings: {},
+        mapInstance: null,
         initApi: function () {
             let apiKeyYa = ''
             if(document.getElementById("wcEslKeyYa"))
                 apiKeyYa = document.getElementById('wcEslKeyYa').value
 
-            let paramsMap = ''
-            if(apiKeyYa){
-                paramsMap = '&apikey='+apiKeyYa;
-            }
-
+            // Ключ Yandex Maps API нужен только для поиска по карте (searchControl,
+            // см. yandexMaps.initMap) — сама карта и метки терминалов работают и без
+            // него, поэтому скрипт грузим всегда, добавляя apikey только если он задан.
             let script = document.createElement('script')
-            script.setAttribute('src', 'https://api-maps.yandex.ru/2.1/?lang=ru_RU'+paramsMap)
+            let src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU'
+            if (apiKeyYa) src += '&apikey=' + encodeURIComponent(apiKeyYa)
+            script.setAttribute('src', src)
             script.setAttribute('defer', '')
             document.head.appendChild(script)
         },
+        // Единая точка входа для отображения полученных терминалов: если карта
+        // доступна (задан ключ Yandex Maps) — рисуем метки, иначе — показываем
+        // терминалы простым списком (см. showFallback), а не просто "не найдены".
+        renderTerminals: function (terminals) {
+            terminals = terminals || []
+            yandexMaps.terminals = terminals
+            if (terminals.length && typeof ymaps !== 'undefined') {
+                yandexMaps.createContainer()
+                ymaps.ready(yandexMaps.initMap)
+            } else {
+                yandexMaps.showFallback(terminals)
+            }
+        },
+        showFallback: function (terminals) {
+            let withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map')
+            let listWrap = document.getElementById(LIST_CONTAINER_ID)
+            if (terminals && terminals.length) {
+                if (withoutMap) withoutMap.style.display = 'none'
+                yandexMaps.renderTerminalsList(terminals)
+                if (listWrap) listWrap.style.display = ''
+            } else {
+                if (listWrap) {
+                    listWrap.innerHTML = ''
+                    listWrap.style.display = 'none'
+                }
+                if (withoutMap) withoutMap.style.display = ''
+            }
+        },
+        renderTerminalsList: function (terminals) {
+            let listWrap = document.getElementById(LIST_CONTAINER_ID)
+            if (!listWrap) return
+
+            listWrap.innerHTML = ''
+            let ul = document.createElement('ul')
+            ul.classList.add('wc-esl-terminals-list__items')
+
+            terminals.forEach(function (terminal) {
+                let li = document.createElement('li')
+                li.classList.add('wc-esl-terminals-list__item')
+
+                let address = document.createElement('div')
+                address.classList.add('wc-esl-terminals-list__address')
+                address.textContent = terminal.address || ''
+                li.appendChild(address)
+
+                if (terminal.note) {
+                    let note = document.createElement('div')
+                    note.classList.add('wc-esl-terminals-list__note')
+                    note.textContent = terminal.note
+                    li.appendChild(note)
+                }
+
+                if (terminal.workTime) {
+                    let work = document.createElement('div')
+                    work.classList.add('wc-esl-terminals-list__worktime')
+                    work.textContent = 'Время работы: ' + terminal.workTime
+                    li.appendChild(work)
+                }
+
+                let button = document.createElement('button')
+                button.setAttribute('type', 'button')
+                button.classList.add('btn', 'btn-success', 'wc-esl-terminals-list__select')
+                button.textContent = 'Забрать отсюда'
+                button.addEventListener('click', function () {
+                    esl.setTerminal(terminal)
+                })
+                li.appendChild(button)
+
+                ul.appendChild(li)
+            })
+
+            listWrap.appendChild(ul)
+        },
         createContainer: function () {
+            // renderTerminals() может вызываться несколько раз подряд для одного открытия
+            // модалки (мгновенная отрисовка закешированных терминалов, затем — свежих из
+            // AJAX-ответа) — не создаём дублирующий контейнер с тем же id, а пересоздаём его.
+            let previous = document.getElementById(YANDEX_MAP_CONTAINER_ID)
+            if (previous) previous.remove()
+
             let container = document.createElement('div'),
                 modalBody = document.getElementById(ID_MODAL).querySelector('.modal__body  #' + YANDEX_MAP_CONTAINER_ID_FOR_MAP);
             container.setAttribute('id', YANDEX_MAP_CONTAINER_ID)
@@ -222,11 +302,21 @@ function eslRunMap() {
                 if (withoutMap) withoutMap.style.display = 'none';
                 var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
                 if (preloader) preloader.style.display = 'none';
+                var listWrap = document.getElementById(LIST_CONTAINER_ID);
+                if (listWrap) { listWrap.innerHTML = ''; listWrap.style.display = 'none'; }
 
                 let defaultControls = ['zoomControl']
                 let apiKeyYa = document.getElementById('wcEslKeyYa').value
                 if(apiKeyYa)
                     defaultControls = ['zoomControl', 'searchControl']
+
+                // Уничтожаем предыдущий инстанс карты (если он был) перед созданием нового —
+                // иначе при повторном вызове initMap (см. renderTerminals) получаем два
+                // наложенных друг на друга рендера карты.
+                if (yandexMaps.mapInstance) {
+                    yandexMaps.mapInstance.destroy()
+                    yandexMaps.mapInstance = null
+                }
 
                 var map = new ymaps.Map(YANDEX_MAP_CONTAINER_ID, {
                     center: [yandexMaps.terminals[0]['lat'], yandexMaps.terminals[0]['lon']],
@@ -235,6 +325,7 @@ function eslRunMap() {
                 }, {
                     suppressMapOpenBlock: true,
                 })
+                yandexMaps.mapInstance = map
 
                 // map.behaviors.disable('scrollZoom')
                 yandexMaps.createPlacemarks(yandexMaps.terminals, map)
@@ -291,6 +382,10 @@ function eslRunMap() {
 
         },
         destroyMap: function () {
+            if (yandexMaps.mapInstance) {
+                yandexMaps.mapInstance.destroy()
+                yandexMaps.mapInstance = null
+            }
             if (document.getElementById(YANDEX_MAP_CONTAINER_ID)) {
                 document.getElementById(YANDEX_MAP_CONTAINER_ID).remove()
             }
@@ -298,6 +393,8 @@ function eslRunMap() {
             if (withoutMap) withoutMap.style.display = '';
             var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
             if (preloader) preloader.style.display = 'none';
+            var listWrap = document.getElementById(LIST_CONTAINER_ID);
+            if (listWrap) { listWrap.innerHTML = ''; listWrap.style.display = 'none'; }
         }
     }
     yandexMaps.initApi()
@@ -308,51 +405,56 @@ function eslRunMap() {
             if (!terminalsEl) return;
             var parsedTerminals = [];
             try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
+
+            modalDom.open();
+
+            var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
+            var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
+
             if (parsedTerminals && parsedTerminals.length) {
-                yandexMaps.createContainer()
-                yandexMaps.terminals = parsedTerminals
-                ymaps.ready(yandexMaps.initMap)
-                modalDom.open()
+                // Быстро показываем закешированное значение, не дожидаясь ответа сервера.
+                yandexMaps.renderTerminals(parsedTerminals);
             } else {
-                // Открываем модал сразу, затем догружаем терминалы через AJAX
-                modalDom.open();
-                var withoutMap = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .without-map');
                 if (withoutMap) withoutMap.style.display = 'none';
-                var preloader = document.querySelector('#' + YANDEX_MAP_CONTAINER_ID_FOR_MAP + ' .wc-esl-map-preloader');
                 if (preloader) preloader.style.display = 'flex';
-                var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
-                    ? wc_esl_shipping_global.ajaxUrl
-                    : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
-                    ? wcEslBlockFrontend.ajaxUrl
-                    : null;
-                if (ajaxUrl) {
-                    var formData = new URLSearchParams();
-                    formData.append('action', 'wc_esl_get_terminals');
-                    fetch(ajaxUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: formData.toString()
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (preloader) preloader.style.display = 'none';
-                        if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
-                            terminalsEl.value = JSON.stringify(data.data.terminals);
-                            yandexMaps.createContainer();
-                            yandexMaps.terminals = data.data.terminals;
-                            ymaps.ready(yandexMaps.initMap);
-                        } else {
-                            if (withoutMap) withoutMap.style.display = '';
-                        }
-                    })
-                    .catch(function() {
-                        if (preloader) preloader.style.display = 'none';
-                        if (withoutMap) withoutMap.style.display = '';
-                    });
-                } else {
+            }
+
+            // В любом случае перепроверяем свежими данными с сервера: #wcEslTerminals
+            // мог остаться от предыдущего города, а событие wc-esl-city-changed не
+            // гарантированно ловит каждую смену города (например, при программном
+            // изменении поля без диспатча события) — так что полагаться только на кэш
+            // нельзя, актуальность должен подтверждать сам сервер при каждом открытии.
+            var ajaxUrl = (typeof wc_esl_shipping_global !== 'undefined' && wc_esl_shipping_global.ajaxUrl)
+                ? wc_esl_shipping_global.ajaxUrl
+                : (typeof wcEslBlockFrontend !== 'undefined' && wcEslBlockFrontend.ajaxUrl)
+                ? wcEslBlockFrontend.ajaxUrl
+                : null;
+            if (ajaxUrl) {
+                var formData = new URLSearchParams();
+                formData.append('action', 'wc_esl_get_terminals');
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
                     if (preloader) preloader.style.display = 'none';
-                    if (withoutMap) withoutMap.style.display = '';
-                }
+                    if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
+                        terminalsEl.value = JSON.stringify(data.data.terminals);
+                        yandexMaps.renderTerminals(data.data.terminals);
+                    } else {
+                        terminalsEl.value = '[]';
+                        yandexMaps.showFallback([]);
+                    }
+                })
+                .catch(function() {
+                    if (preloader) preloader.style.display = 'none';
+                    if (!parsedTerminals.length) yandexMaps.showFallback([]);
+                });
+            } else {
+                if (preloader) preloader.style.display = 'none';
+                if (!parsedTerminals.length && withoutMap) withoutMap.style.display = '';
             }
         },
         onCloseModal: function () {
@@ -367,15 +469,15 @@ function eslRunMap() {
         },
     }
 
-    let els_terminals_buttons = document.getElementsByClassName('wc-esl-terminals__button')
-
-    if (els_terminals_buttons) {
-
-        for (let i = 0; i < els_terminals_buttons.length; i++) {
-            els_terminals_buttons[i].addEventListener('click', bindEvents.clickOnTerminals, false);
+    // Делегирование клика: WooCommerce пересоздаёт блок способов доставки при
+    // update_checkout (например, при смене города), и прямой addEventListener на
+    // найденных при загрузке кнопках теряется вместе со старым DOM-узлом.
+    document.addEventListener('click', function (event) {
+        let button = event.target.closest && event.target.closest('.wc-esl-terminals__button');
+        if (button) {
+            bindEvents.clickOnTerminals(event);
         }
-
-    }
+    });
 
     let esl_filters = document.getElementsByClassName('filter-map-esl')
 
@@ -397,8 +499,14 @@ function eslRunMap() {
     //     esl.setTerminal( event.detail.address )
     // });
 
-    // Смена города в checkout: если модалка открыта — перезагрузить терминалы.
+    // Смена города в checkout: закешированные в #wcEslTerminals терминалы относятся
+    // к старому городу — сбрасываем кэш всегда, иначе при следующем открытии модалки
+    // clickOnTerminals() покажет их как есть, не сделав новый запрос (см. ниже).
+    // Если модалка уже открыта — сразу перезагружаем терминалы.
     document.addEventListener('wc-esl-city-changed', function () {
+        var terminalsElOnChange = document.getElementById('wcEslTerminals');
+        if (terminalsElOnChange) terminalsElOnChange.value = '[]';
+
         var modal = document.getElementById(ID_MODAL);
         if (!modal || !modal.classList.contains('modal__show')) return;
 
@@ -432,16 +540,14 @@ function eslRunMap() {
             if (preloader) preloader.style.display = 'none';
             if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
                 if (terminalsEl) terminalsEl.value = JSON.stringify(data.data.terminals);
-                yandexMaps.createContainer();
-                yandexMaps.terminals = data.data.terminals;
-                ymaps.ready(yandexMaps.initMap);
+                yandexMaps.renderTerminals(data.data.terminals);
             } else {
-                if (withoutMap) withoutMap.style.display = '';
+                yandexMaps.showFallback([]);
             }
         })
         .catch(function () {
             if (preloader) preloader.style.display = 'none';
-            if (withoutMap) withoutMap.style.display = '';
+            yandexMaps.showFallback([]);
         });
     });
 

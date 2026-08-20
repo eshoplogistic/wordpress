@@ -123,12 +123,18 @@ class AssetsLoader implements ModuleInterface
 		}
 
 		if(is_checkout() && empty( is_wc_endpoint_url('order-received'))) {
-			// Проверяем, используются ли блоки Gutenberg для доставки
-			$usingBlocks = has_block('eshoplogisticru/checkout-shipping') || 
-			               has_block('eshoplogisticru/checkout-form');
+			// Используются ли блоки Gutenberg для доставки — включает и явную вставку
+			// ESL-блока, и голый woocommerce/checkout (калькулятор теперь автоматически
+			// доинъектируется в order-summary через GutenbergBlock::injectCheckoutShippingBlock).
+			$usingBlocks = $usingBlocksCheckout;
 
-			// SDK cart виджета нужен только когда frame включён
-			if ($frameEnable) {
+			// SDK cart виджета нужен только когда frame включён. Для блочного чекаута
+			// это не нужно: checkout_frame_block.js сам грузит и отслеживает SDK
+			// динамически (свой <script data-esl-widget-sdk="cart">), не видит этот
+			// подключённый через wp_enqueue_script тег (у него нет такого маркера) и
+			// поэтому раньше загружал app.js второй раз с нуля — второй, "спешный"
+			// экземпляр не всегда успевал получить полный список служб доставки.
+			if ($frameEnable && !$usingBlocks) {
 				wp_enqueue_script(
 					'wc_esl_app_frame_js_v2',
 					'https://api.esplc.ru/widgets/cart/app.js',
@@ -203,14 +209,33 @@ class AssetsLoader implements ModuleInterface
 		$addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 		$paymentCalcEnabled = isset($addForm['paymentCalc']) && $addForm['paymentCalc'] === 'true';
 
+		$billingCityField = !empty($addForm['billingCity']) ? $addForm['billingCity'] : 'billing_city';
+		$shippingCityField = !empty($addForm['shippingCity']) ? $addForm['shippingCity'] : 'shipping_city';
+		$offAddressCheckEnabled = isset($addForm['offAddressCheck']) && $addForm['offAddressCheck'] === 'true';
+		$citySelectModalEnabled = isset($addForm['citySelectModal']) && $addForm['citySelectModal'] === 'true';
+
+		$eslLoaderUrl = '';
+		if (!empty($addForm['eslLoader'])) {
+			$eslLoaderUrl = wp_get_attachment_image_url($addForm['eslLoader'], 'full') ?: '';
+		}
+
 		// Проверяем наличие опции
 		$isFrameEnabled = false;
 		if ( !empty($frameEnable) ) {
 			$isFrameEnabled = in_array($frameEnable, ['yes', 'on', '1', 1, true], true);
 		}
 
+		// checkout_frame_block.js грузится динамически через loadExternalScript()
+		// в block-frontend.js, в обход wp_enqueue_script — поэтому не получает
+		// автоматический ?ver= от WordPress и кэшируется браузером по голому URL.
+		// WC_ESL_VERSION годами не бампается при правке этого файла, так что берём
+		// mtime — любое изменение файла само сбрасывает кэш.
+		$checkoutFrameBlockPath = WC_ESL_PLUGIN_DIR . 'assets/js/checkout_frame_block.js';
+		$checkoutFrameBlockVer = file_exists($checkoutFrameBlockPath) ? filemtime($checkoutFrameBlockPath) : WC_ESL_VERSION;
+
 		// Строим конфиг объект как JavaScript
 		$config_script = 'window.wcEslBlockFrontend = {' . "\n";
+		$config_script .= '    "checkoutFrameBlockVer": ' . json_encode($checkoutFrameBlockVer) . ',' . "\n";
 		$config_script .= '    "widgetKey": ' . json_encode($widgetKey) . ',' . "\n";
 		$config_script .= '    "apiKeyWCart": ' . json_encode($apiKeyWCart) . ',' . "\n";
 		$config_script .= '    "pluginUrl": ' . json_encode(WC_ESL_PLUGIN_URL) . ',' . "\n";
@@ -222,6 +247,11 @@ class AssetsLoader implements ModuleInterface
 		$config_script .= '    "shippingNonce": ' . json_encode(wp_create_nonce('wc-esl-shipping')) . ',' . "\n";
 		$config_script .= '    "checkoutFrameEnabled": ' . json_encode($isFrameEnabled) . ',' . "\n";
 		$config_script .= '    "paymentCalc": ' . json_encode($paymentCalcEnabled) . ',' . "\n";
+		$config_script .= '    "billingCityField": ' . json_encode($billingCityField) . ',' . "\n";
+		$config_script .= '    "shippingCityField": ' . json_encode($shippingCityField) . ',' . "\n";
+		$config_script .= '    "offAddressCheck": ' . json_encode($offAddressCheckEnabled) . ',' . "\n";
+		$config_script .= '    "citySelectModal": ' . json_encode($citySelectModalEnabled) . ',' . "\n";
+		$config_script .= '    "eslLoaderUrl": ' . json_encode($eslLoaderUrl) . ',' . "\n";
 		$config_script .= '    "debugFrameEnable": ' . json_encode($frameEnable) . "\n";
 		$config_script .= '};' . "\n";
 		$config_script .= 'console.log("✓ wcEslBlockFrontend injected:", window.wcEslBlockFrontend);' . "\n";
@@ -240,7 +270,7 @@ class AssetsLoader implements ModuleInterface
 				'wc_esl_bootstrap_css',
 				WC_ESL_PLUGIN_URL . 'assets/css/bootstrap.min.css',
 				[],
-				'4.6.0'
+				'4.6.2'
 			);
 
 
@@ -262,7 +292,7 @@ class AssetsLoader implements ModuleInterface
 				'wc_esl_bootstrap_js',
 				WC_ESL_PLUGIN_URL . 'assets/js/bootstrap.min.js',
 				[],
-				'4.6.0',
+				'4.6.2',
 				true
 			);
 

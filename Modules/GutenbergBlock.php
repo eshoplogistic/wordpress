@@ -2,6 +2,7 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Classes\Plugin;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
@@ -35,6 +36,52 @@ class GutenbergBlock implements ModuleInterface
         
         // Локализация frontend-скриптов
         add_action('wp_enqueue_scripts', [$this, 'localizeBlockScripts']);
+
+        // Автоподключение калькулятора к "голому" блочному чекауту (woocommerce/checkout
+        // без явно вставленного eshoplogisticru/checkout-shipping) — доинъектируем блок
+        // сразу после order-summary, туда же, куда он попадает при ручной вставке.
+        add_filter('render_block_woocommerce/checkout-order-summary-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
+    }
+
+    /**
+     * Доинъектирует калькулятор ESL в блочный checkout, если он не вставлен вручную.
+     *
+     * @param string $blockContent Отрендеренный HTML блока order-summary
+     * @param array  $block Данные блока
+     * @return string
+     */
+    public function injectCheckoutShippingBlock($blockContent, $block)
+    {
+        if (! is_checkout() || is_wc_endpoint_url('order-received')) {
+            return $blockContent;
+        }
+
+        // Явно вставленный блок уже сам всё отрендерит — не дублируем.
+        if (has_block('eshoplogisticru/checkout-shipping')) {
+            return $blockContent;
+        }
+
+        if (!$this->isAccountUsable()) {
+            return $blockContent;
+        }
+
+        return $blockContent . $this->renderCheckoutShippingBlock([]);
+    }
+
+    /**
+     * Аккаунт пригоден для расчёта доставки (ключ настроен, не заблокирован, последняя
+     * синхронизация состояния аккаунта не завершилась ошибкой — см. Classes\Plugin::isEnable()).
+     * Этот блок — Gutenberg-блок из tier-1 (always-on), в отличие от Modules\Shipping/Checkout
+     * он не гейтится автоматически при инициализации модулей, поэтому проверяем явно здесь,
+     * иначе виджет выбора ПВЗ продолжит работать в блочном чекауте, даже когда доставка отключена
+     * (см. случай "закончился баланс аккаунта").
+     *
+     * @return bool
+     */
+    private function isAccountUsable()
+    {
+        $plugin = new Plugin();
+        return $plugin->isEnable();
     }
 
     /**
@@ -105,6 +152,10 @@ class GutenbergBlock implements ModuleInterface
         
         // Полный виджет показываем только на реальной странице checkout
         if (is_checkout() && !is_wc_endpoint_url('order-received')) {
+            if (!$this->isAccountUsable()) {
+                return '';
+            }
+
             // Получаем данные сессии
             $sessionService = new SessionService();
             $shippingEsl = $sessionService->get('esl_shipping_frame');
@@ -164,6 +215,8 @@ class GutenbergBlock implements ModuleInterface
             if (isset($addOption['eslLoader'])) {
                 $eslLoader = wp_get_attachment_image_url($addOption['eslLoader'], 'full');
             }
+
+            $citySelectModal = isset($addOption['citySelectModal']) && $addOption['citySelectModal'] === 'true';
 
             // Запускаем буферизацию вывода
             ob_start();
@@ -249,16 +302,26 @@ class GutenbergBlock implements ModuleInterface
                 <input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(wp_json_encode($terminals)); ?>" />
                 <input type="hidden" name="wc-esl-api-key-ya" id="wcEslKeyYa" value="<?php echo esc_attr($apiKeyYa); ?>" />
                 <?php endif; ?>
+
+                <?php if ($citySelectModal): ?>
+                <div id="modal-esl-city" class="modal-esl-frame">
+                    <div class="modal_content">
+                        <div class="title">
+                            <span class="close_modal_window">×</span>
+                            <p><strong><?php echo esc_html__('Выберите свой населённый пункт', 'eshoplogisticru'); ?></strong><br><?php echo esc_html__('Начните ввод названия населённого пункта для поиска', 'eshoplogisticru'); ?></p>
+                        </div>
+                        <input id="esl_modal-search" value="" placeholder="<?php echo esc_attr__('Населенный пункт', 'eshoplogisticru'); ?>" data-mode="shipping">
+                        <div id="esl_result-search"></div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
             <?php
             return ob_get_clean();
         }
         
              // Для предпросмотра в редакторе админки показываем заглушку
-        return '<div class="wc-esl-checkout-shipping-block" style="padding: 20px; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 4px; margin: 20px 0; text-align: center;">' .
-               '<p style="margin: 0; color: #666;">📦 ' . esc_html__('Shipping Calculator (Checkout)', 'eshoplogisticru') . '</p>' .
-               '<p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">' . esc_html__('Displays on checkout page', 'eshoplogisticru') . '</p>' .
-               '</div>';
+        return $this->renderBlockPlaceholder('wc-esl-checkout-shipping-block', __('Shipping Calculator (Checkout)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
     }
 
     /**
@@ -269,12 +332,12 @@ class GutenbergBlock implements ModuleInterface
         if (is_product()) {
             global $post;
             $product = wc_get_product($post->ID);
-            
+
             if (!$product) {
                 return '';
             }
 
-            $widgetKey = !empty($attributes['widgetKey']) 
+            $widgetKey = !empty($attributes['widgetKey'])
                 ? sanitize_text_field($attributes['widgetKey'])
                 : $this->optionsRepository->getOption('wc_esl_shipping_widget_key');
 
@@ -282,29 +345,81 @@ class GutenbergBlock implements ModuleInterface
                 return '';
             }
 
+            // Как и checkout-shipping (см. isAccountUsable() выше), этот блок из tier-1
+            // (always-on) не гейтится автоматически при инициализации модулей, поэтому
+            // проверяем явно здесь — иначе кнопка/инлайн-виджет продолжают показываться
+            // в карточке товара, даже когда ключ невалиден или аккаунт заблокирован/не синхронизирован.
+            if (!$this->isAccountUsable()) {
+                return '';
+            }
+
             $displayMode = $attributes['displayMode'] ?? 'button';
-            
+            $productData = $product->get_data();
+
+            if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
+            } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
+            } else {
+                $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
+            }
+            // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy filter name retained for backward compatibility.
+            $ip = apply_filters('wc_esl_get_ip', $ip);
+
+            $shippingHelper = new ShippingHelper();
+            $offers = [[
+                'article'    => $productData['id'],
+                'name'       => $productData['name'],
+                'count'      => 1,
+                'price'      => $productData['price'],
+                'weight'     => $productData['weight'],
+                'dimensions' => $shippingHelper->dimensionsOption($productData['length']) . '*' .
+                                $shippingHelper->dimensionsOption($productData['width']) . '*' .
+                                $shippingHelper->dimensionsOption($productData['height']),
+            ]];
+            $jsonOffers = htmlspecialchars(json_encode($offers));
+
             $html = '<div class="wc-esl-product-calculator-block" ' .
                     'data-widget-key="' . esc_attr($widgetKey) . '" ' .
                     'data-display-mode="' . esc_attr($displayMode) . '" ' .
                     'data-product-id="' . esc_attr($product->get_id()) . '">';
-            
+
             if ($displayMode === 'button') {
-                $html .= '<button class="wc-esl-calculator-trigger button button-primary">' .
-                        esc_html(__('Quick Order with Delivery', 'eshoplogisticru')) .
+                // Кнопка + модальный виджет — тот же контракт, что и у шорткода [esl_widget_button].
+                $widgetBut = $this->optionsRepository->getOption('wc_esl_shipping_widget_but');
+                $buttonLabel = $widgetBut ?: __('Заказать с доставкой', 'eshoplogisticru');
+
+                $html .= '<button type="button" data-esl-widget class="wc-esl-calculator-trigger button button-primary" data-title="' . esc_attr($buttonLabel) . '">' .
+                        esc_html($buttonLabel) .
                         '</button>';
+                $html .= '<div id="eShopLogisticWidgetModal" ' .
+                        'data-lazy-load="true" ' .
+                        'data-ip="' . esc_attr($ip) . '" ' .
+                        'data-key="' . esc_attr($widgetKey) . '" ' .
+                        'data-offers="' . $jsonOffers . '"></div>';
+
+                wp_enqueue_script('wc_esl_app_v2_js', 'https://api.esplc.ru/widgets/modal/app.js', [], WC_ESL_VERSION, true);
             } else {
+                // Инлайн-виджет — тот же контракт, что и у вкладки товара wc_esl_product_widget_tab_content.
                 $html .= '<div id="eShopLogisticWidgetBlock" ' .
                         'data-lazy-load="true" ' .
-                        'data-widget-key="' . esc_attr($widgetKey) . '"></div>';
+                        'data-ip="' . esc_attr($ip) . '" ' .
+                        'data-key="' . esc_attr($widgetKey) . '" ' .
+                        'data-offers="' . $jsonOffers . '"></div>';
+
+                wp_enqueue_script('wc_esl_app_tab_v2_js', 'https://api.esplc.ru/widgets/block/app.js', [], WC_ESL_VERSION, true);
+                wp_enqueue_script('wc_esl_app_tab_js', WC_ESL_PLUGIN_URL . 'assets/js/app_tab.js', [], WC_ESL_VERSION, true);
+                wp_add_inline_script( 'wc_esl_app_tab_js', 'window.wcEslPluginUrl = ' . wp_json_encode( WC_ESL_PLUGIN_URL ) . ';', 'before' );
             }
-            
+
             $html .= '</div>';
-            
+
+            wp_enqueue_style('wc_esl_style_frame_css', WC_ESL_PLUGIN_URL . 'assets/css/style-frame.css', [], WC_ESL_VERSION);
+
             return $html;
         }
-        
-        return '';
+
+        return $this->renderBlockPlaceholder('wc-esl-product-calculator-block', __('Product Shipping Calculator', 'eshoplogisticru'), __('Displays on product pages', 'eshoplogisticru'));
     }
 
     /**
@@ -315,8 +430,8 @@ class GutenbergBlock implements ModuleInterface
         if (is_cart()) {
             return '<div class="wc-esl-cart-shipping-block" data-block-type="cart-shipping"></div>';
         }
-        
-        return '';
+
+        return $this->renderBlockPlaceholder('wc-esl-cart-shipping-block', __('Cart Shipping (Frame)', 'eshoplogisticru'), __('Displays on cart page', 'eshoplogisticru'));
     }
 
     /**
@@ -324,8 +439,24 @@ class GutenbergBlock implements ModuleInterface
      */
     public function renderCheckoutFormBlock($attributes)
     {
-        return '<div class="wc-esl-checkout-form-block" ' .
-               'data-form-type="' . esc_attr($attributes['formType'] ?? 'full') . '"></div>';
+        if (is_checkout() && !is_wc_endpoint_url('order-received')) {
+            return '<div class="wc-esl-checkout-form-block" ' .
+                   'data-form-type="' . esc_attr($attributes['formType'] ?? 'full') . '"></div>';
+        }
+
+        return $this->renderBlockPlaceholder('wc-esl-checkout-form-block', __('Checkout Form (Legacy)', 'eshoplogisticru'), __('Displays on checkout page', 'eshoplogisticru'));
+    }
+
+    /**
+     * Единая заглушка для блоков, показываемая в редакторе и вне их целевого контекста
+     * (согласовано с фолбэком renderCheckoutShippingBlock).
+     */
+    private function renderBlockPlaceholder($className, $title, $description)
+    {
+        return '<div class="' . esc_attr($className) . '" style="padding: 20px; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 4px; margin: 20px 0; text-align: center;">' .
+               '<p style="margin: 0; color: #666;">📦 ' . esc_html($title) . '</p>' .
+               '<p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">' . esc_html($description) . '</p>' .
+               '</div>';
     }
 
     /**
