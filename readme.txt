@@ -1,4 +1,4 @@
-=== eShopLogistic Shipping Calculator ===
+=== eShopLogistic Shipping Integrator ===
 Contributors: eshoplogistic
 Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
@@ -8,38 +8,36 @@ Stable tag: 2.2.26
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Integration with eShopLogistic service for WooCommerce. Supports 18+ delivery services with real-time shipping calculations.
+Integration with delivery carriers through the eShopLogistic service: shipping calculation and order export to carrier dashboards.
 
 == Description ==
 
 **English Description**
 
-eShopLogistic is the official WordPress plugin for integrating your WooCommerce store with the eShopLogistic service ([eshoplogistic.ru](https://eshoplogistic.ru/)).
+This plugin integrates WordPress (WooCommerce) with delivery carriers through the eShopLogistic integration service. Detailed information about platform features and pricing is available at [eshoplogistic.ru](http://eshoplogistic.ru/).
 
-This plugin offers comprehensive shipping integration with support for multiple Russian and international delivery services:
-- Display real-time shipping cost and delivery time calculations in shopping cart and product pages
-- Support for 18+ delivery carriers (CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and more)
-- Pickup point (PVZ) selection with interactive map
-- Automatic order export to carrier systems
-- Flexible shipping rules and adjustments
-- Support for custom shipping methods
-- Shipping calculator in product card, shopping cart, and custom pages via widgets
-- Order tracking with status updates
-- Comprehensive settings management panel
-- Full support for WooCommerce Block Checkout (Gutenberg-based checkout pages)
-- Four Gutenberg blocks for adding shipping widgets to any page
+One solution, integrated with all major delivery services: CDEK, DPD, Yandex Delivery, 5Post, Delovye Linii, PEC, Russian Post, KIT, Baikal Service, Zheldorexpeditsiya, Vozovoz, Energiya, Magnit Post, Grastin, Logsis, Integral. Other carriers can be connected on request.
 
-**Feature Highlights:**
+To use the plugin, you need to register an eShopLogistic account and complete the basic integration setup for each delivery service you need in your eShopLogistic personal dashboard. In WooCommerce, you only configure what relates to the plugin's own operation with the connected carriers — shipping calculation in WooCommerce works across all carriers connected through eShopLogistic. Order export to carrier systems is currently available for CDEK, DPD, Yandex Delivery, 5Post, Russian Post, Delovye Linii, PEC, and Baikal Service; support for the remaining carriers will be added gradually as the plugin evolves and based on user requests.
 
-* Real-time shipping rate calculation for multiple carriers
-* Single unified pickup point selector across all carriers
-* One control panel for all delivery services with advanced customization
-* Shipping rate rules based on payment method, delivery type, destination, order amount, weight and more
-* Dynamic cost and delivery time adjustments per rule
-* Custom delivery methods support
-* Full order export and tracking capabilities
-* WooCommerce Blocks checkout support — works with both classic shortcode and block-based checkout
-* Gutenberg blocks: Shipping Calculator (Checkout), Product Shipping Calculator, Cart Shipping, Checkout Form (Legacy)
+**Key features:**
+
+* Shipping cost calculation in the cart, on the product page, or on any other page, across all the carriers you need
+* All delivery services and their pickup points (PVZ) shown in a single widget, or separate shipping methods per carrier
+* Product weight and dimensions taken from product cards or default values
+* Flexible rules for adjusting shipping cost and delivery time
+* Order export to carrier dashboards from the WooCommerce admin, through a single unified interface
+* Tracking number retrieval (where provided by the carrier)
+* Sync of WooCommerce order statuses with carrier delivery statuses
+* Orders can be created in carrier dashboards as prepaid or cash-on-delivery
+* Manual correction of parcel/package parameters when exporting orders to carriers
+* Deleting an order from a carrier's dashboard (where supported)
+* Full support for WooCommerce Block Checkout (Gutenberg-based checkout pages) as well as the classic shortcode checkout
+* Four Gutenberg blocks for adding shipping widgets to any page
+
+The plugin works correctly only on themes with standard, non-customized WooCommerce checkout logic. If your checkout has been customized, the module will need to be adapted accordingly.
+
+If something isn't working, reach us via [Telegram](https://t.me/eShopLogisticBot), [Max](https://max.ru/id690303528611_bot), live chat, or the "Support" section in your dashboard — we're happy to help!
 
 **Requirements:**
 - WordPress 6.0+
