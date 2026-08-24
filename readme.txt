@@ -30,8 +30,6 @@ To use the plugin, you need to register an eShopLogistic account and complete th
 * Orders can be created in carrier dashboards as prepaid or cash-on-delivery
 * Manual correction of parcel/package parameters when exporting orders to carriers
 * Deleting an order from a carrier's dashboard (where supported)
-* Full support for WooCommerce Block Checkout (Gutenberg-based checkout pages) as well as the classic shortcode checkout
-* Four Gutenberg blocks for adding shipping widgets to any page
 
 The plugin works correctly only on themes with standard, non-customized WooCommerce checkout logic. If your checkout has been customized, the module will need to be adapted accordingly.
 
