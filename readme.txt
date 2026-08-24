@@ -12,8 +12,6 @@ Integration with delivery carriers through the eShopLogistic service: shipping c
 
 == Description ==
 
-**English Description**
-
 This plugin integrates WordPress (WooCommerce) with delivery carriers through the eShopLogistic integration service. Detailed information about platform features and pricing is available at [eshoplogistic.ru](http://eshoplogistic.ru/).
 
 One solution, integrated with all major delivery services: CDEK, DPD, Yandex Delivery, 5Post, Delovye Linii, PEC, Russian Post, KIT, Baikal Service, Zheldorexpeditsiya, Vozovoz, Energiya, Magnit Post, Grastin, Logsis, Integral. Other carriers can be connected on request.
@@ -47,7 +45,7 @@ If something isn't working, reach us via [Telegram](https://t.me/eShopLogisticBo
 **Checkout Mode Support:**
 Compatible with both traditional shortcode checkout (`[woocommerce_checkout]`) and WooCommerce Block Checkout.
 
-For detailed documentation and demo: [wp-v2.eshoplogistic.ru](https://wp-v2.eshoplogistic.ru/)
+For detailed documentation and demo: [wp.eshoplogistic.ru](https://wp.eshoplogistic.ru/)
 
 == Installation ==
 
@@ -71,7 +69,7 @@ Yes. Both the classic shortcode checkout (`[woocommerce_checkout]`) and the bloc
 
 = Do I need a Yandex Maps API key? =
 
-Only if you want to display pickup points on an interactive map — this is optional and configured in the plugin settings.
+No. The pickup-point (PVZ) map works out of the box without a key. Providing your own Yandex Maps API key in the plugin settings is optional and only enables the in-map street/metro search control.
 
 == Screenshots ==
 
@@ -86,7 +84,7 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 
 1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
 2. **eShopLogistic embeddable widget bundle** (`https://api.esplc.ru/widgets/{cart,modal,block}/app.js`, which in turn loads a versioned, content-hashed JS/CSS bundle from the same `api.esplc.ru` domain) — this is a live, self-updating cart/product/checkout shipping-calculator UI, analogous to an embeddable live-chat widget: the eShopLogistic team ships UI updates to this bundle independently of plugin releases, and the asset filenames change with every such release, so they cannot be bundled statically inside the plugin without going stale. It is only loaded on pages where a shipping widget is displayed (product page, cart, checkout), and once loaded it talks to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above. A second, older widget UI (used for the product-tab "static" and "modal" display modes) is bundled locally inside the plugin (`assets/css/widget-*.css`, `assets/js/widget-*.js`) and is not loaded remotely.
-3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded only if you enable the interactive pickup-point map and provide your own Yandex Maps API key in the plugin settings. When enabled, the visitor's browser loads the Yandex Maps JavaScript API to render pickup-point markers on a map. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
+3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded whenever the pickup-point (PVZ) selection modal is opened, so the visitor's browser can render pickup-point markers on an interactive map. Providing your own Yandex Maps API key in the plugin settings is optional: without a key the map and pickup-point markers still work, only the in-map street/metro search control is disabled; if a key is provided, it is appended to the API request. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
 4. **DaData address suggestions** (`suggestions.dadata.ru`) — the locally-bundled product-tab/modal widget UI (see item 2) uses this service to suggest matching Russian addresses as the customer types their delivery address, so the visitor's browser sends the partial address text they are typing, together with an eShopLogistic-issued API token, directly to `suggestions.dadata.ru`. This only runs while the customer is actively typing in the delivery-address field of that widget. See [DaData Terms of Service](https://dadata.ru/terms/) and [DaData Privacy Policy](https://dadata.ru/privacy/).
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
