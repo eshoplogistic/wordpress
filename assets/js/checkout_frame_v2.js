@@ -146,9 +146,18 @@ function isNumeric(value) {
 
                 if (response.success) {
                     renderFunc(response.data);
+                } else {
+                    renderFunc([]);
                 }
+            },
+            error: function () {
+                renderFunc([]);
             }
         });
+    }
+
+    function cityLoadingIndicatorHtml() {
+        return '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
     }
 
     function renderCitiesItem({fias, name, region, postal_code, services, type}) {
@@ -366,6 +375,7 @@ function isNumeric(value) {
 
                 if (value.length > 1) {
                     if (currentBillingCountry) {
+                        $this.closest('.modal-esl-frame').find('#esl_result-search').html(cityLoadingIndicatorHtml());
                         searchCity(value, function (items) {
                             if(Object.getOwnPropertyNames(items).length >= 1) {
                                 $this.closest('.modal-esl-frame').find('#esl_result-search').html(

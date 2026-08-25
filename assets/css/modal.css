@@ -112,6 +112,22 @@
     to { transform: rotate(360deg); }
 }
 
+.wc-esl-city-search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.wc-esl-city-search-loading__spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #2196f3;
+    border-radius: 50%;
+    animation: wc-esl-spin 0.8s linear infinite;
+}
+
 .without-map {
     position: absolute;
     margin-left: auto;

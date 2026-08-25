@@ -1304,6 +1304,8 @@
                 return;
             }
 
+            resultContainer.innerHTML = '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
+
             searchTimer = setTimeout(() => {
                 const country = getCheckoutCountryValue();
                 searchCity(value, (itemsByRegion) => {
