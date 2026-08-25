@@ -18,6 +18,8 @@ class Footer implements ModuleInterface
         add_shortcode('shortcode_widget_static', 'wc_esl_shortcode_widget_static_handler');
         add_shortcode('shortcode_email_time_delivery', 'wc_esl_shortcode_widget_email_time_delivery');
         add_shortcode('shortcode_email_status_delivery', 'wc_esl_shortcode_widget_email_status_delivery');
+        add_shortcode('shortcode_email_tracking_link', 'wc_esl_shortcode_widget_email_tracking_link');
+        add_shortcode('shortcode_email_tracking_code', 'wc_esl_shortcode_widget_email_tracking_code');
 	    update_option( 'use_smilies', false );
         //add_action('wp_footer', [$this, 'addWidgetScript']);
     }
