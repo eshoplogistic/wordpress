@@ -553,8 +553,9 @@
 }
 
 .help-tip{
-    top: 15px;
-    right: 300px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
     text-align: center;
     background-color: var(--esl-accent-soft-strong);
     border-radius: 50%;

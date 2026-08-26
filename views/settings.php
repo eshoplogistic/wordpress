@@ -220,7 +220,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -288,7 +288,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyWCartForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -318,7 +318,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyYaForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -452,7 +452,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetKeyForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -477,7 +477,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetSecretCodeForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -502,7 +502,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetButForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
