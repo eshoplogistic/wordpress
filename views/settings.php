@@ -1497,7 +1497,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 <label>
                                     <div class="help-tip">
                                         <p>
-                                            Перетащите статус доставки в левую часть страницы.
+                                            Перетащите ваш статус заказа в WooCommerce в левую часть страницы для соответствия со статусом службы доставки.
                                         </p>
                                     </div>
                                 </label>
