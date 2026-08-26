@@ -729,6 +729,12 @@
     word-break: break-word;
 }
 
+.esl-info-row__value--muted {
+    color: var(--esl-text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
 .esl-status-badge {
     display: inline-flex;
     align-items: center;

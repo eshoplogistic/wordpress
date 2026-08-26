@@ -63,8 +63,14 @@ class UnloadingInfo
         if (isset($result['state']['service_status']['description'])) {
             $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Описание:', 'eshoplogisticru') . '</span><span class="esl-info-row__value">' . esc_html($result['state']['service_status']['description']) . '</span></div>';
         }
-        if (isset($result['state']['tracking'])) {
+        if (!empty($result['state']['tracking'])) {
             $rows .= '<div class="esl-info-row esl-info-row--copy"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-copy-control"><input type="text" value="' . esc_attr($result['state']['tracking']) . '" id="copyText2" disabled><button id="copyBut2" class="button button-primary esl-copy-btn" onclick="copyToClipboard(copyText2, this)">' . esc_html__('Скопировать трек', 'eshoplogisticru') . '</button></span></div>';
+        } elseif (isset($result['state'])) {
+            // API вернул статус, но tracking ещё пустой — сама ТК просто ещё не присвоила
+            // трек-номер (обычно появляется после приёма отправления курьером/на терминале),
+            // это не ошибка плагина. Показываем то же самое место, что и пустой disabled-инпут,
+            // но с понятным текстом вместо мёртвой кнопки "Скопировать" без значения.
+            $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-info-row__value--muted">' . esc_html__('ещё не присвоен транспортной компанией', 'eshoplogisticru') . '</span></div>';
         }
 
         $html = $errorHtml;
