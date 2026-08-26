@@ -74,7 +74,10 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                             <a class="nav-link active" id="esl-top-tab-system-btn" data-toggle="tab" href="#esl-top-tab-system" role="tab"><span class="dashicons dashicons-admin-generic"></span>Основные настройки</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-payment-btn" data-toggle="tab" href="#esl-top-tab-payment" role="tab"><span class="dashicons dashicons-money-alt"></span>Оплата и виджет</a>
+                            <a class="nav-link" id="esl-top-tab-paytypes-btn" data-toggle="tab" href="#esl-top-tab-paytypes" role="tab"><span class="dashicons dashicons-money-alt"></span>Типы оплат</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-widget-btn" data-toggle="tab" href="#esl-top-tab-widget" role="tab"><span class="dashicons dashicons-cart"></span>Виджет в карточку товара</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="esl-top-tab-extra-btn" data-toggle="tab" href="#esl-top-tab-extra" role="tab"><span class="dashicons dashicons-admin-tools"></span>Дополнительные настройки</a>
@@ -341,10 +344,10 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     </div>
 
                     </div>
-                    <div class="tab-pane fade" id="esl-top-tab-payment" role="tabpanel">
+                    <div class="tab-pane fade" id="esl-top-tab-paytypes" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
-							<?php esc_html_e( 'Настройки оплаты', 'eshoplogisticru' ) ?>
+							<?php esc_html_e( 'Настройка соответствия типов оплат', 'eshoplogisticru' ) ?>
                         </div>
 
                         <div class="card-body">
@@ -434,6 +437,8 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         </div>
                     </div>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-widget" role="tabpanel">
                     <div class="card wc-esl-settings-widget">
                         <div class="card-header">
 							<?php
