@@ -17,7 +17,9 @@ class ExportFileds {
 					'type' => '',
 				),
 				'receiver' => array(
-					'type' => '',
+					'identity' => array(
+						'type' => '',
+					),
 				),
 				'delivery' => array(
 					'tariff' => '',
@@ -336,7 +338,7 @@ class ExportFileds {
 						2 => 'Доставка',
 					), $exportFormSettings['type-order-sdek'] ?? '' ),
 				),
-				'receiver' => array(
+				'receiver[identity]' => array(
 					'type||select||Тип получателя' => $this->selectOptions( array(
 						1 => 'Физическое лицо',
 						3 => 'Юридическое лицо',
@@ -799,7 +801,7 @@ class ExportFileds {
 
 		$map = array(
 			'sdek' => array(
-				'receiver.type'                       => 'receiver-type-sdek',
+				'receiver[identity].type'              => 'receiver-type-sdek',
 			),
 			'delline' => array(
 				'receiver.legal'                      => 'receiver-legal-delline',
