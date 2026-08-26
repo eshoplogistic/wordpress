@@ -242,7 +242,7 @@ class GutenbergBlock implements ModuleInterface
                 <div id="wc-esl-terminals-wrap-button-shipping" class="wc-esl-terminals__container wc-esl-terminals__frame">
                     <div class="esl_desct_delivery" style="display: none;">
                         <p>Всего доступно <span class="count"><?php echo esc_html($count); ?></span>
-                        <span class="countText"><?php echo esc_html($countText); ?></span> доставки.
+                        <span class="countText"><?php echo esc_html($countText); ?></span> доставки:
                             <br><span class="addText">Выбран самый дешевый вариант.</span></p>
                     </div>
                     <button
