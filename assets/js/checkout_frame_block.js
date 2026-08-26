@@ -167,6 +167,74 @@
     }
 
     /**
+     * Есть ли у нас подтверждённый город (fias) для запуска виджета доставки.
+     */
+    function hasSelectedCity() {
+        const data = getWidgetData();
+        return !!(data.city && data.city.fias);
+    }
+
+    /**
+     * Выбран ли сейчас именно ESL-метод ("калькулятор доставки esl!"), а не
+     * нативный WooCommerce-метод вроде "Самовывоз" (Local pickup).
+     */
+    function isEslMethodSelected() {
+        return isEshopMethod(getCurrentShippingMethod());
+    }
+
+    /**
+     * Синхронизировать доступность кнопки запуска виджета "калькулятор доставки esl!"
+     * и подсказку рядом с ней с наличием выбранного города: без города виджет не может
+     * инициализироваться (см. sendWidgetParams), поэтому кнопка должна быть недоступна,
+     * а не молча открывать модалку с ошибкой в консоли. Подсказка актуальна только когда
+     * выбран сам ESL-метод — при "Самовывоз" и т.п. её быть не должно.
+     */
+    function updateCityGateUI() {
+        const showTip = isEslMethodSelected() && !hasSelectedCity();
+
+        document.querySelectorAll('.wc-esl-terminals__button').forEach((button) => {
+            button.disabled = showTip;
+        });
+
+        const tips = document.getElementById('tips-city-container');
+        if (!tips) {
+            return;
+        }
+
+        if (showTip) {
+            tips.innerHTML = '<i class="ico">☓</i>Для расчёта доставки выберите населённый пункт';
+            tips.style.display = 'block';
+        } else {
+            tips.style.display = 'none';
+        }
+    }
+
+    /**
+     * Пока город не выбран, тариф "калькулятор доставки esl!" всегда регистрируется
+     * с cost=0 (см. calculate_shipping_frame() в Base.php — это ещё не подтверждённая
+     * бесплатная доставка, а признак "цена ещё не рассчитана"). WooCommerce Blocks
+     * рендерит любую стоимость 0 как "Бесплатно" чисто на клиенте (cart total), и это
+     * нельзя переопределить из PHP через label — подменяем текст прямо в DOM. Актуально
+     * только пока выбран сам ESL-метод: у других методов (например, "Самовывоз") 0 — это
+     * настоящая бесплатная доставка, а не нерассчитанная.
+     */
+    function patchUncalculatedShippingTotal() {
+        if (!isEslMethodSelected() || hasSelectedCity()) {
+            return;
+        }
+
+        const valueEl = document.querySelector('.wc-block-components-totals-shipping .wc-block-components-totals-item__value');
+        if (!valueEl) {
+            return;
+        }
+
+        const text = (valueEl.textContent || '').trim().toLowerCase();
+        if (text === 'бесплатно' || text === 'free') {
+            valueEl.textContent = '';
+        }
+    }
+
+    /**
      * Получить хеш/подпись события сервиса.
      * Используем objectHash.sha1 при наличии, иначе безопасный fallback через JSON.
      */
@@ -2356,6 +2424,9 @@
         });
 
         // No auto-open in Blocks.
+
+        updateCityGateUI();
+        patchUncalculatedShippingTotal();
     }
 
     /**
@@ -2367,6 +2438,9 @@
         const deliveryType = getDeliveryType(currentMethod);
         const hasEslBlock = document.querySelector('.wc-esl-checkout-shipping-block');
         const methodChanged = currentMethod !== lastHandledShippingMethod;
+
+        updateCityGateUI();
+        patchUncalculatedShippingTotal();
 
         // Очищаем выбранный терминал только при фактической смене метода доставки.
         // Иначе updated_checkout/перерендеры WooCommerce стирают уже выбранный ПВЗ.
@@ -2642,6 +2716,19 @@
         handleShippingMethodChange();
         setupUseForBillingCheckbox();
         scheduleInitialCityAutoConfirm();
+
+        document.addEventListener('wc-esl-city-changed', () => {
+            updateCityGateUI();
+            patchUncalculatedShippingTotal();
+        });
+
+        // Итоги доставки и список способов доставки — отдельные React-блоки WC Blocks,
+        // перерисовывающиеся асинхронно при каждом обновлении корзины/адреса, поэтому
+        // одноразовой подмены при инициализации недостаточно.
+        setInterval(() => {
+            updateCityGateUI();
+            patchUncalculatedShippingTotal();
+        }, 800);
     }
 
     /**
