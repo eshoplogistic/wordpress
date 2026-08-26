@@ -142,9 +142,16 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                 </div>
                             <?php endif; ?>
 
+                            <?php
+                            // Тариф (см. resolveOrderTariff() в ExportFileds) привязан к типу доставки
+                            // (курьер/ПВЗ), с которым была рассчитана доставка заказа — смена типа здесь,
+                            // без пересчёта тарифа, приводит к ошибке на стороне ТК. Как и поле "Тариф",
+                            // блокируем "Тип доставки" для служб, где тариф зафиксирован (см. ниже).
+                            $wc_esl_tariffLocked = array_key_exists('tariff||dnone', $wc_esl_fieldDelivery['delivery'] ?? array());
+                            ?>
                             <div class="form-field">
                                 <label class="label" for="delivery_type">Тип доставки:</label>
-                                <select id="delivery_type" name="delivery_type" form="unloading_form" class="form-value">
+                                <select id="delivery_type" name="delivery_type" form="unloading_form" class="form-value" <?php echo $wc_esl_tariffLocked ? 'disabled' : ''; ?>>
                                     <option value="door" <?php echo esc_attr($wc_esl_typeMethod['type'] === 'door' ? 'selected' : '') ?>>
                                         Курьер
                                     </option>
@@ -152,6 +159,9 @@ foreach ( (array) $wc_esl_placesItems as $wc_esl_placeRow ) {
                                         Пункт самовывоза
                                     </option>
                                 </select>
+                                <?php if ($wc_esl_tariffLocked): ?>
+                                    <input type="hidden" name="delivery_type" value="<?php echo esc_attr($wc_esl_typeMethod['type']); ?>" form="unloading_form">
+                                <?php endif; ?>
                             </div>
 
                             <div class="form-field esl-terminal-only">
