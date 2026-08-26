@@ -113,6 +113,7 @@ class OptionsController extends Controller
 			$data['wc_esl_shipping']['account_domain'] = $info_account->data()['domain'];
 			$data['wc_esl_shipping']['account_free_days'] = $info_account->data()['free_days'];
 			$data['wc_esl_shipping']['account_paid_days'] = $info_account->data()['paid_days'];
+			$data['wc_esl_shipping']['account_paid_days_text'] = $info_account->data()['paid_days_text'] ?? '';
 			$data['wc_esl_shipping']['account_services'] = $info_account->data()['services'];
 			$data['wc_esl_shipping']['account_settings'] = $info_account->data()['settings'];
 		}

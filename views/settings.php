@@ -42,7 +42,7 @@ $add_field_form               = isset( $wc_esl_add_field_form ) ? $wc_esl_add_fi
 $account_blocked              = isset( $wc_esl_account_blocked ) ? $wc_esl_account_blocked : '';
 $account_sync_error           = ! empty( $wc_esl_account_sync_error ) ? $wc_esl_account_sync_error : '';
 $account_balance              = isset( $wc_esl_account_balance ) ? $wc_esl_account_balance : '';
-$account_paid_days            = isset( $wc_esl_account_paid_days ) ? $wc_esl_account_paid_days : '';
+$account_paid_days_text       = isset( $wc_esl_account_paid_days_text ) ? $wc_esl_account_paid_days_text : '';
 $account_free_days            = isset( $wc_esl_account_free_days ) ? $wc_esl_account_free_days : '';
 
 $status_translate             = UnloadingOrder::getCarrierStatusNames();
@@ -264,12 +264,9 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                     <span class="ml-3">
 										<?php esc_html_e( 'Баланс:', 'eshoplogisticru' ) ?>
                                         <strong id="apiKeyStatusBalance"><?php echo esc_html( $account_balance ) ?></strong>
+                                        (~<span id="apiKeyStatusPaidDaysText"><?php echo esc_html( $account_paid_days_text ) ?></span>)
                                     </span>
-                                    <span class="ml-3">
-										<?php esc_html_e( 'Платных дней:', 'eshoplogisticru' ) ?>
-                                        <strong id="apiKeyStatusPaidDays"><?php echo esc_html( $account_paid_days ) ?></strong>
-                                    </span>
-                                    <span class="ml-3">
+                                    <span class="ml-3" id="apiKeyStatusFreeDaysBlock" <?php echo empty( $account_free_days ) ? 'style="display:none;"' : '' ?>>
 										<?php esc_html_e( 'Бесплатных дней:', 'eshoplogisticru' ) ?>
                                         <strong id="apiKeyStatusFreeDays"><?php echo esc_html( $account_free_days ) ?></strong>
                                     </span>
