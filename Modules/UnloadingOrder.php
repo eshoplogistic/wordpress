@@ -842,11 +842,14 @@ class UnloadingOrder implements ModuleInterface
         // передаваемую в ТК, суммой, которую нужно получить с покупателя. Как в moj_sklad, применяется
         // только когда заказ отмечен предоплаченным (payment_type === 'already_paid') — именно для этого
         // сценария ("товар оплачен на сайте, но доставку курьер должен взять при получении") ТК и различает
-        // эту сумму отдельно от общего способа оплаты заказа. Служебные ключи не должны попасть в payload.
+        // эту сумму отдельно от общего способа оплаты заказа. delivery-custom-cost — служебный ключ,
+        // в payload попадать не должен.
         if (isset($data['delivery']) && is_array($data['delivery'])) {
+            $takePayment = !empty($data['delivery']['take_payment']);
+
             if (
-                ($data['payment_type'] ?? '') === 'already_paid'
-                && !empty($data['delivery']['take_payment'])
+                $takePayment
+                && ($data['payment_type'] ?? '') === 'already_paid'
                 && isset($data['delivery']['delivery-custom-cost'])
                 && $data['delivery']['delivery-custom-cost'] !== ''
             ) {
@@ -858,6 +861,15 @@ class UnloadingOrder implements ModuleInterface
                     $defaultFields['delivery']['vat_rate'] = $exportFormSettings['cost-custom-delivery-' . $deliveryId];
                 }
             }
+
+            // У СДЭК (в отличие от postrf/fivepost/yandex, см. overriding-parameters.html)
+            // delivery.take_payment — реальный флаг API, включающий "Оплата с получателя:
+            // За доставку" в личном кабинете СДЭК. Раньше он вырезался вместе со служебным
+            // delivery-custom-cost и никогда не долетал до ТК.
+            if ($deliveryId === 'sdek') {
+                $defaultFields['delivery']['take_payment'] = $takePayment;
+            }
+
             unset($data['delivery']['take_payment'], $data['delivery']['delivery-custom-cost']);
         }
 
