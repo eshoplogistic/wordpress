@@ -926,12 +926,57 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['order']['id'] = $data['sender-custom-order-id'];
         }
 
-        $exportFields = new ExportFileds();
-        $exportFields = $exportFields->sendExportFields($data['delivery_id']);
+        $exportFieldsHelper = new ExportFileds();
+        $exportFields = $exportFieldsHelper->sendExportFields($data['delivery_id']);
         foreach ($exportFields as $key => $value) {
             if (isset($data[$key])) {
                 $defaultFields[$key] = $shippingHelper->mergeDeep($defaultFields[$key], $data[$key]);
             }
+        }
+
+        // СДЭК/DPD: "Объединение грузовых мест" + "Отправлять состав заказа для страховки" —
+        // позиции заказа передаются как есть (см. Classes/Table.php::prepare_items(), там же
+        // отключено буквальное слияние строк "Места" при этой комбинации настроек), а вес/габариты
+        // итогового объединённого места уходят отдельно через API-поле order.combine_places
+        // (нужно транспортным компаниям для оформления страховки груза).
+        if (
+            in_array($deliveryId, $exportFieldsHelper->carriersWithInsuranceItems(), true)
+            && !empty($exportFormSettings['merge-in-one-' . $deliveryId])
+            && !empty($exportFormSettings['combine-places-send-items-' . $deliveryId])
+            && !empty($data['products'])
+        ) {
+            $combineWeight = 0;
+            $combineWidth = 0;
+            $combineLength = 0;
+            $combineHeight = 0;
+
+            foreach ($data['products'] as $item) {
+                if (empty($item['product_id'])) {
+                    continue;
+                }
+
+                $quantity = (float) ($item['quantity'] ?? 1);
+                $combineWeight += (float) ($item['weight'] ?? 0) * $quantity;
+                $combineWidth = max($combineWidth, (float) ($item['width'] ?? 0));
+                $combineLength = max($combineLength, (float) ($item['length'] ?? 0));
+                $combineHeight = max($combineHeight, (float) ($item['height'] ?? 0));
+            }
+
+            if (!empty($exportFormSettings['default-stt-width-' . $deliveryId])) {
+                $combineWidth = $exportFormSettings['default-stt-width-' . $deliveryId];
+            }
+            if (!empty($exportFormSettings['default-stt-length-' . $deliveryId])) {
+                $combineLength = $exportFormSettings['default-stt-length-' . $deliveryId];
+            }
+            if (!empty($exportFormSettings['default-stt-height-' . $deliveryId])) {
+                $combineHeight = $exportFormSettings['default-stt-height-' . $deliveryId];
+            }
+
+            $defaultFields['order']['combine_places'] = array(
+                'apply' => true,
+                'weight' => $shippingHelper->weightOption($combineWeight),
+                'dimensions' => $shippingHelper->dimensionsOption($combineWidth) . '*' . $shippingHelper->dimensionsOption($combineLength) . '*' . $shippingHelper->dimensionsOption($combineHeight),
+            );
         }
 
         if (isset($data['fulfillment'])) {

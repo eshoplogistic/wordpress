@@ -241,6 +241,15 @@ window.addEventListener('load', function(event) {
 function eslApplyVisibilityRule(target, values, match) {
 	document.querySelectorAll('#eslCarrierTabsWrap [data-esl-key="' + target + '"]').forEach(function (wrapper) {
 		wrapper.style.display = match ? '' : 'none';
+
+		// Скрытый чекбокс не должен молча оставаться "включённым" в сохранённых настройках —
+		// снимаем галку вместе со скрытием (например "Отправлять состав заказа для страховки"
+		// без включённого "Объединения грузовых мест").
+		if (!match) {
+			wrapper.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+				checkbox.checked = false;
+			});
+		}
 	});
 }
 

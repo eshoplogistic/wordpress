@@ -2,6 +2,7 @@
 
 namespace eshoplogistic\WCEshopLogistic\Classes;
 
+use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use WP_List_Table;
 
@@ -85,7 +86,15 @@ class Table extends WP_List_Table {
             $optionsRepository  = new OptionsRepository();
             $exportFormSettings = $optionsRepository->getOption('wc_esl_shipping_export_form');
 
-            if(!empty($exportFormSettings['merge-in-one-' . $typeMethod['name']])){
+            // СДЭК/DPD с включённой опцией "Отправлять состав заказа для страховки" — несмотря на
+            // "Объединение грузовых мест", таблица "Места" должна показывать позиции заказа как есть
+            // (их вес/габариты для итогового объединённого места уйдут отдельно через
+            // order.combine_places, см. Modules/UnloadingOrder::defaultFieldApiCreate()).
+            $exportFieldsHelper = new ExportFileds();
+            $sendItemsForInsurance = in_array($typeMethod['name'], $exportFieldsHelper->carriersWithInsuranceItems(), true)
+                && !empty($exportFormSettings['combine-places-send-items-' . $typeMethod['name']]);
+
+            if(!empty($exportFormSettings['merge-in-one-' . $typeMethod['name']]) && !$sendItemsForInsurance){
                 $mergeRecords = array();
                 $i = 0;
                 $mergeRecordsKey = '';

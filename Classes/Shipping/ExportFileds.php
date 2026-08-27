@@ -721,11 +721,6 @@ class ExportFileds {
 					'content||text||Содержимое отправления (что за товары)' => ($exportFormSettings['order-content-dpd']) ?? '',
 					'costly||checkbox||Флаг «Ценный груз»' => ($exportFormSettings['order-costly-dpd'] ?? '') == 'on' ? 'checked' : '',
 				),
-				'order[combine_places]' => array(
-					'apply||checkbox||Объединить все грузовые места в одно' => ($exportFormSettings['combine-places-apply-dpd'] ?? '') == 'on' ? 'checked' : '',
-					'dimensions||text||Габариты итогового грузового места (Д*Ш*В)' => ($exportFormSettings['combine-places-dimensions-dpd']) ?? '',
-					'weight||text||Вес итогового грузового места в кг' => ($exportFormSettings['combine-places-weight-dpd']) ?? ''
-				),
 				'delivery' => array(
 					'produce_date||date||Дата приёма груза' => $produce_date,
 					'produce_time||text||Интервал времени приёма груза (Пример: 9-18)' => ($exportFormSettings['delivery-produce-time-dpd']) ?? '',
@@ -767,18 +762,39 @@ class ExportFileds {
 
         $mergeInOne = ($exportFormSettings['merge-in-one-' . $name] ?? '') == 'on' ? 'checked' : '';
 
-        return array(
+        $fields = array(
             'hr' => array(
                 'hr||hr||Объединение грузовых мест' => '',
             ),
             'export_stt_one_delivery' => array(
                 'merge_in_one||checkbox||Вместо всех позиций заказа будет сформировано одно грузовое место с суммарной ценой и весом' => $mergeInOne,
-                'default_stt_name||text||Название места||Товар' => ($exportFormSettings['default-stt-name-' . $name]) ?? 'Товар',
+                'default_stt_name||text||Название места' => ($exportFormSettings['default-stt-name-' . $name]) ?? 'Товар',
                 'default_stt_one_delivery_width||number||Габариты по умолчанию (ширина)' => ($exportFormSettings['default-stt-width-' . $name]) ?? '',
                 'default_stt_one_delivery_length||number||Габариты по умолчанию (длина)' => ($exportFormSettings['default-stt-length-' . $name]) ?? '',
                 'default_stt_one_delivery_height||number||Габариты по умолчанию (высота)' => ($exportFormSettings['default-stt-height-' . $name]) ?? '',
             ),
         );
+
+        // СДЭК и DPD поддерживают API-поле order.combine_places (объединение мест "для страховки":
+        // одно итоговое место, но со списком позиций внутри) — при включённом "Объединении грузовых
+        // мест" даём выбор: реально склеить позиции в одно место (как у остальных ТК), либо оставить
+        // состав заказа и передать габариты/вес итогового места отдельно через order.combine_places.
+        if ( in_array( $name, $this->carriersWithInsuranceItems(), true ) ) {
+            $sendItemsForInsurance = ($exportFormSettings['combine-places-send-items-' . $name] ?? '') == 'on' ? 'checked' : '';
+            $fields['export_stt_one_delivery']['combine_places_send_items||checkbox||Отправлять состав заказа для страховки||Будет произведена выгрузка 1 грузового места, но с перечнем позиций в нём для корректного оформления страховки'] = $sendItemsForInsurance;
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Службы, у которых объединение мест может выполняться "для страховки" — через API-поле
+     * order.combine_places (одно место + список позиций внутри), а не буквальным слиянием позиций
+     * заказа в одну строку (см. settingsExportForOneDelivery(), tabFieldMap(), Classes/Table.php
+     * и Modules/UnloadingOrder::defaultFieldApiCreate()).
+     */
+    public function carriersWithInsuranceItems() {
+        return array( 'sdek', 'dpd' );
     }
 
 	/**
@@ -798,6 +814,10 @@ class ExportFileds {
 			'export_stt_one_delivery.default_stt_one_delivery_length'   => 'default-stt-length-' . $carrierSlug,
 			'export_stt_one_delivery.default_stt_one_delivery_height'   => 'default-stt-height-' . $carrierSlug,
 		);
+
+		if ( in_array( $carrierSlug, $this->carriersWithInsuranceItems(), true ) ) {
+			$sttFields['export_stt_one_delivery.combine_places_send_items'] = 'combine-places-send-items-' . $carrierSlug;
+		}
 
 		$map = array(
 			'sdek' => array(
@@ -866,9 +886,6 @@ class ExportFileds {
 				'receiver.email'                      => 'receiver-email-dpd',
 				'order.content'                        => 'order-content-dpd',
 				'order.costly'                          => 'order-costly-dpd',
-				'order[combine_places].apply'          => 'combine-places-apply-dpd',
-				'order[combine_places].dimensions'     => 'combine-places-dimensions-dpd',
-				'order[combine_places].weight'         => 'combine-places-weight-dpd',
 				'delivery.produce_time'                 => 'delivery-produce-time-dpd',
 			),
 			'integral' => array(),
@@ -920,6 +937,15 @@ class ExportFileds {
 	private function tabVisibilityRules( $carrierSlug, array $fieldDelivery ) {
 		$groups      = array();
 		$controllers = array();
+
+		// СДЭК/DPD: поле "Отправлять состав заказа для страховки" имеет смысл только при
+		// включённом "Объединении грузовых мест" — без него скрываем (и снимаем галку, см.
+		// eslApplyVisibilityRule() в assets/js/settings.js).
+		if ( in_array( $carrierSlug, $this->carriersWithInsuranceItems(), true ) ) {
+			$controllers[ 'merge-in-one-' . $carrierSlug ] = array(
+				array( 'values' => array( '1' ), 'target' => 'combine-places-send-items-' . $carrierSlug ),
+			);
+		}
 
 		if ( $carrierSlug === 'baikal' ) {
 			foreach ( array( 'sender-company-baikal', 'sender-org-form-baikal', 'sender-inn-baikal', 'sender-kpp-baikal' ) as $flatKey ) {
@@ -1010,6 +1036,7 @@ class ExportFileds {
 				$name      = $parts[0];
 				$typeField = $parts[1] ?? 'text';
 				$label     = $parts[2] ?? $name;
+				$hint      = $parts[3] ?? '';
 
 				$mapKey = $nameArr . '.' . $name;
 				if ( ! isset( $map[ $mapKey ] ) ) {
@@ -1020,8 +1047,13 @@ class ExportFileds {
 				$wrapperKey  = $visibility['groups'][ $flatKey ] ?? $flatKey;
 				$controlAttr = $this->renderVisibilityControllerAttrs( $flatKey, $visibility['controllers'] );
 
+				$hintHtml = '';
+				if ( $hint !== '' ) {
+					$hintHtml = ' <label><div class="help-tip"><p>' . esc_html( $hint ) . '</p></div></label>';
+				}
+
 				$html .= '<div class="form-group row align-items-center mb-3" data-esl-key="' . esc_attr( $wrapperKey ) . '">
-					<label class="col-sm-5 col-form-label">' . esc_html( $label ) . '</label>
+					<label class="col-sm-5 col-form-label">' . esc_html( $label ) . $hintHtml . '</label>
 					<div class="col-sm-5">' . $this->renderTabFieldInput( $flatKey, $typeField, $value, $controlAttr ) . '</div>
 				</div>';
 			}
