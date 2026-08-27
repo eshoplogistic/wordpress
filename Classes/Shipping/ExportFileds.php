@@ -744,16 +744,23 @@ class ExportFileds {
 		return $result;
 	}
 
+    /**
+     * Службы, у которых есть настройка "Объединение грузовых мест" (см.
+     * settingsExportForOneDelivery(), tabFieldMap(), tabVisibilityRules()) — единственный
+     * источник этого списка, чтобы не расходился по местам использования.
+     */
+    public function carriersWithOneDelivery() {
+        return array(
+            'yandex', 'sdek', 'fivepost', 'delline', 'baikal',
+            'magnit', 'kit', 'postrf', 'dpd', 'integral',
+        );
+    }
+
     public function settingsExportForOneDelivery($name)
     {
         // Одинаковый набор полей "объединения мест" для всех служб, у которых он есть —
         // отличаются только сохранённые значения (свой плоский ключ на каждую службу).
-        $carriersWithOneDelivery = array(
-            'yandex', 'sdek', 'fivepost', 'delline',
-            'baikal', 'magnit', 'kit', 'postrf', 'dpd',
-        );
-
-        if ( ! in_array( $name, $carriersWithOneDelivery, true ) ) {
+        if ( ! in_array( $name, $this->carriersWithOneDelivery(), true ) ) {
             return array();
         }
 
@@ -893,11 +900,7 @@ class ExportFileds {
 
 		$carrierMap = $map[ $carrierSlug ] ?? array();
 
-		$carriersWithOneDelivery = array(
-			'yandex', 'sdek', 'fivepost', 'delline',
-			'baikal', 'magnit', 'kit', 'postrf', 'dpd',
-		);
-		if ( in_array( $carrierSlug, $carriersWithOneDelivery, true ) ) {
+		if ( in_array( $carrierSlug, $this->carriersWithOneDelivery(), true ) ) {
 			$carrierMap = array_merge( $carrierMap, $sttFields );
 		}
 
@@ -938,11 +941,7 @@ class ExportFileds {
 		// а у СДЭК/DPD ещё и "Отправлять состав заказа для страховки") имеют смысл только при
 		// включённом чекбоксе объединения — без него скрываем всю группу целиком (и снимаем
 		// вложенные чекбоксы, см. eslApplyVisibilityRule() в assets/js/settings.js).
-		$carriersWithOneDelivery = array(
-			'yandex', 'sdek', 'fivepost', 'delline',
-			'baikal', 'magnit', 'kit', 'postrf', 'dpd',
-		);
-		if ( in_array( $carrierSlug, $carriersWithOneDelivery, true ) ) {
+		if ( in_array( $carrierSlug, $this->carriersWithOneDelivery(), true ) ) {
 			$mergeGroup = 'merge-in-one-fields-' . $carrierSlug;
 			foreach ( array( 'default-stt-name-', 'default-stt-width-', 'default-stt-length-', 'default-stt-height-' ) as $prefix ) {
 				$groups[ $prefix . $carrierSlug ] = $mergeGroup;
