@@ -917,10 +917,6 @@ class ExportFileds {
 		$html  = $this->renderTabFieldGroup( $fieldDelivery, $map, $visibility );
 		$html .= $this->renderTabFieldGroup( $this->settingsExportForOneDelivery( $carrierSlug ), $map, $visibility );
 
-		if ( $html === '' ) {
-			$html = '<p>' . esc_html__( 'Дополнительных настроек для этой службы нет.', 'eshoplogisticru' ) . '</p>';
-		}
-
 		return $html;
 	}
 
