@@ -568,7 +568,7 @@
     font-size: 13px;
     line-height: 24px;
     cursor: default;
-    z-index: 999999;
+    z-index: 2;
     transition: background-color .15s ease;
 }
 
