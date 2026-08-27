@@ -25,11 +25,11 @@ To use the plugin, you need to register an eShopLogistic account and complete th
 * Product weight and dimensions taken from product cards or default values
 * Flexible rules for adjusting shipping cost and delivery time
 * Order export to carrier dashboards from the WooCommerce admin, through a single unified interface
-* Tracking number retrieval (where provided by the carrier)
+* Tracking number retrieval
 * Sync of WooCommerce order statuses with carrier delivery statuses
 * Orders can be created in carrier dashboards as prepaid or cash-on-delivery
 * Manual correction of parcel/package parameters when exporting orders to carriers
-* Deleting an order from a carrier's dashboard (where supported)
+* Deleting an order from a carrier's dashboard
 
 The plugin works correctly only on themes with standard, non-customized WooCommerce checkout logic. If your checkout has been customized, the module will need to be adapted accordingly.
 
