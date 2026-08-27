@@ -1,8 +1,8 @@
-=== eShopLogistic Shipping Integrator ===
+=== eShopLogistic Shipping Calculator ===
 Contributors: eshoplogistic
 Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 2.2.26
 License: GPLv2 or later

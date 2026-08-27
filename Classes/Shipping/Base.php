@@ -47,6 +47,7 @@ class Base extends \WC_Shipping_Method
 	public function is_available( $package )
 	{
 		$is_available = true;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- mirrors WooCommerce core's own hook name (WC_Shipping_Method::is_available()), must not be prefixed.
 		return apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', $is_available, $package, $this );
 	}
 
