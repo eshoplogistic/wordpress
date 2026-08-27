@@ -938,12 +938,24 @@ class ExportFileds {
 		$groups      = array();
 		$controllers = array();
 
-		// СДЭК/DPD: поле "Отправлять состав заказа для страховки" имеет смысл только при
-		// включённом "Объединении грузовых мест" — без него скрываем (и снимаем галку, см.
-		// eslApplyVisibilityRule() в assets/js/settings.js).
-		if ( in_array( $carrierSlug, $this->carriersWithInsuranceItems(), true ) ) {
+		// Поля блока "Объединение грузовых мест" ("Название места", "Габариты по умолчанию",
+		// а у СДЭК/DPD ещё и "Отправлять состав заказа для страховки") имеют смысл только при
+		// включённом чекбоксе объединения — без него скрываем всю группу целиком (и снимаем
+		// вложенные чекбоксы, см. eslApplyVisibilityRule() в assets/js/settings.js).
+		$carriersWithOneDelivery = array(
+			'yandex', 'sdek', 'fivepost', 'delline',
+			'baikal', 'magnit', 'kit', 'postrf', 'dpd',
+		);
+		if ( in_array( $carrierSlug, $carriersWithOneDelivery, true ) ) {
+			$mergeGroup = 'merge-in-one-fields-' . $carrierSlug;
+			foreach ( array( 'default-stt-name-', 'default-stt-width-', 'default-stt-length-', 'default-stt-height-' ) as $prefix ) {
+				$groups[ $prefix . $carrierSlug ] = $mergeGroup;
+			}
+			if ( in_array( $carrierSlug, $this->carriersWithInsuranceItems(), true ) ) {
+				$groups[ 'combine-places-send-items-' . $carrierSlug ] = $mergeGroup;
+			}
 			$controllers[ 'merge-in-one-' . $carrierSlug ] = array(
-				array( 'values' => array( '1' ), 'target' => 'combine-places-send-items-' . $carrierSlug ),
+				array( 'values' => array( '1' ), 'target' => $mergeGroup ),
 			);
 		}
 

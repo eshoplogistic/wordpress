@@ -201,6 +201,10 @@
     transition: background-color .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
 }
 
+.wc-esl-settings .wc-esl-add__button {
+    margin-top: 1.5rem;
+}
+
 .wc-esl-settings .btn-primary:hover,
 .wc-esl-settings .wc-esl-add__button:hover {
     background-color: var(--esl-accent-dark);
