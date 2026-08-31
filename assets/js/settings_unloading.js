@@ -693,6 +693,7 @@ document.addEventListener('click', function (e) {
     let resultBox = wrapper ? wrapper.querySelector('.esl-print__result') : null;
     let mode = printBtn.getAttribute('data-mode') || '';
     let paper = paperSelect ? paperSelect.value : '';
+    let type = printBtn.getAttribute('data-type') || '';
 
     let orderIdField = document.getElementById('order_info_id');
     let orderTypeField = document.getElementById('order_info_type');
@@ -718,6 +719,7 @@ document.addEventListener('click', function (e) {
         + '&order_type=' + encodeURIComponent(orderTypeField.value)
         + '&mode=' + encodeURIComponent(mode)
         + '&paper=' + encodeURIComponent(paper)
+        + '&type=' + encodeURIComponent(type)
         + '&esl_nonce=' + wc_esl_shipping_global.eslNonce;
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.send(params);

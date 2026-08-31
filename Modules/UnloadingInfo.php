@@ -144,8 +144,15 @@ class UnloadingInfo
                 array('mode' => 'order', 'label' => __('Печать накладной', 'eshoplogisticru')),
             ),
             'yandex' => array(
-                array('mode' => 'barcodes', 'label' => __('Печать штрихкодов', 'eshoplogisticru')),
+                array('mode' => 'barcodes', 'type' => 'one', 'label' => __('Печать наклеек: одна на страницу', 'eshoplogisticru')),
+                array('mode' => 'barcodes', 'type' => 'many', 'label' => __('Печать наклеек: максимум на страницу', 'eshoplogisticru')),
                 array('mode' => 'act', 'label' => __('Акт приёма-передачи', 'eshoplogisticru')),
+            ),
+            'integral' => array(
+                array('mode' => 'order', 'label' => __('Печать накладной', 'eshoplogisticru')),
+                array('mode' => 'act', 'label' => __('Акт приёма-передачи', 'eshoplogisticru')),
+                array('mode' => 'label', 'label' => __('Наклейки Zebra', 'eshoplogisticru')),
+                array('mode' => 'label_A4', 'label' => __('Наклейки А4', 'eshoplogisticru')),
             ),
         );
 

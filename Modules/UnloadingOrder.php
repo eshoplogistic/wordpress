@@ -1155,10 +1155,11 @@ class UnloadingOrder implements ModuleInterface
      * @param string $orderType Слаг ТК (sdek, pecom, dpd ...).
      * @param string $mode      barcodes|order|label|invoice|bill|act ...
      * @param string $paper     Формат бумаги (A4, A5 ...), если применимо к ТК.
+     * @param string $type      Доп. вариант печатной формы (напр. yandex: one|many — ярлыков на страницу).
      *
      * @return array{success: bool, url?: string, error?: array}
      */
-    public function printOrder($orderId, $orderType, $mode, $paper = '')
+    public function printOrder($orderId, $orderType, $mode, $paper = '', $type = '')
     {
         $optionsRepository = new OptionsRepository();
         $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
@@ -1181,6 +1182,9 @@ class UnloadingOrder implements ModuleInterface
         }
         if ($paper) {
             $data['format'] = $paper;
+        }
+        if ($type) {
+            $data['type'] = $type;
         }
 
         $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
