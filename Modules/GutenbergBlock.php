@@ -39,14 +39,15 @@ class GutenbergBlock implements ModuleInterface
 
         // Автоподключение калькулятора к "голому" блочному чекауту (woocommerce/checkout
         // без явно вставленного eshoplogisticru/checkout-shipping) — доинъектируем блок
-        // сразу после order-summary, туда же, куда он попадает при ручной вставке.
-        add_filter('render_block_woocommerce/checkout-order-summary-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
+        // сразу после списка тарифов доставки (checkout-shipping-methods-block), в основной
+        // колонке формы, рядом с шагом "Способ доставки".
+        add_filter('render_block_woocommerce/checkout-shipping-methods-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
     }
 
     /**
      * Доинъектирует калькулятор ESL в блочный checkout, если он не вставлен вручную.
      *
-     * @param string $blockContent Отрендеренный HTML блока order-summary
+     * @param string $blockContent Отрендеренный HTML блока списка тарифов доставки
      * @param array  $block Данные блока
      * @return string
      */
