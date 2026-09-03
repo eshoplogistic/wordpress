@@ -987,6 +987,26 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['fake'] = 1;
         }
 
+        // Точка доработки: фильтр получает уже полностью собранный запрос на выгрузку
+        // (places/receiver/sender/delivery и т.д.) и может поправить его перед фактической
+        // отправкой ТК — например, если штатных настроек ТК не хватает.
+        $originalFields = $defaultFields;
+        $defaultFields = apply_filters('wc_esl_before_export', $defaultFields, $data);
+
+        if ($defaultFields !== $originalFields) {
+            // 'key' — токен доступа к API, в журнал не пишем.
+            $sanitizedBefore = $originalFields;
+            $sanitizedAfter = $defaultFields;
+            unset($sanitizedBefore['key'], $sanitizedAfter['key']);
+
+            EslLogger::debug('[ESL export] wc_esl_before_export changed request data', array(
+                'order_id' => $data['order_id'] ?? '',
+                'delivery_id' => $data['delivery_id'] ?? '',
+                'before' => $sanitizedBefore,
+                'after' => $sanitizedAfter,
+            ));
+        }
+
         return $defaultFields;
     }
 

@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.26
+Stable tag: 3.1.39
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,29 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.39 =
+* Added the ability for developers to fine-tune delivery calculation and order export for stores with special requirements.
+* Improved the plugin's documentation: clearer description of features, requirements and setup steps.
+* On the checkout page, the delivery calculator now appears after the list of shipping rates instead of before it.
+* Added new options for printing orders and improved the print buttons.
+* Improved the admin screen so page elements no longer overlap incorrectly.
+* Improved combining several items into a single shipment package for CDEK and DPD.
+* Removed unnecessary checks that could get in the way when setting up additional shipping services.
+* Improved the settings screen for combining shipment packages, with better spacing around the "add" button.
+* Improved package combining for CDEK and DPD: the full order contents can now be sent for insurance purposes.
+* The delivery type can no longer be changed once a fixed shipping rate is selected.
+* Added support for the "cash on delivery" option for CDEK.
+* Order data sent to carriers now includes an extra recipient identifier, as required by some carriers.
+* The tracking number field now shows a clear message when the carrier hasn't issued a number yet, instead of staying empty.
+* Clarified the message shown when dragging and dropping order statuses.
+* Renamed a settings tab for clarity: "Payment & Widget" is now "Payment Types".
+* Refreshed the look of tooltips and form fields in the settings.
+* Added support for displaying paid delivery days in account settings.
+* The delivery calculator button now enables or disables itself automatically based on the selected city and delivery method.
+* Fixed the wording of the message about available shipping options.
+* Added shortcodes to display the tracking link and delivery code on the site.
+* Added a loading indicator while searching for a city on the pickup-point map.
 
 = 2.2.26 =
 * Removed the Boxberry carrier (discontinued): the settings tab, its shipping methods, and its order-export field mapping. Already-exported orders that used Boxberry are still displayed correctly in the order history.
