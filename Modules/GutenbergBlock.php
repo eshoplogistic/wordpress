@@ -302,6 +302,7 @@ class GutenbergBlock implements ModuleInterface
                 ?>
                 <input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(wp_json_encode($terminals)); ?>" />
                 <input type="hidden" name="wc-esl-api-key-ya" id="wcEslKeyYa" value="<?php echo esc_attr($apiKeyYa); ?>" />
+                <input id='widgetCityEsl' value='<?php echo esc_attr(json_encode($widgetCityEsl)); ?>' type='hidden'>
                 <?php endif; ?>
 
                 <?php if ($citySelectModal): ?>
