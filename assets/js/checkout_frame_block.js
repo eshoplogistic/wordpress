@@ -575,6 +575,37 @@
         }
     }
 
+    // Индекс обязателен в чекауте Blocks (дефолт WC для RU), но в это поле
+    // пишет только выбор города (setCheckoutAddressValues/autoConfirmPrefilledCity).
+    // Выбор ПВЗ индекс не трогает вовсе (только address_1, см. ниже) - если
+    // индекс по какой-то причине не пришёл при резолве города (например, DOM
+    // поля ещё не было в момент авто-подтверждения), поле остаётся пустым и
+    // блокирует "Оформить заказ". Подстраховываемся последним известным
+    // индексом из widgetCityEsl, не трогая поле, если там уже есть значение.
+    function fillMissingShippingPostcodeFromWidgetData() {
+        const postcodeEl = getFieldElement(['shipping_postcode', 'shipping-postcode']);
+        if (!postcodeEl || (postcodeEl.value || '').trim() !== '') {
+            return;
+        }
+
+        const cityInput = document.getElementById('widgetCityEsl');
+        if (!cityInput || !cityInput.value) {
+            return;
+        }
+
+        let parsed;
+        try {
+            parsed = JSON.parse(cityInput.value);
+        } catch (e) {
+            return;
+        }
+
+        const postcode = parsed && (parsed.postcode || parsed.postal_code);
+        if (postcode) {
+            setInputValue(postcodeEl, postcode);
+        }
+    }
+
     function setCheckoutAddressValues(cityData) {
         const fieldMap = {
             city: ['shipping_city', 'shipping-city'],
@@ -2124,6 +2155,7 @@
                 // поэтому для terminal перед отключением проставляем значение.
                 setInputValue(shippingAddressEl, valueToSet);
                 lastAutoFilledAddressValue = valueToSet;
+                fillMissingShippingPostcodeFromWidgetData();
                 clearAddressFieldError();
                 toggleAddressFields(false);
             } else if (nextDeliveryType === 'door') {
