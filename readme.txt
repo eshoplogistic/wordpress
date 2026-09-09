@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.39
+Stable tag: 3.1.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,7 +88,8 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 
 == Changelog ==
 
-= 3.1.39 =
+= 3.1.42 =
+* Fixed CDEK orders being registered as coming from a third party instead of from the sender: the "Company name" setting is now configured per carrier (on each carrier's own settings tab) instead of one shared value for all carriers, and is no longer available for CDEK, since sending it there caused this misclassification.
 * Added the ability for developers to fine-tune delivery calculation and order export for stores with special requirements.
 * Improved the plugin's documentation: clearer description of features, requirements and setup steps.
 * On the checkout page, the delivery calculator now appears after the list of shipping rates instead of before it.

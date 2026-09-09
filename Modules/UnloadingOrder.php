@@ -50,7 +50,6 @@ class UnloadingOrder implements ModuleInterface
         'sender' => array(
             'name' => '',
             'phone' => '',
-            'company' => '',
             'email' => '',
         ),
         'seller' => array(
@@ -777,7 +776,6 @@ class UnloadingOrder implements ModuleInterface
             'sender' => array(
                 'name' => $data['sender-name'],
                 'phone' => $data['sender-phone'],
-                'company' => $exportFormSettings['sender-company'] ?? '',
                 'email' => $data['sender-email'],
             ),
             'delivery' => array(
@@ -906,6 +904,15 @@ class UnloadingOrder implements ModuleInterface
         // Доп.услуги (чекбоксы/числовые поля из вкладки «Дополнительные услуги»), отправляются как есть в блок complement.
         if (isset($data['complement']) && is_array($data['complement'])) {
             $defaultFields['complement'] = $data['complement'];
+        }
+
+        // Название компании отправителя — по ТК, а не общее для магазина: у СДЭК передача
+        // sender.company приводит к тому, что заказ регистрируется как поступивший от третьей
+        // стороны, а не от отправителя, поэтому для sdek это поле никогда не показывается в
+        // настройках (см. views/settings.php::$carrierTabs) и не отправляется.
+        $senderCompany = $exportFormSettings['sender-company-' . $deliveryId] ?? '';
+        if ($senderCompany !== '') {
+            $defaultFields['sender']['company'] = $senderCompany;
         }
 
         // Продавец — реквизиты "истинного продавца", если он отличается от отправителя.

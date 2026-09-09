@@ -876,32 +876,6 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Название компании.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_company = '';
-		                                        if ( isset( $export_form['sender-company'] ) ) {
-			                                        $sender_company = $export_form['sender-company'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>"
-                                                        name="sender-company"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_company ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
 			                                        <?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1125,18 +1099,21 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'fields' => array(
 									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'platform_id-yandex', 'label' => 'Код склада (Яндекс.Доставка)', 'help' => 'Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.' ),
+									array( 'name' => 'sender-company-yandex', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'fivepost' => array(
 								'label' => '5POST', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-fivepost', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'postrf'   => array(
 								'label' => 'Почта России', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-postrf', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'delline'  => array(
@@ -1146,12 +1123,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
 									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'type' => 'time' ),
 									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'type' => 'time' ),
+									array( 'name' => 'sender-company-delline', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'pecom'    => array(
 								'label' => 'ПЭК', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-pecom', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'baikal'   => array(
@@ -1175,21 +1154,34 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'fields' => array(
 									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-uid-kit', 'label' => 'Название профиля отправителя', 'help' => 'Доступен в личном кабинете Кит.' ),
+									array( 'name' => 'sender-company-kit', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
-							'halva'    => array( 'label' => 'Постаматы «Халва»', 'take_payment' => false, 'fields' => array() ),
+							'halva'    => array(
+								'label' => 'Постаматы «Халва»', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-company-halva', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
+								),
+							),
 							'magnit'   => array(
 								'label' => 'Магнит Пост', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-magnit', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
-							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
+							'dpd'      => array(
+								'label' => 'DPD', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-company-dpd', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
+								),
+							),
 							'integral' => array(
 								'label' => 'Интеграл', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'delivery-variant-integral', 'label' => 'Вариант доставки по умолчанию', 'type' => 'select', 'values' => array( 'sdek' => 'СДЭК', 'fivepost' => '5POST', 'postrf' => 'Почта России' ) ),
 									array( 'name' => 'order-content-integral', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти' ),
+									array( 'name' => 'sender-company-integral', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 						);
