@@ -13,11 +13,13 @@ class Footer implements ModuleInterface
 {
     public function init()
     {
-        add_shortcode('shortcode_widget_button', 'shortcode_widget_button_handler');
-        add_shortcode('shortcode_widget_button_tab', 'shortcode_widget_button_tab_handler');
-        add_shortcode('shortcode_widget_static', 'shortcode_widget_static_handler');
-        add_shortcode('shortcode_email_time_delivery', 'shortcode_widget_email_time_delivery');
-        add_shortcode('shortcode_email_status_delivery', 'shortcode_widget_email_status_delivery');
+        add_shortcode('shortcode_widget_button', 'wc_esl_shortcode_widget_button_handler');
+        add_shortcode('shortcode_widget_button_tab', 'wc_esl_shortcode_widget_button_tab_handler');
+        add_shortcode('shortcode_widget_static', 'wc_esl_shortcode_widget_static_handler');
+        add_shortcode('shortcode_email_time_delivery', 'wc_esl_shortcode_widget_email_time_delivery');
+        add_shortcode('shortcode_email_status_delivery', 'wc_esl_shortcode_widget_email_status_delivery');
+        add_shortcode('shortcode_email_tracking_link', 'wc_esl_shortcode_widget_email_tracking_link');
+        add_shortcode('shortcode_email_tracking_code', 'wc_esl_shortcode_widget_email_tracking_code');
 	    update_option( 'use_smilies', false );
         //add_action('wp_footer', [$this, 'addWidgetScript']);
     }
@@ -43,6 +45,7 @@ class Footer implements ModuleInterface
             WC_ESL_VERSION,
             true
         );
+        wp_add_inline_script( 'wc_esl_app_js', 'window.wcEslPluginUrl = ' . wp_json_encode( WC_ESL_PLUGIN_URL ) . ';', 'before' );
     }
 
 

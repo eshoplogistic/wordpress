@@ -1,24 +1,20 @@
-if(document.getElementById('wc_esl_billing_terminal')){
-    if(document.getElementById('wc_esl_billing_terminal').value){
-        window.keyDelivery = 'terminal'
-    }else if(document.getElementById('wc_esl_shipping_terminal').value){
-        window.keyDelivery = 'terminal'
-    }else{
-        window.keyDelivery = 'door'
-    }
-}else{
-    window.keyDelivery = 'door'
+// Инициализация типа доставки по умолчанию
+function initDefaultDelivery() {
+    const billingTerminal = document.getElementById('wc_esl_billing_terminal');
+    const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+    
+    window.keyDelivery = (billingTerminal?.value || shippingTerminal?.value) ? 'terminal' : 'door';
 }
 
+initDefaultDelivery();
 
-window.widgetInit = false
-let cityMain = false
-let errorCity = 0
-let hashSelectService = []
+window.widgetInit = false;
+let cityMain = false;
+let errorCity = 0;
+let hashSelectService = [];
 
 function isHidden(el) {
-    var style = window.getComputedStyle(el);
-    return (style.display === 'none')
+    return window.getComputedStyle(el).display === 'none';
 }
 
 function isNumeric(value) {
@@ -26,6 +22,41 @@ function isNumeric(value) {
 }
 
 (function ($) {
+
+    // Вспомогательные функции для управления видимостью элементов
+    // Скрыть все поля адреса
+    function hideAddressFields(offAddressCheck) {
+        if (offAddressCheck.length === 0) {
+            $('#billing_address_1_field, #billing_address_2_field, #shipping_address_1_field, #shipping_address_2_field').hide();
+            $('#esl_billing_field_street_field, #esl_billing_field_building_field, #esl_billing_field_room_field').hide();
+            $('#esl_shipping_field_street_field, #esl_shipping_field_building_field, #esl_shipping_field_room_field').hide();
+        }
+    }
+
+    // Показать все поля адреса
+    function showAddressFields(offAddressCheck) {
+        if (offAddressCheck.length === 0) {
+            $('#billing_address_1_field, #billing_address_2_field, #shipping_address_1_field, #shipping_address_2_field').show();
+            $('#esl_billing_field_street_field, #esl_billing_field_building_field, #esl_billing_field_room_field').show();
+            $('#esl_shipping_field_street_field, #esl_shipping_field_building_field, #esl_shipping_field_room_field').show();
+        }
+    }
+
+    // Скрыть только поля счёта
+    function hideAddressBillingOnly(offAddressCheck) {
+        if (offAddressCheck.length === 0) {
+            $('#billing_address_1_field, #billing_address_2_field').hide();
+            $('#esl_billing_field_street_field, #esl_billing_field_building_field, #esl_billing_field_room_field').hide();
+        }
+    }
+
+    function getShippingAddressFields(offAddressCheck) {
+        if (offAddressCheck.length === 0) {
+            return ['#shipping_address_1_field', '#shipping_address_2_field', 
+                    '#esl_shipping_field_street_field', '#esl_shipping_field_building_field', '#esl_shipping_field_room_field'];
+        }
+        return [];
+    }
 
     function shippingFieldName($this = false) {
         var shipping_methods = {};
@@ -93,13 +124,20 @@ function isNumeric(value) {
     }
 
     function searchCity(target, renderFunc, currentCountry, typeFilter = false) {
+        const query = String(target || '').trim();
+
+        if (query.length < 2) {
+            renderFunc([]);
+            return;
+        }
+
         $.ajax({
             method: 'POST',
             url: wc_esl_shipping_global.ajaxUrl,
             async: true,
             data: {
                 action: 'wc_esl_search_cities',
-                target,
+                target: query,
                 currentCountry,
                 typeFilter
             },
@@ -108,9 +146,18 @@ function isNumeric(value) {
 
                 if (response.success) {
                     renderFunc(response.data);
+                } else {
+                    renderFunc([]);
                 }
+            },
+            error: function () {
+                renderFunc([]);
             }
         });
+    }
+
+    function cityLoadingIndicatorHtml() {
+        return '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
     }
 
     function renderCitiesItem({fias, name, region, postal_code, services, type}) {
@@ -197,132 +244,50 @@ function isNumeric(value) {
         billingCountry = '',
         shippingCountry = ''
     ) {
-        let billingTerminals = $('#wc-esl-terminals-wrap-billing');
-        let shippingTerminals = $('#wc-esl-terminals-wrap-shipping');
-        let billingButton = $('#wc-esl-terminals-wrap-button-billing');
-        let shippingButton = $('#wc-esl-terminals-wrap-button-shipping');
-        let billingAddress1 = $('#billing_address_1_field');
-        let billingAddress2 = $('#billing_address_2_field');
-        let shippingAddress1 = $('#shipping_address_1_field');
-        let shippingAddress2 = $('#shipping_address_2_field');
-        let offAddressCheck = $('#offAddressCheck');
-
-        let billingFieldStreet = $('#esl_billing_field_street_field');
-        let billingFieldBuilding = $('#esl_billing_field_building_field');
-        let billingFieldRoom = $('#esl_billing_field_room_field');
-
-        let shippingFieldStreet = $('#esl_shipping_field_street_field');
-        let shippingFieldBuilding = $('#esl_shipping_field_building_field');
-        let shippingFieldRoom = $('#esl_shipping_field_room_field');
+        const offAddressCheck = $('#offAddressCheck');
+        const billingTerminals = $('#wc-esl-terminals-wrap-billing');
+        const shippingTerminals = $('#wc-esl-terminals-wrap-shipping');
+        const billingButton = $('#wc-esl-terminals-wrap-button-billing');
+        const shippingButton = $('#wc-esl-terminals-wrap-button-shipping');
+        
+        // Скрыть все терминалы и кнопки
+        billingTerminals.hide().removeClass('show');
+        shippingTerminals.hide().removeClass('show');
+        billingButton.hide();
+        shippingButton.hide();
+        
+        // Скрыть все поля адреса
+        hideAddressFields(offAddressCheck);
 
         if (isTerminal === 'terminal' && cityMain) {
-            if (differentShippingAddress && (shippingCountry)) {
-                if(offAddressCheck.length === 0){
-                    billingAddress1.hide();
-                    billingAddress2.hide();
-                    shippingAddress1.hide();
-                    shippingAddress2.hide();
-
-                    billingFieldStreet.hide();
-                    billingFieldBuilding.hide();
-                    billingFieldRoom.hide();
-                    shippingFieldStreet.hide();
-                    shippingFieldBuilding.hide();
-                    shippingFieldRoom.hide();
-                }
-
+            if (differentShippingAddress && shippingCountry) {
+                // Использовать адрес доставки
+                hideAddressBillingOnly(offAddressCheck);
                 billingButton.hide();
                 shippingButton.show();
-                billingTerminals.hide().removeClass('show');
                 shippingTerminals.show().addClass('show');
-            } else if (
-                !differentShippingAddress && (billingCountry)
-            ) {
-                if(offAddressCheck.length === 0){
-                    billingAddress1.hide();
-                    billingAddress2.hide();
-                    shippingAddress1.hide();
-                    shippingAddress2.hide();
-
-                    billingFieldStreet.hide();
-                    billingFieldBuilding.hide();
-                    billingFieldRoom.hide();
-                    shippingFieldStreet.hide();
-                    shippingFieldBuilding.hide();
-                    shippingFieldRoom.hide();
-                }
-
+            } else if (!differentShippingAddress && billingCountry) {
+                // Использовать адрес счёта
+                hideAddressBillingOnly(offAddressCheck);
                 billingButton.show();
                 shippingButton.hide();
                 billingTerminals.show().addClass('show');
-                shippingTerminals.hide().removeClass('show');
             } else {
-                if(offAddressCheck.length === 0){
-                    billingAddress1.show();
-                    billingAddress2.show();
-                    shippingAddress1.show();
-                    shippingAddress2.show();
-
-                    billingFieldStreet.show();
-                    billingFieldBuilding.show();
-                    billingFieldRoom.show();
-                    shippingFieldStreet.show();
-                    shippingFieldBuilding.show();
-                    shippingFieldRoom.show();
-                }
-
+                // Показать все поля адреса
+                showAddressFields(offAddressCheck);
                 billingButton.hide();
                 shippingButton.hide();
-                billingTerminals.hide().removeClass('show');
-                shippingTerminals.hide().removeClass('show');
             }
-
-        } else if (
-            isTerminal === 'door' && cityMain
-        ) {
-            if(offAddressCheck.length === 0){
-                billingAddress1.show();
-                billingAddress2.show();
-                shippingAddress1.show();
-                shippingAddress2.show();
-
-                billingFieldStreet.show();
-                billingFieldBuilding.show();
-                billingFieldRoom.show();
-                shippingFieldStreet.show();
-                shippingFieldBuilding.show();
-                shippingFieldRoom.show();
-            }
-
+        } else if (isTerminal === 'door' && cityMain) {
+            // Доставка до двери - всегда показывать поля адреса
+            showAddressFields(offAddressCheck);
             billingButton.show();
             shippingButton.hide();
-            billingTerminals.hide().removeClass('show');
-            shippingTerminals.hide().removeClass('show');
-
-            let response = [];
-            response.deliveryAddress = [];
-            response.deliveryAddress.address = 'Курьер до адреса';
-            response.deliveryAddress.code = [];
-            //esl.setTerminal(response)
         } else {
-            if(offAddressCheck.length === 0){
-                billingAddress1.show();
-                billingAddress2.show();
-                shippingAddress1.show();
-                shippingAddress2.show();
-
-                billingFieldStreet.hide();
-                billingFieldBuilding.hide();
-                billingFieldRoom.hide();
-                shippingFieldStreet.hide();
-                shippingFieldBuilding.hide();
-                shippingFieldRoom.hide();
-            }
-
+            // Состояние по умолчанию - показать только основные поля адреса
+            showAddressFields(offAddressCheck);
             billingButton.hide();
             shippingButton.hide();
-            billingTerminals.hide().removeClass('show');
-            shippingTerminals.hide().removeClass('show');
         }
     }
 
@@ -410,8 +375,9 @@ function isNumeric(value) {
 
                 if (value.length > 1) {
                     if (currentBillingCountry) {
+                        $this.closest('.modal-esl-frame').find('#esl_result-search').html(cityLoadingIndicatorHtml());
                         searchCity(value, function (items) {
-                            if(Object.getOwnPropertyNames(items).length > 1) {
+                            if(Object.getOwnPropertyNames(items).length >= 1) {
                                 $this.closest('.modal-esl-frame').find('#esl_result-search').html(
                                     renderCitiesModal(items, modeInput)
                                 );
@@ -442,6 +408,7 @@ function isNumeric(value) {
                 let value = modalSearch.val();
                 let modeInput = modalSearch.attr('data-mode');
                 $( `#${modeInput}_city` ).val( value );
+                $( `#esl_city_${modeInput}_city .esl-city-name` ).text( value );
 
                 document.getElementById("modal-esl-city").style.display = "none"
                 window.keyDelivery = 'door'
@@ -462,7 +429,10 @@ function isNumeric(value) {
                 if ($name === 'shipping_city')
                     mode = 'shipping';
 
+                let currentCity = $('#' + $name).val() || '';
+                $('#' + $name).closest('.woocommerce-input-wrapper').addClass('esl-city-modal-active');
                 $('#' + $name).after("<button type='button' value='OK' class='esl_city_button' id='esl_city_"+$name+"' data-mode='"+mode+"'>" +
+                    "<span class='esl-city-name'>" + currentCity + "</span>" +
                     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-house-fill\" viewBox=\"0 0 16 16\">\n" +
                     "<path d=\"M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z\"/>\n" +
                     "<path d=\"m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z\"/>\n" +
@@ -536,96 +506,88 @@ function isNumeric(value) {
         }
 
         function sendRequestCity($this) {
-            let mode = '';
-            if($($this).parents('.wc-esl-search-city-modal__list').length > 0){
-                mode = $($this).parents('.wc-esl-search-city-modal__list').data('mode');
-            }else{
-                mode = $($this).parents('.wc-esl-search-city__list').data('mode');
-            }
+            // Определить режим (счёт или доставка)
+            const mode = $($this).parents('.wc-esl-search-city-modal__list').length > 0
+                ? $($this).parents('.wc-esl-search-city-modal__list').data('mode')
+                : $($this).parents('.wc-esl-search-city__list').data('mode');
 
-            let fias = $($this).data('fias');
-            let region = $($this).data('region');
-            let postcode = $($this).data('postcode');
-            let services = $($this).data('services');
-            let city = $($this).data('city');
-            let adress = '';
-            if (mode === 'billing')
-                adress = addCityAdressBilling;
-            if (mode === 'shipping')
-                adress = addCityAdressShipping;
+            // Извлечь данные из выбранного элемента города
+            const cityData = {
+                fias: $($this).data('fias'),
+                region: $($this).data('region'),
+                postcode: $($this).data('postcode'),
+                services: $($this).data('services'),
+                city: $($this).data('city'),
+                adress: mode === 'billing' ? addCityAdressBilling : addCityAdressShipping
+            };
 
             preload(`.woocommerce-${mode}-fields`);
-
+            
+            // Очистить визуальную обратную связь
             $($this).parents('.wc-esl-search-city__list').removeClass('not-selected');
             $(`.wc-esl-terminals__button`).prop('disabled', false);
             $('.wc-esl-search-city__list').hide();
             $('#tips-city-container').hide();
 
+            // Отправить запрос на обновление адреса
             $.ajax({
                 method: 'POST',
                 url: wc_esl_shipping_global.ajaxUrl,
                 async: true,
                 data: {
                     action: 'wc_esl_update_shipping_address',
-                    fias,
-                    region,
-                    postcode,
-                    services,
-                    city,
+                    ...cityData,
                     mode,
-                    adress
+                    nonce: wc_esl_shipping_global.nonce
                 },
                 dataType: 'json',
                 success: function (response) {
-
                     if (response.success) {
-                        $(`#${mode}_city`).val(city);
-                        $(`#${mode}_state`).val(region);
-                        $(`#${mode}_postcode`).val(postcode);
-
+                        // Обновить поля формы с данными выбранного города
+                        $(`#${mode}_city`).val(cityData.city);
+                        $(`#esl_city_${mode}_city .esl-city-name`).text(cityData.city);
+                        $(`#${mode}_state`).val(cityData.region);
+                        $(`#${mode}_postcode`).val(cityData.postcode);
                         $(`#wc_esl_${mode}_terminal`).val('');
-                        //$(`.wc-esl-terminals__button[data-mode="${mode}"]`).text("Выбрать способ доставки и пункт самовывоза");
 
                         preload(`.woocommerce-${mode}-fields`, false);
                         $('body').trigger('update_esl_city');
                     }
-
                     $('body').trigger('update_checkout');
                 }
             });
         }
 
-        $('body').on('keyup changed', '#'+shippingCityFields, function (e) {
-            let value = $(this).val();
-            let mode = 'shipping';
-            let $this = $(this);
+        // Унифицированный обработчик поиска города (счёт и доставка)
+        function setupCitySearchHandler(fieldId, mode, countryVar) {
+            $('body').on('keyup changed', '#' + fieldId, function (e) {
+                const value = $(this).val();
+                const $this = $(this);
+                const country = mode === 'billing' ? currentBillingCountry : currentShippingCountry;
 
-            if (value.length > 2) {
+                if (value.length > 2) {
+                    const searchCityBox = $(`#result_wc_esl_search_city_${mode}`);
+                    if (!searchCityBox.hasClass('not-selected') && searchCityBox.length) {
+                        searchCityBox.addClass('not-selected');
+                        $('#tips-city-container').show();
+                        $(`.wc-esl-terminals__button`).prop('disabled', true);
+                        esl.request('');
+                    }
 
-                let searchCityBox = $('#result_wc_esl_search_city_shipping');
-                if(!searchCityBox.hasClass('not-selected') && searchCityBox){
-                    searchCityBox.addClass('not-selected')
-                    $('#tips-city-container').show();
-                    $(`.wc-esl-terminals__button`).prop('disabled', true);
-                    esl.request('');
+                    if (country) {
+                        searchCity(value, function (items) {
+                            $(`#result_wc_esl_search_city_${mode}`).remove();
+                            const parentRow = $this.parents('.cfw-input-wrap-row').length 
+                                ? $this.parents('.cfw-input-wrap-row')
+                                : $this.parents('.form-row');
+                            parentRow.append(renderCitiesList(items, mode));
+                        }, country);
+                    }
                 }
-
-                if (currentShippingCountry) {
-                    searchCity(value, function (items) {
-                        $('#result_wc_esl_search_city_shipping').remove();
-                        if ($this.parents('.cfw-input-wrap-row').length === 1) {
-                            $this.parents('.cfw-input-wrap-row').append(
-                                renderCitiesList(items, mode)
-                            );
-                        } else {
-                            $this.parents('.form-row').append(
-                                renderCitiesList(items, mode)
-                            );
-                        }
-                    }, currentShippingCountry);
-                }
-            }
-        });
+            });
+        }
+        
+        setupCitySearchHandler(shippingCityFields, 'shipping', currentShippingCountry);
 
         $('body').on('change', 'input[name="payment_method"]', function (e) {
             $('body').trigger('update_checkout');
@@ -697,7 +659,6 @@ function isNumeric(value) {
     let esl = {
         items: {
             widget_id: 'eShopLogisticWidgetCart',
-            esldata_field_id: 'widgetCityEsl',
             esldata_offers_id: 'widgetOffersEsl',
             esldata_payments_id: 'widgetPaymentEsl',
             esldata_to_id: 'widgetCityEsl',
@@ -777,9 +738,12 @@ function isNumeric(value) {
             const to = JSON.parse(document.getElementById(this.items.esldata_to_id).value)
 
             this.widget_offers = document.getElementById(this.items.esldata_offers_id).value
-            this.widget_city.name = to.city
-            this.widget_city.fias = to.fias
-            this.widget_city.services = to.services
+            this.widget_city.name = to.city || null
+            this.widget_city.fias = to.fias || null
+            // to.services может отсутствовать, если сервер не смог определить город
+            // (ни поиск, ни геолокация не дали результата) — не отдаём undefined виджету,
+            // иначе он падает с TypeError вместо показа своей стандартной ошибки.
+            this.widget_city.services = Array.isArray(to.services) ? to.services : []
             this.widget_payment = (this.current.payment_id) ? this.current.payment_id : 'card'
 
             let current_payment = this.current.payment_id
@@ -815,6 +779,7 @@ function isNumeric(value) {
                 payment: this.widget_payment
             }
 
+            console.log(this.widget_city)
             if (reload.length !== 0 && window.widgetInit) {
                 switch (reload) {
                     case 'offers':
@@ -859,6 +824,17 @@ function isNumeric(value) {
 
         },
         confirm: async function (response) {
+            const serviceData = response.service && response.service.responseData
+                ? response.service.responseData[response.typeDelivery]
+                : undefined
+
+            if (!serviceData) {
+                // Тариф для этого типа доставки ещё не посчитан (например, курьер ждёт адрес) —
+                // виджет повторно вызовет onSelectedService, когда данные будут готовы.
+                console.log('ESL: нет данных тарифа для "' + response.typeDelivery + '", выбор пропущен')
+                return
+            }
+
             let esldata = {
                 price: 0,
                 time: '',
@@ -883,12 +859,12 @@ function isNumeric(value) {
                 esldata.deliveryMethods = response.deliveryMethods
             }
 
-            let time = response.service.responseData[response.typeDelivery].time
+            let time = serviceData.time
 
-            esldata.price = response.service.responseData[response.typeDelivery].price
+            esldata.price = serviceData.price
             esldata.time = time.value + ' ' + time.unit
-            if (response.service.responseData[response.typeDelivery].comment) {
-                esldata.comment += '<br>' + response.service.responseData[response.typeDelivery].comment
+            if (serviceData.comment) {
+                esldata.comment += '<br>' + serviceData.comment
             }
 
             if (typeof response.terminal == 'object') {
@@ -907,15 +883,19 @@ function isNumeric(value) {
             request.responseType = 'json'
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
             request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}`)
+            request.send(`action=wc_esl_set_terminal_address&terminal=${address.address}&terminal_code=${address.code}&nonce=${wc_esl_shipping_global.nonce}`)
 
             request.addEventListener("readystatechange", () => {
 
                 if (request.readyState === 4 && request.status === 200) {
                     jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val(address.address);
                     //jQuery(".wc-esl-terminals__button").text("Выбрать способ доставки и пункт самовывоза");
-                    if(hide)
-                        modalEsl.style.display = "none";
+                    if (hide) {
+                        const modal = document.getElementById('modal-esl-frame');
+                        if (modal) {
+                            modal.style.display = 'none';
+                        }
+                    }
                 }
             })
         },
@@ -934,6 +914,10 @@ function isNumeric(value) {
 
     document.addEventListener('DOMContentLoaded', () => {
         const root = document.getElementById('eShopLogisticWidgetCart');
+
+        if (!root) {
+            return;
+        }
 
         root.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
             const widget = document.getElementById(esl.items.widget_id)
@@ -955,181 +939,123 @@ function isNumeric(value) {
             window.widgetInit = true
         });
 
-        root.addEventListener('eShopLogisticWidgetCart:onBalloonOpen', (event) => {
-            let data = event.detail
-            console.log('Событие onBalloonOpen', data)
-            let hash = objectHash.sha1(data);
-            hashSelectService = hash
-
-            if (typeof data.terminal == 'object') {
-                esl.setTerminal(data.terminal, false)
+        // Вспомогательная функция для обработки выбора сервиса
+        function handleServiceChange(data, shouldSetTerminal = false) {
+            if (typeof data.terminal === 'object') {
+                esl.setTerminal(data.terminal, shouldSetTerminal);
             } else {
                 jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
-                window.keyDelivery = data.typeDelivery
-                let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-                let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
-                let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
-                if (window.keyDelivery === 'door') {
-                    jQuery('#buttonModalDoor').show();
-                } else {
-                    jQuery('#buttonModalDoor').hide();
-                }
-
+                window.keyDelivery = data.typeDelivery;
+                const differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
+                const currentBillingCountry = jQuery('#billing_country').val() || 'RU';
+                const currentShippingCountry = jQuery('#shipping_country').val() || 'RU';
+                
+                jQuery('#buttonModalDoor')[window.keyDelivery === 'door' ? 'show' : 'hide']();
                 changeVisibleElements(
                     differentShippingAddress,
                     window.keyDelivery,
                     currentBillingCountry,
                     currentShippingCountry
                 );
-
             }
-        })
+        }
+
+        root.addEventListener('eShopLogisticWidgetCart:onBalloonOpen', (event) => {
+            console.log('onBalloonOpen', event.detail);
+            hashSelectService = objectHash.sha1(event.detail);
+        });
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
-            let data = event.detail
-            console.log('Событие onSelectedService', data)
-            let hash = objectHash.sha1(event.detail);
-            console.log(hash)
-            console.log(hashSelectService)
-
-            if (typeof data.terminal == 'object') {
-                esl.setTerminal(data.terminal)
-            } else {
-                jQuery('#wc_esl_billing_terminal, #wc_esl_shipping_terminal').val('');
-                window.keyDelivery = data.typeDelivery
-                let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-                let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
-                let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
-                if (window.keyDelivery === 'door') {
-                    jQuery('#buttonModalDoor').show();
-                } else {
-                    jQuery('#buttonModalDoor').hide();
-                }
-
-                changeVisibleElements(
-                    differentShippingAddress,
-                    window.keyDelivery,
-                    currentBillingCountry,
-                    currentShippingCountry
-                );
+            console.log('onSelectedService', event.detail);
+            const hash = objectHash.sha1(event.detail);
+            
+            handleServiceChange(event.detail, true);
+            
+            if (hash !== hashSelectService) {
+                // Хеш сервиса изменился
             }
+            esl.confirm(event.detail);
+        });
 
-            if(hash !== hashSelectService){
+        // Вспомогательная функция для обработки загруженных сервисов
+        function handleServicesLoadedState(services = [], isNotAvailable = false) {
+            const ROOT = document.body;
+            ROOT.classList.add('loaded_hiding');
+            ROOT.classList.remove("load");
+            
+            const differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
+            const currentBillingCountry = jQuery('#billing_country').val() || 'RU';
+            const currentShippingCountry = jQuery('#shipping_country').val() || 'RU';
+            
+            if (isNotAvailable) {
+                jQuery('.esl_desct_delivery .addText').html('Нет доступных вариантов доставки.');
+                jQuery('.esl_desct_delivery .count').html('0');
+                // Скрыть контейнер при ошибке
+                jQuery('.wc-esl-terminals__container').hide();
+            } else if (services.length > 0) {
+                let count = services.length;
+                const countTexts = { 1: 'служба', 2: 'службы', 5: 'служб' };
+                const countText = countTexts[count <= 1 ? 1 : count < 5 ? 2 : 5];
+                let nameDelivery = services.map(s => s.name).join(', ');
+                
+                jQuery('.esl_desct_delivery .count').html(count);
+                jQuery('.esl_desct_delivery .countText').html(countText);
+                jQuery('.esl_desct_delivery .addText').html(nameDelivery);
+                jQuery('.esl_desct_delivery').show();
             }
-            esl.confirm(data)
-
-        })
+            
+            jQuery('#buttonModalDoor')[window.keyDelivery === 'door' ? 'show' : 'hide']();
+            changeVisibleElements(
+                differentShippingAddress,
+                window.keyDelivery,
+                currentBillingCountry,
+                currentShippingCountry
+            );
+        }
 
         root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {
-            console.log('Событие onAllServicesLoaded', event.detail)
-            let count = 0
-            let countText = 'служб'
-            count = event.detail.length
-
-            if (count === 1)
-                countText = 'служба';
-            if (count > 1 && count < 5)
-                countText = 'службы'
-
-            let nameDelivery = ''
-            for (let i = 0; i < count; i++) {
-                if(i !== 0)
-                    nameDelivery += ', '
-
-                nameDelivery += event.detail[i].name
-            }
-
-            jQuery('.esl_desct_delivery .count').html(count)
-            jQuery('.esl_desct_delivery .countText').html(countText)
-            jQuery('.esl_desct_delivery .addText').html(nameDelivery)
-            jQuery('.esl_desct_delivery').show()
-
-            document.body.classList.add('loaded_hiding')
-            document.body.classList.remove("load")
-
-            let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-            let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
-            let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
-            if (window.keyDelivery === 'door') {
-                jQuery('#buttonModalDoor').show();
-            } else {
-                jQuery('#buttonModalDoor').hide();
-            }
-
-            changeVisibleElements(
-                differentShippingAddress,
-                window.keyDelivery,
-                currentBillingCountry,
-                currentShippingCountry
-            );
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onSelectTypeDelivery', (event) => {
-            console.log('Событие onSelectTypeDelivery', event.detail)
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
-            console.log('Неверный код населенного пункта')
-
-            errorCity = errorCity + 1
-            if(errorCity < 2){
-                esl.sleep(2000).then(() => {
-                    esl.run('city')
-                });
-            }
-
-            errorGetMessage()
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidName', () => {
-            console.log('Неверный name города')
-
-            errorGetMessage('Неверное название города')
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
-            console.log('Неверный массив служб')
-            errorGetMessage('Невозможна доставка по указанному адресу')
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidPayment', () => {
-            console.log('Не передана оплата')
-
-            errorGetMessage('Не найден способ оплаты')
-        })
-
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidOffers', () => {
-            console.log('Не передан offers')
-
-            errorGetMessage('Не найден заказ')
-        })
+            console.log('onAllServicesLoaded', event.detail);
+            handleServicesLoadedState(event.detail, false);
+        });
 
         root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', (event) => {
-            console.log('Событие onNotAvailableServices', event)
+            console.log('onNotAvailableServices', event);
+            handleServicesLoadedState([], true);
+        });
 
-            jQuery('.esl_desct_delivery .addText').html('Нет доступных вариантов доставки.')
-            jQuery('.esl_desct_delivery .count').html('0')
+        root.addEventListener('eShopLogisticWidgetCart:onSelectTypeDelivery', (event) => {
+            console.log('onSelectTypeDelivery', event.detail);
+        });
 
-            document.body.classList.add('loaded_hiding')
-            document.body.classList.remove("load")
-
-            let differentShippingAddress = jQuery('#ship-to-different-address-checkbox').is(':checked');
-            let currentBillingCountry = (jQuery('#billing_country').val())?jQuery('#billing_country').val():'RU';
-            let currentShippingCountry = (jQuery('#shipping_country').val())?jQuery('#shipping_country').val():'RU';
-            if (window.keyDelivery === 'door') {
-                jQuery('#buttonModalDoor').show();
-            } else {
-                jQuery('#buttonModalDoor').hide();
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
+            console.log('Ошибка: неверный код населённого пункта');
+            errorCity++;
+            if (errorCity < 2) {
+                esl.sleep(2000).then(() => esl.run('city'));
             }
+            errorGetMessage();
+        });
 
-            changeVisibleElements(
-                differentShippingAddress,
-                window.keyDelivery,
-                currentBillingCountry,
-                currentShippingCountry
-            );
-        })
-    })
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidName', () => {
+            console.log('Ошибка: неверное название города');
+            errorGetMessage('Неверное название города');
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
+            console.log('Ошибка: неверный массив служб');
+            errorGetMessage('Невозможна доставка по указанному адресу');
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidPayment', () => {
+            console.log('Ошибка: не передана оплата');
+            errorGetMessage('Не найден способ оплаты');
+        });
+
+        root.addEventListener('eShopLogisticWidgetCart:onInvalidOffers', () => {
+            console.log('Ошибка: не передан заказ');
+            errorGetMessage('Не найден заказ');
+        });
+    });
 
     function errorGetMessage(error){
 
@@ -1143,74 +1069,88 @@ function isNumeric(value) {
     }
 
 
-    function sendRequestShipping(action) {
+    // Унифицированный помощник для AJAX запросов
+    function sendAjaxRequest(action, data, callback) {
         jQuery.ajax({
             method: 'POST',
             url: wc_esl_shipping_global.ajaxUrl,
             async: true,
-            data: {
-                action: 'wc_esl_update_shipping',
-                data: action,
-                city: esl.widget_city.name
-            },
+            data: { action, ...data },
             dataType: 'json',
-            success: function (response) {
-                jQuery('body').trigger('update_checkout')
-                document.body.classList.add('loaded_hiding')
-                document.body.classList.remove("load")
-            }
+            success: callback || (() => {})
+        });
+    }
+
+    function sendRequestShipping(action) {
+        sendAjaxRequest('wc_esl_update_shipping', {
+            data: action,
+            city: esl.widget_city.name,
+            nonce: wc_esl_shipping_global.nonce
+        }, () => {
+            jQuery('body').trigger('update_checkout');
+            document.body.classList.add('loaded_hiding');
+            document.body.classList.remove("load");
         });
     }
 
 
-    let modalEsl = document.getElementById("modal-esl-frame")
-    let span = document.getElementsByClassName("close_modal_window")[0]
-    let modalDoorButton = document.getElementById("buttonModalDoor")
+    // Инициализация модального окна
+    function initializeModal() {
+        const modal = document.getElementById("modal-esl-frame");
+        const span = document.getElementsByClassName("close_modal_window")[0];
+        const doorButton = document.getElementById("buttonModalDoor");
+        
+        if (!modal || !span) return;
 
-
-    span.onclick = function () {
-        modalEsl.style.display = "none"
+        const closeModal = () => modal.style.display = "none";
+        
+        // Закрыть при клике на кнопку закрытия
+        span.onclick = closeModal;
+        if (doorButton) doorButton.onclick = closeModal;
+        
+        // Закрыть при клике вне модального окна
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
     }
 
-    modalDoorButton.onclick = function () {
-        modalEsl.style.display = "none"
-    }
+    // Инициализировать модальное окно при загрузке страницы
+    initializeModal();
 
-    window.onclick = function (event) {
-        if (event.target == modalEsl) {
-            modalEsl.style.display = "none"
+    const bindEvents = {
+        clickOnTerminals: function() {
+            const modal = document.getElementById("modal-esl-frame");
+            if (modal) modal.style.display = "block";
         }
+    };
+
+    // Подключить обработчики клика к кнопкам терминалов
+    function initializeTerminalButtons() {
+        const buttons = document.querySelectorAll('.wc-esl-terminals__button');
+        buttons.forEach(btn => btn.addEventListener('click', bindEvents.clickOnTerminals));
     }
 
-    let bindEvents = {
-        clickOnTerminals: function (event) {
-            modalEsl.style.display = "block"
-        },
-        onCloseModal: function () {
-            console.log('closeModal')
-        },
-    }
+    initializeTerminalButtons();
 
+    // Удалить дублирующиеся блоки доставки, оставляя только предпочитаемый
     function duplicateBoxClear() {
-        let box = document.querySelectorAll('.' + esl.items.esl_box);
-        let last = box[box.length - 1];
+        const boxes = document.querySelectorAll('.' + esl.items.esl_box);
+        if (!boxes || boxes.length <= 1) return;
 
-        for (let i = 0; i < box.length; i++) {
-            if (box[i] !== last) {
-                box[i].parentNode.removeChild(box[i]);
+        const preferredBoxes = document.querySelectorAll(
+            '.' + esl.items.esl_box + '[data-esl-source="shipping-frame-input"]'
+        );
+        const keep = preferredBoxes.length
+            ? preferredBoxes[preferredBoxes.length - 1]
+            : boxes[boxes.length - 1];
+
+        for (let i = 0; i < boxes.length; i++) {
+            if (boxes[i] !== keep && boxes[i].parentNode) {
+                boxes[i].parentNode.removeChild(boxes[i]);
             }
         }
-    }
-
-
-    let els_terminals_buttons = document.getElementsByClassName('wc-esl-terminals__button')
-
-    if (els_terminals_buttons) {
-
-        for (let i = 0; i < els_terminals_buttons.length; i++) {
-            els_terminals_buttons[i].addEventListener('click', bindEvents.clickOnTerminals, false);
-        }
-
     }
 
     jQuery('body').on('update_esl_city', function () {
@@ -1231,7 +1171,8 @@ function isNumeric(value) {
                 jQuery('body').off('updated_checkout');
                 document.getElementById('wc_esl_billing_terminal').value = '';
                 document.getElementById('wc_esl_shipping_terminal').value = '';
-                jQuery('.esl_desct_delivery').append('<p>Информация о доставке была обновлена, пожалуйста, выберите подходящий вариант доставки.</p>')
+                // Заменить (а не добавить) сообщение об обновлении доставки
+                jQuery('.esl_desct_delivery').html('<p>Информация о доставке была обновлена, пожалуйста, выберите подходящий вариант доставки.</p>')
             });
 
         });

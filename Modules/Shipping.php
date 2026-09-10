@@ -6,6 +6,7 @@ use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\Classes\View;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
@@ -32,8 +33,14 @@ class Shipping implements ModuleInterface
         $services = $optionsRepository->getOption('wc_esl_shipping_account_services');
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
+	    EslLogger::debug( '[ESL registerShippingMethods] checking config', array(
+		    'frame_enable' => $frameEnable,
+		    'services'     => $services,
+	    ) );
+
 	    if($frameEnable){
 		    $methods[ WC_ESL_PREFIX . 'frame_mixed' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\FrameMixed';
+		    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . WC_ESL_PREFIX . 'frame_mixed' );
 	    }elseif(!empty($services)){
 		    foreach($services as $serviceKey => $service) {
 				$exCustom = explode('-', $serviceKey);
@@ -41,13 +48,25 @@ class Shipping implements ModuleInterface
 					$serviceKey = 'custom';
 				}
 			    if($service['door'] == '1') {
-				    $methods[ WC_ESL_PREFIX . strtolower($serviceKey) . '_door' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
+				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_door';
+				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Door';
+				    $methods[ $key ] = $class;
+				    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class, array(
+					    'class_exists' => class_exists( $class ),
+				    ) );
 			    }
 
 			    if($service['terminal'] == '1') {
-				    $methods[ WC_ESL_PREFIX . strtolower($serviceKey) . '_terminal' ] = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
+				    $key = WC_ESL_PREFIX . strtolower($serviceKey) . '_terminal';
+				    $class = 'eshoplogistic\WCEshopLogistic\Classes\Shipping\Methods\\' . ucfirst(strtolower($serviceKey)) . 'Terminal';
+				    $methods[ $key ] = $class;
+				    EslLogger::debug( '[ESL registerShippingMethods] registered: ' . $key . ' -> ' . $class, array(
+					    'class_exists' => class_exists( $class ),
+				    ) );
 			    }
 		    }
+	    } else {
+		    EslLogger::debug( '[ESL registerShippingMethods] no methods registered: frame_enable=false, services empty' );
 	    }
 
         return $methods;
@@ -58,16 +77,147 @@ class Shipping implements ModuleInterface
 	    $optionsRepository = new OptionsRepository();
 	    $frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
 
-	    if($frameEnable)
-			return $rates;
+	    if ($frameEnable) {
+	        $rates = $this->applyFrameRatesForBlocks($rates, $package);
+	    } else {
+	        $rates = $this->filterRatesForLegacy($rates, $package);
+	    }
 
+	    return $this->hideTerminalRatesOnCart($rates);
+    }
+
+    /**
+     * Скрывает ESL-тарифы типа "пункт выдачи" (terminal) на странице корзины.
+     *
+     * CONTEXT: legacy (non-frame) режим с отдельными Door/Terminal-методами.
+     * Инфраструктура выбора конкретного ПВЗ (кнопка + модалка с картой) рендерится
+     * только на чекауте — addTerminalsInput() висит на woocommerce_review_order_after_shipping,
+     * который на странице корзины не срабатывает. Начиная с версии, где
+     * Classes\Shipping\Base::calculate_shipping() перестал требовать is_checkout(),
+     * такой тариф теоретически может посчитаться и на корзине — но выбрать сам ПВЗ
+     * там будет нечем, поэтому тариф скрываем, сохраняя прежнее поведение корзины.
+     * Door-тарифы и frame-режим (тип mixed) это не затрагивает.
+     *
+     * @param array $rates Текущие тарифы доставки
+     * @return array
+     */
+    private function hideTerminalRatesOnCart($rates)
+    {
+        if (!is_cart()) {
+            return $rates;
+        }
+
+        $shippingHelper = new ShippingHelper();
+
+        foreach ($rates as $key => $rate) {
+            $methodId = is_object($rate) && method_exists($rate, 'get_method_id') ? $rate->get_method_id() : $key;
+
+            if ($shippingHelper->getTypeMethod($methodId) === 'terminal') {
+                unset($rates[$key]);
+            }
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Apply frame-selected shipping label and cost to rates for Blocks checkout.
+     * 
+     * CONTEXT: WooCommerce Blocks - used when frame_enable is true.
+     * - Reads esl_shipping_frame from session (contains user widget selection)
+     * - Synchronizes frame label/cost to wc_esl_frame_mixed rate object
+     * - Forces rate recalculation with updated label for Blocks UI
+     * 
+     * @param array $rates Current shipping rates
+     * @param array $package Cart package data
+     * @return array Modified rates with frame selection applied
+     */
+    private function applyFrameRatesForBlocks($rates, $package)
+    {
+        $sessionService = new SessionService();
+        $shippingFrame = $sessionService->get('esl_shipping_frame');
+
+        if (is_string($shippingFrame)) {
+            $shippingFrame = maybe_unserialize($shippingFrame);
+        }
+
+        if (!is_array($shippingFrame) || empty($shippingFrame['name'])) {
+            return $rates;
+        }
+
+        $optionsRepository = new OptionsRepository();
+        $nameDelivery = [
+            'terminal' => 'пункт выдачи заказа',
+            'door' => 'курьер',
+        ];
+
+        $labelTitle = (string) $shippingFrame['name'];
+        if (!empty($shippingFrame['mode']) && isset($nameDelivery[$shippingFrame['mode']])) {
+            $labelTitle .= ' - ' . $nameDelivery[$shippingFrame['mode']];
+        }
+
+        if (!empty($shippingFrame['time'])) {
+            $labelTitle .= '. Срок доставки - ' . $shippingFrame['time'];
+        }
+
+        $cost = 0;
+        if (isset($shippingFrame['price']) && is_array($shippingFrame['price']) && isset($shippingFrame['price']['value'])) {
+            $cost = (float) $shippingFrame['price']['value'];
+        }
+
+        $pluginEnableShippingPrice = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_price_shipping');
+        if ($pluginEnableShippingPrice) {
+            if ($cost === 0.0) {
+                $labelTitle .= ': Бесплатно';
+            }
+        } else {
+            $currencyCode = get_woocommerce_currency();
+            $currencySymbol = get_woocommerce_currency_symbol($currencyCode);
+            $labelTitle = str_replace(':', ' -', $labelTitle) . ' - ' . $cost . ' ' . $currencySymbol;
+        }
+
+        foreach ($rates as $rateKey => $rate) {
+            if (strpos((string) $rateKey, WC_ESL_PREFIX . 'frame_mixed') === false) {
+                continue;
+            }
+
+            if (is_object($rate)) {
+                if (method_exists($rate, 'set_label')) {
+                    $rate->set_label($labelTitle);
+                }
+
+                if (method_exists($rate, 'set_cost')) {
+                    $rate->set_cost($pluginEnableShippingPrice ? $cost : 0);
+                }
+
+                $rates[$rateKey] = $rate;
+            }
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Filter shipping rates for legacy checkout flow.
+     * 
+     * CONTEXT: Legacy (non-Blocks) checkout - used when frame_enable is false.
+     * - Keeps only rates that were calculated by this plugin via shipping_methods session
+     * - Also keeps non-eShopLogistic rates (where prefix count < 2) for compatibility
+     * - Legacy checkout handles rate calculations via direct session state
+     * 
+     * @param array $rates Current shipping rates
+     * @param array $package Cart package data
+     * @return array Filtered rates with only relevant methods
+     */
+    private function filterRatesForLegacy($rates, $package)
+    {
         $sessionService = new SessionService();
         $shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 
         $newRates = [];
 
-        foreach($rates as $key => $rate) {
-            if(
+        foreach ($rates as $key => $rate) {
+            if (
                 isset($shippingMethods[$key]) ||
                 (count(explode(WC_ESL_PREFIX, $key)) < 2)
             ) {
@@ -101,10 +251,14 @@ class Shipping implements ModuleInterface
 		if(isset($addForm['offAddressCheck']))
 			$offAddressCheck = $addForm['offAddressCheck'];
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 		echo View::render('checkout/add-fields', [
-			'eslBillingCityFields' => $eslBillingCityFields,
-			'eslShippingCityFields' => $eslShippingCityFields,
-			'offAddressCheck' => $offAddressCheck
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_eslBillingCityFields' => $eslBillingCityFields,
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_eslShippingCityFields' => $eslShippingCityFields,
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			'wc_esl_offAddressCheck' => $offAddressCheck
 		]);
 
 	    if(isset($paymentCalcTmp['paymentCalc']) && $paymentCalcTmp['paymentCalc'] == 'true')
@@ -119,7 +273,13 @@ class Shipping implements ModuleInterface
                 $terminals = isset($stateShippingMethods[$chosenShippingMethods[0]]['terminals']) ? $stateShippingMethods[$chosenShippingMethods[0]]['terminals'] : null;
 
                 if(!is_null($terminals)) {
-					echo View::render('checkout/terminals-input', ['terminals' => json_encode($terminals), 'key_ya' => $apiKeyYa]);
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
+					echo View::render('checkout/terminals-input', [
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_terminals' => json_encode($terminals),
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_key_ya' => $apiKeyYa
+					]);
                 }
             }
 	        if($typeMethod === 'mixed') {
@@ -145,6 +305,16 @@ class Shipping implements ModuleInterface
 					if($city){
 						$searchDefault = $eshopLogisticApi->search($city, '', $region);
 						$searchDefault = $searchDefault->data();
+
+						// WooCommerce не имеет справочника регионов для RU (свободный текст),
+						// поэтому регион почти никогда не совпадает буквально с эталонным
+						// названием в базе eShopLogistic — фильтр по региону отсекает валидные
+						// совпадения. Если с регионом ничего не нашли, повторяем без него
+						// (регион и так не влияет на выбор результата — берётся первый элемент).
+						if(!isset($searchDefault[0]) && $region){
+							$searchDefault = $eshopLogisticApi->search($city, '', '');
+							$searchDefault = $searchDefault->data();
+						}
 					}
 
 					if(isset($searchDefault[0])){
@@ -160,6 +330,19 @@ class Shipping implements ModuleInterface
 						$widgetCityEsl['city'] = $widgetCityEsl['name'];
 						$widgetCityEsl['postcode'] = $widgetCityEsl['postal_code'];
 						$sessionService->set($mode, $widgetCityEsl);
+					} else {
+						// Ни поиск по названию, ни IP-геолокация не дали результата — отдаём
+						// пустой, но корректно сформированный объект (city/fias/services),
+						// чтобы на фронте не парсился как [[]] (вложенный пустой массив без
+						// нужных ключей) — это приводило к падению виджета доставки.
+						$widgetCityEsl = [
+							'city'     => $city ? $city : '',
+							'name'     => $city ? $city : '',
+							'fias'     => '',
+							'region'   => $region ? $region : '',
+							'postcode' => '',
+							'services' => [],
+						];
 					}
 				}
 
@@ -167,12 +350,18 @@ class Shipping implements ModuleInterface
 		        $widgetOffersEsl = self::infoCart();
 		        $paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 				echo View::render('checkout/frame-input', [
-					'widgetKey' => $apiWidgetKey,
-					'widgetOffersEsl' => $widgetOffersEsl,
-					'paymentMethods' => $paymentMethods,
-					'widgetCityEsl' => $widgetCityEsl,
-					'paymentCalc' => $paymentCalc
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetKey' => $apiWidgetKey,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetOffersEsl' => $widgetOffersEsl,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_paymentMethods' => $paymentMethods,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_widgetCityEsl' => $widgetCityEsl,
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_paymentCalc' => $paymentCalc
 				]);
 	        }
         }
@@ -197,6 +386,7 @@ class Shipping implements ModuleInterface
 			}
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name retained for backwards compatibility.
 		$offers = apply_filters( 'esl_offers_filter', $offers );
 
 		return $offers;
@@ -223,19 +413,23 @@ class Shipping implements ModuleInterface
         //}
 
 		if(isset($accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment'])) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 			echo View::render(
 				'checkout/general-comment',
 				[
-					'comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_comment' => $accountInitServices[$shippingHelper->getSlugMethod($item->method_id)]['comment']
 				]
 			);
 		}
 
 		if(isset($stateShippingMethods[$item->method_id]['comment'])) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Variables are passed to View::render which escapes them
 			echo View::render(
 				'checkout/comment',
 				[
-					'comment' => $stateShippingMethods[$item->method_id]['comment']
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'wc_esl_comment' => $stateShippingMethods[$item->method_id]['comment']
 				]
 			);
 		}

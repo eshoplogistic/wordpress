@@ -18,12 +18,12 @@ let HttpClientEsl = {
         request.setRequestHeader( 'X-Requested-With', 'XMLHttpRequest' );
         request.setRequestHeader( "Content-type", "application/x-www-form-urlencoded" );
 
-        request.send( this.serialize( data ) );
+        let serialized = this.serialize( data );
+        request.send( serialized );
 
         request.addEventListener( "readystatechange", () => {
 
             if( request.readyState === 4 ) {
-
                 if(!callback_func) return;
 
                 callback_func( request.response );

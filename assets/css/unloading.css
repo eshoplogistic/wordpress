@@ -1,3 +1,34 @@
+:root {
+    --esl-accent: #2271b1;
+    --esl-accent-dark: #135e96;
+    --esl-accent-soft: rgba(34, 113, 177, .08);
+    --esl-accent-soft-strong: rgba(34, 113, 177, .16);
+    --esl-text: #1d2327;
+    --esl-text-muted: #646970;
+    --esl-border: #dcdcde;
+    --esl-border-soft: #e2e4e7;
+    --esl-bg: #ffffff;
+    --esl-bg-soft: #f6f7f7;
+    --esl-radius: 10px;
+    --esl-radius-sm: 6px;
+    --esl-shadow-modal: 0 24px 60px -18px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .08);
+    --esl-success: #00a32a;
+    --esl-error: #d63638;
+    --esl-warning: #dba617;
+}
+
+/* No global box-sizing reset existed before — width:100% + padding on plain <div>s (e.g.
+   .checkbox-area) defaulted to content-box, so the padding added on top of 100% width and
+   silently overflowed the grid column; .content_inner's overflow-x:hidden then clipped it,
+   which read as "no right padding" even though the CSS padding value was correct. */
+.modal-esl,
+.modal-esl *,
+.modal-esl *::before,
+.modal-esl *::after {
+    box-sizing: border-box;
+}
+
+/* Overlay. JS toggles display:block/none inline on #modal-esl — keep base display:none. */
 .modal-esl {
     display: none;
     position: fixed;
@@ -6,87 +37,136 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(23, 27, 32, .55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
     z-index: 9999;
 }
+
 .modal-esl .modal_content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--esl-bg);
+    margin: 4vh auto;
+    width: min(1100px, 96vw);
+    max-height: 92vh;
+    border: none;
+    border-radius: var(--esl-radius);
+    box-shadow: var(--esl-shadow-modal);
+    overflow: hidden;
     z-index: 99999;
-}
-.modal-esl .modal_content .close_modal_window {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
 }
 
 .modal-esl .title {
-    padding-bottom: 45px;
-    font-size: 18px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--esl-border-soft);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--esl-text);
 }
 
-.modal-esl #buttonModalUnload{
-    position: relative;
-    left: 50%;
-    transform: translate(-50%, 0);
+.modal-esl .title .esl-modal-title__text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.modal-esl .footer{
-    padding-top: 50px;
+.modal-esl .title .esl-modal-title__text svg {
+    flex: 0 0 auto;
+    color: var(--esl-accent);
+}
+
+.modal-esl .modal_content .close_modal_window {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--esl-text-muted);
+    background: transparent;
+    border-radius: 50%;
+    float: none;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.modal-esl .modal_content .close_modal_window:hover {
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-error);
+}
+
+.modal-esl .content_inner {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 24px;
 }
 
 .modal-esl main {
     margin: 0 auto;
-    background: #fff;
+    background: var(--esl-bg);
 }
 
-.modal-esl section {
-    display: none;
-    padding: 20px 0 0;
-    border-top: 1px solid #ddd;
+/* Tab bar row + wrapping form-as-next-row layout is specific to the tabbed unloading
+   form (#modal-esl) — the plain order-info popup (#modal-esl-info) reuses .modal-esl
+   chrome but has no tabs, so it must stay in normal block flow, not flex-wrap. */
+#modal-esl main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
 }
 
+/* Tab bar — icon-only pills. Sibling order/ids of #tab1..4 must stay flat next to <form>,
+   the CSS-only tab switching below relies on the general-sibling combinator. */
 .modal-esl input[name="tabs"] {
     display: none;
 }
 
-.modal-esl label {
-    margin: 0 0 -1px;
-    padding: 10px 5px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.modal-esl label[name="tabLabel"] {
-    display: inline-block;
-    margin: 0 0 -1px;
-    padding: 15px 25px;
-    font-weight: 600;
-    text-align: center;
-    color: #bbb;
+.modal-esl label[name="tabLabel"].tabLabel {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin: 12px 0 0;
+    padding: 0;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg);
     border: 1px solid transparent;
-}
-
-.modal-esl label[name="tabLabel"]:before {
-    font-weight: normal;
-    margin-right: 10px;
-}
-
-.modal-esl label[name="tabLabel"]:hover {
-    color: #888;
+    border-radius: var(--esl-radius-sm);
+    font-weight: 600;
+    text-align: center;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.modal-esl input:checked + label {
-    color: #555;
-    border: 1px solid #ddd;
-    border-top: 2px solid color(srgb 0.1337 0.4415 0.6943);
-    border-bottom: 1px solid #fff;
+.modal-esl label[name="tabLabel"].tabLabel svg {
+    width: 20px;
+    height: 20px;
+}
+
+.modal-esl label[name="tabLabel"].tabLabel:hover {
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
+}
+
+.modal-esl input[name="tabs"]:checked + label[name="tabLabel"].tabLabel {
+    color: #fff;
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .35);
 }
 
 .modal-esl #tab1:checked ~ form #content1,
@@ -96,17 +176,44 @@
     display: block;
 }
 
+/* "Выгрузить" sits in the tab bar row (next to the tab icons) and only makes sense on
+   the last tab ("Места"), where the place data actually gets confirmed before sending. */
+.modal-esl .esl-unload-top {
+    display: none;
+}
+
+.modal-esl #tab4:checked ~ .esl-unload-top {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 12px 0 0 auto;
+}
+
+.modal-esl form {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+.modal-esl section {
+    display: none;
+    padding: 22px 0 4px;
+    border-top: 1px solid var(--esl-border-soft);
+    margin-top: 12px;
+}
+
 .modal-esl .contact-grid {
     display: grid;
     grid-template-columns: 1fr;
     grid-gap: 35px;
 }
 
+/* Base field layout (content4's table cells and content3's checklist override this). */
 .modal-esl .form-field {
     position: relative;
-    display: inline-block;
-    width: 30.8%;
-    margin-right: 15px;
+    display: block;
+    width: 100%;
+    margin: 0;
 }
 
 .modal-esl .form-field select {
@@ -114,58 +221,695 @@
 }
 
 .modal-esl form .label {
-    display: table;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--esl-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .modal-esl form input,
 .modal-esl form textarea,
 .modal-esl form select {
-    border: none !important;
-    height: 50px;
-    padding: 0 10px;
-    background-color: rgb(247,247,247);
-    color: rgb(85,85,85);
-}
-
-.modal-esl form #content1 input,
-.modal-esl form #content1 textarea,
-.modal-esl form #content1 select,
-.modal-esl form #content2 input,
-.modal-esl form #content2 textarea,
-.modal-esl form #content2 select {
-    width: 100%;
-    font-size: 11px;
-}
-
-.modal-esl td input {
+    box-sizing: border-box;
     width: 100% !important;
-    padding: 0 !important;
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    padding-left: 5px !important;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--esl-border) !important;
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text);
+    font-size: 13px;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 
-.esl_list_links td{
-    background-color: color(srgb 0.9686 0.9686 0.9687);
+/* Reset the native arrow and draw our own — the browser-default arrow otherwise sits
+   flush against the text with no reserved space, so long option labels run under it.
+   Widths/box-sizing repeated with !important because some Linux/GTK builds keep an
+   internal native min-width on <select> even after appearance:none. */
+.modal-esl form select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding-right: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23646970' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 6 8 10 12 6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 13px;
 }
 
-.modal-esl form textarea {
-    height: 100px !important;
-    width: 200px !important;
-    padding: 15px 10px;
-    display: block;
+.modal-esl form input:hover:not(:disabled),
+.modal-esl form textarea:hover:not(:disabled),
+.modal-esl form select:hover:not(:disabled) {
+    border-color: #b9bcbf !important;
 }
 
 .modal-esl form input:focus,
 .modal-esl form textarea:focus,
 .modal-esl form select:focus {
-    box-shadow: none !important;
-    border-bottom: 2px solid color(srgb 0.1355 0.4428 0.695 / 0.48) !important;
+    outline: none;
+    background-color: var(--esl-bg);
+    border-color: var(--esl-accent) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
+}
+
+.modal-esl form input:disabled,
+.modal-esl form select:disabled {
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text-muted);
+    cursor: not-allowed;
+}
+
+/* Tabs "Получатель" и "Отправитель" — responsive multi-column field grid.
+   Explicit column count (3), not auto-fill: auto-fill picks ONE column count for the whole
+   container from minmax() math, so a row with fewer visible fields than that count doesn't
+   stretch to fill it — its last field's right edge falls short of rows that do fill every
+   column. A fixed repeat(3, 1fr) means every full row always spans the exact same width;
+   only a genuinely partial last row (field count not divisible by 3) looks shorter, which
+   is expected. Mobile media query further down collapses this to 1 column. */
+.modal-esl form #content1 .form-box,
+.modal-esl form #content2 .form-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 20px;
+    max-width: none;
+    min-width: 0;
+}
+
+.modal-esl form #content1 .form-box .form-field,
+.modal-esl form #content2 .form-box .form-field {
+    min-width: 0;
+}
+
+.modal-esl form #content1 input,
+.modal-esl form #content1 select,
+.modal-esl form #content2 input,
+.modal-esl form #content2 select {
+    height: 38px;
+}
+
+.modal-esl form #content1 .label,
+.modal-esl form #content2 .label {
+    color: var(--esl-text-muted);
+    font-weight: 600;
+}
+
+.modal-esl form textarea {
+    height: 90px !important;
+    width: 100% !important;
+    padding: 10px 12px;
+    display: block;
+    resize: vertical;
+}
+
+/* grid-column only affects direct grid items — a <textarea> is a grandchild of .form-box
+   (nested inside its own .form-field wrapper div), so putting grid-column on the textarea
+   itself (as before) silently did nothing: the wrapper stayed a normal 1-column-wide grid
+   item and the textarea just filled that narrow cell. .checkbox-area works correctly next
+   to this because that class sits on the wrapper div itself, not on a child inside it —
+   .form-field-full (see views/unloading-form.php's "Комментарий" field) follows that same
+   pattern for the actual grid item. */
+.modal-esl form .form-field-full {
+    grid-column: 1 / -1;
 }
 
 .modal-esl form .form-box {
     display: block;
-    border-bottom: 1px solid color(srgb 0.8666 0.8667 0.8668);
-    padding-bottom: 25px;
+    padding-bottom: 6px;
+}
+
+.modal-esl form .form-box-title {
+    display: block;
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-bottom: 4px;
+    color: var(--esl-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Checkbox / toggle fields span the full grid row. */
+.modal-esl form .checkbox-area {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--esl-bg-soft);
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius-sm);
+}
+
+.modal-esl form .checkbox-area .label {
+    position: static;
+    margin: 0;
+}
+
+/* input[type=checkbox] below has margin:2px auto for other layout contexts (e.g. table
+   cells) — the auto side-margins fight .checkbox-area's own justify-content:space-between
+   and eat the container's right padding, leaving the checkbox flush against the edge. */
+.modal-esl form .checkbox-area input[type=checkbox] {
+    margin: 0;
+}
+
+/* appearance:none replaces the native checkbox paint entirely — some Linux/GTK Chromium
+   themes render a native checkbox with accent-color as a tall pill instead of a square
+   when a custom border is also applied, so we draw a plain box + checkmark ourselves. */
+.modal-esl form input[type=checkbox] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    display: block;
+    flex-shrink: 0;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    margin: 2px auto;
+    padding: 0;
+    background-color: var(--esl-bg);
+    border: 1px solid var(--esl-border) !important;
+    border-radius: 4px;
+    float: unset;
+    cursor: pointer;
+}
+
+.modal-esl form input[type=checkbox]:checked {
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent) !important;
+}
+
+/* Same technique wp-admin's own core checkbox styling uses (dashicons glyph via ::before,
+   oversized and pulled back with a negative margin — the glyph has built-in padding, so
+   percentage width/height leaves it small and pinned to the top-left instead of centered). */
+.modal-esl form input[type=checkbox]:checked::before {
+    content: "\f147";
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: -4px 0 0 -4px;
+    font: normal 24px/1 dashicons;
+    text-align: center;
+    color: #fff;
+}
+
+.modal-esl form .form-field.esl-pickup-terminal .form-value:disabled,
+.modal-esl form .form-field.esl-pickup-address .form-value:disabled,
+.modal-esl form .form-field.esl-pecom-sender-identity .form-value:disabled,
+.modal-esl form .form-field.esl-pecom-sender-requisites .form-value:disabled,
+.modal-esl form .form-field.esl-pecom-receiver-identity .form-value:disabled,
+.modal-esl form .form-field.esl-pecom-receiver-requisites .form-value:disabled,
+.modal-esl form .form-field.esl-terminal-only .form-value:disabled,
+.modal-esl form .form-field.esl-door-only .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-sender-legal-org .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-sender-legal-individual .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-receiver-individual .form-value:disabled,
+.modal-esl form .form-field.esl-baikal-receiver-org .form-value:disabled {
+    opacity: .5;
+}
+
+/* Tab "Дополнительные услуги" — checklist grouped by category. */
+.modal-esl form #content3 {
+    padding-top: 8px;
+}
+
+.modal-esl .esl-box_add {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0 24px;
+}
+
+.modal-esl .esl-box_add-title {
+    grid-column: 1 / -1;
+    margin: 18px 0 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--esl-border-soft);
+    color: var(--esl-accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.modal-esl .esl-box_add-title:first-child {
+    margin-top: 0;
+}
+
+.modal-esl .form-field_add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    margin: 0;
+    padding: 10px 6px;
+    border-bottom: 1px dashed var(--esl-border-soft);
+    border-radius: var(--esl-radius-sm);
+    transition: background-color .15s ease;
+}
+
+.modal-esl .form-field_add:hover {
+    background-color: var(--esl-bg-soft);
+}
+
+.modal-esl form #content3 .label {
+    position: static;
+    margin: 0;
+    color: var(--esl-text);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.modal-esl form #content3 input {
+    height: 32px;
+    margin: 0;
+    border: 1px solid var(--esl-border) !important;
+}
+
+.modal-esl form #content3 input[type=number] {
+    width: 70px !important;
+    text-align: center;
+}
+
+.modal-esl form #content3 input[type=checkbox] {
+    width: 18px !important;
+    height: 18px;
+    margin: 0;
+}
+
+/* Tab "Места" — order-items table. */
+.modal-esl .esl-table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius);
+}
+
+.modal-esl .esl-places-table {
+    width: 100%;
+    table-layout: fixed;
+    border: none;
+    background: var(--esl-bg);
+}
+
+/* Column widths keyed to the <col> classes emitted from Table::get_columns() order
+   (see views/unloading-form.php) — "Наименование" gets the lion's share, the rest
+   (id/qty/price/dimensions/number/delete) stay narrow. Must sum to 100%. */
+.modal-esl .esl-col-number { width: 5%; }
+.modal-esl .esl-col-product_id { width: 8%; }
+.modal-esl .esl-col-name { width: 27%; }
+.modal-esl .esl-col-quantity { width: 7%; }
+.modal-esl .esl-col-price { width: 9%; }
+.modal-esl .esl-col-weight { width: 9%; }
+.modal-esl .esl-col-width { width: 9%; }
+.modal-esl .esl-col-length { width: 9%; }
+.modal-esl .esl-col-height { width: 9%; }
+.modal-esl .esl-col-delete { width: 8%; }
+
+.modal-esl .esl-places-table thead tr th,
+.modal-esl .esl-places-table tr th {
+    padding: 10px 8px;
+    background-color: var(--esl-bg-soft);
+    color: var(--esl-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal-esl .esl-places-table tbody tr:hover {
+    background-color: var(--esl-accent-soft);
+}
+
+.modal-esl .esl-places-table td {
+    padding: 6px 8px;
+    background-color: var(--esl-bg-soft);
+}
+
+.modal-esl td input {
+    width: 100% !important;
+    height: 32px;
+    padding: 0 !important;
+    padding-left: 8px !important;
+    border: 1px solid var(--esl-border-soft) !important;
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg) !important;
+}
+
+.modal-esl .tablenav {
+    padding: 10px 0;
+}
+
+.modal-esl #buttonModalUnloadAdd {
+    border-radius: var(--esl-radius-sm);
+}
+
+.modal-esl .esl-delete_table_elem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--esl-error);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.modal-esl .esl-delete_table_elem:hover {
+    background-color: rgba(214, 54, 56, .1);
+}
+
+.modal-esl .esl-places__main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.modal-esl .esl-places-table td.column-delete {
+    text-align: center;
+}
+
+.modal-esl .esl-places-table td.column-number {
+    text-align: center;
+    color: var(--esl-text-muted);
+    font-weight: 600;
+}
+
+/* Sticky action bar (still used by the confirm modal's footer, see
+   #modal-esl-confirm .esl-confirm__footer — "Выгрузить" itself moved into the tab bar,
+   see .esl-unload-top above). */
+.modal-esl .footer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    margin: 24px -24px 0;
+    padding: 16px 24px;
+    background: var(--esl-bg);
+    border-top: 1px solid var(--esl-border-soft);
+}
+
+.modal-esl #buttonModalUnload {
+    position: static;
+    left: auto;
+    transform: none;
+    min-width: 160px;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-success);
+    border-color: #007a22;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 163, 42, .3);
+    transition: background-color .15s ease, transform .1s ease;
+}
+
+.modal-esl #buttonModalUnload:hover {
+    background: #007a22;
+    transform: translateY(-1px);
+}
+
+/* Confirm modal (#modal-esl-confirm) — replaces window.confirm() for the "delete unloading"
+   and "order sum mismatch" prompts (see EslConfirm in settings_unloading.js). */
+#modal-esl-confirm .modal_content {
+    width: min(480px, 94vw);
+}
+
+#modal-esl-confirm .title .esl-modal-title__text svg {
+    color: var(--esl-warning);
+}
+
+#modal-esl-confirm main {
+    padding: 20px 0 24px;
+}
+
+#modal-esl-confirm main .esl-confirm__message {
+    margin: 0;
+    color: var(--esl-text);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.modal-esl .esl-confirm__footer {
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-esl .esl-confirm__footer .button {
+    min-width: 100px;
+    height: 36px;
+    border-radius: var(--esl-radius-sm);
+    font-weight: 600;
+}
+
+/* "Информация о заказе" popup (#modal-esl-info) — status/order-id rows injected via AJAX
+   by Modules/UnloadingInfo.php. .esl-info-card groups .esl-info-row label/value pairs;
+   .esl-info-alert is the error/empty state; .esl-info-note is an informational aside. */
+#modal-esl-info main {
+    padding: 20px 0 24px;
+}
+
+#modal-esl-info main > p {
+    margin: 0;
+    color: var(--esl-text-muted);
+    font-size: 13px;
+}
+
+.esl-info-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius);
+    background: var(--esl-bg-soft);
+    overflow: hidden;
+}
+
+.esl-info-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    align-items: center;
+    gap: 4px 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--esl-border-soft);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.esl-info-row:last-child {
+    border-bottom: none;
+}
+
+.esl-info-row__label {
+    color: var(--esl-text-muted);
+    font-weight: 600;
+}
+
+.esl-info-row__value {
+    color: var(--esl-text);
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.esl-info-row__value--muted {
+    color: var(--esl-text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.esl-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--esl-accent-soft);
+    color: var(--esl-accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.esl-info-row--copy .esl-copy-control {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.esl-info-row--copy input {
+    box-sizing: border-box;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg);
+    color: var(--esl-text);
+    font-size: 13px;
+    min-width: 0;
+    flex: 1 1 140px;
+}
+
+.esl-copy-btn.button {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: none;
+    flex: 0 0 auto;
+}
+
+.esl-copy-btn.button:hover {
+    background: var(--esl-accent-dark);
+}
+
+.esl-info-note {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(219, 166, 23, .1);
+    border: 1px solid rgba(219, 166, 23, .25);
+    color: #8a6207;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.esl-info-alert {
+    padding: 12px 16px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(214, 54, 56, .08);
+    border: 1px solid rgba(214, 54, 56, .2);
+    color: var(--esl-error);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.esl-info-alert + .esl-info-card,
+.esl-info-card + .esl-info-alert {
+    margin-top: 12px;
+}
+
+/* Блок "Печатные формы" внутри #modal-esl-info (views/unloading/print.php) —
+   портировано из МС widgets/unloadingprint.html.php. Селекторы намеренно
+   заскоуплены через #modal-esl-info (id), а не просто .esl-print-button — иначе
+   ядровый ".wp-core-ui .button" (2 класса) перебивает наш класс-без-id по
+   специфичности, и кнопка остаётся с дефолтной серой обводкой вместо заливки. */
+#modal-esl-info .esl-print {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--esl-border-soft);
+}
+
+#modal-esl-info .esl-print__title {
+    margin-bottom: 12px;
+    color: var(--esl-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#modal-esl-info .esl-print__paper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--esl-text);
+}
+
+#modal-esl-info .esl-print__paper select {
+    height: 32px;
+    padding: 0 32px 0 10px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    background-color: var(--esl-bg);
+    color: var(--esl-text);
+    font-size: 13px;
+}
+
+#modal-esl-info .esl-print__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#modal-esl-info .esl-print-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: none;
+    transition: background-color .15s ease, transform .1s ease;
+}
+
+#modal-esl-info .esl-print-button__icon {
+    flex: 0 0 auto;
+}
+
+#modal-esl-info .esl-print-button:hover {
+    background: var(--esl-accent-dark);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+#modal-esl-info .esl-print-button--active {
+    background: var(--esl-accent-dark);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .4);
+}
+
+#modal-esl-info .esl-print__result {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--esl-text-muted);
+}
+
+#modal-esl-info .esl-print__result:empty {
+    margin-top: 0;
+}
+
+#modal-esl-info .esl-print__result a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--esl-radius-sm);
+    background: rgba(34, 113, 177, .08);
+    color: var(--esl-accent);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#modal-esl-info .esl-print__result a:hover {
+    background: rgba(34, 113, 177, .15);
+    text-decoration: underline;
+}
+
+.esl-print__result a {
+    font-weight: 600;
 }
 
 .esl-notifications {
@@ -178,33 +922,37 @@
 }
 
 .esl-notifications__item {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: start;
-    padding: .9em 1em;
+    padding: .9em 2.2em .9em 1em;
     margin-bottom: 1em;
+    border-radius: var(--esl-radius-sm);
     border-top: 3px solid;
+    box-shadow: 0 6px 20px -6px rgba(0, 0, 0, .25);
 }
 
 .esl-notifications__item-success {
-    border-color: #28a745;
-    background: rgba(40, 167, 69, .85);
+    border-color: var(--esl-success);
+    background: rgba(0, 163, 42, .9);
 }
 
 .esl-notifications__item-error {
-    border-color: #dc3545;
-    background: rgba(220, 53, 69, .85);
+    border-color: var(--esl-error);
+    background: rgba(214, 54, 56, .9);
 }
 
 .esl-notifications__item-warning {
-    border-color: #ffc107;
-    background: rgba(255, 193, 7, .85);
+    border-color: var(--esl-warning);
+    background: rgba(219, 166, 23, .9);
 }
 
 .esl-notifications__icon {
     color: #FFFFFF;
     font-size: 21px;
+    margin-top: .1em;
     margin-right: .8em;
 }
 
@@ -213,6 +961,33 @@
     color: #000;
     font-size: .85em;
     font-weight: 500;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 0;
+}
+
+.esl-notifications__msg span {
+    display: block;
+}
+
+.esl-notifications__msg span:not(:last-child) {
+    margin-bottom: 1.2em;
+}
+
+.esl-notifications__close {
+    position: absolute;
+    top: .5em;
+    right: .6em;
+    color: #000;
+    opacity: .55;
+    font-size: 1.2em;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+}
+
+.esl-notifications__close:hover {
+    opacity: 1;
 }
 
 .esl-preloader {
@@ -225,99 +1000,180 @@
     left: 0;
     justify-content: center;
     z-index: 200;
-    background: rgba(255, 255, 255, .57);
+    background: rgba(255, 255, 255, .8);
+    backdrop-filter: blur(1px);
 }
 
-.esl-preloader .spinner-grow {
-    color: rgb(113, 23, 247);
+/* Самодостаточный спиннер — не зависит от Bootstrap .spinner-grow/.sr-only, которых на
+   странице заказа нет (bootstrap.min.css здесь не подключается), иначе это просто текст
+   "Загрузка..." без анимации. См. также assets/css/admin.css — тот же приём для страницы
+   настроек. */
+.esl-spinner {
+    position: relative;
+    width: 34px;
+    height: 34px;
 }
 
-.modal-esl form input[type=checkbox] {
-    float: unset;
-    height: 15px;
-    width: 15px !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    margin: 2px auto;
-    min-width: 10px !important;
+.esl-spinner::after {
+    content: "";
     display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--esl-accent-soft-strong);
+    border-top-color: var(--esl-accent);
+    animation: esl-spin .7s linear infinite;
 }
 
-.modal-esl form .checkbox-area .label{
-    position: static;
+.esl-spinner__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
-.modal-esl form .checkbox-area{
-
+/* Уменьшенный вариант — для инлайновой замены текста "Загрузка…" внутри
+   .esl-print__result (views/unloading/print.php), где нет места под 34px-оверлей. */
+.esl-spinner--sm {
+    width: 18px;
+    height: 18px;
 }
 
-.modal-esl form #content4 .label{
-    position: static;
+.esl-spinner--sm::after {
+    border-width: 2px;
 }
 
-.modal-esl form #content4 input{
-    border: black !important;
-    height: 15px;
-    margin-left: 2px;
-}
-
-.modal-esl form #content4 input[type=checkbox]:checked::before {
-    float: unset;
-}
-
-.modal-esl form #content4 input[type=checkbox] {
-    float: unset;
-    height: 15px;
-    width: 15px !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    margin: 2px auto;
-}
-
-.modal-esl .form-field_add {
-    margin: 10px;
-    display: inline-grid;
-}
-
-#woocommerce-order-esl-unloading .inside button {
-    padding-top: 5px;
-    width: 55px;
-    margin-top: 5px;
+@keyframes esl-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .esl-status__order {
-    border-bottom: 1px solid color(srgb 0.7638 0.7688 0.7817);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    background: rgba(0, 163, 42, .08);
+    border: 1px solid rgba(0, 163, 42, .2);
+    border-radius: var(--esl-radius-sm);
+    color: var(--esl-success);
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.esl_list_links tr th{
-    font-size: 10px;
+.esl-status__order .dashicons {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
 }
 
-.modal-esl form input[type=checkbox]{
-
+.esl-unload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
-@media screen and (max-width: 650px) {
-    .modal-esl .tabLabel {
-        font-size: 0;
-    }
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    height: 34px;
+    padding: 0;
+    margin: 0;
+    background: var(--esl-bg);
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    box-shadow: none;
+    transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
+}
 
-    .modal-esl .tabLabel:before {
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:hover:not(:disabled) {
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
+    transform: translateY(-1px);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled:hover {
+    background: var(--esl-bg);
+    border-color: var(--esl-border);
+    transform: none;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button .dashicons {
+    display: inline-block;
+    float: none;
+    margin: 0;
+    color: var(--esl-accent);
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+    text-align: center;
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions button:disabled .dashicons {
+    color: var(--esl-text-muted);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions #esl_unloading_delete .dashicons {
+    color: var(--esl-error);
+}
+
+#woocommerce-order-esl-unloading .inside .esl-unload-actions #esl_unloading_delete:hover {
+    background: rgba(214, 54, 56, .08);
+    border-color: var(--esl-error);
+}
+
+@media screen and (max-width: 782px) {
+    .modal-esl .modal_content {
         margin: 0;
-        font-size: 18px;
+        width: 100%;
+        max-height: 100vh;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .modal-esl form #content1 .form-box,
+    .modal-esl form #content2 .form-box,
+    .modal-esl .esl-box_add {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-esl .footer {
+        margin: 20px -16px 0;
+        padding: 14px 16px;
+    }
+
+    .modal-esl .content_inner {
+        padding: 0 16px;
+    }
+
+    .modal-esl .title {
+        padding: 16px;
+    }
+
+    .esl-info-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
     }
 }
 
-@media screen and (max-width: 1050px) {
-    .modal-esl .form-field {
-        width: 98.8%;
-    }
-
-    .modal-esl #the-list tr:last-child td, .modal-esl #the-list tr:last-child th{
-        display: grid !important;
-    }
-}
-
-@media screen and (max-width: 400px) {
-    .modal-esl label {
-        padding: 15px;
+@media screen and (max-width: 480px) {
+    .modal-esl label[name="tabLabel"].tabLabel {
+        width: 40px;
+        height: 40px;
     }
 }
