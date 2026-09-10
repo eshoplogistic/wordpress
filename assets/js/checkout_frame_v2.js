@@ -738,9 +738,12 @@ function isNumeric(value) {
             const to = JSON.parse(document.getElementById(this.items.esldata_to_id).value)
 
             this.widget_offers = document.getElementById(this.items.esldata_offers_id).value
-            this.widget_city.name = to.city
-            this.widget_city.fias = to.fias
-            this.widget_city.services = to.services
+            this.widget_city.name = to.city || null
+            this.widget_city.fias = to.fias || null
+            // to.services может отсутствовать, если сервер не смог определить город
+            // (ни поиск, ни геолокация не дали результата) — не отдаём undefined виджету,
+            // иначе он падает с TypeError вместо показа своей стандартной ошибки.
+            this.widget_city.services = Array.isArray(to.services) ? to.services : []
             this.widget_payment = (this.current.payment_id) ? this.current.payment_id : 'card'
 
             let current_payment = this.current.payment_id

@@ -305,6 +305,16 @@ class Shipping implements ModuleInterface
 					if($city){
 						$searchDefault = $eshopLogisticApi->search($city, '', $region);
 						$searchDefault = $searchDefault->data();
+
+						// WooCommerce не имеет справочника регионов для RU (свободный текст),
+						// поэтому регион почти никогда не совпадает буквально с эталонным
+						// названием в базе eShopLogistic — фильтр по региону отсекает валидные
+						// совпадения. Если с регионом ничего не нашли, повторяем без него
+						// (регион и так не влияет на выбор результата — берётся первый элемент).
+						if(!isset($searchDefault[0]) && $region){
+							$searchDefault = $eshopLogisticApi->search($city, '', '');
+							$searchDefault = $searchDefault->data();
+						}
 					}
 
 					if(isset($searchDefault[0])){
@@ -320,6 +330,19 @@ class Shipping implements ModuleInterface
 						$widgetCityEsl['city'] = $widgetCityEsl['name'];
 						$widgetCityEsl['postcode'] = $widgetCityEsl['postal_code'];
 						$sessionService->set($mode, $widgetCityEsl);
+					} else {
+						// Ни поиск по названию, ни IP-геолокация не дали результата — отдаём
+						// пустой, но корректно сформированный объект (city/fias/services),
+						// чтобы на фронте не парсился как [[]] (вложенный пустой массив без
+						// нужных ключей) — это приводило к падению виджета доставки.
+						$widgetCityEsl = [
+							'city'     => $city ? $city : '',
+							'name'     => $city ? $city : '',
+							'fias'     => '',
+							'region'   => $region ? $region : '',
+							'postcode' => '',
+							'services' => [],
+						];
 					}
 				}
 
