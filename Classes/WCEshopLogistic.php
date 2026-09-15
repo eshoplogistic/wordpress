@@ -12,6 +12,8 @@ use eshoplogistic\WCEshopLogistic\Modules\OptionsPage;
 use eshoplogistic\WCEshopLogistic\Modules\Cart;
 use eshoplogistic\WCEshopLogistic\Modules\Checkout;
 use eshoplogistic\WCEshopLogistic\Modules\Ajax;
+use eshoplogistic\WCEshopLogistic\Modules\BlocksAjax;
+use eshoplogistic\WCEshopLogistic\Modules\BlocksShippingRates;
 use eshoplogistic\WCEshopLogistic\Modules\Shipping;
 use eshoplogistic\WCEshopLogistic\Modules\Payment;
 use eshoplogistic\WCEshopLogistic\Modules\CheckoutValidator;
@@ -19,7 +21,8 @@ use eshoplogistic\WCEshopLogistic\Modules\OrderCreator;
 use eshoplogistic\WCEshopLogistic\Modules\Settings;
 use eshoplogistic\WCEshopLogistic\Modules\Routes;
 use eshoplogistic\WCEshopLogistic\Modules\Footer;
-use eshoplogistic\WCEshopLogistic\Modules\Unloading;
+use eshoplogistic\WCEshopLogistic\Modules\UnloadingOrder;
+use eshoplogistic\WCEshopLogistic\Modules\GutenbergBlock;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -55,7 +58,10 @@ final class WCEshopLogistic
         $this->initModule(UnloadingCron::class);
         $this->initModule(OptionsPage::class);
         $this->initModule(Ajax::class);
+        $this->initModule(BlocksAjax::class);
+        $this->initModule(BlocksShippingRates::class);
         $this->initModule(AssetsLoader::class);
+        $this->initModule(GutenbergBlock::class);
 
         if(!$plugin->isEnable()) return;
 
@@ -68,7 +74,7 @@ final class WCEshopLogistic
         $this->initModule(Checkout::class);
         $this->initModule(OrderCreator::class);
         $this->initModule(Footer::class);
-        $this->initModule(Unloading::class);
+        $this->initModule(UnloadingOrder::class);
     }
 
     private function initModule( $module )

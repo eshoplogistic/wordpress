@@ -45,4 +45,41 @@ class SessionController extends Controller
             ]);
         }
     }
+
+    /**
+     * Get current shipping/billing city data
+     * 
+     * @param Request $request
+     * 
+     * @return ResponseInterface
+     */
+    public function getShippingData(Request $request) : ResponseInterface
+    {
+        try {
+            $mode = $request->get('mode', 'billing');
+
+            $city_data = $this->session->get($mode);
+
+            if (!$city_data) {
+                $city_data = [
+                    'city' => '',
+                    'fias' => '',
+                    'services' => [],
+                    'postcode' => '',
+                    'region' => ''
+                ];
+            }
+            
+            return $this->json([
+                'success' => true,
+                'data' => $city_data
+            ]);
+        } catch(\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'data' => null,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

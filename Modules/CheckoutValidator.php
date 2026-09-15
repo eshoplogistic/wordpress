@@ -8,6 +8,7 @@ use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
+use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 
 if ( ! defined('ABSPATH') ) {
     exit;
@@ -19,6 +20,12 @@ class CheckoutValidator implements ModuleInterface
     {
         add_action('woocommerce_checkout_process', [$this, 'validateFields']);
         add_filter('woocommerce_checkout_fields', [$this, 'removeDefaultFieldsFromValidation'], 99);
+
+        // WooCommerce Blocks / Store API: аналог validateFields() для блочного чекаута.
+        // Приоритет 5, чтобы отработать раньше OrderCreator::processBlocksOrder (10) —
+        // при выброшенном исключении оставшиеся колбэки этого хука не выполняются,
+        // заказ не создаётся лишний раз без выбранного ПВЗ.
+        add_action('woocommerce_store_api_checkout_order_processed', [$this, 'validateBlocksOrder'], 5, 1);
 
         add_filter('default_checkout_billing_address_1', [$this, 'clearCheckoutField'], 10, 2);
         add_filter('default_checkout_billing_address_2', [$this, 'clearCheckoutField'], 10, 2);
@@ -46,16 +53,47 @@ class CheckoutValidator implements ModuleInterface
         $this->validateTerminalField($type);
     }
 
+    /**
+     * @param \WC_Order $order
+     */
+    public function validateBlocksOrder($order)
+    {
+        $optionsRepository = new OptionsRepository();
+        $checkDelivery = $optionsRepository->getOption('wc_esl_shipping_add_form');
+        if (isset($checkDelivery['checkDelivery']) && $checkDelivery['checkDelivery'] === 'true') return;
+
+        $shippingMethodId = null;
+        foreach ($order->get_items('shipping') as $item) {
+            $shippingMethodId = $item->get_method_id();
+        }
+
+        if (!$shippingMethodId) return;
+
+        $orderCreator = new OrderCreator();
+        if (!$orderCreator->methodsIsEshopTerminal($shippingMethodId)) return;
+
+        $sessionService = new SessionService();
+        $terminal = $orderCreator->getTerminalLocation($sessionService);
+
+        if ('' === $terminal) {
+            throw new RouteException(
+                'esl_terminal_required',
+                __('Пункт выдачи доставки является обязательным полем.', 'eshoplogisticru'), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- static translated string, no user input.
+                400
+            );
+        }
+    }
+
     private function validateTerminalField($mode) {
-	    $check = $_POST['shipping_method'][0] ?? false;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+        $shippingMethodPosted = isset($_POST['shipping_method'][0]) ? sanitize_text_field(wp_unslash($_POST['shipping_method'][0])) : '';
+        $check = $shippingMethodPosted ?: false;
 
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-	    if($check === 'wc_esl_postrf_terminal' && !$moduleVersion){
-		    return;
-	    }
+        $terminalFieldKey = 'wc_esl_' . $mode . '_terminal';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+        $terminalPosted = isset($_POST[$terminalFieldKey]) ? sanitize_text_field(wp_unslash($_POST[$terminalFieldKey])) : '';
 
-        if(empty($_POST['wc_esl_'. $mode .'_terminal'])) {
+        if('' === $terminalPosted) {
             $message = "<strong>Пункт выдачи доставки</strong> является обязательным полем.";
 
             $this->addErrorNotice($message);
@@ -68,6 +106,7 @@ class CheckoutValidator implements ModuleInterface
      */
     public function removeDefaultFieldsFromValidation($fields)
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
         if ( ! wp_doing_ajax() || empty($_POST)) {
             return $fields;
         }
@@ -154,10 +193,6 @@ class CheckoutValidator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-
 	    if($typeServiceShipping === 'mixed'){
 		    $sessionService = new SessionService();
 		    $shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
@@ -168,9 +203,6 @@ class CheckoutValidator implements ModuleInterface
 	    }
 	    if($typeServiceShipping !== 'terminal') return false;
 	    if($serviceShipping === 'postrf') return false;
-	    if(!$moduleVersion)
-		    if($serviceShipping === 'postrf') return false;
-
 
 	    return true;
     }
@@ -180,7 +212,9 @@ class CheckoutValidator implements ModuleInterface
      */
     private function getTypeToValidate()
     {
-        if (isset($_POST['ship_to_different_address']) && 1 === (int)$_POST['ship_to_different_address']) {
+	    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout flow handles nonce verification.
+	    $shipToDifferent = isset($_POST['ship_to_different_address']) ? absint(wp_unslash($_POST['ship_to_different_address'])) : 0;
+	    if (1 === $shipToDifferent) {
             return 'shipping';
         }
 

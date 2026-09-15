@@ -3,6 +3,7 @@
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OrderController;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\WidgetController;
 
@@ -22,12 +23,19 @@ class Routes implements ModuleInterface
         register_rest_route( 'wc-esl/v1', '/order', array(
             'methods'  => 'POST',
             'callback' => [$this, 'createOrder'],
+            // Public: guest checkout has no WP user session to authorize against.
+            // OrderController::save() applies its own layered protection instead (merchant
+            // widget secret when configured, per-IP rate limiting, and server-derived product
+            // pricing) -- see the comment at the top of that method for details.
             'permission_callback' => '__return_true'
         ));
 
 	    register_rest_route( 'wc-esl/v2', '/widget-data', array(
 		    'methods'  => 'POST',
 		    'callback' => [$this, 'widgetLogData'],
+		    // Public: called by the anonymous storefront widget. WidgetController::process()
+		    // restricts it to the "widget/*" method namespace so it cannot be used to reach
+		    // account/order-management API methods with the site's API key.
 		    'permission_callback' => '__return_true'
 	    ));
     }
@@ -49,8 +57,7 @@ class Routes implements ModuleInterface
             $response->send();
 
         } catch(\Exception $e) {
-            $logger = new \WC_Logger();
-            $logger->debug($e->getMessage());
+            EslLogger::debug( '[ESL createOrder] ' . $e->getMessage() );
         }
     }
 
@@ -69,8 +76,7 @@ class Routes implements ModuleInterface
 			$response->send();
 
 		} catch(\Exception $e) {
-			$logger = new \WC_Logger();
-			$logger->debug($e->getMessage());
+			EslLogger::debug( '[ESL widgetLogData] ' . $e->getMessage() );
 		}
 	}
 }

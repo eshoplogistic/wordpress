@@ -46,8 +46,6 @@ class Payment implements ModuleInterface
         $wcEslPaymentMethods = $this->options->getOption('wc_esl_shipping_payment_methods');
         $accountInitServices = $this->options->getOption('wc_esl_shipping_account_init_services');
         $slugCurrentShippingMethod = $this->shippingHelper->getSlugMethod($chosenShippingMethods[0]);
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
 
         $paymentsForShippingMethod = isset($accountInitServices[$slugCurrentShippingMethod]['payments']) ? $accountInitServices[$slugCurrentShippingMethod]['payments'] : [];
 
@@ -59,18 +57,12 @@ class Payment implements ModuleInterface
             if(!isset($wcEslPaymentMethods[$key])) continue;
 
             foreach($paymentsForShippingMethod as $payment) {
-				if($moduleVersion){
-					$paymentTmp = $payment ?? '';
-				}else{
-					$paymentTmp = $payment['key'] ?? '';
-				}
+				$paymentTmp = $payment ?? '';
 
 	            if(!$paymentTmp) continue;
 
                 if($wcEslPaymentMethods[$key] === $paymentTmp) {
                     $newGateways[$key] = $gateway;
-	                if(!$moduleVersion)
-	                    $newGateways[$key]->description = ($newGateways[$key]->description)?$newGateways[$key]->description.' '.$payment['comment']:$payment['comment'];
 	                break;
                 }
             }

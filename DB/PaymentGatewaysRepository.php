@@ -23,7 +23,17 @@ class PaymentGatewaysRepository
 
 	public function getAvailablePaymentGateways(): array
 	{
-		$gateways = WC()->payment_gateways->payment_gateways();
+		if ( ! isset($GLOBALS['woocommerce']) || ! \is_object($GLOBALS['woocommerce']) ) {
+			return [];
+		}
+
+		$wc = $GLOBALS['woocommerce'];
+		if ( ! method_exists($wc, 'payment_gateways') ) {
+			return [];
+		}
+
+		$paymentGatewaysInstance = $wc->payment_gateways();
+		$gateways = $paymentGatewaysInstance ? $paymentGatewaysInstance->payment_gateways() : [];
 		$enabledGateways = [];
 
 		if( $gateways ) {

@@ -62,20 +62,66 @@
 	margin-top: 15px;
 }
 
-.esl_city_button{
+.woocommerce-checkout .form-row#billing_city_field .woocommerce-input-wrapper,
+.woocommerce-checkout .form-row#shipping_city_field .woocommerce-input-wrapper,
+.woocommerce-shipping-calculator .form-row#billing_city_field .woocommerce-input-wrapper,
+.woocommerce-shipping-calculator .form-row#shipping_city_field .woocommerce-input-wrapper {
+	position: relative;
+	display: block;
+}
+
+.woocommerce-checkout .form-row#billing_city_field .woocommerce-input-wrapper input,
+.woocommerce-checkout .form-row#shipping_city_field .woocommerce-input-wrapper input,
+.woocommerce-shipping-calculator .form-row#billing_city_field .woocommerce-input-wrapper input,
+.woocommerce-shipping-calculator .form-row#shipping_city_field .woocommerce-input-wrapper input {
+	padding-right: 46px !important;
+}
+
+.woocommerce-input-wrapper.esl-city-modal-active input {
+	color: transparent !important;
+	caret-color: transparent !important;
+}
+
+.esl_city_button {
 	position: absolute;
 	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
 	left: 0;
+	top: 0;
 	width: 100%;
-	height: 62%;
-	background-color: rgba(242, 242, 242, 0);
+	height: 100%;
+	background-color: transparent !important;
+	border: none;
+	cursor: pointer;
+	padding: 0 12px;
+	color: #333;
+	transition: color 0.15s;
+	box-shadow: none !important;
+}
+
+.esl_city_button:hover {
+	color: #000;
+	background-color: transparent !important;
+}
+
+.esl-city-name {
+	flex: 1;
+	text-align: left;
+	font-size: inherit;
+	line-height: 1.4;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	pointer-events: none;
 }
 
 .esl_city_button svg {
-	width: 23px;
-	height: 23px;
-	position: absolute;
-	right: 25px;
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	position: static;
+	pointer-events: none;
 }
 
 .wc-esl-terminals__button {
@@ -114,15 +160,6 @@
 	display: block !important;
 }
 
-.without-map{
-	position: absolute;
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	right: 0;
-	text-align: center;
-	top: 50%;
-}
 
 #modal-filter-esl label{
 	padding-left: 15px;

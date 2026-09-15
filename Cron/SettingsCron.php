@@ -3,6 +3,7 @@
 namespace eshoplogistic\WCEshopLogistic\Cron;
 
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 use eshoplogistic\WCEshopLogistic\Http\Controllers\OptionsController;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 
@@ -33,8 +34,7 @@ class SettingsCron implements ModuleInterface
 	        }
 
 		} catch(\Exception $e) {
-			$logger = new \WC_Logger();
-            $logger->debug(__("WC eShopLogistic Cron Error: ", 'eshoplogisticru') . $e->getMessage());
+			EslLogger::debug( __("WC eShopLogistic Cron Error: ", 'eshoplogisticru') . $e->getMessage() );
 		}
 	}
 }

@@ -1,0 +1,555 @@
+/* eShopLogistic Blocks Frontend Styles */
+
+/* Checkout Shipping Block */
+.wc-esl-checkout-shipping-block {
+    margin: 20px 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* Скрыть legacy-прелоадер (рендерится PHP как часть блока для паритета с classic
+   checkout) — в блочном чекауте его никто не показывает/не скрывает через JS
+   (это делает assets/css/style.css через классы body.load/.loaded_hiding, но
+   style.css намеренно не подключается на блочном чекауте). Без этого правила
+   спиннер виден постоянно, независимо от результата загрузки виджета. */
+.wc-esl-checkout-shipping-block .preloader {
+    display: none;
+}
+
+/* Метод "Калькулятор доставки ESL" (wc_esl_frame_mixed) до выбора ПВЗ/службы в
+   виджете имеет cost = 0 (реальная цена ещё не рассчитана), и WooCommerce Blocks
+   безусловно подписывает любую нулевую ставку как "Бесплатно" — это вводит в
+   заблуждение, доставка не бесплатна. Если ставка действительно бесплатная,
+   плагин сам добавляет ": Бесплатно" в текст названия (Base.php/Shipping.php),
+   поэтому скрытие автоматической плашки WooCommerce не теряет информацию. */
+label.wc-block-components-radio-control__option:has(input[value^="wc_esl_frame_mixed"]) .wc-block-checkout__shipping-option--free {
+    display: none;
+}
+
+/* Legacy parity: city search UI */
+.wc-esl-checkout-shipping-block .wc-block-components-text-input {
+    position: relative;
+}
+
+.wc-block-components-address-form .wc-block-components-text-input,
+.wc-block-components-address-form .wc-block-components-address-form__city {
+    position: relative;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__list,
+.wc-block-components-address-form .wc-esl-search-city__list {
+    display: block !important;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid #f2f2f2;
+    border-top: 1px solid #f2f2f2;
+    border-right: 1px solid #f2f2f2;
+    border-bottom: 1px solid #f2f2f2;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    width: 100%;
+    z-index: 200;
+    max-height: 220px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__item,
+.wc-esl-checkout-shipping-block .wc-esl-search-city__empty,
+.wc-block-components-address-form .wc-esl-search-city__item,
+.wc-block-components-address-form .wc-esl-search-city__empty {
+    display: block;
+    cursor: pointer;
+    padding: 4px 9px;
+    border-bottom: 1px solid #f2f2f2;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    box-sizing: border-box;
+    color: #1e1e1e;
+    background: #fff;
+    list-style: none;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-search-city__item:hover {
+    background: #fafafa;
+}
+
+.wc-esl-checkout-shipping-block #tips-city-container i.ico {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.wc-esl-checkout-shipping-block #tips-city-container {
+    color: #ba3939;
+    background: #ffe0e0;
+    border: 1px solid #a33a3a;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.wc-esl-checkout-shipping-block .wc-esl-terminals__button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Legacy parity: modal-esl-frame */
+/* Selector covers both original location and body-appended (z-index fix) */
+.wc-esl-checkout-shipping-block .modal-esl-frame,
+body > .modal-esl-frame {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* WC Blocks (@wordpress/components) поднимает z-index у floating-label полей
+       выше обычного document flow — тот же конфликт, из-за которого прелоадер
+       ниже в этом файле тоже задран до 999999. Обычного 9999 не хватает: сквозь
+       модалку видно, например, лейбл "Страна/регион". */
+    z-index: 999999;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content,
+body > .modal-esl-frame .modal_content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    z-index: 1000000;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window,
+body > .modal-esl-frame .modal_content .close_modal_window {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #98a2b3;
+    background-color: transparent;
+    border-radius: 50%;
+    float: right;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .modal_content .close_modal_window:hover,
+body > .modal-esl-frame .modal_content .close_modal_window:hover {
+    background-color: #f2f4f7;
+    color: #d63638;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame .title,
+body > .modal-esl-frame .title {
+    padding-bottom: 45px;
+}
+
+.wc-esl-checkout-shipping-block .modal-esl-frame #buttonModalDoor,
+body > .modal-esl-frame #buttonModalDoor {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+/* Legacy parity: city-select modal (#modal-esl-city) trigger overlay */
+#modal-esl-city .title {
+    padding-bottom: 0;
+}
+
+#modal-esl-city #esl_modal_button-search {
+    margin-top: 25px;
+}
+
+/* Поле остаётся видимым (значение показывает сам input), просто курсор
+   подсказывает, что это клик, а не набор текста — input становится readOnly
+   через JS (attachOverlayButton), не через CSS. */
+.wc-block-components-text-input.esl-city-modal-active input,
+.wc-block-components-address-form__city.esl-city-modal-active input {
+    cursor: pointer;
+    padding-right: 30px;
+}
+
+/* Маленькая иконка-подсказка в правом углу поля. Специально НЕ grows на весь
+   input (как в classic) — во враппере блочного поля вместе с input живёт ещё
+   и плавающий лейбл, а точную геометрию input вычислить через JS надёжно
+   нельзя (в момент навешивания поле может быть ещё не выложено браузером). */
+.esl_city_button {
+    position: absolute;
+    right: 8px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    box-shadow: none !important;
+}
+
+.esl_city_button svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Legacy parity: #modal-esl-city search input + results list
+   (порт из style.css — там же живут .wc-esl-search-city-modal__* /
+   .wc-esl-search-region-modal__*, но style.css на блочном чекауте не подключается) */
+#esl_modal-search {
+    width: 100%;
+    margin-top: 15px;
+}
+
+#esl_result-search {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.wc-esl-search-city-modal__list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wc-esl-search-city-modal__item {
+    cursor: pointer;
+    padding: 4px 9px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.wc-esl-search-city-modal__item:hover {
+    background: #fafafa;
+}
+
+.wc-esl-search-region-modal__list {
+    display: inline-grid;
+    width: 49.9%;
+    padding-top: 30px;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.wc-esl-search-region-modal__list .title-region {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Legacy parity: eShopLogistic SDK widget theme overrides. Виджет монтируется в тот же
+   #eShopLogisticWidgetCart / #modal-esl-frame, что и в classic-чекауте (см.
+   checkout_frame_block.js), но эти размерные переопределения жили только в style.css,
+   которое на блочном чекауте не подключается — без них карточки служб/тарифов
+   рендерятся мельче/теснее, чем в legacy. */
+#eShopLogisticWidgetCart .eshoplogistic-widget-cart .eshoplogistic-theme {
+    font-size: 1.5rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-filter-button__footer {
+    font-size: 1.5rem !important;
+    font-weight: 500;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-services-list {
+    max-height: 25rem !important;
+}
+
+#modal-esl-frame .footer {
+    padding-top: 15px;
+    border: 0;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info span {
+    font-size: 12px !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info img {
+    height: 2.2rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-map__balloon__info p {
+    margin-bottom: 0 !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__title,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__price,
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal-select-tariff__list__item__time {
+    font-size: 1.42rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-modal_size-small {
+    max-width: 105rem !important;
+    margin-top: 1% !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__tariff {
+    margin-top: 10px !important;
+    font-size: 1.1rem !important;
+}
+
+.eshoplogistic-widget-cart .eshoplogistic-theme-service__select-tariff {
+    font-size: 1rem !important;
+}
+
+@media (max-width: 641px) {
+    .eshoplogistic-widget-cart .eshoplogistic-theme-h2 {
+        margin-top: 1em;
+        font-size: 1em;
+        font-weight: 500;
+    }
+}
+
+/* Preloader overlay — создаётся JS-ом на document.body, вне любого stacking context */
+.wc-esl-block-preloader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 999999;
+    display: none;
+}
+
+.wc-esl-block-preloader__spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+    margin-left: -25px;
+    border: 5px solid rgba(51, 122, 183, 0.25);
+    border-top-color: #337ab7;
+    border-radius: 50%;
+    animation: esl-block-spin 0.8s linear infinite;
+}
+
+.wc-esl-block-preloader__img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    margin-top: -75px;
+    margin-left: -75px;
+}
+
+@keyframes esl-block-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Product Calculator Block */
+.wc-esl-product-calculator-block {
+    margin: 20px 0;
+    display: inline-block;
+    width: auto;
+}
+
+.wc-esl-product-calculator-block.aligncenter {
+    display: flex;
+    justify-content: center;
+}
+
+.wc-esl-product-calculator-block.alignright {
+    float: right;
+    margin-left: 20px;
+}
+
+.wc-esl-product-calculator-block.alignleft {
+    float: left;
+    margin-right: 20px;
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    background-color: #007baa;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:hover {
+    background-color: #005f87;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Inline widget in product calculator */
+.wc-esl-product-calculator-block #eShopLogisticWidgetBlock {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+/* Cart Shipping Block */
+.wc-esl-cart-shipping-block {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.wc-esl-cart-shipping-block.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wc-esl-cart-shipping-block .wc-esl-loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007baa;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Checkout Form Block */
+.wc-esl-checkout-form-block {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #fbfbfb;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.wc-esl-checkout-form-block form {
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wc-esl-product-calculator-block,
+    .wc-esl-product-calculator-block.alignleft,
+    .wc-esl-product-calculator-block.alignright {
+        display: block;
+        width: 100%;
+        float: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .wc-esl-product-calculator-block .wc-esl-calculator-trigger {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .wc-esl-checkout-form-block,
+    .wc-esl-cart-shipping-block,
+    .wc-esl-checkout-shipping-block {
+        padding: 10px;
+        margin: 15px 0;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .wc-esl-cart-shipping-block,
+    .wc-esl-checkout-form-block {
+        background-color: #2a2a2a;
+        border-color: #444;
+        color: #ccc;
+    }
+
+    /* Keep checkout shipping block legacy-like even in dark mode */
+    .wc-esl-checkout-shipping-block {
+        background: transparent;
+        border: 0;
+        color: inherit;
+    }
+
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__list,
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__item,
+    .wc-esl-checkout-shipping-block .wc-esl-search-city__empty {
+        background: #fff;
+        color: #1e1e1e;
+    }
+
+    .wc-esl-checkout-shipping-block #tips-city-container {
+        color: #ba3939;
+        background: #ffe0e0;
+        border-color: #a33a3a;
+    }
+}
+
+/* Accessibility improvements */
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:focus {
+    outline: 2px solid #007baa;
+    outline-offset: 2px;
+}
+
+.wc-esl-product-calculator-block .wc-esl-calculator-trigger:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Animation for block appearance */
+.wc-esl-checkout-shipping-block,
+.wc-esl-product-calculator-block,
+.wc-esl-cart-shipping-block,
+.wc-esl-checkout-form-block {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print styles */
+@media print {
+    .wc-esl-product-calculator-block .wc-esl-calculator-trigger,
+    .wc-esl-checkout-shipping-block,
+    .wc-esl-cart-shipping-block {
+        display: none;
+    }
+}
