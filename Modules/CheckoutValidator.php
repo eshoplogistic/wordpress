@@ -69,10 +69,22 @@ class CheckoutValidator implements ModuleInterface
 
         if (!$shippingMethodId) return;
 
+        $sessionService = new SessionService();
+
+        if (strpos($shippingMethodId, WC_ESL_PREFIX . 'frame_mixed') !== false) {
+            $shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
+            if (!is_array($shippingFrame) || empty($shippingFrame['name'])) {
+                throw new RouteException(
+                    'esl_delivery_required',
+                    __('Выбор способа доставки является обязательным условием.', 'eshoplogisticru'), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- static translated string, no user input.
+                    400
+                );
+            }
+        }
+
         $orderCreator = new OrderCreator();
         if (!$orderCreator->methodsIsEshopTerminal($shippingMethodId)) return;
 
-        $sessionService = new SessionService();
         $terminal = $orderCreator->getTerminalLocation($sessionService);
 
         if ('' === $terminal) {
