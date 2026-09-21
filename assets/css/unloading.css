@@ -523,16 +523,16 @@
 /* Column widths keyed to the <col> classes emitted from Table::get_columns() order
    (see views/unloading-form.php) — "Наименование" gets the lion's share, the rest
    (id/qty/price/dimensions/number/delete) stay narrow. Must sum to 100%. */
-.modal-esl .esl-col-number { width: 5%; }
-.modal-esl .esl-col-product_id { width: 8%; }
-.modal-esl .esl-col-name { width: 27%; }
+.modal-esl .esl-col-number { width: 4%; }
+.modal-esl .esl-col-product_id { width: 7%; }
+.modal-esl .esl-col-name { width: 22%; }
 .modal-esl .esl-col-quantity { width: 7%; }
 .modal-esl .esl-col-price { width: 9%; }
 .modal-esl .esl-col-weight { width: 9%; }
-.modal-esl .esl-col-width { width: 9%; }
-.modal-esl .esl-col-length { width: 9%; }
-.modal-esl .esl-col-height { width: 9%; }
-.modal-esl .esl-col-delete { width: 8%; }
+.modal-esl .esl-col-width { width: 11%; }
+.modal-esl .esl-col-length { width: 11%; }
+.modal-esl .esl-col-height { width: 11%; }
+.modal-esl .esl-col-delete { width: 9%; }
 
 .modal-esl .esl-places-table thead tr th,
 .modal-esl .esl-places-table tr th {

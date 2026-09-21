@@ -24,11 +24,11 @@ class Table extends WP_List_Table {
 			'product_id'     => __( 'ID', 'eshoplogisticru' ),
 			'name'   => __( 'Наименование', 'eshoplogisticru' ),
 			'quantity'  => __( 'Кол-во', 'eshoplogisticru' ),
-			'price'  => __( 'Цена', 'eshoplogisticru' ),
-			'weight' => __( 'Вес', 'eshoplogisticru' ),
-			'width'  => __( 'Ширина', 'eshoplogisticru' ),
-			'length' => __( 'Длина', 'eshoplogisticru' ),
-			'height' => __( 'Высота', 'eshoplogisticru' ),
+			'price'  => __( 'Цена, р', 'eshoplogisticru' ),
+			'weight' => __( 'Вес, кг', 'eshoplogisticru' ),
+			'width'  => __( 'Ширина, см', 'eshoplogisticru' ),
+			'length' => __( 'Длина, см', 'eshoplogisticru' ),
+			'height' => __( 'Высота, см', 'eshoplogisticru' ),
 			'delete' => __( 'Удалить', 'eshoplogisticru' ),
 		);
 	}
