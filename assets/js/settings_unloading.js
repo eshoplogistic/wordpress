@@ -736,6 +736,29 @@ document.addEventListener('click', function (e) {
     };
 });
 
+// Смена формата бумаги после уже полученной печатной формы: старая ссылка осталась бы
+// от прошлого формата (напр. A6), поэтому перезапрашиваем форму заново для активной кнопки,
+// а если печать ещё не запускали — просто сбрасываем результат.
+document.addEventListener('change', function (e) {
+    let paperSelect = e.target.closest ? e.target.closest('.esl-print-paper') : null;
+    if (!paperSelect) {
+        return;
+    }
+    let wrapper = paperSelect.closest('.esl-print');
+    if (!wrapper) {
+        return;
+    }
+    let activeBtn = wrapper.querySelector('.esl-print-button--active');
+    if (activeBtn) {
+        activeBtn.click();
+        return;
+    }
+    let resultBox = wrapper.querySelector('.esl-print__result');
+    if (resultBox) {
+        resultBox.innerHTML = '';
+    }
+});
+
 function copyToClipboard(containerid, e) {
     let elemText = containerid
     let elemBut = e.id
