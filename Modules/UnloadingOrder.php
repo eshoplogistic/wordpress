@@ -892,10 +892,14 @@ class UnloadingOrder implements ModuleInterface
                 $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
 
                 // Ставка НДС для этой суммы — своя настройка (sdek: «Ваша ставка НДС»), как в moj_sklad,
-                // приоритетнее общей delivery-vat_rate выше, но только если она вообще задана оператором.
-                if (isset($exportFormSettings['cost-custom-delivery-' . $deliveryId]) && $exportFormSettings['cost-custom-delivery-' . $deliveryId] !== '') {
-                    $defaultFields['delivery']['vat_rate'] = $exportFormSettings['cost-custom-delivery-' . $deliveryId];
+                // приоритетнее общей delivery-vat_rate выше. Пока настройка ни разу не сохранялась, в интерфейсе
+                // выбрано «Без НДС» (-1), поэтому и здесь отправляем -1, а не опускаем поле (иначе ТК применит
+                // свою ставку по умолчанию). Проверка строго на ''/null, а не empty(): «0» — это валидная ставка 0%.
+                $costVatRate = $exportFormSettings['cost-custom-delivery-' . $deliveryId] ?? '';
+                if ($costVatRate === '' || $costVatRate === null) {
+                    $costVatRate = $defaultFields['delivery']['vat_rate'] !== '' ? $defaultFields['delivery']['vat_rate'] : '-1';
                 }
+                $defaultFields['delivery']['vat_rate'] = $costVatRate;
             }
 
             // У СДЭК (в отличие от postrf/fivepost/yandex, см. overriding-parameters.html)
