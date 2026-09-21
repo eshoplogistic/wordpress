@@ -610,14 +610,52 @@ class UnloadingOrder implements ModuleInterface
     }
 
     /**
+     * @param mixed $status Ответ infoOrder('get').
+     *
+     * @return string
+     */
+    public static function extractTrackCode($status)
+    {
+        if (!is_array($status)) {
+            return '';
+        }
+
+        foreach ([
+            $status['state']['tracking'] ?? '',
+            $status['order']['track_code'] ?? '',
+            $status['state']['number'] ?? '',
+        ] as $candidate) {
+            if (is_scalar($candidate) && (string) $candidate !== '') {
+                return (string) $candidate;
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * @param int   $orderShippingId
      * @param array $shippingMethods
      * @param array $resultTracking
      */
     private function applyTrackingResult($orderShippingId, array $shippingMethods, $resultTracking)
     {
-        if (isset($resultTracking['state']['tracking'])) {
-            $shippingMethods['tracking'] = $resultTracking['state']['tracking'];
+        // Ответ create у части ТК (СДЭК) содержит только order.id — ссылка, номер и
+        // трек-код приходят в ответе get в блоке order. Домерживаем его в answer.order,
+        // иначе шорткоды писем (answer.order.tracking/track_code) остаются пустыми.
+        if (!empty($resultTracking['order']) && is_array($resultTracking['order'])) {
+            $answerOrder = $shippingMethods['answer']['order'] ?? [];
+            if (!is_array($answerOrder)) {
+                $answerOrder = [];
+            }
+            $shippingMethods['answer']['order'] = array_merge($answerOrder, array_filter($resultTracking['order'], function ($value) {
+                return $value !== '' && $value !== null;
+            }));
+        }
+
+        $trackCode = self::extractTrackCode($resultTracking);
+        if ($trackCode !== '') {
+            $shippingMethods['tracking'] = $trackCode;
         }
 
         $this->saveShippingMethods($orderShippingId, $shippingMethods);
@@ -635,7 +673,7 @@ class UnloadingOrder implements ModuleInterface
      */
     public function saveTrackingFromStatus($orderId, array $status)
     {
-        if (!isset($status['state']['tracking'])) {
+        if (self::extractTrackCode($status) === '' && empty($status['order'])) {
             return;
         }
 
