@@ -111,6 +111,9 @@ class UnloadingInfo
             'wc_esl_deliveryName' => $orderType,
             'wc_esl_printButtons' => $this->getPrintButtons($orderType),
             'wc_esl_paperOptions' => $this->getPrintPaperOptions($orderType),
+            'wc_esl_paperLabel' => $orderType === 'sdek'
+                ? __('Формат печати этикеток:', 'eshoplogisticru')
+                : __('Формат печати:', 'eshoplogisticru'),
         ]);
     }
 

@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $wc_esl_deliveryName = $wc_esl_deliveryName ?? '';
 $wc_esl_printButtons = $wc_esl_printButtons ?? array();
 $wc_esl_paperOptions = $wc_esl_paperOptions ?? array();
+$wc_esl_paperLabel   = $wc_esl_paperLabel ?? __( 'Формат печати:', 'eshoplogisticru' );
 ?>
 
 <div class="esl-print" data-service="<?php echo esc_attr( $wc_esl_deliveryName ); ?>">
@@ -16,7 +17,7 @@ $wc_esl_paperOptions = $wc_esl_paperOptions ?? array();
 
 	<?php if ( $wc_esl_paperOptions ) : ?>
 		<label class="esl-print__paper">
-			<?php echo esc_html__( 'Формат печати:', 'eshoplogisticru' ); ?>
+			<?php echo esc_html( $wc_esl_paperLabel ); ?>
 			<select class="esl-print-paper">
 				<option value=""><?php echo esc_html__( '- Не выбрано -', 'eshoplogisticru' ); ?></option>
 				<?php foreach ( $wc_esl_paperOptions as $wc_esl_paperValue ) : ?>
