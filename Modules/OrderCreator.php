@@ -41,7 +41,7 @@ class OrderCreator implements ModuleInterface
 
 		if(!$this->methodsIsEshopTerminal($shippingMethodId)) return;
 
-		$terminal = $this->getTerminalLocation($sessionService);
+		$terminal = $this->getTerminalLocation($sessionService, $shippingMethodId);
 
 		if(!$terminal) return;
 
@@ -56,7 +56,7 @@ class OrderCreator implements ModuleInterface
 
 		try {
 			$sessionService = new SessionService();
-			$terminal = $this->getTerminalLocation($sessionService);
+			$terminal = $this->getTerminalLocation($sessionService, $item->get_method_id());
 
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethodId = $item->get_method_id();
@@ -113,12 +113,13 @@ class OrderCreator implements ModuleInterface
 	 */
 	public function processBlocksOrder( $order ) {
 		$sessionService   = new SessionService();
-		$terminal         = $this->getTerminalLocation( $sessionService );
 		$shippingMethods  = $sessionService->get( 'shipping_methods' ) ?: [];
 
 		$shippingMethodId = null;
+		$terminal         = '';
 		foreach ( $order->get_items( 'shipping' ) as $item ) {
 			$shippingMethodId = $item->get_method_id();
+			$terminal         = $this->getTerminalLocation( $sessionService, $shippingMethodId );
 
 			// Мета-данные для позиции доставки (Срок доставки, Пункт выдачи).
 			if ( isset( $shippingMethods[ $shippingMethodId ] ) ) {
@@ -148,17 +149,73 @@ class OrderCreator implements ModuleInterface
 		// Адрес доставки — как в createOrder.
 		if ( $terminal && $shippingMethodId && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
 			$order->set_shipping_address_1( __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $terminal );
+
+			// Blocks-чекаут подставляет адрес ПВЗ в поле shipping address_1 (оно
+			// обязательное в checkout store), и при включённой галочке "Использовать
+			// этот адрес для выставления счетов" он же копируется в платёжный адрес.
+			// Адрес ПВЗ — не адрес покупателя, поэтому убираем его из billing,
+			// только если там именно автоподставленное значение.
+			$billingAddress = trim( (string) $order->get_billing_address_1() );
+			if ( '' !== $billingAddress && in_array( $billingAddress, $this->getAutoFilledTerminalValues( $sessionService ), true ) ) {
+				$order->set_billing_address_1( '' );
+			}
+
 			$order->save();
 		}
 	}
 
-	public function getTerminalLocation(SessionService $sessionService)
+	/**
+	 * Значения, которые checkout_frame_block.js автоматически подставляет в поле
+	 * address_1 при выборе ПВЗ: адрес терминала из виджета или плейсхолдер.
+	 */
+	private function getAutoFilledTerminalValues( SessionService $sessionService ) {
+		$values = [ 'Пункт выдачи' ];
+
+		$shippingFrame = $sessionService->get( 'esl_shipping_frame' );
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+
+		if ( is_array( $shippingFrame ) && ! empty( $shippingFrame['terminalAddress'] ) ) {
+			$values[] = trim( (string) $shippingFrame['terminalAddress'] );
+		}
+
+		return $values;
+	}
+
+	public function getTerminalLocation(SessionService $sessionService, $methodId = '')
 	{
+		// Для фреймового метода (wc_esl_frame_mixed) актуальный выбор ПВЗ — в
+		// esl_shipping_frame: он перезаписывается при каждом выборе службы в
+		// виджете. terminal_location может остаться от прошлого выбора (другой
+		// город/ПВЗ), поэтому для mixed он только запасной вариант.
+		if ($methodId && $this->isMixedMethod($methodId)) {
+			$frameTerminal = $this->getFrameTerminalLocation($sessionService);
+			if ('' !== $frameTerminal) {
+				return $frameTerminal;
+			}
+		}
+
 		$terminal = $sessionService->get('terminal_location');
 		if (is_string($terminal) && '' !== trim($terminal)) {
 			return $terminal;
 		}
 
+		return $this->getFrameTerminalLocation($sessionService);
+	}
+
+	private function isMixedMethod($methodId)
+	{
+		$explodedAtPrefix = explode(WC_ESL_PREFIX, (string) $methodId);
+		if (!isset($explodedAtPrefix[1]) || '' === $explodedAtPrefix[1]) return false;
+
+		$parts = explode('_', $explodedAtPrefix[1]);
+
+		return isset($parts[1]) && 'mixed' === $parts[1];
+	}
+
+	private function getFrameTerminalLocation(SessionService $sessionService)
+	{
 		$shippingFrame = $sessionService->get('esl_shipping_frame');
 		if (is_string($shippingFrame)) {
 			$shippingFrame = maybe_unserialize($shippingFrame);

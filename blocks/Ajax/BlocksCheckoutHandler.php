@@ -84,6 +84,15 @@ class BlocksCheckoutHandler {
 		// Сохранение в сессию
 		$sessionService->set('esl_shipping_frame', $data);
 
+		// Держим terminal_location в соответствии с ПВЗ, выбранным в виджете:
+		// иначе в сессии может остаться адрес от прошлого выбора (другой город),
+		// и он попадёт в заказ вместо текущего.
+		$frameTerminalAddress = isset($data['terminalAddress']) ? trim((string) $data['terminalAddress']) : '';
+		if ( $mode === 'terminal' && '' !== $frameTerminalAddress ) {
+			$frameTerminalCode = isset($data['terminalCode']) ? trim((string) $data['terminalCode']) : '';
+			$sessionService->set('terminal_location', $frameTerminalAddress . '. Код пункта: ' . $frameTerminalCode);
+		}
+
 		// Сбрасываем terminal_location и введённый покупателем адрес только при
 		// ВОЗВРАТЕ из terminal в door (предыдущий mode был именно 'terminal') —
 		// это единственный случай, когда в WC()->customer могла осесть
