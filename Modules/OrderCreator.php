@@ -2,6 +2,7 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Classes\Shipping\Base;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
@@ -60,6 +61,7 @@ class OrderCreator implements ModuleInterface
 
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethodId = $item->get_method_id();
+			$shippingMethods = $this->restoreFrameShippingMethods($sessionService, $shippingMethods, $shippingMethodId);
 
 			if( isset( $shippingMethods[$shippingMethodId] ) ) {
 				unset($shippingMethods[$shippingMethodId]['terminals']);
@@ -120,6 +122,7 @@ class OrderCreator implements ModuleInterface
 		foreach ( $order->get_items( 'shipping' ) as $item ) {
 			$shippingMethodId = $item->get_method_id();
 			$terminal         = $this->getTerminalLocation( $sessionService, $shippingMethodId );
+			$shippingMethods  = $this->restoreFrameShippingMethods( $sessionService, $shippingMethods, $shippingMethodId );
 
 			// Мета-данные для позиции доставки (Срок доставки, Пункт выдачи).
 			if ( isset( $shippingMethods[ $shippingMethodId ] ) ) {
@@ -202,6 +205,30 @@ class OrderCreator implements ModuleInterface
 		}
 
 		return $this->getFrameTerminalLocation($sessionService);
+	}
+
+	/**
+	 * saveOrderShipping() сбрасывает shipping_methods после каждого заказа, а WooCommerce при
+	 * неизменной корзине берёт ставки из кэша и не вызывает calculate_shipping_frame() повторно —
+	 * следующий заказ в той же сессии сохранялся без esl_shipping_methods (пустой тариф в форме
+	 * выгрузки). Для frame-метода восстанавливаем данные расчёта из transient'а виджета.
+	 */
+	private function restoreFrameShippingMethods(SessionService $sessionService, array $shippingMethods, $methodId)
+	{
+		if (!$methodId || isset($shippingMethods[$methodId]) || !$this->isMixedMethod($methodId)) {
+			return $shippingMethods;
+		}
+
+		$mode = $sessionService->get('mode_shipping') ? $sessionService->get('mode_shipping') : 'billing';
+		$frameMethodData = Base::getFrameCalculationData(
+			$sessionService->get('esl_shipping_frame'),
+			$sessionService->get($mode)
+		);
+		if ($frameMethodData) {
+			$shippingMethods[$methodId] = $frameMethodData;
+		}
+
+		return $shippingMethods;
 	}
 
 	private function isMixedMethod($methodId)
