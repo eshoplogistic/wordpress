@@ -844,7 +844,11 @@ function isNumeric(value) {
                 address: '',
                 comment: '',
                 deliveryMethods: '',
-                selectPvz: ''
+                selectPvz: '',
+                // Тариф, выбранный покупателем в виджете (или тариф по умолчанию) — сохраняется
+                // в заказ для формы выгрузки (ExportFileds::resolveOrderTariff()).
+                tariffCode: '',
+                tariffName: ''
             }
 
             if (document.getElementById('terminalEsl') && document.getElementById('terminalEsl').value) {
@@ -865,6 +869,11 @@ function isNumeric(value) {
             esldata.time = time.value + ' ' + time.unit
             if (serviceData.comment) {
                 esldata.comment += '<br>' + serviceData.comment
+            }
+
+            if (serviceData.tariff && serviceData.tariff.code !== undefined && serviceData.tariff.code !== null) {
+                esldata.tariffCode = String(serviceData.tariff.code)
+                esldata.tariffName = serviceData.tariff.name || ''
             }
 
             if (typeof response.terminal == 'object') {

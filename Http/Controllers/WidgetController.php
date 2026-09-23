@@ -16,7 +16,7 @@ class WidgetController extends Controller {
 
 	// Срок жизни кэша ответов виджета, в т.ч. расчёта доставки, из которого при оформлении
 	// заказа берётся тариф (Base::getFrameCalculationData()).
-	const CACHE_TTL = 2 * HOUR_IN_SECONDS;
+	const CACHE_TTL = HOUR_IN_SECONDS;
 
 	public function process( \WP_REST_Request $request ): ResponseInterface {
 		$out    = [];

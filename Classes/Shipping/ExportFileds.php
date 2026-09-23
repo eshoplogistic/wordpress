@@ -274,17 +274,37 @@ class ExportFileds {
 	/**
 	 * Определяет тариф, реально применённый к заказу — не "самый дешёвый по своему типу"
 	 * (data.terminal/data.door), а тот, что покупатель подтвердил во всплывающем окне
-	 * "Выберите тариф" виджета. Виджет frame-чекаута (Blocks) передаёт бэкенду только режим
-	 * доставки (door/terminal) и итоговую цену — без кода тарифа (см.
-	 * checkout_frame_block.js::buildLegacyShippingFrameData() и
-	 * Base.php::calculate_shipping_frame()), поэтому сопоставляем цену конкретного тарифа из
-	 * полного списка data.tariffs.{mode} со стоимостью доставки, фактически выставленной заказу.
+	 * "Выберите тариф" виджета.
+	 *
+	 * 1. selected_tariff — код тарифа из виджета (responseData[тип].tariff), который
+	 *    checkout_frame_*.js передаёт в esl_shipping_frame, а OrderCreator сохраняет в заказ.
+	 * 2. Для заказов без него (оформлены до этого изменения) — сопоставляем цену конкретного
+	 *    тарифа из полного списка data.tariffs.{mode} со стоимостью доставки заказа.
+	 * 3. Иначе — "лучший по типу" тариф (data.{mode}.tariff).
 	 *
 	 * Возвращает array('code' => string, 'name' => string); пустые строки, если определить
 	 * не удалось (например, заказ оформлен до появления data.tariffs в сессии).
 	 */
-	private function resolveOrderTariff( array $shippingMethods, $order, $deliveryType, array $tariffCatalog ) {
+	private function resolveOrderTariff( array $shippingMethods, $order, $deliveryType, array $tariffCatalog, $serviceName = '' ) {
 		$mode = ( $deliveryType === 'door' ) ? 'door' : 'terminal';
+
+		// Тариф, выбранный покупателем в виджете и сохранённый в заказ при оформлении
+		// (OrderCreator::restoreFrameShippingMethods()). Берём его, только если он относится
+		// к тому же типу доставки и той же службе, что и заказ.
+		$selected = $shippingMethods['selected_tariff'] ?? null;
+		if ( is_array( $selected ) && ( $selected['code'] ?? '' ) !== '' ) {
+			$selectedMode    = ( ( $selected['mode'] ?? '' ) === 'door' ) ? 'door' : 'terminal';
+			$selectedService = mb_strtolower( (string) ( $selected['service'] ?? '' ) );
+			$sameService     = ( $selectedService === '' || $serviceName === '' || $selectedService === mb_strtolower( (string) $serviceName ) );
+			if ( $selectedMode === $mode && $sameService ) {
+				$selectedCode = (string) $selected['code'];
+				$selectedName = (string) ( $selected['name'] ?? '' );
+				if ( $selectedName === '' ) {
+					$selectedName = (string) ( $tariffCatalog[ $selectedCode ] ?? '' );
+				}
+				return array( 'code' => $selectedCode, 'name' => $selectedName );
+			}
+		}
 
 		$candidates = $shippingMethods['data']['tariffs'][ $mode ] ?? array();
 		if ( is_array( $candidates ) && $candidates && is_a( $order, 'WC_Order' ) ) {
@@ -325,7 +345,7 @@ class ExportFileds {
 			$tariffs          = $tariffs->data();
 			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
 			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
-			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs, $name );
 			$selectedTariffCode = $tariffInfo['code'];
 			$selectedTariffLabel = $tariffInfo['name'];
 			$optionsRepository = new OptionsRepository();
@@ -467,7 +487,7 @@ class ExportFileds {
 			$tariffs          = $tariffs->data();
 			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
 			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
-			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs, $name );
 			$selectedTariffCode = $tariffInfo['code'];
 			$selectedTariffLabel = $tariffInfo['name'];
 
@@ -709,7 +729,7 @@ class ExportFileds {
 			$produce_date = $date->format('Y-m-d');
 			// Тариф не настраивается по умолчанию — показываем тот, что реально применён к заказу,
 			// и запрещаем его менять в форме выгрузки, как в moj_sklad (см. resolveOrderTariff()).
-			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs );
+			$tariffInfo = $this->resolveOrderTariff( $shippingMethods, $order, $deliveryType, $tariffs, $name );
 			$selectedTariffCode = $tariffInfo['code'];
 			$selectedTariffLabel = $tariffInfo['name'];
 

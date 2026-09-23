@@ -446,7 +446,7 @@ class Base extends \WC_Shipping_Method
 		$cache_key  = md5('widget/calculation'.json_encode($cacheJson));
 		$cache_data = get_transient( $cache_key );
 
-		// Transient живёт WidgetController::CACHE_TTL (2 ч), а покупатель может оформить заказ
+		// Transient живёт WidgetController::CACHE_TTL (1 ч), а покупатель может оформить заказ
 		// гораздо позже выбора доставки. Поэтому держим копию последнего расчёта в сессии
 		// WooCommerce (живёт до 48 ч) и берём её, если transient уже истёк — при условии, что
 		// город и служба те же (совпадает ключ кэша).

@@ -1979,7 +1979,12 @@
             terminalCode: '',
             comment: '',
             deliveryMethods: '',
-            selectPvz: ''
+            selectPvz: '',
+            // Тариф, выбранный покупателем (окно "Выберите тариф" виджета) или тариф по
+            // умолчанию — виджет держит его в responseData[тип].tariff. Сохраняется в заказ
+            // и подставляется в форму выгрузки (ExportFileds::resolveOrderTariff()).
+            tariffCode: '',
+            tariffName: ''
         };
 
         const terminalInput = document.getElementById('terminalEsl');
@@ -2007,6 +2012,11 @@
 
             if (responseData.comment) {
                 eslData.comment += (eslData.comment ? '<br>' : '') + responseData.comment;
+            }
+
+            if (responseData.tariff && responseData.tariff.code !== undefined && responseData.tariff.code !== null) {
+                eslData.tariffCode = String(responseData.tariff.code);
+                eslData.tariffName = responseData.tariff.name || '';
             }
         }
 

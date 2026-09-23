@@ -211,21 +211,40 @@ class OrderCreator implements ModuleInterface
 	 * saveOrderShipping() сбрасывает shipping_methods после каждого заказа, а WooCommerce при
 	 * неизменной корзине берёт ставки из кэша и не вызывает calculate_shipping_frame() повторно —
 	 * следующий заказ в той же сессии сохранялся без esl_shipping_methods (пустой тариф в форме
-	 * выгрузки). Для frame-метода восстанавливаем данные расчёта из transient'а виджета.
+	 * выгрузки). Для frame-метода восстанавливаем данные расчёта из transient'а виджета
+	 * и добавляем тариф, выбранный в виджете (selected_tariff).
 	 */
 	private function restoreFrameShippingMethods(SessionService $sessionService, array $shippingMethods, $methodId)
 	{
-		if (!$methodId || isset($shippingMethods[$methodId]) || !$this->isMixedMethod($methodId)) {
+		if (!$methodId || !$this->isMixedMethod($methodId)) {
 			return $shippingMethods;
 		}
 
-		$mode = $sessionService->get('mode_shipping') ? $sessionService->get('mode_shipping') : 'billing';
-		$frameMethodData = Base::getFrameCalculationData(
-			$sessionService->get('esl_shipping_frame'),
-			$sessionService->get($mode)
-		);
-		if ($frameMethodData) {
-			$shippingMethods[$methodId] = $frameMethodData;
+		$shippingFrame = $sessionService->get('esl_shipping_frame');
+		if (is_string($shippingFrame)) {
+			$shippingFrame = maybe_unserialize($shippingFrame);
+		}
+
+		if (!isset($shippingMethods[$methodId])) {
+			$mode = $sessionService->get('mode_shipping') ? $sessionService->get('mode_shipping') : 'billing';
+			$frameMethodData = Base::getFrameCalculationData($shippingFrame, $sessionService->get($mode));
+			if ($frameMethodData) {
+				$shippingMethods[$methodId] = $frameMethodData;
+			}
+		}
+
+		// Тариф, который покупатель выбрал в виджете (checkout_frame_*.js кладёт его в
+		// esl_shipping_frame вместе с выбором службы). Сохраняется в заказ как есть и имеет
+		// приоритет над подбором тарифа по цене в ExportFileds::resolveOrderTariff() — не
+		// зависит от срока жизни кэша расчёта.
+		$tariffCode = is_array($shippingFrame) ? trim((string) ($shippingFrame['tariffCode'] ?? '')) : '';
+		if ('' !== $tariffCode) {
+			$shippingMethods[$methodId]['selected_tariff'] = [
+				'code'    => $tariffCode,
+				'name'    => trim((string) ($shippingFrame['tariffName'] ?? '')),
+				'mode'    => (string) ($shippingFrame['mode'] ?? ''),
+				'service' => (string) ($shippingFrame['key'] ?? ''),
+			];
 		}
 
 		return $shippingMethods;
