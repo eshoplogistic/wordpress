@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap');
 
+:root {
+    /* Same accent used in the order-export modal (assets/css/unloading.css) — kept in sync
+       on purpose so the settings page and the order modal read as one product. */
+    --esl-accent: #2271b1;
+    --esl-accent-dark: #135e96;
+    --esl-accent-soft: rgba(34, 113, 177, .08);
+    --esl-accent-soft-strong: rgba(34, 113, 177, .16);
+}
+
 .toplevel_page_wc_esl_options {
     background: #f8fafc;
 }
@@ -18,32 +27,252 @@
     position: relative;
 }
 
+.wc-esl-settings__header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.75rem 0;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
 .wc-esl-settings__title {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0 0 .4rem;
     font-size: 1.5rem;
     font-weight: 800;
 }
 
-.wc-esl-settings__title > span {
-    color: rgb(113, 23, 247);
+.wc-esl-settings__title .dashicons {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 1.4rem;
+    color: var(--esl-accent);
+}
+
+.wc-esl-settings__title > span:not(.dashicons) {
+    color: var(--esl-accent);
+}
+
+.wc-esl-settings__doc-link {
+    margin: 0;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.wc-esl-settings__doc-link a {
+    color: var(--esl-accent);
+    text-decoration: none;
+}
+
+.wc-esl-settings__doc-link a:hover {
+    text-decoration: underline;
 }
 
 .wc-esl-settings__body .card {
     padding: 0;
     max-width: 1110px;
+    border: 1px solid #e9ecef;
+    border-radius: .5rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    margin-bottom: 1.5rem;
+}
+
+.wc-esl-settings__body .card-header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.wc-esl-settings__body .card-body {
+    padding: 1.75rem 1.75rem 2rem;
+}
+
+/* Вложенный подзаголовок-разделитель внутри одной карточки (например, "Планировщик выгрузки заказов") */
+.wc-esl-settings__body .card-body .card-header {
+    margin: .5rem 0 1.5rem;
+    padding: 0 0 .75rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* --- Верхняя навигация по разделам страницы — сегментированные "таблетки" вместо
+   подчёркнутых текстовых вкладок, тот же язык, что и иконки-вкладки в модалке выгрузки. --- */
+.wc-esl-top-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.wc-esl-top-tabs .nav-item {
+    margin: 0;
+}
+
+.wc-esl-top-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1px solid #e9ecef;
+    margin-bottom: 0;
+    padding: .6rem 1.1rem;
+    font-weight: 700;
+    font-size: .88rem;
+    color: #475467;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.wc-esl-top-tabs .nav-link .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.wc-esl-top-tabs .nav-link:hover {
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
+    border-color: transparent;
+}
+
+.wc-esl-top-tabs .nav-link.active {
+    color: #fff;
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .35);
+}
+
+.wc-esl-top-tab-content {
+    max-width: 1110px;
+}
+
+@media (max-width: 782px) {
+    .wc-esl-top-tabs .nav-link {
+        padding: .55rem .85rem;
+        font-size: .82rem;
+    }
+}
+
+/* --- Вкладки транспортных компаний внутри раздела "Выгрузка заказов" --- */
+#eslCarrierTabsWrap .nav-tabs {
+    border-bottom: 1px solid #e9ecef;
+}
+
+#eslCarrierTabsWrap .nav-link {
+    border: 1px solid transparent;
+    border-radius: .35rem .35rem 0 0;
+    padding: .5rem .9rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+#eslCarrierTabsWrap .nav-link:hover {
+    border-color: #e9ecef #e9ecef #e9ecef;
+    color: var(--esl-accent);
+}
+
+#eslCarrierTabsWrap .nav-link.active {
+    color: var(--esl-accent);
+    background: var(--esl-accent-soft);
+    border-color: #e9ecef #e9ecef var(--esl-accent-soft);
+}
+
+#eslCarrierTabsWrap .tab-content {
+    border: 1px solid #e9ecef;
+    border-top: none;
+    padding: 1.25rem;
+    border-radius: 0 0 .35rem .35rem;
+}
+
+.wc-esl-settings .btn-primary,
+.wc-esl-settings .wc-esl-add__button {
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent);
+    border-radius: .45rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    transition: background-color .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
+}
+
+.wc-esl-settings .wc-esl-add__button {
+    margin-top: 1.5rem;
+}
+
+.wc-esl-settings .btn-primary:hover,
+.wc-esl-settings .wc-esl-add__button:hover {
+    background-color: var(--esl-accent-dark);
+    border-color: var(--esl-accent-dark);
+    box-shadow: 0 2px 8px rgba(34, 113, 177, .3);
+    transform: translateY(-1px);
+}
+
+.wc-esl-settings .btn-primary:active,
+.wc-esl-settings .wc-esl-add__button:active {
+    transform: translateY(0);
 }
 
 .wc-esl-settings input,
-.wc-esl-settings textarea {
-    color: #495057;
+.wc-esl-settings textarea,
+.wc-esl-settings select {
+    color: #344054;
     background-color: #fff;
     background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: .25rem;
+    border: 1px solid #d0d5dd;
+    border-radius: .4rem;
+    padding: .6rem .85rem;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-.wc-esl-settings input[type="checkbox"]{
+.wc-esl-settings input:focus,
+.wc-esl-settings textarea:focus,
+.wc-esl-settings select:focus {
+    outline: none;
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft-strong);
+}
+
+.wc-esl-settings select[multiple] {
+    min-height: 130px;
+    padding: .35rem;
+}
+
+/* У обычных (не multiple) select нативный вид в разных браузерах по-разному считает высоту строки
+   при большом line-height страницы — текст съезжает к нижнему краю. Убираем нативный рендер
+   и рисуем свою стрелку, чтобы вертикальное позиционирование текста было предсказуемым. */
+.wc-esl-settings select:not([multiple]) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    line-height: 1.4;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23667085' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .85rem center;
+}
+
+.wc-esl-settings select:not([multiple])::-ms-expand {
+    display: none;
+}
+
+.wc-esl-settings input[type="checkbox"]:not(.custom-control-input) {
     max-width: 20px;
-    margin-top: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--esl-accent);
+    cursor: pointer;
+}
+
+.wc-esl-settings .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent);
 }
 
 .wc-esl-settings .form-control {
@@ -52,6 +281,148 @@
 
 .wc-esl-settings .btn {
     font-size: .9rem;
+}
+
+.wc-esl-settings .button {
+    border-radius: .4rem;
+    border-color: #d0d5dd;
+    padding: .4rem .9rem;
+    height: auto;
+}
+
+/* --- Единый вид строк формы label + поле (используется как в eslExportForm/eslAddForm,
+   так и в "классическом" Bootstrap-варианте input-group с кнопкой, например API-ключ) --- */
+.wc-esl-settings .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 1.25rem;
+    row-gap: .35rem;
+    min-height: 2.5rem;
+    margin-bottom: 1.1rem;
+}
+
+.wc-esl-settings .card-body > .input-group:last-child,
+.wc-esl-settings form .input-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Компактная встроенная группа "поле + кнопка" (например, поиск терминала) — в отличие
+   от строк label+поле, поле и кнопка должны оставаться в одну строку, без переноса,
+   а кнопка — вплотную к полю (классический Bootstrap input-group с addon). */
+.wc-esl-settings .input-group.input-group-inline {
+    flex-wrap: nowrap;
+    column-gap: 0;
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.wc-esl-settings .input-group.input-group-inline > input.form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.wc-esl-settings .input-group.input-group-inline > .input-group-append {
+    flex: 0 0 auto;
+    margin-left: -1px;
+}
+
+.wc-esl-settings .input-group.input-group-inline > .input-group-append > .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    white-space: nowrap;
+}
+
+.wc-esl-settings .input-group > .col-form-label {
+    flex: 0 0 300px;
+    max-width: 300px;
+    padding: 0;
+    margin: 0;
+    font-weight: 600;
+    color: #344054;
+}
+
+.wc-esl-settings .input-group > .col-form-label .help-tip {
+    margin-left: .35rem;
+}
+
+.wc-esl-settings .input-group > input.form-control:not([type="checkbox"]):not([type="time"]),
+.wc-esl-settings .input-group > select:not([multiple]),
+.wc-esl-settings .input-group > textarea {
+    flex: 1 1 280px;
+    max-width: 420px;
+    width: auto;
+}
+
+.wc-esl-settings .input-group > input[type="checkbox"].form-control {
+    flex: 0 0 auto;
+    max-width: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Нативный time-picker компактный по природе — не растягиваем его на всю ширину поля */
+.wc-esl-settings .input-group > input[type="time"] {
+    flex: 0 0 auto;
+    max-width: 160px;
+    width: 160px;
+}
+
+.wc-esl-settings .input-group > select[multiple] {
+    flex: 1 1 100%;
+    max-width: 100%;
+}
+
+/* Строка с превью картинки и кнопками загрузки/удаления (Изображение для загрузки) */
+.wc-esl-settings .input-group > img {
+    flex: 0 0 auto;
+    border-radius: .35rem;
+}
+
+.wc-esl-settings .input-group > img[src] {
+    border: 1px solid #e9ecef;
+}
+
+.wc-esl-settings .input-group > img:not([src]),
+.wc-esl-settings .input-group > img[src=""] {
+    display: none;
+}
+
+.wc-esl-settings .input-group .ml-1 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+@media (max-width: 782px) {
+    .wc-esl-settings .input-group > .col-form-label {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+
+    .wc-esl-settings .input-group > input.form-control,
+    .wc-esl-settings .input-group > select,
+    .wc-esl-settings .input-group > textarea {
+        max-width: 100%;
+    }
+}
+
+/* Единая типографика подписей в строках на базе Bootstrap-грида (.form-group.row),
+   чтобы визуально совпадать со строками на основе .input-group выше. */
+.wc-esl-settings .form-group.row .col-form-label {
+    font-weight: 600;
+    color: #344054;
+}
+
+.wc-esl-settings .form-group.row {
+    margin-bottom: 1.1rem !important;
+}
+
+.wc-esl-settings .form-group.row:last-child {
+    margin-bottom: 0 !important;
 }
 
 .esl-notifications {
@@ -64,11 +435,12 @@
 }
 
 .esl-notifications__item {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: start;
-    padding: .9em 1em;
+    padding: .9em 2.2em .9em 1em;
     margin-bottom: 1em;
     border-top: 3px solid;
 }
@@ -91,6 +463,7 @@
 .esl-notifications__icon {
     color: #FFFFFF;
     font-size: 21px;
+    margin-top: .1em;
     margin-right: .8em;
 }
 
@@ -99,6 +472,33 @@
     color: #000;
     font-size: .85em;
     font-weight: 500;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 0;
+}
+
+.esl-notifications__msg span {
+    display: block;
+}
+
+.esl-notifications__msg span:not(:last-child) {
+    margin-bottom: 1.2em;
+}
+
+.esl-notifications__close {
+    position: absolute;
+    top: .5em;
+    right: .6em;
+    color: #000;
+    opacity: .55;
+    font-size: 1.2em;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+}
+
+.esl-notifications__close:hover {
+    opacity: 1;
 }
 
 .esl-preloader {
@@ -111,11 +511,43 @@
     left: 0;
     justify-content: center;
     z-index: 200;
-    background: rgba(255, 255, 255, .57);
+    background: rgba(255, 255, 255, .75);
+    backdrop-filter: blur(1px);
 }
 
-.esl-preloader .spinner-grow {
-    color: rgb(113, 23, 247);
+.esl-spinner {
+    position: relative;
+    width: 34px;
+    height: 34px;
+}
+
+.esl-spinner::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--esl-accent-soft-strong);
+    border-top-color: var(--esl-accent);
+    animation: esl-spin .7s linear infinite;
+}
+
+.esl-spinner__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@keyframes esl-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .wc-esl-settings-general-options .card-header {
@@ -125,23 +557,34 @@
 }
 
 .help-tip{
-    top: 15px;
-    right: 300px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
     text-align: center;
-    background-color: #aaaaaa;
+    background-color: var(--esl-accent-soft-strong);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 14px;
-    line-height: 26px;
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+    line-height: 24px;
     cursor: default;
-    z-index: 999999;
+    z-index: 2;
+    transition: background-color .15s ease;
+}
+
+.help-tip:hover {
+    background-color: var(--esl-accent);
 }
 
 .help-tip:before{
     content:'?';
     font-weight: bold;
-    color:#fff;
+    color: var(--esl-accent);
+    transition: color .15s ease;
+}
+
+.help-tip:hover:before {
+    color: #fff;
 }
 
 .custom-control {
@@ -160,12 +603,12 @@
 .help-tip p{
     display: none;
     text-align: left;
-    background-color: rgba(30, 32, 33, 0.93);
-    padding: 10px;
+    background-color: rgba(29, 35, 39, 0.96);
+    padding: 12px 14px;
     width: 250px;
     position: absolute;
-    border-radius: 3px;
-    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px -6px rgba(0, 0, 0, .35);
     right: -4px;
     color: #FFF;
     font-size: 13px;
@@ -212,6 +655,8 @@
 
 .esl-section_drag .esl-inner_item ul{
     min-height: 40px;
+    padding: .6rem;
+    border-radius: 0 .5rem .5rem .5rem;
 }
 
 .esl-section_drag .js-connected {
@@ -220,29 +665,71 @@
 }
 
 .esl-section_drag .esl-status__wp{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    position: relative;
+    border: 1px solid #dcdcde;
     display: inline-block;
-    padding: 5px;border-radius: 5px;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
-    margin-right: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: #fff;
+    margin: 0 5px 5px 0;
+    font-size: .85rem;
+    cursor: grab;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+/* Chips inside a drop zone carry a delete "×" — reserve room on the right so the
+   label text never runs under it. */
+.esl-inner_status .esl-status__wp {
+    padding-right: 26px;
+}
+
+.esl-section_drag .esl-status__wp:hover {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+}
+
+/* html5sortable's drag ghost (.sortable-dragging) and drop-target placeholder
+   (.sortable-placeholder) ship with zero built-in styling — the placeholder is an
+   empty <li>, so without a size/shape it's a near-invisible sliver while dragging.
+   Scoped to the left rows (.esl-inner_status) only, not the right pool: the pool's
+   list is copy-mode (sortable('.sortable-copy', {copy:true, ...})), and html5sortable
+   has a bug there — it adds this class to the original on drag but removes it from
+   the clone, not the original, so the source chip in the pool would stay dimmed
+   forever after the first drag if styled here too. */
+.esl-inner_status .sortable-dragging {
+    opacity: .4;
+}
+
+.esl-section_drag .sortable-placeholder {
+    display: inline-block;
+    width: 90px;
+    height: 30px;
+    margin: 0 5px 5px 0;
+    background-color: var(--esl-accent-soft);
+    border: 1px dashed var(--esl-accent);
+    border-radius: 999px;
+    vertical-align: top;
 }
 
 .esl-section_drag .js-inner-connected {
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    border: 1px solid #dcdcde;
+    background-color: #f6f7f7;
     padding-top: 10px;
     padding-bottom: 5px;
     padding-left: 10px;
     padding-right: 10px;
     min-height: 57px;
+    border-radius: 0 .5rem .5rem .5rem;
 }
 
 .esl-section_drag .esl-status_api{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
-    display: inline;padding: 2px;
-    border-radius: 5px 5px 0px 0px;
+    border: 1px solid #dcdcde;
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: .5rem .5rem 0 0;
     font-size: 14px;
     font-weight: 600;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
+    background-color: #f6f7f7;
 }
 
 .esl-section_drag .esl-inner_status{
@@ -259,9 +746,26 @@
 
 .sortable-delete{
     position: absolute;
-    margin-left: 2px;
-    margin-top: -17px;
-    color: rgba(236, 0, 0, 0.66);
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border-radius: 50%;
+    color: #d63638;
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.sortable-delete:hover {
+    background-color: rgba(214, 54, 56, .14);
 }
 
 .modal-esl-frame {
@@ -284,41 +788,167 @@
     z-index: 99999;
 }
 .modal-esl-frame .modal_content .close_modal_window {
-    color: #aaa;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #98a2b3;
+    background-color: transparent;
+    border-radius: 50%;
     float: right;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
     cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.modal-esl-frame .modal_content .close_modal_window:hover {
+    background-color: #f2f4f7;
+    color: #d63638;
 }
 
 .modal-esl-frame .title {
     padding-bottom: 45px;
 }
 
-.modal-esl-frame #buttonModalAddField{
+.modal-esl-frame #buttonModalAddField,
+.modal-esl-frame #buttonModalTerminalSearch,
+.modal-esl-frame #buttonModalFreightSearch {
     position: relative;
     left: 50%;
     transform: translate(-50%, 0);
     height: auto;
     color: #fff;
-    background-color: #489afa;
-    border-color: #0062cc;
+    background-color: var(--esl-accent);
+    border-color: var(--esl-accent-dark);
     margin-top: 15px;
 }
 
-.modal-esl-frame #buttonModalAddField:hover{
-    background-color: #086be1;
-    border-color: #0062cc;
+.modal-esl-frame #buttonModalAddField:hover,
+.modal-esl-frame #buttonModalTerminalSearch:hover,
+.modal-esl-frame #buttonModalFreightSearch:hover {
+    background-color: var(--esl-accent-dark);
+    border-color: var(--esl-accent-dark);
+}
+
+/* Confirm modal (#modal-esl-confirm) — replaces window.confirm() for the "remove uploaded
+   image" prompt (see EslConfirm in settings.js). */
+#modal-esl-confirm .modal_content {
+    max-width: 420px;
+    width: 90%;
+    margin: 12% auto;
+}
+
+#modal-esl-confirm .title {
+    padding-bottom: 15px;
+}
+
+#modal-esl-confirm .esl-confirm__message {
+    margin: 0 0 20px;
+    color: #1d2327;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+#modal-esl-confirm .esl-confirm__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-fields label {
+    display: block;
+    margin-bottom: .5rem;
+    font-weight: 600;
+    color: #667085;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-fields input {
+    display: block;
+    width: 100%;
+    margin-bottom: .75rem;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-modal__list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-modal__item {
+    padding: .6rem .9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-modal__item:last-child {
+    border-bottom: none;
+}
+
+#modal-esl-terminal-search .esl-terminal-search-modal__item:hover {
+    background-color: var(--esl-accent-soft);
+}
+
+#modal-esl-freight-search .esl-terminal-search-fields label {
+    display: block;
+    margin-bottom: .5rem;
+    font-weight: 600;
+    color: #667085;
+}
+
+#modal-esl-freight-search .esl-terminal-search-fields input {
+    display: block;
+    width: 100%;
+    margin-bottom: .75rem;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item {
+    padding: .6rem .9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item:last-child {
+    border-bottom: none;
+}
+
+#modal-esl-freight-search .esl-freight-search-modal__item:hover {
+    background-color: var(--esl-accent-soft);
 }
 
 
 #modal-esl-add-field .label{
     position: static;
+    margin: 0;
 }
 
-#modal-esl-add-field input, #modal-esl-add-field select{
-    height: 15px;
+#modal-esl-add-field .form-field_add input:not([type=checkbox]), #modal-esl-add-field .form-field_add select{
+    height: 30px;
     margin-left: 10px;
+}
+
+#modal-esl-add-field input[type=checkbox] {
+    width: 20px;
+    height: 20px;
+    margin: 0 0 0 10px;
+    flex-shrink: 0;
 }
 
 #modal-esl-add-field input[type=number] {
@@ -329,10 +959,42 @@
     float: unset;
 }
 
+/* Пилюли доп.полей раскладываются как flex-items (а не как строчный текст), иначе
+   браузер выравнивает их по baseline и разновысокие пилюли "прыгают" по вертикали. */
+#modal-esl-add-field .esl-box_add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
 #modal-esl-add-field .form-field_add {
     margin: 6px;
     display: inline-flex;
+    align-items: center;
     background-color: #eee;
     padding: 8px;
     border-radius:8px;
+    vertical-align: top;
+}
+
+/* Заголовки разделов внутри модалки генерируются в PHP как разные теги (p/h3/h4) —
+   приводим к единому компактному виду вместо разномастных нативных размеров. */
+#modal-esl-add-field .esl-box_add > p,
+#modal-esl-add-field h3,
+#modal-esl-add-field h4 {
+    flex: 1 0 100%;
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #667085;
+    margin: 1.5rem 0 .6rem;
+    padding: 0 0 .4rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#modal-esl-add-field > form > .esl-box_add:first-child > p:first-child,
+#modal-esl-add-field > form > h3:first-child,
+#modal-esl-add-field > form > h4:first-child {
+    margin-top: 0;
 }

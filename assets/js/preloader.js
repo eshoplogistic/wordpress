@@ -21,10 +21,13 @@ let PreloaderEsl = {
         let loader = document.createElement('div');
         loader.classList.add('esl-preloader');
 
+        // Самодостаточный спиннер (не зависит от Bootstrap: .spinner-grow/.sr-only не
+        // стилизованы на странице заказа, где bootstrap.min.css не подключается —
+        // без него это был просто обычный текст "Загрузка..." без анимации).
         let spinner = document.createElement('div');
-        spinner.classList.add('spinner-grow');
+        spinner.classList.add('esl-spinner');
         spinner.setAttribute('role', 'status');
-        spinner.innerHTML = `<span class="sr-only">Загрузка...</span>`;
+        spinner.innerHTML = `<span class="esl-spinner__label">Загрузка...</span>`;
 
         loader.appendChild(spinner);
 

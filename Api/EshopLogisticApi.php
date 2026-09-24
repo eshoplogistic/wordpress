@@ -9,13 +9,14 @@ use eshoplogistic\WCEshopLogistic\Http\Response\CollectionResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ErrorResponse;
 use eshoplogistic\WCEshopLogistic\Http\Response\ExceptionResponse;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 if ( ! defined('ABSPATH') ) {
 	exit;
 }
 
 
-class EshopLogisticApi extends EshopLogisticApiV2
+class EshopLogisticApi
 {
 
 	/**
@@ -25,11 +26,6 @@ class EshopLogisticApi extends EshopLogisticApiV2
 		'v1'=>'https://api.eshoplogistic.ru/api/',
 		'v2'=>'https://api.esplc.ru/'
 	);
-
-	/**
-	 * @var string
-	 */
-	private $moduleVersion;
 
 	/**
 	 * @var string
@@ -71,7 +67,6 @@ class EshopLogisticApi extends EshopLogisticApiV2
 		$this->client = $client;
 		$this->apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
 		$this->eslLog = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_log');
-		$this->moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
 	}
 
 	/**
@@ -89,22 +84,16 @@ class EshopLogisticApi extends EshopLogisticApiV2
 		if($apiKey !== $this->apiKey)
 			$this->setApiKey($apiKey);
 
-		if($this->moduleVersion){
-			$this->generateApiUrl('client/state');
-			$result = $this->sendLoadRequest(array());
-			if($result->hasErrors())
-				return $result;
-
-			$resultAccount = $result->data();
-
-			$this->initAccount = (isset($resultAccount['services']))?$resultAccount['services']:'';
-
+		$this->generateApiUrl('client/state');
+		$result = $this->sendLoadRequest(array());
+		if($result->hasErrors())
 			return $result;
-		}else{
-			$this->generateApiUrl('site');
 
-			return $this->sendLoadRequest(array());
-		}
+		$resultAccount = $result->data();
+
+		$this->initAccount = (isset($resultAccount['services']))?$resultAccount['services']:'';
+
+		return $result;
 	}
 
 	/**
@@ -112,13 +101,7 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 */
 	public function initAccount()
 	{
-		if($this->moduleVersion){
-			return new CollectionResponse( $this->initAccount );
-		}else{
-			$this->generateApiUrl('init');
-
-			return $this->sendLoadRequest(array());
-		}
+		return new CollectionResponse( $this->initAccount );
 	}
 
 	/**
@@ -128,23 +111,14 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 */
 	public function search($target = '', $currentCountry = '', $region = '')
 	{
-		if($this->moduleVersion){
-			$this->generateApiUrl('locality/search');
-			$data['target'] = $target;
-			if($currentCountry)
-				$data['country'] = $currentCountry;
+		$this->generateApiUrl('locality/search');
+		$data['target'] = $target;
+		if($currentCountry)
+			$data['country'] = $currentCountry;
             if($region)
                 $data['region'] = $region;
 
-			return $this->sendLoadRequest($data);
-		}else{
-			$this->generateApiUrl('search');
-			$data['target'] = $target;
-			if($currentCountry)
-				$data['country'] = $currentCountry;
-
-			return $this->sendLoadRequest($data);
-		}
+		return $this->sendLoadRequest($data);
 	}
 
 	/**
@@ -155,17 +129,11 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 */
 	public function calculateDelivery($delivery, $data)
 	{
-		if($this->moduleVersion){
-			$this->generateApiUrl( 'delivery/calculation' );
-			$data['service'] = $delivery;
-			unset($data['from']);
+		$this->generateApiUrl( 'delivery/calculation' );
+		$data['service'] = $delivery;
+		unset($data['from']);
 
-			return $this->sendLoadRequest( $data );
-		}else {
-			$this->generateApiUrl( 'delivery/' . $delivery );
-
-			return $this->sendLoadRequest( $data );
-		}
+		return $this->sendLoadRequest( $data );
 	}
 
 	/**
@@ -173,13 +141,7 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 */
 	public function allServices()
 	{
-		if($this->moduleVersion){
-			return new CollectionResponse( $this->initAccount );
-		}else{
-			$this->generateApiUrl('info');
-
-			return $this->sendLoadRequest(array());
-		}
+		return new CollectionResponse( $this->initAccount );
 	}
 
 	/**
@@ -194,16 +156,23 @@ class EshopLogisticApi extends EshopLogisticApiV2
 			if($this->eslLog == '1'){
 				$this->eslWriteLog( $response, $data );
 			}
-			if ( isset($response['success']) && $response['success'] || ($response['http_status'] == 200) ) {
+			if ( is_array($response) && ( (isset($response['success']) && $response['success']) || (isset($response['http_status']) && $response['http_status'] == 200) ) ) {
 				if(isset($response['debug']))
 					$response['data']['debug'] = $response['debug'];
 
-				return new CollectionResponse( $response['data'] );
+				return new CollectionResponse( $response['data'] ?? [] );
 			}
 
 			return new ErrorResponse( $response );
 
 		} catch ( ApiServiceException $e ) {
+
+			// Сетевые сбои (таймаут, DNS, разрыв соединения) не долетают до успешного
+			// $response выше и раньше нигде не логировались — запрос "терялся" молча,
+			// а в интерфейсе оставалась только общая ошибка без деталей.
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
 
 			return new ExceptionResponse( $e );
 		}
@@ -219,8 +188,7 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	{
 		$data['key'] = $this->apiKey;
 
-		if($this->moduleVersion)
-			$data['partner_key'] = $this->partnerKey;
+		$data['partner_key'] = $this->partnerKey;
 
 		$result = $this->client->post(
 			$this->apiUrl,
@@ -236,75 +204,60 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	 */
 	private function generateApiUrl($path = '')
 	{
-		$this->apiUrl = $this->apiBaseUrl['v1'] . $path;
-
-		if($this->moduleVersion)
-			$this->apiUrl = $this->apiBaseUrl['v2'] . $path;
+		$this->apiUrl = $this->apiBaseUrl['v2'] . $path;
 	}
 
 	public function getApiUrl(){
-		if($this->moduleVersion){
-			return $this->apiBaseUrl['v2'];
-		}else{
-			return $this->apiBaseUrl['v1'];
-		}
+		return $this->apiBaseUrl['v2'];
 	}
 
+	/**
+	 * Пишет запрос/ответ ESL API в стандартный логгер WooCommerce (источник "wc-esl-shipping",
+	 * WooCommerce > Статус > Журналы), а не в текстовый файл внутри папки плагина — файл был
+	 * доступен по прямой публичной ссылке без авторизации и мог раскрывать API-ключ и ПДн
+	 * покупателей (адрес, телефон, email) кому угодно, кто знает URL.
+	 *
+	 * Формат: короткая сводка первой строкой (action/service/order_id — чтобы можно было
+	 * понять "что за запрос и откуда" не разворачивая JSON), а request/response передаются
+	 * вторым аргументом ($context) через общий хелпер EslLogger. Это тот же механизм, которым
+	 * пользуется ядро WooCommerce для лога "place-order-debug": логгер (LogHandlerFileV2)
+	 * дописывает " CONTEXT: {json}" в конец строки, а страница просмотра лога сворачивает его
+	 * в блок "Дополнительный контекст" — вместо того, чтобы выводить сырой JSON прямо в тексте лога.
+	 *
+	 * @param mixed  $log  Ответ API (обычно массив, декодированный из JSON).
+	 * @param mixed  $type Данные запроса (если переданы, добавляются в лог вместе с URL запроса).
+	 */
 	public function eslWriteLog($log, $type = '') {
 		if(isset($type['target']))
 			return false;
 
-		$d = date("j-M-Y H:i:s e");
-		$header = ' ####################### ';
-		$plugin = WP_PLUGIN_DIR . '/eshoplogisticru';
-		if(is_dir( $plugin )){
-			$path = $plugin.'/esl.log';
-			if (file_exists($path)) {
-				$size = filesize($path);
-				$sizeMb = round($size / 1024 / 1024, 2);
-				if($sizeMb > 10){
-					file_put_contents($path, '');
-				}
-			}
+		$isRequestArray = is_array($type) || is_object($type);
+		$requestArr = $isRequestArray ? (array) $type : array();
 
-			if (is_array($log) || is_object($log)) {
-				if($type){
-					$urlRequest = $this->apiUrl;
-					$tmp['sendRequest'] = $type;
-					$tmp['sendRequest']['url'] = $urlRequest;
-					array_unshift($log, $tmp);
-				}
-				error_log($header.$d.$header.print_r($log, true), 3, $path);
-			} else {
-				error_log($header.$d.$header.$log,3, $path);
-			}
+		$orderId = $requestArr['order_id'] ?? $requestArr['order']['id'] ?? '';
+		$summary = sprintf(
+			'ESL API%s%s%s | %s',
+			isset($requestArr['action']) ? ' action=' . $requestArr['action'] : '',
+			isset($requestArr['service']) ? ' service=' . $requestArr['service'] : '',
+			$orderId !== '' ? ' order_id=' . $orderId : '',
+			$this->apiUrl
+		);
+
+		$context = array('source' => 'wc-esl-shipping');
+
+		if ($isRequestArray && $requestArr) {
+			$context['request'] = $requestArr;
 		}
+
+		$context['response'] = (is_array($log) || is_object($log)) ? (array) $log : (string) $log;
+
+		EslLogger::info($summary, $context);
 	}
 
 	public function geo($ip = '')
 	{
-		if($this->moduleVersion){
-
-		}else{
-			$this->generateApiUrl('geo');
-			$data['ip'] = $ip;
-
-			$result = false;
-			$resultRequest = $this->sendLoadRequest($data);
-			if($resultRequest instanceof CollectionResponse && $resultRequest->data()){
-				$result = $resultRequest->data();
-				if(isset($result[0]))
-					$result = $resultRequest->data();
-			}
-			if(!$result){
-				$searchDefault = $this->search('Москва');
-				$searchDefault = $searchDefault->data();
-				if(isset($searchDefault[0]))
-					$result = $searchDefault;
-			}
-
-			return $result;
-		}
+		//v2 has no geo method
+		return null;
 	}
 
 	/**
@@ -331,7 +284,11 @@ class EshopLogisticApi extends EshopLogisticApiV2
 		try {
 			$response = $this->sendRequest( $data );
 
-			if ( $response['http_status'] == 200 && isset($response['data']['state']['number'])) {
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( $response, $data );
+			}
+
+			if ( is_array($response) && ($response['http_status'] ?? null) == 200 && isset($response['data']['state']['number'])) {
 				return new CollectionResponse( $response['data'] );
 			}
 
@@ -341,6 +298,10 @@ class EshopLogisticApi extends EshopLogisticApiV2
 			return new ErrorResponse( $response );
 
 		} catch ( ApiServiceException $e ) {
+
+			if($this->eslLog == '1'){
+				$this->eslWriteLog( 'EXCEPTION: ' . $e->getMessage(), $data );
+			}
 
 			return new ExceptionResponse( $e );
 		}
@@ -382,6 +343,57 @@ class EshopLogisticApi extends EshopLogisticApiV2
 	{
 		$this->generateApiUrl('service/counterparties');
 		$data['service'] = $service;
+
+		return $this->sendLoadRequest($data);
+	}
+
+	/**
+	 * Справочник организационно-правовых форм для служб, которым он требуется (например, Деловые линии).
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceOpf()
+	{
+		$this->generateApiUrl('service/opf');
+
+		return $this->sendLoadRequest(array());
+	}
+
+	/**
+	 * Поиск терминалов/ПВЗ службы доставки (используется для подсказки кода терминала отправителя).
+	 *
+	 * @param string $service
+	 * @param string $settlement
+	 * @param string $region
+	 * @param string $address
+	 * @param bool   $onlyBranches
+	 *
+	 * @return ApiResponseInterface
+	 */
+	public function apiServiceTerminals($service, $settlement = '', $region = '', $address = '', $onlyBranches = false)
+	{
+		$this->generateApiUrl('service/terminals');
+		$data['service'] = $service;
+		if ($settlement) $data['settlement'] = $settlement;
+		if ($region) $data['region'] = $region;
+		if ($address) $data['address'] = $address;
+		if ($onlyBranches) $data['only_branches'] = 1;
+
+		return $this->sendLoadRequest($data);
+	}
+
+	/**
+	 * Поиск варианта "Характер груза" по названию (например, для Байкал Сервиса) — подсказка
+	 * при заполнении соответствующего поля в настройках ТК.
+	 *
+	 * @param string $name    Строка поиска.
+	 * @param string $service Слаг службы доставки.
+	 */
+	public function apiFreightTypes($name, $service = '')
+	{
+		$this->generateApiUrl('service/freighttypes');
+		$data['name'] = $name;
+		if ($service) $data['service'] = $service;
 
 		return $this->sendLoadRequest($data);
 	}

@@ -211,7 +211,7 @@ class OfferData implements OfferInterface
 
 	private function get($key)
 	{
-		if(!isset($this->data[$key])) throw new \Exception(esc_html("Значение с таким ключом не найдено", 'eshoplogisticru'));
+		if(!isset($this->data[$key])) throw new \Exception(esc_html(__("Значение с таким ключом не найдено", 'eshoplogisticru')));
 
 		return $this->data[$key];
 	}

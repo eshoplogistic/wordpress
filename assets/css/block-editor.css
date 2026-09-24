@@ -1,0 +1,9 @@
+/* eShopLogistic Gutenberg Block Editor Styles - Minimal */
+
+/* Block container margins only */
+.wp-block-eshoplogisticru-checkout-shipping,
+.wp-block-eshoplogisticru-product-calculator,
+.wp-block-eshoplogisticru-cart-shipping,
+.wp-block-eshoplogisticru-checkout-form {
+    margin: 1em 0;
+}
