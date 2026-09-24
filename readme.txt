@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.42
+Stable tag: 3.1.54
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,17 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.54 =
+* The shipping rate selected by the customer is now saved in the order more reliably, including when delivery was calculated earlier in the delivery widget.
+* Improved how the pickup point address is determined.
+* Refined when the VAT rate is applied to shipping.
+* Fixed the payment type name in exported orders.
+* Label print format now depends on the order type, and the paper size updates when you change the print selection.
+* Tracking numbers are now read from the carrier's response, improving order status updates.
+* Updated column names and widths in the order export table.
+* The "mixed" shipping method on checkout now requires a delivery option to be chosen before the order can be placed.
+* Fixed errors in the delivery widget when a city search returns no results.
 
 = 3.1.42 =
 * Fixed CDEK orders being registered as coming from a third party instead of from the sender: the "Company name" setting is now configured per carrier (on each carrier's own settings tab) instead of one shared value for all carriers, and is no longer available for CDEK, since sending it there caused this misclassification.
