@@ -167,6 +167,74 @@
     }
 
     /**
+     * Есть ли у нас подтверждённый город (fias) для запуска виджета доставки.
+     */
+    function hasSelectedCity() {
+        const data = getWidgetData();
+        return !!(data.city && data.city.fias);
+    }
+
+    /**
+     * Выбран ли сейчас именно ESL-метод ("калькулятор доставки esl!"), а не
+     * нативный WooCommerce-метод вроде "Самовывоз" (Local pickup).
+     */
+    function isEslMethodSelected() {
+        return isEshopMethod(getCurrentShippingMethod());
+    }
+
+    /**
+     * Синхронизировать доступность кнопки запуска виджета "калькулятор доставки esl!"
+     * и подсказку рядом с ней с наличием выбранного города: без города виджет не может
+     * инициализироваться (см. sendWidgetParams), поэтому кнопка должна быть недоступна,
+     * а не молча открывать модалку с ошибкой в консоли. Подсказка актуальна только когда
+     * выбран сам ESL-метод — при "Самовывоз" и т.п. её быть не должно.
+     */
+    function updateCityGateUI() {
+        const showTip = isEslMethodSelected() && !hasSelectedCity();
+
+        document.querySelectorAll('.wc-esl-terminals__button').forEach((button) => {
+            button.disabled = showTip;
+        });
+
+        const tips = document.getElementById('tips-city-container');
+        if (!tips) {
+            return;
+        }
+
+        if (showTip) {
+            tips.innerHTML = '<i class="ico">☓</i>Для расчёта доставки выберите населённый пункт';
+            tips.style.display = 'block';
+        } else {
+            tips.style.display = 'none';
+        }
+    }
+
+    /**
+     * Пока город не выбран, тариф "калькулятор доставки esl!" всегда регистрируется
+     * с cost=0 (см. calculate_shipping_frame() в Base.php — это ещё не подтверждённая
+     * бесплатная доставка, а признак "цена ещё не рассчитана"). WooCommerce Blocks
+     * рендерит любую стоимость 0 как "Бесплатно" чисто на клиенте (cart total), и это
+     * нельзя переопределить из PHP через label — подменяем текст прямо в DOM. Актуально
+     * только пока выбран сам ESL-метод: у других методов (например, "Самовывоз") 0 — это
+     * настоящая бесплатная доставка, а не нерассчитанная.
+     */
+    function patchUncalculatedShippingTotal() {
+        if (!isEslMethodSelected() || hasSelectedCity()) {
+            return;
+        }
+
+        const valueEl = document.querySelector('.wc-block-components-totals-shipping .wc-block-components-totals-item__value');
+        if (!valueEl) {
+            return;
+        }
+
+        const text = (valueEl.textContent || '').trim().toLowerCase();
+        if (text === 'бесплатно' || text === 'free') {
+            valueEl.textContent = '';
+        }
+    }
+
+    /**
      * Получить хеш/подпись события сервиса.
      * Используем objectHash.sha1 при наличии, иначе безопасный fallback через JSON.
      */
@@ -504,6 +572,37 @@
             if (typeof addressEl.setCustomValidity === 'function') {
                 addressEl.setCustomValidity('');
             }
+        }
+    }
+
+    // Индекс обязателен в чекауте Blocks (дефолт WC для RU), но в это поле
+    // пишет только выбор города (setCheckoutAddressValues/autoConfirmPrefilledCity).
+    // Выбор ПВЗ индекс не трогает вовсе (только address_1, см. ниже) - если
+    // индекс по какой-то причине не пришёл при резолве города (например, DOM
+    // поля ещё не было в момент авто-подтверждения), поле остаётся пустым и
+    // блокирует "Оформить заказ". Подстраховываемся последним известным
+    // индексом из widgetCityEsl, не трогая поле, если там уже есть значение.
+    function fillMissingShippingPostcodeFromWidgetData() {
+        const postcodeEl = getFieldElement(['shipping_postcode', 'shipping-postcode']);
+        if (!postcodeEl || (postcodeEl.value || '').trim() !== '') {
+            return;
+        }
+
+        const cityInput = document.getElementById('widgetCityEsl');
+        if (!cityInput || !cityInput.value) {
+            return;
+        }
+
+        let parsed;
+        try {
+            parsed = JSON.parse(cityInput.value);
+        } catch (e) {
+            return;
+        }
+
+        const postcode = parsed && (parsed.postcode || parsed.postal_code);
+        if (postcode) {
+            setInputValue(postcodeEl, postcode);
         }
     }
 
@@ -1304,6 +1403,8 @@
                 return;
             }
 
+            resultContainer.innerHTML = '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
+
             searchTimer = setTimeout(() => {
                 const country = getCheckoutCountryValue();
                 searchCity(value, (itemsByRegion) => {
@@ -1878,7 +1979,12 @@
             terminalCode: '',
             comment: '',
             deliveryMethods: '',
-            selectPvz: ''
+            selectPvz: '',
+            // Тариф, выбранный покупателем (окно "Выберите тариф" виджета) или тариф по
+            // умолчанию — виджет держит его в responseData[тип].tariff. Сохраняется в заказ
+            // и подставляется в форму выгрузки (ExportFileds::resolveOrderTariff()).
+            tariffCode: '',
+            tariffName: ''
         };
 
         const terminalInput = document.getElementById('terminalEsl');
@@ -1906,6 +2012,11 @@
 
             if (responseData.comment) {
                 eslData.comment += (eslData.comment ? '<br>' : '') + responseData.comment;
+            }
+
+            if (responseData.tariff && responseData.tariff.code !== undefined && responseData.tariff.code !== null) {
+                eslData.tariffCode = String(responseData.tariff.code);
+                eslData.tariffName = responseData.tariff.name || '';
             }
         }
 
@@ -2054,6 +2165,7 @@
                 // поэтому для terminal перед отключением проставляем значение.
                 setInputValue(shippingAddressEl, valueToSet);
                 lastAutoFilledAddressValue = valueToSet;
+                fillMissingShippingPostcodeFromWidgetData();
                 clearAddressFieldError();
                 toggleAddressFields(false);
             } else if (nextDeliveryType === 'door') {
@@ -2354,6 +2466,9 @@
         });
 
         // No auto-open in Blocks.
+
+        updateCityGateUI();
+        patchUncalculatedShippingTotal();
     }
 
     /**
@@ -2365,6 +2480,9 @@
         const deliveryType = getDeliveryType(currentMethod);
         const hasEslBlock = document.querySelector('.wc-esl-checkout-shipping-block');
         const methodChanged = currentMethod !== lastHandledShippingMethod;
+
+        updateCityGateUI();
+        patchUncalculatedShippingTotal();
 
         // Очищаем выбранный терминал только при фактической смене метода доставки.
         // Иначе updated_checkout/перерендеры WooCommerce стирают уже выбранный ПВЗ.
@@ -2640,6 +2758,19 @@
         handleShippingMethodChange();
         setupUseForBillingCheckbox();
         scheduleInitialCityAutoConfirm();
+
+        document.addEventListener('wc-esl-city-changed', () => {
+            updateCityGateUI();
+            patchUncalculatedShippingTotal();
+        });
+
+        // Итоги доставки и список способов доставки — отдельные React-блоки WC Blocks,
+        // перерисовывающиеся асинхронно при каждом обновлении корзины/адреса, поэтому
+        // одноразовой подмены при инициализации недостаточно.
+        setInterval(() => {
+            updateCityGateUI();
+            patchUncalculatedShippingTotal();
+        }, 800);
     }
 
     /**

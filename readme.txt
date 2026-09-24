@@ -2,44 +2,38 @@
 Contributors: eshoplogistic
 Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.26
+Stable tag: 3.1.54
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Integration with eShopLogistic service for WooCommerce. Supports 18+ delivery services with real-time shipping calculations.
+Integration with delivery carriers through the eShopLogistic service: shipping calculation and order export to carrier dashboards.
 
 == Description ==
 
-**English Description**
+This plugin integrates WordPress (WooCommerce) with delivery carriers through the eShopLogistic integration service. Detailed information about platform features and pricing is available at [eshoplogistic.ru](http://eshoplogistic.ru/).
 
-eShopLogistic is the official WordPress plugin for integrating your WooCommerce store with the eShopLogistic service ([eshoplogistic.ru](https://eshoplogistic.ru/)).
+One solution, integrated with all major delivery services: CDEK, DPD, Yandex Delivery, 5Post, Delovye Linii, PEC, Russian Post, KIT, Baikal Service, Zheldorexpeditsiya, Vozovoz, Energiya, Magnit Post, Grastin, Logsis, Integral. Other carriers can be connected on request.
 
-This plugin offers comprehensive shipping integration with support for multiple Russian and international delivery services:
-- Display real-time shipping cost and delivery time calculations in shopping cart and product pages
-- Support for 18+ delivery carriers (CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and more)
-- Pickup point (PVZ) selection with interactive map
-- Automatic order export to carrier systems
-- Flexible shipping rules and adjustments
-- Support for custom shipping methods
-- Shipping calculator in product card, shopping cart, and custom pages via widgets
-- Order tracking with status updates
-- Comprehensive settings management panel
-- Full support for WooCommerce Block Checkout (Gutenberg-based checkout pages)
-- Four Gutenberg blocks for adding shipping widgets to any page
+To use the plugin, you need to register an eShopLogistic account and complete the basic integration setup for each delivery service you need in your eShopLogistic personal dashboard. In WooCommerce, you only configure what relates to the plugin's own operation with the connected carriers — shipping calculation in WooCommerce works across all carriers connected through eShopLogistic. Order export to carrier systems is currently available for CDEK, DPD, Yandex Delivery, 5Post, Russian Post, Delovye Linii, PEC, and Baikal Service; support for the remaining carriers will be added gradually as the plugin evolves and based on user requests.
 
-**Feature Highlights:**
+**Key features:**
 
-* Real-time shipping rate calculation for multiple carriers
-* Single unified pickup point selector across all carriers
-* One control panel for all delivery services with advanced customization
-* Shipping rate rules based on payment method, delivery type, destination, order amount, weight and more
-* Dynamic cost and delivery time adjustments per rule
-* Custom delivery methods support
-* Full order export and tracking capabilities
-* WooCommerce Blocks checkout support — works with both classic shortcode and block-based checkout
-* Gutenberg blocks: Shipping Calculator (Checkout), Product Shipping Calculator, Cart Shipping, Checkout Form (Legacy)
+* Shipping cost calculation in the cart, on the product page, or on any other page, across all the carriers you need
+* All delivery services and their pickup points (PVZ) shown in a single widget, or separate shipping methods per carrier
+* Product weight and dimensions taken from product cards or default values
+* Flexible rules for adjusting shipping cost and delivery time
+* Order export to carrier dashboards from the WooCommerce admin, through a single unified interface
+* Tracking number retrieval
+* Sync of WooCommerce order statuses with carrier delivery statuses
+* Orders can be created in carrier dashboards as prepaid or cash-on-delivery
+* Manual correction of parcel/package parameters when exporting orders to carriers
+* Deleting an order from a carrier's dashboard
+
+The plugin works correctly only on themes with standard, non-customized WooCommerce checkout logic. If your checkout has been customized, the module will need to be adapted accordingly.
+
+If something isn't working, reach us via [Telegram](https://t.me/eShopLogisticBot), [Max](https://max.ru/id690303528611_bot), live chat, or the "Support" section in your dashboard — we're happy to help!
 
 **Requirements:**
 - WordPress 6.0+
@@ -49,7 +43,7 @@ This plugin offers comprehensive shipping integration with support for multiple 
 **Checkout Mode Support:**
 Compatible with both traditional shortcode checkout (`[woocommerce_checkout]`) and WooCommerce Block Checkout.
 
-For detailed documentation and demo: [wp-v2.eshoplogistic.ru](https://wp-v2.eshoplogistic.ru/)
+For detailed documentation and demo: [wp.eshoplogistic.ru](https://wp.eshoplogistic.ru/)
 
 == Installation ==
 
@@ -73,7 +67,7 @@ Yes. Both the classic shortcode checkout (`[woocommerce_checkout]`) and the bloc
 
 = Do I need a Yandex Maps API key? =
 
-Only if you want to display pickup points on an interactive map — this is optional and configured in the plugin settings.
+No. The pickup-point (PVZ) map works out of the box without a key. Providing your own Yandex Maps API key in the plugin settings is optional and only enables the in-map street/metro search control.
 
 == Screenshots ==
 
@@ -88,11 +82,46 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 
 1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
 2. **eShopLogistic embeddable widget bundle** (`https://api.esplc.ru/widgets/{cart,modal,block}/app.js`, which in turn loads a versioned, content-hashed JS/CSS bundle from the same `api.esplc.ru` domain) — this is a live, self-updating cart/product/checkout shipping-calculator UI, analogous to an embeddable live-chat widget: the eShopLogistic team ships UI updates to this bundle independently of plugin releases, and the asset filenames change with every such release, so they cannot be bundled statically inside the plugin without going stale. It is only loaded on pages where a shipping widget is displayed (product page, cart, checkout), and once loaded it talks to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above. A second, older widget UI (used for the product-tab "static" and "modal" display modes) is bundled locally inside the plugin (`assets/css/widget-*.css`, `assets/js/widget-*.js`) and is not loaded remotely.
-3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded only if you enable the interactive pickup-point map and provide your own Yandex Maps API key in the plugin settings. When enabled, the visitor's browser loads the Yandex Maps JavaScript API to render pickup-point markers on a map. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
+3. **Yandex Maps API** (`api-maps.yandex.ru`) — loaded whenever the pickup-point (PVZ) selection modal is opened, so the visitor's browser can render pickup-point markers on an interactive map. Providing your own Yandex Maps API key in the plugin settings is optional: without a key the map and pickup-point markers still work, only the in-map street/metro search control is disabled; if a key is provided, it is appended to the API request. See [Yandex Terms of Use](https://yandex.ru/legal/) and [Yandex Privacy Policy](https://yandex.ru/legal/confidential/).
 4. **DaData address suggestions** (`suggestions.dadata.ru`) — the locally-bundled product-tab/modal widget UI (see item 2) uses this service to suggest matching Russian addresses as the customer types their delivery address, so the visitor's browser sends the partial address text they are typing, together with an eShopLogistic-issued API token, directly to `suggestions.dadata.ru`. This only runs while the customer is actively typing in the delivery-address field of that widget. See [DaData Terms of Service](https://dadata.ru/terms/) and [DaData Privacy Policy](https://dadata.ru/privacy/).
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.54 =
+* The shipping rate selected by the customer is now saved in the order more reliably, including when delivery was calculated earlier in the delivery widget.
+* Improved how the pickup point address is determined.
+* Refined when the VAT rate is applied to shipping.
+* Fixed the payment type name in exported orders.
+* Label print format now depends on the order type, and the paper size updates when you change the print selection.
+* Tracking numbers are now read from the carrier's response, improving order status updates.
+* Updated column names and widths in the order export table.
+* The "mixed" shipping method on checkout now requires a delivery option to be chosen before the order can be placed.
+* Fixed errors in the delivery widget when a city search returns no results.
+
+= 3.1.42 =
+* Fixed CDEK orders being registered as coming from a third party instead of from the sender: the "Company name" setting is now configured per carrier (on each carrier's own settings tab) instead of one shared value for all carriers, and is no longer available for CDEK, since sending it there caused this misclassification.
+* Added the ability for developers to fine-tune delivery calculation and order export for stores with special requirements.
+* Improved the plugin's documentation: clearer description of features, requirements and setup steps.
+* On the checkout page, the delivery calculator now appears after the list of shipping rates instead of before it.
+* Added new options for printing orders and improved the print buttons.
+* Improved the admin screen so page elements no longer overlap incorrectly.
+* Improved combining several items into a single shipment package for CDEK and DPD.
+* Removed unnecessary checks that could get in the way when setting up additional shipping services.
+* Improved the settings screen for combining shipment packages, with better spacing around the "add" button.
+* Improved package combining for CDEK and DPD: the full order contents can now be sent for insurance purposes.
+* The delivery type can no longer be changed once a fixed shipping rate is selected.
+* Added support for the "cash on delivery" option for CDEK.
+* Order data sent to carriers now includes an extra recipient identifier, as required by some carriers.
+* The tracking number field now shows a clear message when the carrier hasn't issued a number yet, instead of staying empty.
+* Clarified the message shown when dragging and dropping order statuses.
+* Renamed a settings tab for clarity: "Payment & Widget" is now "Payment Types".
+* Refreshed the look of tooltips and form fields in the settings.
+* Added support for displaying paid delivery days in account settings.
+* The delivery calculator button now enables or disables itself automatically based on the selected city and delivery method.
+* Fixed the wording of the message about available shipping options.
+* Added shortcodes to display the tracking link and delivery code on the site.
+* Added a loading indicator while searching for a city on the pickup-point map.
 
 = 2.2.26 =
 * Removed the Boxberry carrier (discontinued): the settings tab, its shipping methods, and its order-export field mapping. Already-exported orders that used Boxberry are still displayed correctly in the order history.

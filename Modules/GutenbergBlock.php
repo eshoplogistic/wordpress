@@ -39,14 +39,15 @@ class GutenbergBlock implements ModuleInterface
 
         // Автоподключение калькулятора к "голому" блочному чекауту (woocommerce/checkout
         // без явно вставленного eshoplogisticru/checkout-shipping) — доинъектируем блок
-        // сразу после order-summary, туда же, куда он попадает при ручной вставке.
-        add_filter('render_block_woocommerce/checkout-order-summary-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
+        // сразу после списка тарифов доставки (checkout-shipping-methods-block), в основной
+        // колонке формы, рядом с шагом "Способ доставки".
+        add_filter('render_block_woocommerce/checkout-shipping-methods-block', [$this, 'injectCheckoutShippingBlock'], 10, 2);
     }
 
     /**
      * Доинъектирует калькулятор ESL в блочный checkout, если он не вставлен вручную.
      *
-     * @param string $blockContent Отрендеренный HTML блока order-summary
+     * @param string $blockContent Отрендеренный HTML блока списка тарифов доставки
      * @param array  $block Данные блока
      * @return string
      */
@@ -242,7 +243,7 @@ class GutenbergBlock implements ModuleInterface
                 <div id="wc-esl-terminals-wrap-button-shipping" class="wc-esl-terminals__container wc-esl-terminals__frame">
                     <div class="esl_desct_delivery" style="display: none;">
                         <p>Всего доступно <span class="count"><?php echo esc_html($count); ?></span>
-                        <span class="countText"><?php echo esc_html($countText); ?></span> доставки.
+                        <span class="countText"><?php echo esc_html($countText); ?></span> доставки:
                             <br><span class="addText">Выбран самый дешевый вариант.</span></p>
                     </div>
                     <button
@@ -301,6 +302,7 @@ class GutenbergBlock implements ModuleInterface
                 ?>
                 <input type="hidden" name="wc-esl-terminals" id="wcEslTerminals" value="<?php echo esc_attr(wp_json_encode($terminals)); ?>" />
                 <input type="hidden" name="wc-esl-api-key-ya" id="wcEslKeyYa" value="<?php echo esc_attr($apiKeyYa); ?>" />
+                <input id='widgetCityEsl' value='<?php echo esc_attr(json_encode($widgetCityEsl)); ?>' type='hidden'>
                 <?php endif; ?>
 
                 <?php if ($citySelectModal): ?>

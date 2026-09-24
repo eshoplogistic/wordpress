@@ -241,6 +241,15 @@ window.addEventListener('load', function(event) {
 function eslApplyVisibilityRule(target, values, match) {
 	document.querySelectorAll('#eslCarrierTabsWrap [data-esl-key="' + target + '"]').forEach(function (wrapper) {
 		wrapper.style.display = match ? '' : 'none';
+
+		// Скрытый чекбокс не должен молча оставаться "включённым" в сохранённых настройках —
+		// снимаем галку вместе со скрытием (например "Отправлять состав заказа для страховки"
+		// без включённого "Объединения грузовых мест").
+		if (!match) {
+			wrapper.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+				checkbox.checked = false;
+			});
+		}
 	});
 }
 
@@ -278,7 +287,8 @@ function eslRun() {
 		apiKeyStatusBadge: document.getElementById('apiKeyStatusBadge'),
 		apiKeyStatusErrorMsg: document.getElementById('apiKeyStatusErrorMsg'),
 		apiKeyStatusBalance: document.getElementById('apiKeyStatusBalance'),
-		apiKeyStatusPaidDays: document.getElementById('apiKeyStatusPaidDays'),
+		apiKeyStatusPaidDaysText: document.getElementById('apiKeyStatusPaidDaysText'),
+		apiKeyStatusFreeDaysBlock: document.getElementById('apiKeyStatusFreeDaysBlock'),
 		apiKeyStatusFreeDays: document.getElementById('apiKeyStatusFreeDays'),
 		apiKeyWCartInput: document.getElementById('apiKeyWCartInput'),
 		apiKeyWCartForm: document.getElementById('apiKeyWCartForm'),
@@ -663,8 +673,11 @@ function eslRun() {
 			}
 
 			_self.apiKeyStatusBalance.textContent = data.wc_esl_shipping_account_balance || '';
-			_self.apiKeyStatusPaidDays.textContent = data.wc_esl_shipping_account_paid_days || '';
-			_self.apiKeyStatusFreeDays.textContent = data.wc_esl_shipping_account_free_days || '';
+			_self.apiKeyStatusPaidDaysText.textContent = data.wc_esl_shipping_account_paid_days_text || '';
+
+			let freeDays = data.wc_esl_shipping_account_free_days || '';
+			_self.apiKeyStatusFreeDays.textContent = freeDays;
+			_self.apiKeyStatusFreeDaysBlock.style.display = (freeDays && freeDays !== '0') ? '' : 'none';
 		},
 
 		submitApiKeyWCartForm: function (event) {

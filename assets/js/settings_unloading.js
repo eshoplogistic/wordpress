@@ -693,6 +693,7 @@ document.addEventListener('click', function (e) {
     let resultBox = wrapper ? wrapper.querySelector('.esl-print__result') : null;
     let mode = printBtn.getAttribute('data-mode') || '';
     let paper = paperSelect ? paperSelect.value : '';
+    let type = printBtn.getAttribute('data-type') || '';
 
     let orderIdField = document.getElementById('order_info_id');
     let orderTypeField = document.getElementById('order_info_type');
@@ -718,6 +719,7 @@ document.addEventListener('click', function (e) {
         + '&order_type=' + encodeURIComponent(orderTypeField.value)
         + '&mode=' + encodeURIComponent(mode)
         + '&paper=' + encodeURIComponent(paper)
+        + '&type=' + encodeURIComponent(type)
         + '&esl_nonce=' + wc_esl_shipping_global.eslNonce;
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.send(params);
@@ -732,6 +734,29 @@ document.addEventListener('click', function (e) {
             resultBox.textContent = obj.msg || 'Не удалось получить печатную форму';
         }
     };
+});
+
+// Смена формата бумаги после уже полученной печатной формы: старая ссылка осталась бы
+// от прошлого формата (напр. A6), поэтому перезапрашиваем форму заново для активной кнопки,
+// а если печать ещё не запускали — просто сбрасываем результат.
+document.addEventListener('change', function (e) {
+    let paperSelect = e.target.closest ? e.target.closest('.esl-print-paper') : null;
+    if (!paperSelect) {
+        return;
+    }
+    let wrapper = paperSelect.closest('.esl-print');
+    if (!wrapper) {
+        return;
+    }
+    let activeBtn = wrapper.querySelector('.esl-print-button--active');
+    if (activeBtn) {
+        activeBtn.click();
+        return;
+    }
+    let resultBox = wrapper.querySelector('.esl-print__result');
+    if (resultBox) {
+        resultBox.innerHTML = '';
+    }
 });
 
 function copyToClipboard(containerid, e) {

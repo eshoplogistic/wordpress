@@ -201,6 +201,10 @@
     transition: background-color .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
 }
 
+.wc-esl-settings .wc-esl-add__button {
+    margin-top: 1.5rem;
+}
+
 .wc-esl-settings .btn-primary:hover,
 .wc-esl-settings .wc-esl-add__button:hover {
     background-color: var(--esl-accent-dark);
@@ -553,8 +557,9 @@
 }
 
 .help-tip{
-    top: 15px;
-    right: 300px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
     text-align: center;
     background-color: var(--esl-accent-soft-strong);
     border-radius: 50%;
@@ -563,7 +568,7 @@
     font-size: 13px;
     line-height: 24px;
     cursor: default;
-    z-index: 999999;
+    z-index: 2;
     transition: background-color .15s ease;
 }
 

@@ -14,6 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WidgetController extends Controller {
 
+	// Срок жизни кэша ответов виджета, в т.ч. расчёта доставки, из которого при оформлении
+	// заказа берётся тариф (Base::getFrameCalculationData()).
+	const CACHE_TTL = HOUR_IN_SECONDS;
+
 	public function process( \WP_REST_Request $request ): ResponseInterface {
 		$out    = [];
 		$method = $request->get_param( 'method' );
@@ -31,12 +35,15 @@ class WidgetController extends Controller {
 
 			if ( ! empty( $cache_data ) ) {
 				$out = $cache_data;
+				if ( $method == 'widget/calculation' ) {
+					$this->restoreCalculationCache( $query_data, $cache_data );
+				}
 			} else {
 				$raw = ( $method == 'widget/send' ) ? $request->get_param( 'raw' ) : '';
 
 				if ( $request = $this->ApiQuery( trim( $method ), $query_data, $raw ) ) {
 					if ( ! empty( $request ) && $request['http_status'] == 200 ) {
-						set_transient( $cache_key, $request, HOUR_IN_SECONDS );
+						set_transient( $cache_key, $request, self::CACHE_TTL );
 					}
 					$out = $request;
 				}
@@ -44,6 +51,29 @@ class WidgetController extends Controller {
 		}
 
 		return $this->json( $out );
+	}
+
+	/**
+	 * Ответ widget/calculation кэшируется дважды: целиком по запросу (выше) и по ключу
+	 * город+ключ+служба в ApiQuery() — последний читает Base::getFrameCalculationData().
+	 * Второй transient ставится чуть раньше и истекает раньше, поэтому при попадании в первый
+	 * кэш второй мог отсутствовать, и в заказ не сохранялся тариф. Восстанавливаем его.
+	 */
+	private function restoreCalculationCache( array $data, $result ) {
+		if ( ! is_array( $result ) || ! isset( $result['debug'] ) ) {
+			return;
+		}
+
+		$keyWidget = explode( ':', (string) ( $data['key'] ?? '' ) );
+		$cacheJson = array(
+			'city'    => $data['to'] ?? '',
+			'key'     => $keyWidget[0],
+			'service' => $data['service'] ?? '',
+		);
+		$cache_key = md5( 'widget/calculation' . json_encode( $cacheJson ) );
+		if ( false === get_transient( $cache_key ) ) {
+			set_transient( $cache_key, $result, self::CACHE_TTL );
+		}
 	}
 
 	/**
@@ -145,7 +175,7 @@ class WidgetController extends Controller {
 						'service' => $data['service']
 					);
 					$cache_key = md5( $method . json_encode( $cacheJson ) );
-					set_transient( $cache_key, $result, HOUR_IN_SECONDS );
+					set_transient( $cache_key, $result, self::CACHE_TTL );
 				}
 
 				return $result;

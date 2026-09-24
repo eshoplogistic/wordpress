@@ -63,8 +63,15 @@ class UnloadingInfo
         if (isset($result['state']['service_status']['description'])) {
             $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Описание:', 'eshoplogisticru') . '</span><span class="esl-info-row__value">' . esc_html($result['state']['service_status']['description']) . '</span></div>';
         }
-        if (isset($result['state']['tracking'])) {
-            $rows .= '<div class="esl-info-row esl-info-row--copy"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-copy-control"><input type="text" value="' . esc_attr($result['state']['tracking']) . '" id="copyText2" disabled><button id="copyBut2" class="button button-primary esl-copy-btn" onclick="copyToClipboard(copyText2, this)">' . esc_html__('Скопировать трек', 'eshoplogisticru') . '</button></span></div>';
+        $trackCode = UnloadingOrder::extractTrackCode($result);
+        if ($trackCode !== '') {
+            $rows .= '<div class="esl-info-row esl-info-row--copy"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-copy-control"><input type="text" value="' . esc_attr($trackCode) . '" id="copyText2" disabled><button id="copyBut2" class="button button-primary esl-copy-btn" onclick="copyToClipboard(copyText2, this)">' . esc_html__('Скопировать трек', 'eshoplogisticru') . '</button></span></div>';
+        } elseif (isset($result['state'])) {
+            // API вернул статус, но tracking ещё пустой — сама ТК просто ещё не присвоила
+            // трек-номер (обычно появляется после приёма отправления курьером/на терминале),
+            // это не ошибка плагина. Показываем то же самое место, что и пустой disabled-инпут,
+            // но с понятным текстом вместо мёртвой кнопки "Скопировать" без значения.
+            $rows .= '<div class="esl-info-row"><span class="esl-info-row__label">' . esc_html__('Трек-номер:', 'eshoplogisticru') . '</span><span class="esl-info-row__value esl-info-row__value--muted">' . esc_html__('ещё не присвоен транспортной компанией', 'eshoplogisticru') . '</span></div>';
         }
 
         $html = $errorHtml;
@@ -104,6 +111,9 @@ class UnloadingInfo
             'wc_esl_deliveryName' => $orderType,
             'wc_esl_printButtons' => $this->getPrintButtons($orderType),
             'wc_esl_paperOptions' => $this->getPrintPaperOptions($orderType),
+            'wc_esl_paperLabel' => $orderType === 'sdek'
+                ? __('Формат печати этикеток:', 'eshoplogisticru')
+                : __('Формат печати:', 'eshoplogisticru'),
         ]);
     }
 
@@ -138,8 +148,15 @@ class UnloadingInfo
                 array('mode' => 'order', 'label' => __('Печать накладной', 'eshoplogisticru')),
             ),
             'yandex' => array(
-                array('mode' => 'barcodes', 'label' => __('Печать штрихкодов', 'eshoplogisticru')),
+                array('mode' => 'barcodes', 'type' => 'one', 'label' => __('Печать наклеек: одна на страницу', 'eshoplogisticru')),
+                array('mode' => 'barcodes', 'type' => 'many', 'label' => __('Печать наклеек: максимум на страницу', 'eshoplogisticru')),
                 array('mode' => 'act', 'label' => __('Акт приёма-передачи', 'eshoplogisticru')),
+            ),
+            'integral' => array(
+                array('mode' => 'order', 'label' => __('Печать накладной', 'eshoplogisticru')),
+                array('mode' => 'act', 'label' => __('Акт приёма-передачи', 'eshoplogisticru')),
+                array('mode' => 'label', 'label' => __('Наклейки Zebra', 'eshoplogisticru')),
+                array('mode' => 'label_A4', 'label' => __('Наклейки А4', 'eshoplogisticru')),
             ),
         );
 

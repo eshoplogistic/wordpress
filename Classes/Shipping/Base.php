@@ -47,6 +47,7 @@ class Base extends \WC_Shipping_Method
 	public function is_available( $package )
 	{
 		$is_available = true;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- mirrors WooCommerce core's own hook name (WC_Shipping_Method::is_available()), must not be prefixed.
 		return apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', $is_available, $package, $this );
 	}
 
@@ -393,24 +394,13 @@ class Base extends \WC_Shipping_Method
 			$cost = 0;
 		}
 
-		$apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
-		$cacheJson = array(
-			'city' => $widgetCityEsl['fias'] ?? '',
-			'key' => $apiWidgetKey,
-			'service' => $shippingFrame['key'] ?? ''
-		);
-		$cache_key = md5('widget/calculation'.json_encode($cacheJson));
-		$cache_data = get_transient($cache_key);
-		if($cache_data){
+		$frameMethodData = self::getFrameCalculationData($shippingFrame, $widgetCityEsl);
+		if($frameMethodData){
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
-			$shippingMethods[$this->id]['debug'] = ( $cache_data['debug'] ?? [] );
-			$shippingMethods[$this->id]['data']['terminal'] = ( $cache_data['data']['terminal'] ?? [] );
-			$shippingMethods[$this->id]['data']['door'] = ( $cache_data['data']['door'] ?? [] );
-			// Полный список тарифов по каждому типу доставки (не только "лучший" по цене) —
-			// нужен, чтобы форма выгрузки заказа могла показать именно тот тариф, который
-			// покупатель выбрал во всплывающем окне "Выберите тариф" виджета, а не автоматически
-			// самый дешёвый (см. Classes/Shipping/ExportFileds.php::resolveOrderTariff()).
-			$shippingMethods[$this->id]['data']['tariffs'] = ( $cache_data['data']['tariffs'] ?? [] );
+			$shippingMethods[$this->id]['debug'] = $frameMethodData['debug'];
+			$shippingMethods[$this->id]['data']['terminal'] = $frameMethodData['data']['terminal'];
+			$shippingMethods[$this->id]['data']['door'] = $frameMethodData['data']['door'];
+			$shippingMethods[$this->id]['data']['tariffs'] = $frameMethodData['data']['tariffs'];
 			$sessionService->set('shipping_methods', $shippingMethods);
 		}
 
@@ -426,6 +416,71 @@ class Base extends \WC_Shipping_Method
 		);
 
 		return $rate;
+	}
+
+	/**
+	 * Данные расчёта виджета (debug + data.terminal/door/tariffs) для frame-метода из
+	 * transient'а, который пишет WidgetController::ApiQuery() при widget/calculation
+	 * (с запасной копией в сессии на случай истечения transient'а).
+	 * Используется и при расчёте ставки, и при сохранении заказа (OrderCreator), если
+	 * сессионный ключ shipping_methods уже был сброшен предыдущим заказом, а WooCommerce
+	 * не пересчитал доставку (закэшированные ставки пакета) — без этого в заказ не
+	 * попадает esl_shipping_methods и в форме выгрузки пустой тариф.
+	 *
+	 * @return array|null
+	 */
+	public static function getFrameCalculationData( $shippingFrame, $widgetCityEsl ) {
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+		if ( is_string( $widgetCityEsl ) ) {
+			$widgetCityEsl = maybe_unserialize( $widgetCityEsl );
+		}
+
+		$optionsRepository = new OptionsRepository();
+		$cacheJson = array(
+			'city' => ( is_array( $widgetCityEsl ) ? ( $widgetCityEsl['fias'] ?? '' ) : '' ),
+			'key' => $optionsRepository->getOption('wc_esl_shipping_api_key_wcart'),
+			'service' => ( is_array( $shippingFrame ) ? ( $shippingFrame['key'] ?? '' ) : '' )
+		);
+		$cache_key  = md5('widget/calculation'.json_encode($cacheJson));
+		$cache_data = get_transient( $cache_key );
+
+		// Transient живёт WidgetController::CACHE_TTL (1 ч), а покупатель может оформить заказ
+		// гораздо позже выбора доставки. Поэтому держим копию последнего расчёта в сессии
+		// WooCommerce (живёт до 48 ч) и берём её, если transient уже истёк — при условии, что
+		// город и служба те же (совпадает ключ кэша).
+		$sessionCopyKey = 'esl_frame_calculation';
+		try {
+			$sessionService = new SessionService();
+			if ( $cache_data && is_array( $cache_data ) ) {
+				$sessionService->set( $sessionCopyKey, array( 'cache_key' => $cache_key, 'data' => $cache_data ) );
+			} else {
+				$sessionCopy = $sessionService->get( $sessionCopyKey );
+				if ( is_array( $sessionCopy ) && ( $sessionCopy['cache_key'] ?? '' ) === $cache_key && is_array( $sessionCopy['data'] ?? null ) ) {
+					$cache_data = $sessionCopy['data'];
+				}
+			}
+		} catch ( \Exception $e ) {
+			// Сессия WooCommerce не инициализирована — работаем только с transient'ом.
+		}
+
+		if ( ! $cache_data || ! is_array( $cache_data ) ) {
+			return null;
+		}
+
+		return array(
+			'debug' => ( $cache_data['debug'] ?? [] ),
+			'data'  => array(
+				'terminal' => ( $cache_data['data']['terminal'] ?? [] ),
+				'door'     => ( $cache_data['data']['door'] ?? [] ),
+				// Полный список тарифов по каждому типу доставки (не только "лучший" по цене) —
+				// нужен, чтобы форма выгрузки заказа могла показать именно тот тариф, который
+				// покупатель выбрал во всплывающем окне "Выберите тариф" виджета, а не автоматически
+				// самый дешёвый (см. Classes/Shipping/ExportFileds.php::resolveOrderTariff()).
+				'tariffs'  => ( $cache_data['data']['tariffs'] ?? [] ),
+			),
+		);
 	}
 
 	private function canApplyFrameSelectionForContext( $shippingFrame, $widgetCityEsl ): bool

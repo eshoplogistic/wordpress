@@ -146,9 +146,18 @@ function isNumeric(value) {
 
                 if (response.success) {
                     renderFunc(response.data);
+                } else {
+                    renderFunc([]);
                 }
+            },
+            error: function () {
+                renderFunc([]);
             }
         });
+    }
+
+    function cityLoadingIndicatorHtml() {
+        return '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
     }
 
     function renderCitiesItem({fias, name, region, postal_code, services, type}) {
@@ -366,6 +375,7 @@ function isNumeric(value) {
 
                 if (value.length > 1) {
                     if (currentBillingCountry) {
+                        $this.closest('.modal-esl-frame').find('#esl_result-search').html(cityLoadingIndicatorHtml());
                         searchCity(value, function (items) {
                             if(Object.getOwnPropertyNames(items).length >= 1) {
                                 $this.closest('.modal-esl-frame').find('#esl_result-search').html(
@@ -728,9 +738,12 @@ function isNumeric(value) {
             const to = JSON.parse(document.getElementById(this.items.esldata_to_id).value)
 
             this.widget_offers = document.getElementById(this.items.esldata_offers_id).value
-            this.widget_city.name = to.city
-            this.widget_city.fias = to.fias
-            this.widget_city.services = to.services
+            this.widget_city.name = to.city || null
+            this.widget_city.fias = to.fias || null
+            // to.services может отсутствовать, если сервер не смог определить город
+            // (ни поиск, ни геолокация не дали результата) — не отдаём undefined виджету,
+            // иначе он падает с TypeError вместо показа своей стандартной ошибки.
+            this.widget_city.services = Array.isArray(to.services) ? to.services : []
             this.widget_payment = (this.current.payment_id) ? this.current.payment_id : 'card'
 
             let current_payment = this.current.payment_id
@@ -831,7 +844,11 @@ function isNumeric(value) {
                 address: '',
                 comment: '',
                 deliveryMethods: '',
-                selectPvz: ''
+                selectPvz: '',
+                // Тариф, выбранный покупателем в виджете (или тариф по умолчанию) — сохраняется
+                // в заказ для формы выгрузки (ExportFileds::resolveOrderTariff()).
+                tariffCode: '',
+                tariffName: ''
             }
 
             if (document.getElementById('terminalEsl') && document.getElementById('terminalEsl').value) {
@@ -852,6 +869,11 @@ function isNumeric(value) {
             esldata.time = time.value + ' ' + time.unit
             if (serviceData.comment) {
                 esldata.comment += '<br>' + serviceData.comment
+            }
+
+            if (serviceData.tariff && serviceData.tariff.code !== undefined && serviceData.tariff.code !== null) {
+                esldata.tariffCode = String(serviceData.tariff.code)
+                esldata.tariffName = serviceData.tariff.name || ''
             }
 
             if (typeof response.terminal == 'object') {

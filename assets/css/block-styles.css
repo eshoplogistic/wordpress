@@ -96,6 +96,11 @@ label.wc-block-components-radio-control__option:has(input[value^="wc_esl_frame_m
     margin-bottom: 20px;
 }
 
+.wc-esl-checkout-shipping-block .wc-esl-terminals__button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Legacy parity: modal-esl-frame */
 /* Selector covers both original location and body-appended (z-index fix) */
 .wc-esl-checkout-shipping-block .modal-esl-frame,

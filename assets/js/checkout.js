@@ -64,7 +64,7 @@
 		}
 	}
 
-	function searchCity( target, renderFunc, currentCountry, typeFilter = false ) {
+	function searchCity( target, renderFunc, currentCountry, typeFilter = false, emptyValue = [] ) {
 		$.ajax({
 			method: 'POST',
 			url: wc_esl_shipping_global.ajaxUrl,
@@ -80,9 +80,18 @@
 
 				if( response.success ) {
 					renderFunc( response.data );
+				} else {
+					renderFunc( emptyValue );
 				}
+			},
+			error: function() {
+				renderFunc( emptyValue );
 			}
 		});
+	}
+
+	function cityLoadingIndicatorHtml() {
+		return '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
 	}
 
 	function renderCitiesItem( { fias, name, region, postal_code, services, type } ) {
@@ -367,6 +376,7 @@
 
 				if (value.length > 1) {
 					if (currentBillingCountry) {
+						$this.next('#esl_result-search').html(cityLoadingIndicatorHtml());
 						searchCity(value, function (items) {
 							if(Object.getOwnPropertyNames(items).length >= 1) {
 								$this.next('#esl_result-search').html(
@@ -375,7 +385,7 @@
 							}else{
 								$this.next('#esl_result-search').html('<button id="esl_modal_button-search">╨Т╤Л╨▒╤А╨░╤В╤М ╨┤╨░╨╜╨╜╤Л╨╣ ╨╜╨░╤Б╨╡╨╗╤С╨╜╨╜╤Л╨╣ ╨┐╤Г╨╜╨║╤В</button>');
 							}
-						}, currentBillingCountry, 'region');
+						}, currentBillingCountry, 'region', {});
 					}
 				}else{
 					$this.next('#esl_result-search').html('');

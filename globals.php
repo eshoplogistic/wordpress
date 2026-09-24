@@ -322,6 +322,44 @@ if ( ! function_exists( 'wc_esl_shortcode_widget_email_status_delivery' ) ) {
     }
 }
 
+if ( ! function_exists( 'wc_esl_shortcode_widget_email_tracking_link' ) ) {
+    function wc_esl_shortcode_widget_email_tracking_link( $atts, $content = null, $code = "" ) {
+        if(!isset($atts['id']))
+            return false;
+
+        $order = wc_get_order( $atts['id'] );
+        if($order){
+            $orderShippings = $order->get_shipping_methods();
+            foreach ($orderShippings as $key=>$item){
+                $shippingMethod = wc_get_order_item_meta( $item->get_id() , 'esl_shipping_methods', $single = true );
+            }
+            $shippingMethods = json_decode($shippingMethod, true);
+            if(isset($shippingMethods['answer']['order']['tracking'])){
+                echo esc_url($shippingMethods['answer']['order']['tracking']);
+            }
+        }
+    }
+}
+
+if ( ! function_exists( 'wc_esl_shortcode_widget_email_tracking_code' ) ) {
+    function wc_esl_shortcode_widget_email_tracking_code( $atts, $content = null, $code = "" ) {
+        if(!isset($atts['id']))
+            return false;
+
+        $order = wc_get_order( $atts['id'] );
+        if($order){
+            $orderShippings = $order->get_shipping_methods();
+            foreach ($orderShippings as $key=>$item){
+                $shippingMethod = wc_get_order_item_meta( $item->get_id() , 'esl_shipping_methods', $single = true );
+            }
+            $shippingMethods = json_decode($shippingMethod, true);
+            if(isset($shippingMethods['answer']['order']['track_code'])){
+                echo esc_html($shippingMethods['answer']['order']['track_code']);
+            }
+        }
+    }
+}
+
 /**
  * AJAX-обработчик получения данных товара для блока калькулятора
  */

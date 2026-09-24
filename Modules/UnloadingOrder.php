@@ -50,7 +50,6 @@ class UnloadingOrder implements ModuleInterface
         'sender' => array(
             'name' => '',
             'phone' => '',
-            'company' => '',
             'email' => '',
         ),
         'seller' => array(
@@ -611,14 +610,52 @@ class UnloadingOrder implements ModuleInterface
     }
 
     /**
+     * @param mixed $status Ответ infoOrder('get').
+     *
+     * @return string
+     */
+    public static function extractTrackCode($status)
+    {
+        if (!is_array($status)) {
+            return '';
+        }
+
+        foreach ([
+            $status['state']['tracking'] ?? '',
+            $status['order']['track_code'] ?? '',
+            $status['state']['number'] ?? '',
+        ] as $candidate) {
+            if (is_scalar($candidate) && (string) $candidate !== '') {
+                return (string) $candidate;
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * @param int   $orderShippingId
      * @param array $shippingMethods
      * @param array $resultTracking
      */
     private function applyTrackingResult($orderShippingId, array $shippingMethods, $resultTracking)
     {
-        if (isset($resultTracking['state']['tracking'])) {
-            $shippingMethods['tracking'] = $resultTracking['state']['tracking'];
+        // Ответ create у части ТК (СДЭК) содержит только order.id — ссылка, номер и
+        // трек-код приходят в ответе get в блоке order. Домерживаем его в answer.order,
+        // иначе шорткоды писем (answer.order.tracking/track_code) остаются пустыми.
+        if (!empty($resultTracking['order']) && is_array($resultTracking['order'])) {
+            $answerOrder = $shippingMethods['answer']['order'] ?? [];
+            if (!is_array($answerOrder)) {
+                $answerOrder = [];
+            }
+            $shippingMethods['answer']['order'] = array_merge($answerOrder, array_filter($resultTracking['order'], function ($value) {
+                return $value !== '' && $value !== null;
+            }));
+        }
+
+        $trackCode = self::extractTrackCode($resultTracking);
+        if ($trackCode !== '') {
+            $shippingMethods['tracking'] = $trackCode;
         }
 
         $this->saveShippingMethods($orderShippingId, $shippingMethods);
@@ -636,7 +673,7 @@ class UnloadingOrder implements ModuleInterface
      */
     public function saveTrackingFromStatus($orderId, array $status)
     {
-        if (!isset($status['state']['tracking'])) {
+        if (self::extractTrackCode($status) === '' && empty($status['order'])) {
             return;
         }
 
@@ -777,7 +814,6 @@ class UnloadingOrder implements ModuleInterface
             'sender' => array(
                 'name' => $data['sender-name'],
                 'phone' => $data['sender-phone'],
-                'company' => $exportFormSettings['sender-company'] ?? '',
                 'email' => $data['sender-email'],
             ),
             'delivery' => array(
@@ -842,22 +878,38 @@ class UnloadingOrder implements ModuleInterface
         // передаваемую в ТК, суммой, которую нужно получить с покупателя. Как в moj_sklad, применяется
         // только когда заказ отмечен предоплаченным (payment_type === 'already_paid') — именно для этого
         // сценария ("товар оплачен на сайте, но доставку курьер должен взять при получении") ТК и различает
-        // эту сумму отдельно от общего способа оплаты заказа. Служебные ключи не должны попасть в payload.
+        // эту сумму отдельно от общего способа оплаты заказа. delivery-custom-cost — служебный ключ,
+        // в payload попадать не должен.
         if (isset($data['delivery']) && is_array($data['delivery'])) {
+            $takePayment = !empty($data['delivery']['take_payment']);
+
             if (
-                ($data['payment_type'] ?? '') === 'already_paid'
-                && !empty($data['delivery']['take_payment'])
+                $takePayment
+                && ($data['payment_type'] ?? '') === 'already_paid'
                 && isset($data['delivery']['delivery-custom-cost'])
                 && $data['delivery']['delivery-custom-cost'] !== ''
             ) {
                 $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
 
                 // Ставка НДС для этой суммы — своя настройка (sdek: «Ваша ставка НДС»), как в moj_sklad,
-                // приоритетнее общей delivery-vat_rate выше, но только если она вообще задана оператором.
-                if (isset($exportFormSettings['cost-custom-delivery-' . $deliveryId]) && $exportFormSettings['cost-custom-delivery-' . $deliveryId] !== '') {
-                    $defaultFields['delivery']['vat_rate'] = $exportFormSettings['cost-custom-delivery-' . $deliveryId];
+                // приоритетнее общей delivery-vat_rate выше. Пока настройка ни разу не сохранялась, в интерфейсе
+                // выбрано «Без НДС» (-1), поэтому и здесь отправляем -1, а не опускаем поле (иначе ТК применит
+                // свою ставку по умолчанию). Проверка строго на ''/null, а не empty(): «0» — это валидная ставка 0%.
+                $costVatRate = $exportFormSettings['cost-custom-delivery-' . $deliveryId] ?? '';
+                if ($costVatRate === '' || $costVatRate === null) {
+                    $costVatRate = $defaultFields['delivery']['vat_rate'] !== '' ? $defaultFields['delivery']['vat_rate'] : '-1';
                 }
+                $defaultFields['delivery']['vat_rate'] = $costVatRate;
             }
+
+            // У СДЭК (в отличие от postrf/fivepost/yandex, см. overriding-parameters.html)
+            // delivery.take_payment — реальный флаг API, включающий "Оплата с получателя:
+            // За доставку" в личном кабинете СДЭК. Раньше он вырезался вместе со служебным
+            // delivery-custom-cost и никогда не долетал до ТК.
+            if ($deliveryId === 'sdek') {
+                $defaultFields['delivery']['take_payment'] = $takePayment;
+            }
+
             unset($data['delivery']['take_payment'], $data['delivery']['delivery-custom-cost']);
         }
 
@@ -896,6 +948,15 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['complement'] = $data['complement'];
         }
 
+        // Название компании отправителя — по ТК, а не общее для магазина: у СДЭК передача
+        // sender.company приводит к тому, что заказ регистрируется как поступивший от третьей
+        // стороны, а не от отправителя, поэтому для sdek это поле никогда не показывается в
+        // настройках (см. views/settings.php::$carrierTabs) и не отправляется.
+        $senderCompany = $exportFormSettings['sender-company-' . $deliveryId] ?? '';
+        if ($senderCompany !== '') {
+            $defaultFields['sender']['company'] = $senderCompany;
+        }
+
         // Продавец — реквизиты "истинного продавца", если он отличается от отправителя.
         // По ТК, а не общие для магазина: если заполнить их глобально, они утекут во все
         // службы разом и СДЭК/другие ТК зарегистрируют заказ как поступивший от третьей
@@ -914,12 +975,57 @@ class UnloadingOrder implements ModuleInterface
             $defaultFields['order']['id'] = $data['sender-custom-order-id'];
         }
 
-        $exportFields = new ExportFileds();
-        $exportFields = $exportFields->sendExportFields($data['delivery_id']);
+        $exportFieldsHelper = new ExportFileds();
+        $exportFields = $exportFieldsHelper->sendExportFields($data['delivery_id']);
         foreach ($exportFields as $key => $value) {
             if (isset($data[$key])) {
                 $defaultFields[$key] = $shippingHelper->mergeDeep($defaultFields[$key], $data[$key]);
             }
+        }
+
+        // СДЭК/DPD: "Объединение грузовых мест" + "Отправлять состав заказа для страховки" —
+        // позиции заказа передаются как есть (см. Classes/Table.php::prepare_items(), там же
+        // отключено буквальное слияние строк "Места" при этой комбинации настроек), а вес/габариты
+        // итогового объединённого места уходят отдельно через API-поле order.combine_places
+        // (нужно транспортным компаниям для оформления страховки груза).
+        if (
+            in_array($deliveryId, $exportFieldsHelper->carriersWithInsuranceItems(), true)
+            && !empty($exportFormSettings['merge-in-one-' . $deliveryId])
+            && !empty($exportFormSettings['combine-places-send-items-' . $deliveryId])
+            && !empty($data['products'])
+        ) {
+            $combineWeight = 0;
+            $combineWidth = 0;
+            $combineLength = 0;
+            $combineHeight = 0;
+
+            foreach ($data['products'] as $item) {
+                if (empty($item['product_id'])) {
+                    continue;
+                }
+
+                $quantity = (float) ($item['quantity'] ?? 1);
+                $combineWeight += (float) ($item['weight'] ?? 0) * $quantity;
+                $combineWidth = max($combineWidth, (float) ($item['width'] ?? 0));
+                $combineLength = max($combineLength, (float) ($item['length'] ?? 0));
+                $combineHeight = max($combineHeight, (float) ($item['height'] ?? 0));
+            }
+
+            if (!empty($exportFormSettings['default-stt-width-' . $deliveryId])) {
+                $combineWidth = $exportFormSettings['default-stt-width-' . $deliveryId];
+            }
+            if (!empty($exportFormSettings['default-stt-length-' . $deliveryId])) {
+                $combineLength = $exportFormSettings['default-stt-length-' . $deliveryId];
+            }
+            if (!empty($exportFormSettings['default-stt-height-' . $deliveryId])) {
+                $combineHeight = $exportFormSettings['default-stt-height-' . $deliveryId];
+            }
+
+            $defaultFields['order']['combine_places'] = array(
+                'apply' => true,
+                'weight' => $shippingHelper->weightOption($combineWeight),
+                'dimensions' => $shippingHelper->dimensionsOption($combineWidth) . '*' . $shippingHelper->dimensionsOption($combineLength) . '*' . $shippingHelper->dimensionsOption($combineHeight),
+            );
         }
 
         if (isset($data['fulfillment'])) {
@@ -928,6 +1034,26 @@ class UnloadingOrder implements ModuleInterface
 
         if (WC_ESL_FAKE_EXPORT) {
             $defaultFields['fake'] = 1;
+        }
+
+        // Точка доработки: фильтр получает уже полностью собранный запрос на выгрузку
+        // (places/receiver/sender/delivery и т.д.) и может поправить его перед фактической
+        // отправкой ТК — например, если штатных настроек ТК не хватает.
+        $originalFields = $defaultFields;
+        $defaultFields = apply_filters('wc_esl_before_export', $defaultFields, $data);
+
+        if ($defaultFields !== $originalFields) {
+            // 'key' — токен доступа к API, в журнал не пишем.
+            $sanitizedBefore = $originalFields;
+            $sanitizedAfter = $defaultFields;
+            unset($sanitizedBefore['key'], $sanitizedAfter['key']);
+
+            EslLogger::debug('[ESL export] wc_esl_before_export changed request data', array(
+                'order_id' => $data['order_id'] ?? '',
+                'delivery_id' => $data['delivery_id'] ?? '',
+                'before' => $sanitizedBefore,
+                'after' => $sanitizedAfter,
+            ));
         }
 
         return $defaultFields;
@@ -1098,10 +1224,11 @@ class UnloadingOrder implements ModuleInterface
      * @param string $orderType Слаг ТК (sdek, pecom, dpd ...).
      * @param string $mode      barcodes|order|label|invoice|bill|act ...
      * @param string $paper     Формат бумаги (A4, A5 ...), если применимо к ТК.
+     * @param string $type      Доп. вариант печатной формы (напр. yandex: one|many — ярлыков на страницу).
      *
      * @return array{success: bool, url?: string, error?: array}
      */
-    public function printOrder($orderId, $orderType, $mode, $paper = '')
+    public function printOrder($orderId, $orderType, $mode, $paper = '', $type = '')
     {
         $optionsRepository = new OptionsRepository();
         $apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
@@ -1124,6 +1251,9 @@ class UnloadingOrder implements ModuleInterface
         }
         if ($paper) {
             $data['format'] = $paper;
+        }
+        if ($type) {
+            $data['type'] = $type;
         }
 
         $eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());

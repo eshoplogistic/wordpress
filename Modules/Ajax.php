@@ -1285,10 +1285,11 @@ class Ajax implements ModuleInterface
 		$order_type = sanitize_text_field(wp_unslash($_POST['order_type']));
 		$mode = isset($_POST['mode']) ? sanitize_text_field(wp_unslash($_POST['mode'])) : '';
 		$paper = isset($_POST['paper']) ? sanitize_text_field(wp_unslash($_POST['paper'])) : '';
+		$type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$unloading = new UnloadingOrder();
-		$result = $unloading->printOrder($order_id, $order_type, $mode, $paper);
+		$result = $unloading->printOrder($order_id, $order_type, $mode, $paper, $type);
 
 		$urlPrint = !empty($result['success']) ? ($result['url'] ?? '') : '';
 

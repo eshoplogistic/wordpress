@@ -119,6 +119,7 @@ class OptionsPage implements ModuleInterface
 			'wc_esl_account_sync_error' => $this->option->getOption('wc_esl_shipping_account_sync_error'),
 			'wc_esl_account_balance'   => $this->option->getOption('wc_esl_shipping_account_balance'),
 			'wc_esl_account_paid_days' => $this->option->getOption('wc_esl_shipping_account_paid_days'),
+			'wc_esl_account_paid_days_text' => $this->option->getOption('wc_esl_shipping_account_paid_days_text'),
 			'wc_esl_account_free_days' => $this->option->getOption('wc_esl_shipping_account_free_days'),
 		);
 	}

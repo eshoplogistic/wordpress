@@ -19,7 +19,7 @@ class PaymentGatewaysRepository
 	const PAYTYPE_CASH_RU = 'Наличные';
 	const PAYTYPE_CASHLESS_RU = 'Безналичный расчет';
 	const PAYTYPE_PREPAY_RU = 'Предоплата';
-	const PAYTYPE_UPON_RU = 'Платеж после получения';
+	const PAYTYPE_UPON_RU = 'При получении';
 
 	public function getAvailablePaymentGateways(): array
 	{

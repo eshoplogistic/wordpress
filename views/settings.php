@@ -42,7 +42,7 @@ $add_field_form               = isset( $wc_esl_add_field_form ) ? $wc_esl_add_fi
 $account_blocked              = isset( $wc_esl_account_blocked ) ? $wc_esl_account_blocked : '';
 $account_sync_error           = ! empty( $wc_esl_account_sync_error ) ? $wc_esl_account_sync_error : '';
 $account_balance              = isset( $wc_esl_account_balance ) ? $wc_esl_account_balance : '';
-$account_paid_days            = isset( $wc_esl_account_paid_days ) ? $wc_esl_account_paid_days : '';
+$account_paid_days_text       = isset( $wc_esl_account_paid_days_text ) ? $wc_esl_account_paid_days_text : '';
 $account_free_days            = isset( $wc_esl_account_free_days ) ? $wc_esl_account_free_days : '';
 
 $status_translate             = UnloadingOrder::getCarrierStatusNames();
@@ -74,7 +74,10 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                             <a class="nav-link active" id="esl-top-tab-system-btn" data-toggle="tab" href="#esl-top-tab-system" role="tab"><span class="dashicons dashicons-admin-generic"></span>Основные настройки</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="esl-top-tab-payment-btn" data-toggle="tab" href="#esl-top-tab-payment" role="tab"><span class="dashicons dashicons-money-alt"></span>Оплата и виджет</a>
+                            <a class="nav-link" id="esl-top-tab-paytypes-btn" data-toggle="tab" href="#esl-top-tab-paytypes" role="tab"><span class="dashicons dashicons-money-alt"></span>Типы оплат</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="esl-top-tab-widget-btn" data-toggle="tab" href="#esl-top-tab-widget" role="tab"><span class="dashicons dashicons-cart"></span>Виджет в карточку товара</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="esl-top-tab-extra-btn" data-toggle="tab" href="#esl-top-tab-extra" role="tab"><span class="dashicons dashicons-admin-tools"></span>Дополнительные настройки</a>
@@ -220,7 +223,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -264,12 +267,9 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                     <span class="ml-3">
 										<?php esc_html_e( 'Баланс:', 'eshoplogisticru' ) ?>
                                         <strong id="apiKeyStatusBalance"><?php echo esc_html( $account_balance ) ?></strong>
+                                        (~<span id="apiKeyStatusPaidDaysText"><?php echo esc_html( $account_paid_days_text ) ?></span>)
                                     </span>
-                                    <span class="ml-3">
-										<?php esc_html_e( 'Платных дней:', 'eshoplogisticru' ) ?>
-                                        <strong id="apiKeyStatusPaidDays"><?php echo esc_html( $account_paid_days ) ?></strong>
-                                    </span>
-                                    <span class="ml-3">
+                                    <span class="ml-3" id="apiKeyStatusFreeDaysBlock" <?php echo empty( $account_free_days ) ? 'style="display:none;"' : '' ?>>
 										<?php esc_html_e( 'Бесплатных дней:', 'eshoplogisticru' ) ?>
                                         <strong id="apiKeyStatusFreeDays"><?php echo esc_html( $account_free_days ) ?></strong>
                                     </span>
@@ -291,7 +291,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyWCartForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -321,7 +321,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="apiKeyYaForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -344,10 +344,10 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                     </div>
 
                     </div>
-                    <div class="tab-pane fade" id="esl-top-tab-payment" role="tabpanel">
+                    <div class="tab-pane fade" id="esl-top-tab-paytypes" role="tabpanel">
                     <div class="card">
                         <div class="card-header">
-							<?php esc_html_e( 'Настройки оплаты', 'eshoplogisticru' ) ?>
+							<?php esc_html_e( 'Настройка соответствия типов оплат', 'eshoplogisticru' ) ?>
                         </div>
 
                         <div class="card-body">
@@ -437,6 +437,8 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                         </div>
                     </div>
 
+                    </div>
+                    <div class="tab-pane fade" id="esl-top-tab-widget" role="tabpanel">
                     <div class="card wc-esl-settings-widget">
                         <div class="card-header">
 							<?php
@@ -455,7 +457,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetKeyForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -480,7 +482,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetSecretCodeForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -505,7 +507,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 </label>
                                 <div class="col-sm-8">
                                     <form action="/" method="post" id="eslWidgetButForm">
-                                        <div class="input-group">
+                                        <div class="input-group input-group-inline">
                                             <input
                                                     type="text"
                                                     class="form-control"
@@ -874,32 +876,6 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                             </div>
                                             <div class="input-group">
                                                 <label for="" class="col-sm-4 col-form-label">
-			                                        <?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>
-                                                    <label>
-                                                        <div class="help-tip">
-                                                            <p>
-                                                                Название компании.
-                                                            </p>
-                                                        </div>
-                                                    </label>
-                                                </label>
-		                                        <?php
-		                                        $sender_company = '';
-		                                        if ( isset( $export_form['sender-company'] ) ) {
-			                                        $sender_company = $export_form['sender-company'];
-		                                        }
-		                                        ?>
-                                                <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        placeholder="<?php esc_html_e( 'Название компании', 'eshoplogisticru' ) ?>"
-                                                        name="sender-company"
-                                                        class="col-sm-8"
-                                                        value="<?php echo esc_attr( $sender_company ) ?>"
-                                                />
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="" class="col-sm-4 col-form-label">
 			                                        <?php esc_html_e( 'Электронная почта', 'eshoplogisticru' ) ?>
                                                     <label>
                                                         <div class="help-tip">
@@ -1123,18 +1099,21 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'fields' => array(
 									array( 'name' => 'sender-terminal-yandex', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'platform_id-yandex', 'label' => 'Код склада (Яндекс.Доставка)', 'help' => 'Идентификатор склада отправителя в личном кабинете Яндекс.Доставки. Требуется не всем схемам доставки.' ),
+									array( 'name' => 'sender-company-yandex', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'fivepost' => array(
 								'label' => '5POST', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-fivepost', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-fivepost', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'postrf'   => array(
 								'label' => 'Почта России', 'take_payment' => true,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-postrf', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-postrf', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'delline'  => array(
@@ -1144,12 +1123,14 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 									array( 'name' => 'sender-counter-delline', 'label' => 'Отправитель (ID контрагента)', 'help' => 'Значение ID контрагента из адресной книги в личном кабинете на сайте ДЛ. Игнорируется при отсутствии полного доступа к контрагентам; иначе - обязателен. Значение можно получить в адресной строке браузера при переходе к нужному контрагенту.' ),
 									array( 'name' => 'sender-time-from-delline', 'label' => 'Время забора груза c', 'type' => 'time' ),
 									array( 'name' => 'sender-time-to-delline', 'label' => 'Время забора груза до', 'type' => 'time' ),
+									array( 'name' => 'sender-company-delline', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'pecom'    => array(
 								'label' => 'ПЭК', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-pecom', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-pecom', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 							'baikal'   => array(
@@ -1173,21 +1154,34 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 								'fields' => array(
 									array( 'name' => 'sender-terminal-kit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
 									array( 'name' => 'sender-uid-kit', 'label' => 'Название профиля отправителя', 'help' => 'Доступен в личном кабинете Кит.' ),
+									array( 'name' => 'sender-company-kit', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
-							'halva'    => array( 'label' => 'Постаматы «Халва»', 'take_payment' => false, 'fields' => array() ),
+							'halva'    => array(
+								'label' => 'Постаматы «Халва»', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-company-halva', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
+								),
+							),
 							'magnit'   => array(
 								'label' => 'Магнит Пост', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'sender-terminal-magnit', 'label' => 'Код терминала отгрузки', 'help' => $terminalHelp, 'type' => 'terminal' ),
+									array( 'name' => 'sender-company-magnit', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
-							'dpd'      => array( 'label' => 'DPD', 'take_payment' => false, 'fields' => array() ),
+							'dpd'      => array(
+								'label' => 'DPD', 'take_payment' => false,
+								'fields' => array(
+									array( 'name' => 'sender-company-dpd', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
+								),
+							),
 							'integral' => array(
 								'label' => 'Интеграл', 'take_payment' => false,
 								'fields' => array(
 									array( 'name' => 'delivery-variant-integral', 'label' => 'Вариант доставки по умолчанию', 'type' => 'select', 'values' => array( 'sdek' => 'СДЭК', 'fivepost' => '5POST', 'postrf' => 'Почта России' ) ),
 									array( 'name' => 'order-content-integral', 'label' => 'Характер груза', 'help' => 'Например: Одежда, Автозапчасти' ),
+									array( 'name' => 'sender-company-integral', 'label' => 'Название компании', 'help' => 'Название компании отправителя. Отображается в накладных.' ),
 								),
 							),
 						);
@@ -1495,7 +1489,7 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
                                 <label>
                                     <div class="help-tip">
                                         <p>
-                                            Перетащите статус доставки в левую часть страницы.
+                                            Перетащите ваш статус заказа в WooCommerce в левую часть страницы для соответствия со статусом службы доставки.
                                         </p>
                                     </div>
                                 </label>

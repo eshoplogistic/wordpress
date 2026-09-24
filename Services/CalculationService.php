@@ -44,6 +44,28 @@ class CalculationService
 			$cityTo = $cityName.' '.$adress;
 		}
 
+        // Точка доработки: позволяет фильтру в проекте скорректировать адрес доставки и
+        // состав заказа перед реальным запросом к API (например, поправить кол-во/вес
+        // позиций, если это не покрывается настройками плагина).
+        $originalCityTo = $cityTo;
+        $originalOffers = $offers;
+
+        $wcEslBeforeCalculate = apply_filters( 'wc_esl_before_calculate', [
+            'to' => $cityTo,
+            'offers' => $offers,
+        ], $service, $data, $cityFrom, $payment );
+
+        $cityTo = $wcEslBeforeCalculate['to'] ?? $cityTo;
+        $offers = $wcEslBeforeCalculate['offers'] ?? $offers;
+
+        if ( $cityTo !== $originalCityTo || $offers !== $originalOffers ) {
+            EslLogger::debug( '[ESL calculate] wc_esl_before_calculate changed request data', [
+                'service' => $service,
+                'before' => [ 'to' => $originalCityTo, 'offers' => $originalOffers ],
+                'after' => [ 'to' => $cityTo, 'offers' => $offers ],
+            ] );
+        }
+
         EslLogger::debug( '[ESL calculate] delivery calculation request', [
             'service' => $service,
             'from' => $cityFrom,
