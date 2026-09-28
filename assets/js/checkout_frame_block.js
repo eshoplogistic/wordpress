@@ -2273,7 +2273,7 @@
         // чтобы не слать повторно при каждом пересчёте виджета.
         let notAvailableReportedCity = null;
 
-        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', () => {
+        function reportNoServicesAvailable() {
             handleServicesLoadedState([], true);
 
             // В этот НП никто не доставляет: сбрасываем на сервере выбор с прошлого
@@ -2288,7 +2288,9 @@
             if (shippingTerminal) shippingTerminal.value = '';
 
             updateShippingData(JSON.stringify({ notAvailable: 1 }), { name: cityName });
-        });
+        }
+
+        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', reportNoServicesAvailable);
 
         // Если это событие не приходит у конкретной версии SDK - fallback.
         setTimeout(() => {
@@ -2376,9 +2378,16 @@
             }
         });
 
+        // SDK шлёт это вместо onNotAvailableServices, когда у НП пустой список служб
+        // (ни одна служба аккаунта туда не доставляет). Это тот же случай "нет
+        // доставки": showError() здесь прятал блок с кнопкой и описанием целиком,
+        // а подсказку тут же скрывал updateCityGateUI() — покупатель не видел ничего,
+        // и в сессии оставался выбор с прошлого НП.
         root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
-            console.error('❌ Invalid services');
-            showError('Невозможна доставка по указанному адресу');
+            console.warn('eShopLogistic: invalid services (no services for settlement)');
+            setLoadingState(false);
+            toggleTerminals(true, 'shipping');
+            reportNoServicesAvailable();
         });
     }
 
