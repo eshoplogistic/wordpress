@@ -64,6 +64,31 @@ class BlocksCheckoutHandler {
 			}
 		}
 
+		// Виджет сообщил, что в выбранный НП никто не доставляет: выбор с прошлого
+		// расчёта (другой НП) больше не действителен — заменяем его маркером, чтобы
+		// ставка не показывала старые службу/цену, а заказ без выбора не прошёл валидацию.
+		if ( ! empty($data['notAvailable']) ) {
+			$notAvailableFrame = [
+				'notAvailable' => '1',
+				'city'         => $data['city'],
+			];
+			if ( $this->hasFrameChanged($previousFrame, $notAvailableFrame) || empty($previousFrame['notAvailable']) ) {
+				$sessionService->set('esl_shipping_frame', $notAvailableFrame);
+				$this->clearShippingCache();
+			}
+
+			EslLogger::debug( '[ESL BlocksCheckoutHandler] no services available, frame reset', [
+				'city' => $data['city'],
+			] );
+
+			wp_send_json_success([
+				'updated' => true,
+				'context' => 'blocks',
+				'frame'   => $notAvailableFrame,
+			]);
+			return;
+		}
+
 		$frameChanged = $this->hasFrameChanged($previousFrame, $data);
 
 		$previousMode = isset($previousFrame['mode']) ? (string) $previousFrame['mode'] : '';

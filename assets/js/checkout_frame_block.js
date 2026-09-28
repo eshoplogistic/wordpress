@@ -1485,6 +1485,18 @@
                     }
 
                     refreshCheckoutAfterShippingUpdate();
+
+                    // Как в ветке выбора города через подсказки: сразу пересчитываем
+                    // виджет для нового НП, иначе список служб (и "Нет доступных
+                    // вариантов доставки") обновится только по кнопке выбора.
+                    if (mode !== 'billing') {
+                        const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                        if (widgetRoot) {
+                            widgetRoot.dataset.paramsLoaded = '';
+                            sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                        }
+                    }
+
                     document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
                 })
                 .catch((error) => {
@@ -2257,8 +2269,25 @@
             handleServicesLoadedState(event.detail, false);
         });
 
+        // НП, для которого серверу уже сообщено "нет доступных служб" —
+        // чтобы не слать повторно при каждом пересчёте виджета.
+        let notAvailableReportedCity = null;
+
         root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', () => {
             handleServicesLoadedState([], true);
+
+            // В этот НП никто не доставляет: сбрасываем на сервере выбор с прошлого
+            // расчёта, иначе в ставке остаются служба и цена предыдущего НП.
+            const cityName = getLegacyShippingCityName(getWidgetData());
+            if (notAvailableReportedCity === cityName) {
+                return;
+            }
+            notAvailableReportedCity = cityName;
+
+            const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+            if (shippingTerminal) shippingTerminal.value = '';
+
+            updateShippingData(JSON.stringify({ notAvailable: 1 }), { name: cityName });
         });
 
         // Если это событие не приходит у конкретной версии SDK - fallback.
@@ -2277,6 +2306,8 @@
                 console.log('ESL: нет данных тарифа для "' + (deliveryData?.typeDelivery || '') + '", выбор пропущен');
                 return;
             }
+
+            notAvailableReportedCity = null;
 
             const selectedHash = getServiceSignature(deliveryData);
             const frameData = buildLegacyShippingFrameData(deliveryData);

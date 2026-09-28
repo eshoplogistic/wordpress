@@ -626,6 +626,8 @@ class Ajax implements ModuleInterface
 				break;
 		}
 
+		$this->resetFrameSelectionOnCityChange($city, $mode);
+
 		$request = new Request([
 			'data' => $data
 		]);
@@ -633,6 +635,69 @@ class Ajax implements ModuleInterface
 		$response = $sessionController->saveShippingAddress($request);
 
 		$response->send();
+	}
+
+	/**
+	 * Фрейм-режим: выбор службы в esl_shipping_frame привязан к НП, для которого
+	 * он был рассчитан. При смене НП сбрасываем его, иначе в ставке остаются
+	 * служба и цена прошлого расчёта (особенно заметно, если в новый НП никто не
+	 * доставляет — виджет тогда ничего не выбирает и старое значение не перезаписывается).
+	 * Повторное подтверждение того же НП (автоподтверждение при загрузке) выбор сохраняет.
+	 */
+	private function resetFrameSelectionOnCityChange($city, $mode)
+	{
+		$optionsRepository = new OptionsRepository();
+		if ( ! $optionsRepository->getOption('wc_esl_shipping_frame_enable') ) {
+			return;
+		}
+
+		$sessionService = new SessionService();
+
+		$shippingFrame = $sessionService->get('esl_shipping_frame');
+		if ( is_string($shippingFrame) ) {
+			$shippingFrame = maybe_unserialize($shippingFrame);
+		}
+
+		if ( ! is_array($shippingFrame) || empty($shippingFrame) ) {
+			return;
+		}
+
+		$frameCity = isset($shippingFrame['city']) ? mb_strtolower(trim((string) $shippingFrame['city'])) : '';
+		$newCity = mb_strtolower(trim((string) $city));
+
+		if ( $frameCity === '' || $frameCity === $newCity ) {
+			return;
+		}
+
+		// Выбор службы относится к адресу, по которому считалась доставка. Меняется
+		// другой адрес (например, раздельный billing в Blocks) — выбор не трогаем.
+		// mode_shipping для этого не годится: легаси-расчёт ставок перезаписывает его.
+		$previousAddress = $sessionService->get($mode);
+		if ( is_string($previousAddress) ) {
+			$previousAddress = maybe_unserialize($previousAddress);
+		}
+		$previousCity = ( is_array($previousAddress) && isset($previousAddress['city']) ) ? mb_strtolower(trim((string) $previousAddress['city'])) : '';
+		if ( $previousCity !== '' && $previousCity !== $frameCity ) {
+			return;
+		}
+
+		$sessionService->set('esl_shipping_frame', '');
+
+		if ( WC()->session ) {
+			$sessionData = WC()->session->get_session_data();
+			if ( is_array($sessionData) ) {
+				foreach ( array_keys($sessionData) as $key ) {
+					if ( strpos((string) $key, 'shipping_for_package_') === 0 ) {
+						WC()->session->__unset($key);
+					}
+				}
+			}
+		}
+
+		EslLogger::debug( '[ESL updateShippingAddress] city changed, frame selection reset', [
+			'frame_city' => $frameCity,
+			'new_city'   => $newCity,
+		] );
 	}
 
 	public function updateCache()
