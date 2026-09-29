@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.55
+Stable tag: 3.1.57
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.57 =
+* The "Choose delivery service" button is now hidden when no shipping options are available for the selected city, and the "no delivery options" message is shown instead of the service count.
+* When the delivery widget reports that no services deliver to the selected city, the previously selected service and price are cleared, and the order cannot be placed without a valid choice.
+* Changing the city in the delivery widget now resets the previously selected shipping service, so the old service and price are no longer shown for the new city.
 
 = 3.1.54 =
 * The shipping rate selected by the customer is now saved in the order more reliably, including when delivery was calculated earlier in the delivery widget.
