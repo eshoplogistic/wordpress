@@ -2213,26 +2213,56 @@
             return hasTerminalSelection;
         }
 
+        // Кнопка выбора службы бессмысленна, когда вариантов нет: модалка виджета
+        // покажет только пустые карточки "Нет вариантов доставки".
+        function setChooseButtonVisible(visible) {
+            const rootBlock = root.closest('.wc-esl-checkout-shipping-block') || document;
+            rootBlock.querySelectorAll('.wc-esl-terminals__button').forEach((button) => {
+                button.style.display = visible ? '' : 'none';
+            });
+        }
+
         function handleServicesLoadedState(services = [], isNotAvailable = false) {
             const rootBlock = root.closest('.wc-esl-checkout-shipping-block') || document;
             const desc = rootBlock.querySelector('.esl_desct_delivery');
-            const countEl = rootBlock.querySelector('.esl_desct_delivery .count');
-            const countTextEl = rootBlock.querySelector('.esl_desct_delivery .countText');
-            const addTextEl = rootBlock.querySelector('.esl_desct_delivery .addText');
-
-            if (!desc || !countEl || !countTextEl || !addTextEl) {
+            if (!desc) {
                 return;
             }
 
+            // <p> может быть заменён целиком (например, сообщением при смене оплаты).
+            let descText = desc.querySelector('p');
+            if (!descText) {
+                descText = document.createElement('p');
+                desc.appendChild(descText);
+            }
+
+            // Разметку "Всего доступно N служб доставки: ..." запоминаем один раз, чтобы
+            // вернуть её после состояния "нет вариантов", где остаётся только сообщение.
+            if (!desc.dataset.eslTemplate && descText.querySelector('.count')) {
+                desc.dataset.eslTemplate = descText.innerHTML;
+            }
+
             if (isNotAvailable) {
-                countEl.textContent = '0';
-                countTextEl.textContent = 'служб';
-                addTextEl.textContent = 'Нет доступных вариантов доставки.';
+                descText.textContent = 'Нет доступных вариантов доставки.';
                 desc.style.display = '';
+                setChooseButtonVisible(false);
                 return;
             }
 
             if (!Array.isArray(services) || services.length === 0) {
+                return;
+            }
+
+            if (!descText.querySelector('.count')) {
+                descText.innerHTML = desc.dataset.eslTemplate
+                    || 'Всего доступно <span class="count"></span> <span class="countText"></span> доставки:<br><span class="addText"></span>';
+            }
+
+            const countEl = descText.querySelector('.count');
+            const countTextEl = descText.querySelector('.countText');
+            const addTextEl = descText.querySelector('.addText');
+
+            if (!countEl || !countTextEl || !addTextEl) {
                 return;
             }
 
@@ -2247,6 +2277,7 @@
             countTextEl.textContent = countText;
             addTextEl.textContent = nameDelivery || 'Выбран самый дешевый вариант.';
             desc.style.display = '';
+            setChooseButtonVisible(true);
         }
 
         // Как в legacy: фиксируем хеш карточки из onBalloonOpen.
