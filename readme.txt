@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.57
+Stable tag: 3.1.58
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,10 +74,14 @@ No. The pickup-point (PVZ) map works out of the box without a key. Providing you
 
 == Screenshots ==
 
-1. Plugin settings screen
-2. Shipping rate selection in cart/checkout
-3. Pickup point (PVZ) selection with interactive map
-4. Order export/tracking screen
+1. Checkout with the eShopLogistic widget: city selection and a single "choose delivery method and pickup point" button
+2. Widget window: delivery services and rates, pickup point (PVZ) selection on an interactive map
+3. Checkout with each carrier shown as a separate shipping method, including pickup point selection
+4. Order edit screen in the admin: delivery data and the export panel
+5. Order export: recipient data
+6. Order export: sender data
+7. Order export: packages and items
+8. Order information: status, tracking number and label/waybill printing
 
 == External Services ==
 
@@ -90,6 +94,9 @@ This plugin connects to the eShopLogistic service to calculate shipping costs an
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.58 =
+* Updated plugin description, carrier list, installation steps, screenshots and icon.
 
 = 3.1.57 =
 * The "Choose delivery service" button is now hidden when no shipping options are available for the selected city, and the "no delivery options" message is shown instead of the service count.
