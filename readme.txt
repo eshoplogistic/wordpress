@@ -26,6 +26,7 @@ To use the plugin, you need to register an eShopLogistic account and complete th
 * Flexible rules for adjusting shipping cost and delivery time
 * Order export to carrier dashboards from the WooCommerce admin, through a single unified interface
 * Tracking number retrieval
+* Printing shipping labels from the WooCommerce admin
 * Sync of WooCommerce order statuses with carrier delivery statuses
 * Orders can be created in carrier dashboards as prepaid or cash-on-delivery
 * Manual correction of parcel/package parameters when exporting orders to carriers
@@ -50,16 +51,18 @@ For detailed documentation and demo: [wp.eshoplogistic.ru](https://wp.eshoplogis
 1. After activating the plugin, go to "WC eShopLogistic" in the WordPress admin menu.
 2. Enter your API key from your eShopLogistic account ([my.eshoplogistic.ru](https://my.eshoplogistic.ru/)).
 3. Map your WooCommerce payment methods to eShopLogistic payment methods in the plugin settings.
+4. Set up shipping methods in WooCommerce (WooCommerce → Settings → Shipping → Shipping zones).
+5. Complete the plugin setup following the [documentation](https://eshoplogistic.ru/moduli-dlja-cms/wordpress.html).
 
 == Frequently Asked Questions ==
 
 = Does this plugin require an eShopLogistic account? =
 
-Yes. The plugin is a front-end/checkout integration for the eShopLogistic shipping service. You need a free account and API key from [my.eshoplogistic.ru](https://my.eshoplogistic.ru/) to calculate rates, show pickup points and export orders.
+Yes. The plugin is a front-end/checkout integration for the eShopLogistic shipping service. You need an account and API key from [my.eshoplogistic.ru](https://my.eshoplogistic.ru/) to calculate rates, show pickup points and export orders.
 
 = Which carriers are supported? =
 
-CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
+CDEK, DPD, Yandex Delivery, 5Post, Delovye Linii, PEC, Russian Post, KIT, Baikal Service, Zheldorexpeditsiya, Vozovoz, Energiya, Magnit Post, Grastin, Logsis, Integral and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
 
 = Does it work with WooCommerce Blocks (Gutenberg) checkout? =
 
@@ -78,7 +81,7 @@ No. The pickup-point (PVZ) map works out of the box without a key. Providing you
 
 == External Services ==
 
-This plugin connects to the eShopLogistic service to provide its core shipping-calculation functionality. It communicates with the following third-party services:
+This plugin connects to the eShopLogistic service to calculate shipping costs and export orders to delivery carriers. It communicates with the following third-party services:
 
 1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
 2. **eShopLogistic embeddable widget bundle** (`https://api.esplc.ru/widgets/{cart,modal,block}/app.js`, which in turn loads a versioned, content-hashed JS/CSS bundle from the same `api.esplc.ru` domain) — this is a live, self-updating cart/product/checkout shipping-calculator UI, analogous to an embeddable live-chat widget: the eShopLogistic team ships UI updates to this bundle independently of plugin releases, and the asset filenames change with every such release, so they cannot be bundled statically inside the plugin without going stale. It is only loaded on pages where a shipping widget is displayed (product page, cart, checkout), and once loaded it talks to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above. A second, older widget UI (used for the product-tab "static" and "modal" display modes) is bundled locally inside the plugin (`assets/css/widget-*.css`, `assets/js/widget-*.js`) and is not loaded remotely.
