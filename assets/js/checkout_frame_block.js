@@ -850,12 +850,13 @@
         const htmlItems = items.map((item) => {
             const city = item.name || '';
             const region = item.region || '';
+            const subRegion = item.sub_region || '';
             const postcode = item.postal_code || '';
             const fias = item.fias || '';
             const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
             const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
 
-            return `<li class="wc-esl-search-city__item" data-mode="${escapeAttr(mode)}" data-city="${escapeAttr(city)}" data-region="${escapeAttr(region)}" data-postcode="${escapeAttr(postcode)}" data-fias="${escapeAttr(fias)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(city)}${region ? `, ${escapeHtml(region)}` : ''}</li>`;
+            return `<li class="wc-esl-search-city__item" data-mode="${escapeAttr(mode)}" data-city="${escapeAttr(city)}" data-region="${escapeAttr(region)}" data-postcode="${escapeAttr(postcode)}" data-fias="${escapeAttr(fias)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(city)}${region ? `, ${escapeHtml(region)}` : ''}${subRegion ? ` <span class="wc-esl-search-city__subregion">- ${escapeHtml(subRegion)}</span>` : ''}</li>`;
         }).join('');
 
         return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}">${htmlItems}</ul>`;
@@ -892,13 +893,14 @@
                 const type = item.type || '';
                 const name = item.name || '';
                 const itemRegion = item.region || '';
+                const subRegion = item.sub_region || '';
                 const postcode = item.postal_code || '';
                 const fias = item.fias || '';
                 const label = `${type ? type + ' ' : ''}${name}${itemRegion ? ' - ' + itemRegion : ''}`;
                 const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
                 const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
 
-                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}</li>`;
+                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}${subRegion ? ` <span class="wc-esl-search-city__subregion">- ${escapeHtml(subRegion)}</span>` : ''}</li>`;
             });
             html += '</div>';
         });

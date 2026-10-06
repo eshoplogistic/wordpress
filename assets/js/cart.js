@@ -27,9 +27,10 @@
 		});
 	}
 
-	function renderCitiesItem( { fias, name, region, postal_code, services } ) {
+	function renderCitiesItem( { fias, name, region, sub_region, postal_code, services } ) {
 		let label = name;
 		label += ( region.length > 0 ) ? ` - ${region}` : '';
+		label += ( sub_region && sub_region.length > 0 ) ? ` <span class="wc-esl-search-city__subregion">- ${sub_region}</span>` : '';
 
 		let html = `<li
 			class="wc-esl-search-city__item"

@@ -242,6 +242,11 @@ body > .modal-esl-frame #buttonModalDoor {
     background: #fafafa;
 }
 
+.wc-esl-search-city__subregion {
+    margin-left: 4px;
+    font-size: 0.8em;
+}
+
 .wc-esl-search-region-modal__list {
     display: inline-grid;
     width: 49.9%;
