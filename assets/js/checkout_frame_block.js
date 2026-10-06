@@ -2121,9 +2121,14 @@
                 if (shippingTerminal) shippingTerminal.value = terminalAddress;
                 if (shippingTerminalField) shippingTerminalField.style.display = '';
             } else {
-                // Legacy flow: для door очищаем ранее выбранный terminal.
+                // Legacy flow: ранее выбранный terminal больше не действителен.
+                // Для ПВЗ-службы без выбранного пункта поле оставляем видимым и
+                // пустым (как в шорткодном режиме) — покупатель видит, что пункт
+                // нужно выбрать; для door — скрываем.
                 if (shippingTerminal) shippingTerminal.value = '';
-                if (shippingTerminalField) shippingTerminalField.style.display = 'none';
+                if (shippingTerminalField) {
+                    shippingTerminalField.style.display = deliveryData?.typeDelivery === 'terminal' ? '' : 'none';
+                }
             }
 
             if (deliveryData?.typeDelivery) {
