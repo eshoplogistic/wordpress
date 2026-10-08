@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.59
+Stable tag: 3.1.61
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,10 @@ This plugin connects to the eShopLogistic service to calculate shipping costs an
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.61 =
+* City search results now show the sub-region (district) next to the city name, so settlements with the same name in one region can be told apart.
+* Block checkout: when a pickup-point delivery service is selected in the widget without choosing a specific point, the pickup point field stays visible and empty, and the point chosen earlier for another service is cleared, so the order cannot be placed with the wrong pickup point.
 
 = 3.1.59 =
 * Block checkout: an order without a selected delivery service or pickup point is now rejected before it leaves the draft status, so incomplete orders no longer appear in the admin panel (WooCommerce 9.9+).
