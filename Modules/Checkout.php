@@ -104,6 +104,7 @@ class Checkout implements ModuleInterface
 
 	public function injectShippingFormFields($item)
 	{
+		Shipping::renderAddFieldsOnce();
 		$this->injectFields( 'billing' );
 		$this->injectFields( 'shipping' );
 	}

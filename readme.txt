@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.61
+Stable tag: 3.1.62
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,11 @@ This plugin connects to the eShopLogistic service to calculate shipping costs an
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.62 =
+* Block checkout: when WooCommerce is set to hide shipping costs until an address is entered, the delivery button is now disabled and the "select a city" hint is shown while no city is chosen, instead of opening an empty delivery window.
+* Block checkout: the postal code is no longer erased when a saved or typed city is confirmed automatically, so shipping rates no longer disappear for customers whose address is already filled in.
+* Classic checkout: when WooCommerce hides shipping costs until an address is entered, the city picker is available again on the city field, and the JavaScript error on page load is fixed.
 
 = 3.1.61 =
 * City search results now show the sub-region (district) next to the city name, so settlements with the same name in one region can be told apart.

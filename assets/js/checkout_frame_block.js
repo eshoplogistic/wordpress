@@ -179,7 +179,17 @@
      * нативный WooCommerce-метод вроде "Самовывоз" (Local pickup).
      */
     function isEslMethodSelected() {
-        return isEshopMethod(getCurrentShippingMethod());
+        const method = getCurrentShippingMethod();
+        if (method) {
+            return isEshopMethod(method);
+        }
+
+        // Метод не определён: когда тариф в пакете единственный, WooCommerce Blocks
+        // рендерит его без radio (только label), и getCurrentShippingMethod() вернуть
+        // нечего. Кнопка виджета в этом случае видна (см. handleShippingMethodChange —
+        // скрывается только при явно выбранном не-ESL методе), поэтому и гейт по городу
+        // должен действовать так же, иначе кнопка активна без города и подсказки нет.
+        return !!document.querySelector('.wc-esl-checkout-shipping-block');
     }
 
     /**
@@ -716,6 +726,29 @@
     }
 
     /**
+     * Индекс, уже сохранённый у покупателя (профиль/сессия WC). Поле индекса в Blocks
+     * может быть не отрисовано (свёрнутая карточка адреса), поэтому сначала читаем
+     * customerData из wc/store/cart, затем само поле.
+     */
+    function getPrefilledShippingPostcode() {
+        try {
+            if (window.wp && window.wp.data && typeof window.wp.data.select === 'function') {
+                const cartSelect = window.wp.data.select('wc/store/cart');
+                const customerData = cartSelect && typeof cartSelect.getCustomerData === 'function'
+                    ? cartSelect.getCustomerData()
+                    : null;
+                const shippingAddress = customerData && (customerData.shippingAddress || customerData.shipping_address);
+                if (shippingAddress && shippingAddress.postcode) {
+                    return String(shippingAddress.postcode).trim();
+                }
+            }
+        } catch (e) {}
+
+        const postcodeEl = getFieldElement(['shipping_postcode', 'shipping-postcode']);
+        return postcodeEl ? (postcodeEl.value || '').trim() : '';
+    }
+
+    /**
      * Для авторизованного пользователя WC Blocks предзаполняет город доставки
      * сохранённым адресом из профиля без событий input/blur, поэтому fias
      * города плагина никогда не резолвится сам по себе и ESL-методы доставки
@@ -747,10 +780,13 @@
             }
 
             const best = items[0];
+            // API поиска отдаёт индекс в postal_code (поля postcode в ответе нет).
+            // Город тот же, что уже сохранён у покупателя, поэтому его собственный
+            // индекс (часто точнее общего индекса города) не затираем.
             const cityData = {
                 city: best.city || best.name || query,
                 region: best.region || '',
-                postcode: best.postcode || '',
+                postcode: getPrefilledShippingPostcode() || best.postal_code || best.postcode || '',
                 fias: best.fias || '',
                 services: best.services || [],
                 raw: best
@@ -1213,7 +1249,7 @@
                 const cityData = {
                     city: best.city || best.name || query,
                     region: best.region || '',
-                    postcode: best.postcode || '',
+                    postcode: best.postal_code || best.postcode || '',
                     fias: best.fias || '',
                     services: best.services || [],
                     raw: best
@@ -1864,7 +1900,7 @@
                         const cityData = {
                             city: best.city || best.name || cityName,
                             region: best.region || '',
-                            postcode: best.postcode || '',
+                            postcode: best.postal_code || best.postcode || '',
                             fias: best.fias || '',
                             services: best.services || [],
                             raw: best
@@ -2884,7 +2920,10 @@
                     try {
                         var parsed = JSON.parse(cityInputEl.value);
                         if (parsed && parsed.city === shippingCityEl.value) {
+                            var fieldPostcode = shippingCityData.postcode;
                             shippingCityData = Object.assign({}, shippingCityData, parsed);
+                            // Пустой postcode из widgetCityEsl не должен затирать индекс из поля.
+                            shippingCityData.postcode = shippingCityData.postcode || fieldPostcode;
                         }
                     } catch (ex) {}
                 }

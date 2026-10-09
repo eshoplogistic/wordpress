@@ -228,18 +228,24 @@ class Shipping implements ModuleInterface
         return $newRates;
     }
 
-    public function addTerminalsInput()
+    /**
+     * Скрытые поля с ID полей города (eslBillingCityFields/eslShippingCityFields) и
+     * offAddressCheck, которые читает checkout_frame_v2.js — в т.ч. чтобы повесить выбор
+     * города из справочника на поле "Населённый пункт". Выводятся и из строки доставки
+     * (addTerminalsInput), и перед блоком оплаты (Checkout::injectShippingFormFields):
+     * при опции WC "Скрывать стоимость доставки до ввода адреса" строки доставки нет
+     * совсем, и без второго места выбор города пропадал. Флаг не даёт задвоить ID в одном
+     * запросе (полная страница или фрагменты update_order_review).
+     */
+    public static function renderAddFieldsOnce()
     {
-        $shippingHelper = new ShippingHelper();
-        $chosenShippingMethods = WC()->session->get( 'chosen_shipping_methods' );
-        $sessionService = new SessionService();
+        static $rendered = false;
+        if ($rendered) {
+            return;
+        }
+        $rendered = true;
 
 	    $optionsRepository = new OptionsRepository();
-	    $apiKeyYa = $optionsRepository->getOption('wc_esl_shipping_api_key_ya');
-	    $apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
-
-	    $paymentCalc = '';
-	    $paymentCalcTmp = $optionsRepository->getOption('wc_esl_shipping_add_form');
 	    $addForm = $optionsRepository->getOption('wc_esl_shipping_add_form');
 	    $eslBillingCityFields = 'billing_city';
 	    $eslShippingCityFields = 'shipping_city';
@@ -260,6 +266,22 @@ class Shipping implements ModuleInterface
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			'wc_esl_offAddressCheck' => $offAddressCheck
 		]);
+    }
+
+    public function addTerminalsInput()
+    {
+        $shippingHelper = new ShippingHelper();
+        $chosenShippingMethods = WC()->session->get( 'chosen_shipping_methods' );
+        $sessionService = new SessionService();
+
+	    $optionsRepository = new OptionsRepository();
+	    $apiKeyYa = $optionsRepository->getOption('wc_esl_shipping_api_key_ya');
+	    $apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_widget_key');
+
+	    $paymentCalc = '';
+	    $paymentCalcTmp = $optionsRepository->getOption('wc_esl_shipping_add_form');
+
+		self::renderAddFieldsOnce();
 
 	    if(isset($paymentCalcTmp['paymentCalc']) && $paymentCalcTmp['paymentCalc'] == 'true')
 		    $paymentCalc = $paymentCalcTmp['paymentCalc'];

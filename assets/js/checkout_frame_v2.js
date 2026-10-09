@@ -706,28 +706,49 @@ function isNumeric(value) {
             }
 
 
-            let billingCityFields = document.getElementById('eslBillingCityFields').value
-            let shippingCityFields = document.getElementById('eslShippingCityFields').value
+            // Скрытые поля и подсказку выводят хуки строки доставки (Shipping::addTerminalsInput,
+            // Checkout::buttonTerminal). При опции WC "Скрывать стоимость доставки до ввода
+            // адреса" строки доставки нет, а значит нет и этих элементов — тогда виджет
+            // запускать не из чего, WC сам показывает "Введите адрес...".
+            // Поля выводятся в двух местах (см. Shipping::renderAddFieldsOnce): копия перед
+            // блоком оплаты живёт с полной загрузки страницы, копия из строки доставки
+            // приходит с фрагментами update_order_review. Значения одинаковые — оставляем одну.
+            ['eslBillingCityFields', 'eslShippingCityFields', 'offAddressCheck'].forEach(function (id) {
+                document.querySelectorAll('[id="' + id + '"]').forEach(function (el, index) {
+                    if (index > 0) el.remove()
+                })
+            })
+
+            const billingCityFieldsEl = document.getElementById('eslBillingCityFields')
+            const shippingCityFieldsEl = document.getElementById('eslShippingCityFields')
+            if (!billingCityFieldsEl || !shippingCityFieldsEl) {
+                console.log('Ошибка поиска eslBillingCityFields/eslShippingCityFields')
+                return false
+            }
+
+            let billingCityFields = billingCityFieldsEl.value
+            let shippingCityFields = shippingCityFieldsEl.value
             let billing_city = document.getElementById(billingCityFields)
             let shipping_city = document.getElementById(shippingCityFields)
+            const tipsCity = document.getElementById('tips-city-container')
 
             if(billing_city !== null){
                 if(billing_city.value){
                     cityMain = true
-                    document.getElementById('tips-city-container').style.display = 'none';
+                    if (tipsCity) tipsCity.style.display = 'none';
                 }
             }
 
             if(shipping_city !== null){
                 if(shipping_city.value){
                     cityMain = true
-                    document.getElementById('tips-city-container').style.display = 'none';
+                    if (tipsCity) tipsCity.style.display = 'none';
                 }
             }
 
             if (cityMain === false){
                 check = false
-                document.getElementById('tips-city-container').style.display = 'block';
+                if (tipsCity) tipsCity.style.display = 'block';
             }
 
             return check
