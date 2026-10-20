@@ -22,9 +22,12 @@ class CheckoutValidator implements ModuleInterface
         add_filter('woocommerce_checkout_fields', [$this, 'removeDefaultFieldsFromValidation'], 99);
 
         // WooCommerce Blocks / Store API: аналог validateFields() для блочного чекаута.
-        // Приоритет 5, чтобы отработать раньше OrderCreator::processBlocksOrder (10) —
-        // при выброшенном исключении оставшиеся колбэки этого хука не выполняются,
-        // заказ не создаётся лишний раз без выбранного ПВЗ.
+        // woocommerce_store_api_checkout_order_processed срабатывает уже ПОСЛЕ перевода заказа
+        // из checkout-draft в pending, поэтому исключение там оставляет в админке «висящий»
+        // заказ без доставки. С WC 9.9 есть хук валидации до смены статуса — он отсекает заказ,
+        // пока тот ещё черновик. Старый хук (приоритет 5, раньше OrderCreator::processBlocksOrder)
+        // оставлен как fallback для WC < 9.9; на новых версиях повторная проверка безвредна.
+        add_action('woocommerce_checkout_validate_order_before_payment', [$this, 'validateBlocksOrder'], 10, 1);
         add_action('woocommerce_store_api_checkout_order_processed', [$this, 'validateBlocksOrder'], 5, 1);
 
         add_filter('default_checkout_billing_address_1', [$this, 'clearCheckoutField'], 10, 2);

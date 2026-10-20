@@ -4,7 +4,7 @@ Tags: shipping,eshoplogistic,delivery,woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1.54
+Stable tag: 3.1.62
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,7 @@ To use the plugin, you need to register an eShopLogistic account and complete th
 * Flexible rules for adjusting shipping cost and delivery time
 * Order export to carrier dashboards from the WooCommerce admin, through a single unified interface
 * Tracking number retrieval
+* Printing shipping labels from the WooCommerce admin
 * Sync of WooCommerce order statuses with carrier delivery statuses
 * Orders can be created in carrier dashboards as prepaid or cash-on-delivery
 * Manual correction of parcel/package parameters when exporting orders to carriers
@@ -50,16 +51,18 @@ For detailed documentation and demo: [wp.eshoplogistic.ru](https://wp.eshoplogis
 1. After activating the plugin, go to "WC eShopLogistic" in the WordPress admin menu.
 2. Enter your API key from your eShopLogistic account ([my.eshoplogistic.ru](https://my.eshoplogistic.ru/)).
 3. Map your WooCommerce payment methods to eShopLogistic payment methods in the plugin settings.
+4. Set up shipping methods in WooCommerce (WooCommerce → Settings → Shipping → Shipping zones).
+5. Complete the plugin setup following the [documentation](https://eshoplogistic.ru/moduli-dlja-cms/wordpress.html).
 
 == Frequently Asked Questions ==
 
 = Does this plugin require an eShopLogistic account? =
 
-Yes. The plugin is a front-end/checkout integration for the eShopLogistic shipping service. You need a free account and API key from [my.eshoplogistic.ru](https://my.eshoplogistic.ru/) to calculate rates, show pickup points and export orders.
+Yes. The plugin is a front-end/checkout integration for the eShopLogistic shipping service. You need an account and API key from [my.eshoplogistic.ru](https://my.eshoplogistic.ru/) to calculate rates, show pickup points and export orders.
 
 = Which carriers are supported? =
 
-CDEK, DPD, Post Russia, Dostavista, IML, Delovye Linii, PEC, GTD, Baikal Service, Yandex Delivery and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
+CDEK, DPD, Yandex Delivery, 5Post, Delovye Linii, PEC, Russian Post, KIT, Baikal Service, Zheldorexpeditsiya, Vozovoz, Energiya, Magnit Post, Grastin, Logsis, Integral and others — the exact list of available carriers depends on what is enabled in your eShopLogistic account.
 
 = Does it work with WooCommerce Blocks (Gutenberg) checkout? =
 
@@ -71,14 +74,18 @@ No. The pickup-point (PVZ) map works out of the box without a key. Providing you
 
 == Screenshots ==
 
-1. Plugin settings screen
-2. Shipping rate selection in cart/checkout
-3. Pickup point (PVZ) selection with interactive map
-4. Order export/tracking screen
+1. Checkout with the eShopLogistic widget: city selection and a single "choose delivery method and pickup point" button
+2. Widget window: delivery services and rates, pickup point (PVZ) selection on an interactive map
+3. Checkout with each carrier shown as a separate shipping method, including pickup point selection
+4. Order edit screen in the admin: delivery data and the export panel
+5. Order export: recipient data
+6. Order export: sender data
+7. Order export: packages and items
+8. Order information: status, tracking number and label/waybill printing
 
 == External Services ==
 
-This plugin connects to the eShopLogistic service to provide its core shipping-calculation functionality. It communicates with the following third-party services:
+This plugin connects to the eShopLogistic service to calculate shipping costs and export orders to delivery carriers. It communicates with the following third-party services:
 
 1. **eShopLogistic API** (`api.eshoplogistic.ru`, `api.esplc.ru`) — this is the backend of the eShopLogistic shipping service itself (the service this plugin integrates with). The plugin's PHP code (server-side, via `Http/WpHttpClient.php`) sends it: the account API key, the shopping cart/order contents needed to calculate a rate (article, name, quantity, price, weight, dimensions), origin/destination city, chosen payment method, and — when an order is placed — the customer's shipping address and order line items, so the order can be created/exported/tracked in the carrier's system. This happens whenever a customer views the cart/checkout/product page with shipping calculation enabled, and when an order is placed. See the eShopLogistic [Terms of Service (offer agreement)](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html).
 2. **eShopLogistic embeddable widget bundle** (`https://api.esplc.ru/widgets/{cart,modal,block}/app.js`, which in turn loads a versioned, content-hashed JS/CSS bundle from the same `api.esplc.ru` domain) — this is a live, self-updating cart/product/checkout shipping-calculator UI, analogous to an embeddable live-chat widget: the eShopLogistic team ships UI updates to this bundle independently of plugin releases, and the asset filenames change with every such release, so they cannot be bundled statically inside the plugin without going stale. It is only loaded on pages where a shipping widget is displayed (product page, cart, checkout), and once loaded it talks to the same eShopLogistic API above (sending cart contents and the visitor's IP address to determine their city) to render rates and pickup points. Governed by the same [Terms of Service](https://eshoplogistic.ru/dokumenty/dogovor-oferta.html) and [Privacy Policy](https://eshoplogistic.ru/dokumenty/politika-konfidencialnosti.html) linked above. A second, older widget UI (used for the product-tab "static" and "modal" display modes) is bundled locally inside the plugin (`assets/css/widget-*.css`, `assets/js/widget-*.js`) and is not loaded remotely.
@@ -87,6 +94,26 @@ This plugin connects to the eShopLogistic service to provide its core shipping-c
 5. **Google Fonts** (`fonts.googleapis.com`) — the same widget UI loads the "Roboto" web font (SIL Open Font License) from Google Fonts for its own styling. See [Google Fonts FAQ](https://developers.google.com/fonts/faq) and [Google Privacy Policy](https://policies.google.com/privacy).
 
 == Changelog ==
+
+= 3.1.62 =
+* Block checkout: when WooCommerce is set to hide shipping costs until an address is entered, the delivery button is now disabled and the "select a city" hint is shown while no city is chosen, instead of opening an empty delivery window.
+* Block checkout: the postal code is no longer erased when a saved or typed city is confirmed automatically, so shipping rates no longer disappear for customers whose address is already filled in.
+* Classic checkout: when WooCommerce hides shipping costs until an address is entered, the city picker is available again on the city field, and the JavaScript error on page load is fixed.
+
+= 3.1.61 =
+* City search results now show the sub-region (district) next to the city name, so settlements with the same name in one region can be told apart.
+* Block checkout: when a pickup-point delivery service is selected in the widget without choosing a specific point, the pickup point field stays visible and empty, and the point chosen earlier for another service is cleared, so the order cannot be placed with the wrong pickup point.
+
+= 3.1.59 =
+* Block checkout: an order without a selected delivery service or pickup point is now rejected before it leaves the draft status, so incomplete orders no longer appear in the admin panel (WooCommerce 9.9+).
+
+= 3.1.58 =
+* Updated plugin description, carrier list, installation steps, screenshots and icon.
+
+= 3.1.57 =
+* The "Choose delivery service" button is now hidden when no shipping options are available for the selected city, and the "no delivery options" message is shown instead of the service count.
+* When the delivery widget reports that no services deliver to the selected city, the previously selected service and price are cleared, and the order cannot be placed without a valid choice.
+* Changing the city in the delivery widget now resets the previously selected shipping service, so the old service and price are no longer shown for the new city.
 
 = 3.1.54 =
 * The shipping rate selected by the customer is now saved in the order more reliably, including when delivery was calculated earlier in the delivery widget.

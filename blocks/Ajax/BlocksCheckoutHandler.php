@@ -64,6 +64,31 @@ class BlocksCheckoutHandler {
 			}
 		}
 
+		// Виджет сообщил, что в выбранный НП никто не доставляет: выбор с прошлого
+		// расчёта (другой НП) больше не действителен — заменяем его маркером, чтобы
+		// ставка не показывала старые службу/цену, а заказ без выбора не прошёл валидацию.
+		if ( ! empty($data['notAvailable']) ) {
+			$notAvailableFrame = [
+				'notAvailable' => '1',
+				'city'         => $data['city'],
+			];
+			if ( $this->hasFrameChanged($previousFrame, $notAvailableFrame) || empty($previousFrame['notAvailable']) ) {
+				$sessionService->set('esl_shipping_frame', $notAvailableFrame);
+				$this->clearShippingCache();
+			}
+
+			EslLogger::debug( '[ESL BlocksCheckoutHandler] no services available, frame reset', [
+				'city' => $data['city'],
+			] );
+
+			wp_send_json_success([
+				'updated' => true,
+				'context' => 'blocks',
+				'frame'   => $notAvailableFrame,
+			]);
+			return;
+		}
+
 		$frameChanged = $this->hasFrameChanged($previousFrame, $data);
 
 		$previousMode = isset($previousFrame['mode']) ? (string) $previousFrame['mode'] : '';
@@ -91,6 +116,13 @@ class BlocksCheckoutHandler {
 		if ( $mode === 'terminal' && '' !== $frameTerminalAddress ) {
 			$frameTerminalCode = isset($data['terminalCode']) ? trim((string) $data['terminalCode']) : '';
 			$sessionService->set('terminal_location', $frameTerminalAddress . '. Код пункта: ' . $frameTerminalCode);
+		} elseif ( $mode === 'terminal' ) {
+			// Выбрана ПВЗ-служба, но конкретный пункт в виджете не выбран (например,
+			// клик по карточке другой службы без "Забрать отсюда"). Пункт от прошлого
+			// выбора относится к другой службе: на фронте поле уже очищено, поэтому
+			// сбрасываем и в сессии — иначе валидация пропустит заказ, а в него
+			// попадёт чужой ПВЗ. Как в шорткодном режиме: поле пустое, заказ не проходит.
+			$sessionService->drop('terminal_location');
 		}
 
 		// Сбрасываем terminal_location и введённый покупателем адрес только при
@@ -103,8 +135,6 @@ class BlocksCheckoutHandler {
 		// иначе виджет, пересчитывающий тарифы при каждом открытии карточки
 		// службы, стирал бы адрес прямо во время его ввода покупателем.
 		// terminal_location устанавливается отдельным AJAX-запросом wc_esl_set_terminal_address.
-		// При выборе терминального сервиса (mode = 'terminal') конкретный ПВЗ ещё не выбран —
-		// сохранённый ранее терминал должен оставаться в сессии до явного выбора door-режима.
 		if ( $mode === 'door' && $previousMode === 'terminal' ) {
 			$sessionService->drop('terminal_location');
 

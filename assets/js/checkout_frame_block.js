@@ -179,7 +179,17 @@
      * нативный WooCommerce-метод вроде "Самовывоз" (Local pickup).
      */
     function isEslMethodSelected() {
-        return isEshopMethod(getCurrentShippingMethod());
+        const method = getCurrentShippingMethod();
+        if (method) {
+            return isEshopMethod(method);
+        }
+
+        // Метод не определён: когда тариф в пакете единственный, WooCommerce Blocks
+        // рендерит его без radio (только label), и getCurrentShippingMethod() вернуть
+        // нечего. Кнопка виджета в этом случае видна (см. handleShippingMethodChange —
+        // скрывается только при явно выбранном не-ESL методе), поэтому и гейт по городу
+        // должен действовать так же, иначе кнопка активна без города и подсказки нет.
+        return !!document.querySelector('.wc-esl-checkout-shipping-block');
     }
 
     /**
@@ -716,6 +726,29 @@
     }
 
     /**
+     * Индекс, уже сохранённый у покупателя (профиль/сессия WC). Поле индекса в Blocks
+     * может быть не отрисовано (свёрнутая карточка адреса), поэтому сначала читаем
+     * customerData из wc/store/cart, затем само поле.
+     */
+    function getPrefilledShippingPostcode() {
+        try {
+            if (window.wp && window.wp.data && typeof window.wp.data.select === 'function') {
+                const cartSelect = window.wp.data.select('wc/store/cart');
+                const customerData = cartSelect && typeof cartSelect.getCustomerData === 'function'
+                    ? cartSelect.getCustomerData()
+                    : null;
+                const shippingAddress = customerData && (customerData.shippingAddress || customerData.shipping_address);
+                if (shippingAddress && shippingAddress.postcode) {
+                    return String(shippingAddress.postcode).trim();
+                }
+            }
+        } catch (e) {}
+
+        const postcodeEl = getFieldElement(['shipping_postcode', 'shipping-postcode']);
+        return postcodeEl ? (postcodeEl.value || '').trim() : '';
+    }
+
+    /**
      * Для авторизованного пользователя WC Blocks предзаполняет город доставки
      * сохранённым адресом из профиля без событий input/blur, поэтому fias
      * города плагина никогда не резолвится сам по себе и ESL-методы доставки
@@ -747,10 +780,13 @@
             }
 
             const best = items[0];
+            // API поиска отдаёт индекс в postal_code (поля postcode в ответе нет).
+            // Город тот же, что уже сохранён у покупателя, поэтому его собственный
+            // индекс (часто точнее общего индекса города) не затираем.
             const cityData = {
                 city: best.city || best.name || query,
                 region: best.region || '',
-                postcode: best.postcode || '',
+                postcode: getPrefilledShippingPostcode() || best.postal_code || best.postcode || '',
                 fias: best.fias || '',
                 services: best.services || [],
                 raw: best
@@ -850,12 +886,13 @@
         const htmlItems = items.map((item) => {
             const city = item.name || '';
             const region = item.region || '';
+            const subRegion = item.sub_region || '';
             const postcode = item.postal_code || '';
             const fias = item.fias || '';
             const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
             const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
 
-            return `<li class="wc-esl-search-city__item" data-mode="${escapeAttr(mode)}" data-city="${escapeAttr(city)}" data-region="${escapeAttr(region)}" data-postcode="${escapeAttr(postcode)}" data-fias="${escapeAttr(fias)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(city)}${region ? `, ${escapeHtml(region)}` : ''}</li>`;
+            return `<li class="wc-esl-search-city__item" data-mode="${escapeAttr(mode)}" data-city="${escapeAttr(city)}" data-region="${escapeAttr(region)}" data-postcode="${escapeAttr(postcode)}" data-fias="${escapeAttr(fias)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(city)}${region ? `, ${escapeHtml(region)}` : ''}${subRegion ? ` <span class="wc-esl-search-city__subregion">- ${escapeHtml(subRegion)}</span>` : ''}</li>`;
         }).join('');
 
         return `<ul id="${listId}" class="wc-esl-search-city__list" data-mode="${mode}">${htmlItems}</ul>`;
@@ -892,13 +929,14 @@
                 const type = item.type || '';
                 const name = item.name || '';
                 const itemRegion = item.region || '';
+                const subRegion = item.sub_region || '';
                 const postcode = item.postal_code || '';
                 const fias = item.fias || '';
                 const label = `${type ? type + ' ' : ''}${name}${itemRegion ? ' - ' + itemRegion : ''}`;
                 const payloadEncoded = encodeURIComponent(JSON.stringify(item || {}));
                 const servicesEncoded = encodeURIComponent(JSON.stringify(item.services || []));
 
-                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}</li>`;
+                html += `<li class="wc-esl-search-city-modal__item" data-mode="${escapeAttr(mode)}" data-fias="${escapeAttr(fias)}" data-city="${escapeAttr(name)}" data-region="${escapeAttr(itemRegion)}" data-postcode="${escapeAttr(postcode)}" data-services="${escapeAttr(servicesEncoded)}" data-payload="${escapeAttr(payloadEncoded)}">${escapeHtml(label)}${subRegion ? ` <span class="wc-esl-search-city__subregion">- ${escapeHtml(subRegion)}</span>` : ''}</li>`;
             });
             html += '</div>';
         });
@@ -1211,7 +1249,7 @@
                 const cityData = {
                     city: best.city || best.name || query,
                     region: best.region || '',
-                    postcode: best.postcode || '',
+                    postcode: best.postal_code || best.postcode || '',
                     fias: best.fias || '',
                     services: best.services || [],
                     raw: best
@@ -1485,6 +1523,18 @@
                     }
 
                     refreshCheckoutAfterShippingUpdate();
+
+                    // Как в ветке выбора города через подсказки: сразу пересчитываем
+                    // виджет для нового НП, иначе список служб (и "Нет доступных
+                    // вариантов доставки") обновится только по кнопке выбора.
+                    if (mode !== 'billing') {
+                        const widgetRoot = document.getElementById('eShopLogisticWidgetCart');
+                        if (widgetRoot) {
+                            widgetRoot.dataset.paramsLoaded = '';
+                            sendWidgetParams(widgetRoot, toWidgetSettlement(cityData));
+                        }
+                    }
+
                     document.dispatchEvent(new CustomEvent('wc-esl-city-changed', { detail: cityData }));
                 })
                 .catch((error) => {
@@ -1850,7 +1900,7 @@
                         const cityData = {
                             city: best.city || best.name || cityName,
                             region: best.region || '',
-                            postcode: best.postcode || '',
+                            postcode: best.postal_code || best.postcode || '',
                             fias: best.fias || '',
                             services: best.services || [],
                             raw: best
@@ -2109,9 +2159,14 @@
                 if (shippingTerminal) shippingTerminal.value = terminalAddress;
                 if (shippingTerminalField) shippingTerminalField.style.display = '';
             } else {
-                // Legacy flow: для door очищаем ранее выбранный terminal.
+                // Legacy flow: ранее выбранный terminal больше не действителен.
+                // Для ПВЗ-службы без выбранного пункта поле оставляем видимым и
+                // пустым (как в шорткодном режиме) — покупатель видит, что пункт
+                // нужно выбрать; для door — скрываем.
                 if (shippingTerminal) shippingTerminal.value = '';
-                if (shippingTerminalField) shippingTerminalField.style.display = 'none';
+                if (shippingTerminalField) {
+                    shippingTerminalField.style.display = deliveryData?.typeDelivery === 'terminal' ? '' : 'none';
+                }
             }
 
             if (deliveryData?.typeDelivery) {
@@ -2201,26 +2256,56 @@
             return hasTerminalSelection;
         }
 
+        // Кнопка выбора службы бессмысленна, когда вариантов нет: модалка виджета
+        // покажет только пустые карточки "Нет вариантов доставки".
+        function setChooseButtonVisible(visible) {
+            const rootBlock = root.closest('.wc-esl-checkout-shipping-block') || document;
+            rootBlock.querySelectorAll('.wc-esl-terminals__button').forEach((button) => {
+                button.style.display = visible ? '' : 'none';
+            });
+        }
+
         function handleServicesLoadedState(services = [], isNotAvailable = false) {
             const rootBlock = root.closest('.wc-esl-checkout-shipping-block') || document;
             const desc = rootBlock.querySelector('.esl_desct_delivery');
-            const countEl = rootBlock.querySelector('.esl_desct_delivery .count');
-            const countTextEl = rootBlock.querySelector('.esl_desct_delivery .countText');
-            const addTextEl = rootBlock.querySelector('.esl_desct_delivery .addText');
-
-            if (!desc || !countEl || !countTextEl || !addTextEl) {
+            if (!desc) {
                 return;
             }
 
+            // <p> может быть заменён целиком (например, сообщением при смене оплаты).
+            let descText = desc.querySelector('p');
+            if (!descText) {
+                descText = document.createElement('p');
+                desc.appendChild(descText);
+            }
+
+            // Разметку "Всего доступно N служб доставки: ..." запоминаем один раз, чтобы
+            // вернуть её после состояния "нет вариантов", где остаётся только сообщение.
+            if (!desc.dataset.eslTemplate && descText.querySelector('.count')) {
+                desc.dataset.eslTemplate = descText.innerHTML;
+            }
+
             if (isNotAvailable) {
-                countEl.textContent = '0';
-                countTextEl.textContent = 'служб';
-                addTextEl.textContent = 'Нет доступных вариантов доставки.';
+                descText.textContent = 'Нет доступных вариантов доставки.';
                 desc.style.display = '';
+                setChooseButtonVisible(false);
                 return;
             }
 
             if (!Array.isArray(services) || services.length === 0) {
+                return;
+            }
+
+            if (!descText.querySelector('.count')) {
+                descText.innerHTML = desc.dataset.eslTemplate
+                    || 'Всего доступно <span class="count"></span> <span class="countText"></span> доставки:<br><span class="addText"></span>';
+            }
+
+            const countEl = descText.querySelector('.count');
+            const countTextEl = descText.querySelector('.countText');
+            const addTextEl = descText.querySelector('.addText');
+
+            if (!countEl || !countTextEl || !addTextEl) {
                 return;
             }
 
@@ -2235,6 +2320,7 @@
             countTextEl.textContent = countText;
             addTextEl.textContent = nameDelivery || 'Выбран самый дешевый вариант.';
             desc.style.display = '';
+            setChooseButtonVisible(true);
         }
 
         // Как в legacy: фиксируем хеш карточки из onBalloonOpen.
@@ -2257,9 +2343,28 @@
             handleServicesLoadedState(event.detail, false);
         });
 
-        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', () => {
+        // НП, для которого серверу уже сообщено "нет доступных служб" —
+        // чтобы не слать повторно при каждом пересчёте виджета.
+        let notAvailableReportedCity = null;
+
+        function reportNoServicesAvailable() {
             handleServicesLoadedState([], true);
-        });
+
+            // В этот НП никто не доставляет: сбрасываем на сервере выбор с прошлого
+            // расчёта, иначе в ставке остаются служба и цена предыдущего НП.
+            const cityName = getLegacyShippingCityName(getWidgetData());
+            if (notAvailableReportedCity === cityName) {
+                return;
+            }
+            notAvailableReportedCity = cityName;
+
+            const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
+            if (shippingTerminal) shippingTerminal.value = '';
+
+            updateShippingData(JSON.stringify({ notAvailable: 1 }), { name: cityName });
+        }
+
+        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', reportNoServicesAvailable);
 
         // Если это событие не приходит у конкретной версии SDK - fallback.
         setTimeout(() => {
@@ -2277,6 +2382,8 @@
                 console.log('ESL: нет данных тарифа для "' + (deliveryData?.typeDelivery || '') + '", выбор пропущен');
                 return;
             }
+
+            notAvailableReportedCity = null;
 
             const selectedHash = getServiceSignature(deliveryData);
             const frameData = buildLegacyShippingFrameData(deliveryData);
@@ -2345,9 +2452,16 @@
             }
         });
 
+        // SDK шлёт это вместо onNotAvailableServices, когда у НП пустой список служб
+        // (ни одна служба аккаунта туда не доставляет). Это тот же случай "нет
+        // доставки": showError() здесь прятал блок с кнопкой и описанием целиком,
+        // а подсказку тут же скрывал updateCityGateUI() — покупатель не видел ничего,
+        // и в сессии оставался выбор с прошлого НП.
         root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
-            console.error('❌ Invalid services');
-            showError('Невозможна доставка по указанному адресу');
+            console.warn('eShopLogistic: invalid services (no services for settlement)');
+            setLoadingState(false);
+            toggleTerminals(true, 'shipping');
+            reportNoServicesAvailable();
         });
     }
 
@@ -2806,7 +2920,10 @@
                     try {
                         var parsed = JSON.parse(cityInputEl.value);
                         if (parsed && parsed.city === shippingCityEl.value) {
+                            var fieldPostcode = shippingCityData.postcode;
                             shippingCityData = Object.assign({}, shippingCityData, parsed);
+                            // Пустой postcode из widgetCityEsl не должен затирать индекс из поля.
+                            shippingCityData.postcode = shippingCityData.postcode || fieldPostcode;
                         }
                     } catch (ex) {}
                 }

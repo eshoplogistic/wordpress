@@ -94,11 +94,12 @@
 		return '<div class="wc-esl-city-search-loading"><span class="wc-esl-city-search-loading__spinner"></span></div>';
 	}
 
-	function renderCitiesItem( { fias, name, region, postal_code, services, type } ) {
+	function renderCitiesItem( { fias, name, region, sub_region, postal_code, services, type } ) {
 		let label = '';
 		label += ( type.length > 0 ) ? `${type} ` : '';
 		label += name;
 		label += ( region.length > 0 ) ? ` - ${region}` : '';
+		label += ( sub_region && sub_region.length > 0 ) ? ` <span class="wc-esl-search-city__subregion">- ${sub_region}</span>` : '';
 
 		let html = `<li
 			class="wc-esl-search-city__item"
@@ -152,11 +153,12 @@
 		return html;
 	}
 
-	function renderCitiesModalItem({fias, name, region, postal_code, services, type}) {
+	function renderCitiesModalItem({fias, name, region, sub_region, postal_code, services, type}) {
 		let label = '';
 		label += (type.length > 0) ? `${type} ` : '';
 		label += name;
 		label += (region.length > 0) ? ` - ${region}` : '';
+		label += ( sub_region && sub_region.length > 0 ) ? ` <span class="wc-esl-search-city__subregion">- ${sub_region}</span>` : '';
 
 		let html = `<li
 			class="wc-esl-search-city-modal__item"
