@@ -902,11 +902,14 @@ class UnloadingOrder implements ModuleInterface
                 $defaultFields['delivery']['vat_rate'] = $costVatRate;
             }
 
-            // У СДЭК (в отличие от postrf/fivepost/yandex, см. overriding-parameters.html)
-            // delivery.take_payment — реальный флаг API, включающий "Оплата с получателя:
-            // За доставку" в личном кабинете СДЭК. Раньше он вырезался вместе со служебным
-            // delivery-custom-cost и никогда не долетал до ТК.
-            if ($deliveryId === 'sdek') {
+            // delivery.take_payment — реальный флаг API ("Оплата с получателя: За доставку"),
+            // а не только служебный признак формы: без него, например, 5POST регистрирует
+            // предоплаченный заказ с нулевой суммой к оплате, игнорируя delivery.cost.
+            // Передаём для всех служб, у которых флаг объявлен в sendExportFields()
+            // (sdek/postrf/fivepost/yandex), как в moj_sklad. Раньше он вырезался вместе
+            // со служебным delivery-custom-cost и долетал до ТК только у СДЭК.
+            $takePaymentFields = (new ExportFileds())->sendExportFields($deliveryId);
+            if (isset($takePaymentFields['delivery']) && array_key_exists('take_payment', $takePaymentFields['delivery'])) {
                 $defaultFields['delivery']['take_payment'] = $takePayment;
             }
 
