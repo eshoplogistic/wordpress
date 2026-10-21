@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "eshoplogisticru/checkout-form",
+  "title": "Checkout Form (Legacy)",
+  "category": "widgets",
+  "description": "Legacy checkout form for backward compatibility",
+  "keywords": ["shipping", "delivery", "eshoplogistic", "checkout", "form"],
+  "icon": "edit-page",
+  "supports": {
+    "align": ["left", "center", "right"],
+    "html": false,
+    "customClassName": true,
+    "reusable": true,
+    "lock": false,
+    "remove": true,
+    "inserter": true,
+    "multiple": true,
+    "anchor": false
+  },
+  "textdomain": "eshoplogisticru",
+  "attributes": {
+    "formType": {
+      "type": "string",
+      "default": "full"
+    }
+  }
+}

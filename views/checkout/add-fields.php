@@ -1,15 +1,17 @@
 <?php
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Variables passed via View::render extract are prefixed
+
 if ( ! defined('ABSPATH') ) {
 	exit;
 }
-$eslBillingCityFields = !empty($eslBillingCityFields) ? $eslBillingCityFields : '';
-$eslShippingCityFields = !empty($eslShippingCityFields) ? $eslShippingCityFields : '';
-$offAddressCheck = $offAddressCheck ?? false;
+$wc_esl_eslBillingCityFields = !empty($wc_esl_eslBillingCityFields) ? $wc_esl_eslBillingCityFields : '';
+$wc_esl_eslShippingCityFields = !empty($wc_esl_eslShippingCityFields) ? $wc_esl_eslShippingCityFields : '';
+$wc_esl_offAddressCheck = $wc_esl_offAddressCheck ?? false;
 ?>
 
-<input id='eslBillingCityFields' value='<?php echo esc_attr($eslBillingCityFields)?>' type='hidden'>
-<input id='eslShippingCityFields' value='<?php echo esc_attr($eslShippingCityFields)?>' type='hidden'>
-<?php if ( $offAddressCheck ) : ?>
-    <input id='offAddressCheck' value='<?php echo esc_attr($offAddressCheck)?>' type='hidden'>
+<input id='eslBillingCityFields' value='<?php echo esc_attr($wc_esl_eslBillingCityFields)?>' type='hidden'>
+<input id='eslShippingCityFields' value='<?php echo esc_attr($wc_esl_eslShippingCityFields)?>' type='hidden'>
+<?php if ( $wc_esl_offAddressCheck ) : ?>
+    <input id='offAddressCheck' value='<?php echo esc_attr($wc_esl_offAddressCheck)?>' type='hidden'>
 <?php endif; ?>

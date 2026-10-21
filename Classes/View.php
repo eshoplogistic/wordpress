@@ -13,6 +13,7 @@ class View
 		$fileName = __DIR__ . '/../views/' . $view . '.php';
 		
 		ob_start();
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Variables are prefixed in the array keys passed to this function
 		extract( $data );
 		include $fileName;
 		$output = ob_get_clean();

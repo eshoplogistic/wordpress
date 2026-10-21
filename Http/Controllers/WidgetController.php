@@ -14,24 +14,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WidgetController extends Controller {
 
+	// Срок жизни кэша ответов виджета, в т.ч. расчёта доставки, из которого при оформлении
+	// заказа берётся тариф (Base::getFrameCalculationData()).
+	const CACHE_TTL = HOUR_IN_SECONDS;
+
 	public function process( \WP_REST_Request $request ): ResponseInterface {
 		$out    = [];
 		$method = $request->get_param( 'method' );
 
-		if ( ! empty( $method ) ) {
-			$query_data = @$_POST;
+		// This endpoint proxies the eShopLogistic account API key to the external API on the
+		// caller's behalf, so only the public "widget/*" methods used by the storefront widgets
+		// may be called through it -- account/order-management methods must never be reachable
+		// from an unauthenticated public endpoint.
+		if ( ! empty( $method ) && strpos( trim( $method ), 'widget/' ) === 0 ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- public REST widget endpoint, no user session to tie a nonce to
+			$query_data = $this->sanitizeQueryData( $_POST );
 			unset( $query_data['method'] );
-			$cache_key  = md5( $method . json_encode( $query_data ) );
+			$cache_key  = md5( $method . wp_json_encode( $query_data ) );
 			$cache_data = get_transient( $cache_key );
 
 			if ( ! empty( $cache_data ) ) {
 				$out = $cache_data;
+				if ( $method == 'widget/calculation' ) {
+					$this->restoreCalculationCache( $query_data, $cache_data );
+				}
 			} else {
 				$raw = ( $method == 'widget/send' ) ? $request->get_param( 'raw' ) : '';
 
 				if ( $request = $this->ApiQuery( trim( $method ), $query_data, $raw ) ) {
 					if ( ! empty( $request ) && $request['http_status'] == 200 ) {
-						set_transient( $cache_key, $request, HOUR_IN_SECONDS );
+						set_transient( $cache_key, $request, self::CACHE_TTL );
 					}
 					$out = $request;
 				}
@@ -41,6 +53,53 @@ class WidgetController extends Controller {
 		return $this->json( $out );
 	}
 
+	/**
+	 * Ответ widget/calculation кэшируется дважды: целиком по запросу (выше) и по ключу
+	 * город+ключ+служба в ApiQuery() — последний читает Base::getFrameCalculationData().
+	 * Второй transient ставится чуть раньше и истекает раньше, поэтому при попадании в первый
+	 * кэш второй мог отсутствовать, и в заказ не сохранялся тариф. Восстанавливаем его.
+	 */
+	private function restoreCalculationCache( array $data, $result ) {
+		if ( ! is_array( $result ) || ! isset( $result['debug'] ) ) {
+			return;
+		}
+
+		$keyWidget = explode( ':', (string) ( $data['key'] ?? '' ) );
+		$cacheJson = array(
+			'city'    => $data['to'] ?? '',
+			'key'     => $keyWidget[0],
+			'service' => $data['service'] ?? '',
+		);
+		$cache_key = md5( 'widget/calculation' . json_encode( $cacheJson ) );
+		if ( false === get_transient( $cache_key ) ) {
+			set_transient( $cache_key, $result, self::CACHE_TTL );
+		}
+	}
+
+	/**
+	 * Sanitizes the raw $_POST payload before it's forwarded to the external API.
+	 *
+	 * The 'offers' field is left untouched -- ApiQuery() below still expects it
+	 * slashed (it stripslashes() + json_decode()s it itself), so unslashing or
+	 * sanitizing it here would corrupt the JSON payload.
+	 */
+	private function sanitizeQueryData( array $data ): array {
+		$sanitized = [];
+
+		foreach ( $data as $key => $value ) {
+			$key = sanitize_key( $key );
+
+			if ( 'offers' === $key ) {
+				$sanitized[ $key ] = $value;
+			} elseif ( is_array( $value ) ) {
+				$sanitized[ $key ] = $this->sanitizeQueryData( $value );
+			} else {
+				$sanitized[ $key ] = is_string( $value ) ? sanitize_text_field( wp_unslash( $value ) ) : $value;
+			}
+		}
+
+		return $sanitized;
+	}
 
 	public function ApiQuery( string $method, array $data = [], string $raw = '' ) {
 		$optionsRepository = new OptionsRepository();
@@ -64,50 +123,40 @@ class WidgetController extends Controller {
 			$apiUrl .= '/';
 		}
 
-		$curl = curl_init();
-		curl_setopt( $curl, CURLOPT_URL, $apiUrl . $method );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $curl, CURLOPT_TIMEOUT, 10 );
-		curl_setopt( $curl, CURLOPT_POST, 1 );
+		$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36';
+		$requestArgs = [ 'timeout' => 10 ];
+
 		if ( preg_match( '/widget/', $method ) ) {
 			# заказ из виджета отправляется в raw
 			if ( $method == 'widget/send' ) {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $raw );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-					'Content-Type: application/json'
-				] );
+				$requestArgs['body']    = $raw;
+				$requestArgs['headers'] = [
+					'User-Agent'   => $userAgent,
+					'Content-Type' => 'application/json',
+				];
 			} elseif ( $method == 'widget/calculation' ) {
 				$encoded        = json_decode( stripslashes( $data['offers'] ) );
 				$data['offers'] = json_encode( $encoded );
 				$data['debug']  = 1;
 				$calculation    = true;
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-				] );
+				$requestArgs['body']    = $data;
+				$requestArgs['headers'] = [ 'User-Agent' => $userAgent ];
 			} else {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-				] );
+				$requestArgs['body']    = $data;
+				$requestArgs['headers'] = [ 'User-Agent' => $userAgent ];
 			}
 		} else {
 			# выгрузка заказа в raw
 			if ( $method == 'delivery/order' ) {
-				$raw = json_encode( array_merge( $data, [ 'key' => $apiKey ] ) );
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, $raw );
-				curl_setopt( $curl, CURLOPT_HTTPHEADER, [
-					'Content-Type: application/json'
-				] );
+				$requestArgs['body']    = json_encode( array_merge( $data, [ 'key' => $apiKey ] ) );
+				$requestArgs['headers'] = [ 'Content-Type' => 'application/json' ];
 			} else {
-				curl_setopt( $curl, CURLOPT_POSTFIELDS, array_merge( $data, [ 'key' => $apiKey ] ) );
+				$requestArgs['body'] = array_merge( $data, [ 'key' => $apiKey ] );
 			}
 		}
 
-		$result = curl_exec( $curl );
-		curl_close( $curl );
-
+		$response = wp_remote_post( $apiUrl . $method, $requestArgs );
+		$result   = is_wp_error( $response ) ? '' : wp_remote_retrieve_body( $response );
 
 		if ( $result = json_decode( $result, 1 ) ) {
 			if ( is_array( $result ) ) {
@@ -126,7 +175,7 @@ class WidgetController extends Controller {
 						'service' => $data['service']
 					);
 					$cache_key = md5( $method . json_encode( $cacheJson ) );
-					set_transient( $cache_key, $result, HOUR_IN_SECONDS );
+					set_transient( $cache_key, $result, self::CACHE_TTL );
 				}
 
 				return $result;

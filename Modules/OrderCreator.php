@@ -2,8 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Classes\Shipping\Base;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
-use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
 if ( ! defined('ABSPATH') ) {
@@ -20,6 +20,9 @@ class OrderCreator implements ModuleInterface
 
         add_action('woocommerce_checkout_create_order', [$this, 'createOrder']);
         add_action('woocommerce_before_order_item_object_save', [$this, 'saveOrderShipping']);
+
+		// WooCommerce Blocks / Store API: срабатывает после полного создания заказа и сохранения позиций.
+        add_action('woocommerce_store_api_checkout_order_processed', [$this, 'processBlocksOrder'], 10, 1);
 	}
 
 	public function createOrder($order)
@@ -39,7 +42,7 @@ class OrderCreator implements ModuleInterface
 
 		if(!$this->methodsIsEshopTerminal($shippingMethodId)) return;
 
-		$terminal = $sessionService->get('terminal_location');
+		$terminal = $this->getTerminalLocation($sessionService, $shippingMethodId);
 
 		if(!$terminal) return;
 
@@ -54,10 +57,11 @@ class OrderCreator implements ModuleInterface
 
 		try {
 			$sessionService = new SessionService();
-			$terminal = $sessionService->get('terminal_location');
+			$terminal = $this->getTerminalLocation($sessionService, $item->get_method_id());
 
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethodId = $item->get_method_id();
+			$shippingMethods = $this->restoreFrameShippingMethods($sessionService, $shippingMethods, $shippingMethodId);
 
 			if( isset( $shippingMethods[$shippingMethodId] ) ) {
 				unset($shippingMethods[$shippingMethodId]['terminals']);
@@ -105,11 +109,213 @@ class OrderCreator implements ModuleInterface
 		}
 	}
 
-	private function methodsIsEshopTerminal($methodId)
+	/**
+	 * Обрабатывает создание заказа через WooCommerce Blocks / Store API.
+	 * Эквивалентно createOrder + saveOrderShipping, но вызывается после сохранения всех позиций.
+	 */
+	public function processBlocksOrder( $order ) {
+		$sessionService   = new SessionService();
+		$shippingMethods  = $sessionService->get( 'shipping_methods' ) ?: [];
+
+		$shippingMethodId = null;
+		$terminal         = '';
+		foreach ( $order->get_items( 'shipping' ) as $item ) {
+			$shippingMethodId = $item->get_method_id();
+			$terminal         = $this->getTerminalLocation( $sessionService, $shippingMethodId );
+			$shippingMethods  = $this->restoreFrameShippingMethods( $sessionService, $shippingMethods, $shippingMethodId );
+
+			// Мета-данные для позиции доставки (Срок доставки, Пункт выдачи).
+			if ( isset( $shippingMethods[ $shippingMethodId ] ) ) {
+				$methodData = $shippingMethods[ $shippingMethodId ];
+				unset( $methodData['terminals'] );
+				$item->update_meta_data( 'esl_shipping_methods', json_encode( $methodData, JSON_UNESCAPED_UNICODE ) );
+
+				$timeKey = $terminal ? 'terminal' : 'door';
+				$timeData = $methodData['data'][ $timeKey ]['time'] ?? $methodData['time'] ?? null;
+				if ( $timeData ) {
+					$timeVal  = $timeData['value'] ?? '';
+					$timeUnit = $timeData['unit']  ?? '';
+					$timeText = $timeData['text']  ?? '';
+					$item->update_meta_data( __( 'Срок доставки', 'eshoplogisticru' ), "{$timeVal} {$timeUnit} - {$timeText}" );
+				}
+			}
+
+			if ( $terminal && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
+				$item->update_meta_data( __( 'Пункт выдачи', 'eshoplogisticru' ), $terminal );
+			}
+
+			$item->save();
+		}
+
+		$sessionService->drop( 'shipping_methods' );
+
+		// Адрес доставки — как в createOrder.
+		if ( $terminal && $shippingMethodId && $this->methodsIsEshopTerminal( $shippingMethodId ) ) {
+			$order->set_shipping_address_1( __( 'Пункт выдачи: ', 'eshoplogisticru' ) . $terminal );
+
+			// Blocks-чекаут подставляет адрес ПВЗ в поле shipping address_1 (оно
+			// обязательное в checkout store), и при включённой галочке "Использовать
+			// этот адрес для выставления счетов" он же копируется в платёжный адрес.
+			// Адрес ПВЗ — не адрес покупателя, поэтому убираем его из billing,
+			// только если там именно автоподставленное значение.
+			$billingAddress = trim( (string) $order->get_billing_address_1() );
+			if ( '' !== $billingAddress && in_array( $billingAddress, $this->getAutoFilledTerminalValues( $sessionService ), true ) ) {
+				$order->set_billing_address_1( '' );
+			}
+
+			$order->save();
+		}
+	}
+
+	/**
+	 * Значения, которые checkout_frame_block.js автоматически подставляет в поле
+	 * address_1 при выборе ПВЗ: адрес терминала из виджета или плейсхолдер.
+	 */
+	private function getAutoFilledTerminalValues( SessionService $sessionService ) {
+		$values = [ 'Пункт выдачи' ];
+
+		$shippingFrame = $sessionService->get( 'esl_shipping_frame' );
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+
+		if ( is_array( $shippingFrame ) && ! empty( $shippingFrame['terminalAddress'] ) ) {
+			$values[] = trim( (string) $shippingFrame['terminalAddress'] );
+		}
+
+		return $values;
+	}
+
+	public function getTerminalLocation(SessionService $sessionService, $methodId = '')
+	{
+		// Для фреймового метода (wc_esl_frame_mixed) актуальный выбор ПВЗ — в
+		// esl_shipping_frame: он перезаписывается при каждом выборе службы в
+		// виджете. terminal_location может остаться от прошлого выбора (другой
+		// город/ПВЗ), поэтому для mixed он только запасной вариант.
+		if ($methodId && $this->isMixedMethod($methodId)) {
+			$frameTerminal = $this->getFrameTerminalLocation($sessionService);
+			if ('' !== $frameTerminal) {
+				return $frameTerminal;
+			}
+		}
+
+		$terminal = $sessionService->get('terminal_location');
+		if (is_string($terminal) && '' !== trim($terminal)) {
+			return $terminal;
+		}
+
+		return $this->getFrameTerminalLocation($sessionService);
+	}
+
+	/**
+	 * saveOrderShipping() сбрасывает shipping_methods после каждого заказа, а WooCommerce при
+	 * неизменной корзине берёт ставки из кэша и не вызывает calculate_shipping_frame() повторно —
+	 * следующий заказ в той же сессии сохранялся без esl_shipping_methods (пустой тариф в форме
+	 * выгрузки). Для frame-метода восстанавливаем данные расчёта из transient'а виджета
+	 * и добавляем тариф, выбранный в виджете (selected_tariff).
+	 */
+	private function restoreFrameShippingMethods(SessionService $sessionService, array $shippingMethods, $methodId)
+	{
+		if (!$methodId || !$this->isMixedMethod($methodId)) {
+			return $shippingMethods;
+		}
+
+		$shippingFrame = $sessionService->get('esl_shipping_frame');
+		if (is_string($shippingFrame)) {
+			$shippingFrame = maybe_unserialize($shippingFrame);
+		}
+
+		if (!isset($shippingMethods[$methodId])) {
+			$mode = $sessionService->get('mode_shipping') ? $sessionService->get('mode_shipping') : 'billing';
+			$frameMethodData = Base::getFrameCalculationData($shippingFrame, $sessionService->get($mode));
+			if ($frameMethodData) {
+				$shippingMethods[$methodId] = $frameMethodData;
+			}
+		}
+
+		// Тариф, который покупатель выбрал в виджете (checkout_frame_*.js кладёт его в
+		// esl_shipping_frame вместе с выбором службы). Сохраняется в заказ как есть и имеет
+		// приоритет над подбором тарифа по цене в ExportFileds::resolveOrderTariff() — не
+		// зависит от срока жизни кэша расчёта.
+		$tariffCode = is_array($shippingFrame) ? trim((string) ($shippingFrame['tariffCode'] ?? '')) : '';
+		if ('' !== $tariffCode) {
+			$shippingMethods[$methodId]['selected_tariff'] = [
+				'code'    => $tariffCode,
+				'name'    => trim((string) ($shippingFrame['tariffName'] ?? '')),
+				'mode'    => (string) ($shippingFrame['mode'] ?? ''),
+				'service' => (string) ($shippingFrame['key'] ?? ''),
+			];
+		}
+
+		return $shippingMethods;
+	}
+
+	private function isMixedMethod($methodId)
+	{
+		$explodedAtPrefix = explode(WC_ESL_PREFIX, (string) $methodId);
+		if (!isset($explodedAtPrefix[1]) || '' === $explodedAtPrefix[1]) return false;
+
+		$parts = explode('_', $explodedAtPrefix[1]);
+
+		return isset($parts[1]) && 'mixed' === $parts[1];
+	}
+
+	private function getFrameTerminalLocation(SessionService $sessionService)
+	{
+		$shippingFrame = $sessionService->get('esl_shipping_frame');
+		if (is_string($shippingFrame)) {
+			$shippingFrame = maybe_unserialize($shippingFrame);
+		}
+
+		if (!is_array($shippingFrame)) {
+			return '';
+		}
+
+		$terminalAddress = isset($shippingFrame['terminalAddress']) ? trim((string) $shippingFrame['terminalAddress']) : '';
+		$terminalCode = isset($shippingFrame['terminalCode']) ? trim((string) $shippingFrame['terminalCode']) : '';
+
+		if ('' === $terminalAddress && isset($shippingFrame['terminal']) && is_array($shippingFrame['terminal'])) {
+			$terminalAddress = isset($shippingFrame['terminal']['address']) ? trim((string) $shippingFrame['terminal']['address']) : '';
+			$terminalCode = isset($shippingFrame['terminal']['code']) ? trim((string) $shippingFrame['terminal']['code']) : $terminalCode;
+		}
+
+		if ('' === $terminalAddress && isset($shippingFrame['pvz']) && is_array($shippingFrame['pvz'])) {
+			$terminalAddress = isset($shippingFrame['pvz']['address']) ? trim((string) $shippingFrame['pvz']['address']) : '';
+			$terminalCode = isset($shippingFrame['pvz']['code']) ? trim((string) $shippingFrame['pvz']['code']) : $terminalCode;
+		}
+
+		if ('' !== $terminalAddress && '' !== $terminalCode) {
+			return $terminalAddress . '. Код пункта: ' . $terminalCode;
+		}
+
+		if ('' !== $terminalAddress) {
+			return $terminalAddress;
+		}
+
+		$mode = isset($shippingFrame['mode']) ? strtolower(trim((string) $shippingFrame['mode'])) : '';
+		$isTerminalMode = in_array($mode, ['terminal', 'pickup', 'pvz', 'point'], true);
+		if (!$isTerminalMode) {
+			return '';
+		}
+
+		$frameAddress = isset($shippingFrame['address']) ? trim((string) $shippingFrame['address']) : '';
+		if ('' === $frameAddress) {
+			return '';
+		}
+
+		$addressParts = preg_split('/\s+/', $frameAddress, 2);
+		if (is_array($addressParts) && 2 === count($addressParts) && '' !== trim($addressParts[0]) && '' !== trim($addressParts[1])) {
+			return trim($addressParts[1]) . '. Код пункта: ' . trim($addressParts[0]);
+		}
+
+		return $frameAddress;
+	}
+
+	public function methodsIsEshopTerminal($methodId)
     {
         $explodedAtPrefix = explode(WC_ESL_PREFIX, $methodId);
 
-        if(empty($explodedAtPrefix)) return false;
+		if (!isset($explodedAtPrefix[1]) || '' === $explodedAtPrefix[1]) return false;
 
         $typeServiceShipping = explode('_', $explodedAtPrefix[1]);
 
@@ -118,13 +324,15 @@ class OrderCreator implements ModuleInterface
         $serviceShipping = $typeServiceShipping[0];
         $typeServiceShipping = $typeServiceShipping[1];
 
-	    $optionsRepository = new OptionsRepository();
-	    $moduleVersion = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_api_v2');
-
-		if($typeServiceShipping === 'mixed') return true;
+		if($typeServiceShipping === 'mixed'){
+			$sessionService = new SessionService();
+			$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
+			if(isset($shippingFrame['mode']) && $shippingFrame['mode'] == 'terminal'){
+				return true;
+			}
+			return false;
+		}
         if($typeServiceShipping !== 'terminal') return false;
-		if(!$moduleVersion)
-	        if($serviceShipping === 'postrf') return false;
 
         return true;
     }

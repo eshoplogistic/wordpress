@@ -32,7 +32,7 @@ class ExceptionResponse implements ApiResponseInterface, \JsonSerializable
         return true;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'success' => false,

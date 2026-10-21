@@ -20,7 +20,7 @@ class CollectionResponse implements ApiResponseInterface
      */
     public function __construct( $data )
     {
-        $this->data = $data;
+        $this->data = is_array( $data ) ? $data : [];
     }
 
     /**

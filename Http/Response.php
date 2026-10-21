@@ -27,7 +27,7 @@ class Response
 
         header('Content-Type: application/json');
 
-    echo wp_json_encode($result, JSON_UNESCAPED_UNICODE);
+        echo wp_json_encode($result);
         wp_die();
     }
 }
