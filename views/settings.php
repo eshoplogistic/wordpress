@@ -1,5 +1,7 @@
 <?php
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
@@ -342,6 +344,24 @@ $status_translate             = UnloadingOrder::getCarrierStatusNames();
 
                         </div>
                     </div>
+
+                        <div class="card" id="esl-sender-cities">
+                            <div class="card-header">Города отправки</div>
+                            <div class="card-body">
+                                <p class="esl-sender-cities-description">Добавьте города отправки, затем выберите город в настройках способа доставки WooCommerce. В режиме виджета город выбирает покупатель.</p>
+                                <input type="hidden" class="esl-sender-cities-data" value="<?php echo esc_attr(wp_json_encode(SenderCities::getList())); ?>">
+                                <div class="esl-sender-cities-list"></div>
+                                <div class="esl-sender-cities-search-row">
+                                    <input id="esl-sender-cities-query" class="form-control esl-sender-cities-query" aria-label="Название города отправки" placeholder="Название города (не менее 2 символов)">
+                                    <button type="button" class="btn btn-outline-primary esl-sender-cities-search">Найти город</button>
+                                </div>
+                                <div class="esl-sender-cities-results" aria-live="polite"></div>
+                                <div class="esl-sender-cities-actions">
+                                    <button type="button" class="btn btn-primary esl-sender-cities-save">Сохранить города</button>
+                                    <span class="esl-sender-cities-status" role="status"></span>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                     <div class="tab-pane fade" id="esl-top-tab-paytypes" role="tabpanel">

@@ -61,6 +61,9 @@ class OrderCreator implements ModuleInterface
 
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 			$shippingMethodId = $item->get_method_id();
+            $rateData = $item->get_meta('esl_shipping_methods', true);
+            $rateData = is_string($rateData) ? json_decode($rateData, true) : $rateData;
+            if (is_array($rateData) && $rateData) $shippingMethods[$shippingMethodId] = $rateData;
 			$shippingMethods = $this->restoreFrameShippingMethods($sessionService, $shippingMethods, $shippingMethodId);
 
 			if( isset( $shippingMethods[$shippingMethodId] ) ) {
@@ -122,6 +125,9 @@ class OrderCreator implements ModuleInterface
 		foreach ( $order->get_items( 'shipping' ) as $item ) {
 			$shippingMethodId = $item->get_method_id();
 			$terminal         = $this->getTerminalLocation( $sessionService, $shippingMethodId );
+			$rateData = $item->get_meta('esl_shipping_methods', true);
+            $rateData = is_string($rateData) ? json_decode($rateData, true) : $rateData;
+            if (is_array($rateData) && $rateData) $shippingMethods[$shippingMethodId] = $rateData;
 			$shippingMethods  = $this->restoreFrameShippingMethods( $sessionService, $shippingMethods, $shippingMethodId );
 
 			// Мета-данные для позиции доставки (Срок доставки, Пункт выдачи).
@@ -237,6 +243,7 @@ class OrderCreator implements ModuleInterface
 		// esl_shipping_frame вместе с выбором службы). Сохраняется в заказ как есть и имеет
 		// приоритет над подбором тарифа по цене в ExportFileds::resolveOrderTariff() — не
 		// зависит от срока жизни кэша расчёта.
+        if (is_array($shippingFrame)) $shippingMethods[$methodId]['sender_fias'] = $shippingFrame['from'] ?? '';
 		$tariffCode = is_array($shippingFrame) ? trim((string) ($shippingFrame['tariffCode'] ?? '')) : '';
 		if ('' !== $tariffCode) {
 			$shippingMethods[$methodId]['selected_tariff'] = [
@@ -322,7 +329,7 @@ class OrderCreator implements ModuleInterface
         if(!isset($typeServiceShipping[1])) return false;
 
         $serviceShipping = $typeServiceShipping[0];
-        $typeServiceShipping = $typeServiceShipping[1];
+        $typeServiceShipping = explode(':', $typeServiceShipping[1])[0];
 
 		if($typeServiceShipping === 'mixed'){
 			$sessionService = new SessionService();

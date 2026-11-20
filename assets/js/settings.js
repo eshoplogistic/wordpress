@@ -1226,3 +1226,91 @@ function sortableDelete(elem){
 	});
 
 })( jQuery );
+window.addEventListener('load', () => {
+    const root = document.getElementById('esl-sender-cities');
+    if (!root) return;
+    const input = root.querySelector('.esl-sender-cities-data');
+    const list = root.querySelector('.esl-sender-cities-list');
+    const results = root.querySelector('.esl-sender-cities-results');
+    const query = root.querySelector('.esl-sender-cities-query');
+    const status = root.querySelector('.esl-sender-cities-status');
+    let cities = JSON.parse(input.value || '[]');
+    let searchId = 0;
+    const label = city => city.name + (city.region ? ' (' + city.region + ')' : '');
+    function render() {
+        list.replaceChildren();
+        cities.forEach((city, index) => {
+            const row = document.createElement('p');
+            row.className = 'esl-sender-cities-item';
+            const name = document.createElement('span');
+            name.textContent = label(city);
+            row.appendChild(name);
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'btn btn-sm btn-outline-danger';
+            remove.textContent = 'Удалить';
+            remove.addEventListener('click', () => { cities.splice(index, 1); render(); status.textContent = 'Есть несохранённые изменения'; });
+            row.appendChild(remove);
+            list.appendChild(row);
+        });
+        input.value = JSON.stringify(cities);
+    }
+    function search() {
+        if (query.value.trim().length < 2) return;
+        const id = ++searchId;
+        results.textContent = 'Поиск…';
+        fetch(wc_esl_shipping_global.ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({ action: 'wc_esl_search_cities', target: query.value.trim(), typeFilter: 'false' })
+        }).then(async response => {
+            if (!response.ok) throw new Error('Ошибка HTTP ' + response.status + ' при поиске городов.');
+            return response.json();
+        }).then(response => {
+            if (id !== searchId) return;
+            if (!response || response.success !== true) {
+                throw new Error(response?.message || 'Сервис поиска городов недоступен. Повторите попытку.');
+            }
+            results.replaceChildren();
+            const found = Array.isArray(response.data) ? response.data.filter(city => city.fias && city.name) : [];
+            if (!found.length) results.textContent = 'Города не найдены';
+            found.forEach(city => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn btn-light esl-sender-cities-result';
+                button.textContent = label(city);
+                button.addEventListener('click', () => {
+                    if (!cities.some(item => item.fias === city.fias)) cities.push({ fias: city.fias, name: city.name, region: city.region || '' });
+                    render();
+                    results.replaceChildren();
+                    query.value = '';
+                    status.textContent = 'Есть несохранённые изменения';
+                });
+                results.appendChild(button);
+            });
+        }).catch(error => {
+            if (id !== searchId) return;
+            results.textContent = /cURL error 28|timed out/i.test(error.message)
+                ? 'Сервис eShopLogistic не ответил вовремя. Повторите поиск через некоторое время.'
+                : 'Не удалось выполнить поиск: ' + error.message;
+        });
+    }
+    root.querySelector('.esl-sender-cities-search').addEventListener('click', search);
+    query.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); search(); } });
+    root.querySelector('.esl-sender-cities-save').addEventListener('click', async event => {
+        event.target.disabled = true;
+        status.textContent = 'Сохранение…';
+        try {
+            const response = await fetch(wc_esl_shipping_global.ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({ action: 'wc_esl_save_sender_cities', nonce: wc_esl_shipping_global.nonce, cities: JSON.stringify(cities) })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error();
+            cities = result.data;
+            render();
+            status.textContent = 'Города сохранены';
+        } catch (error) { status.textContent = 'Ошибка сохранения. Повторите попытку.'; }
+        finally { event.target.disabled = false; }
+    });
+    render();
+});

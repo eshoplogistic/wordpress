@@ -74,13 +74,14 @@ class CalculationService
             'offers' => $offers,
         ] );
 
-        $response = $this->api->calculateDelivery($service, [
-            'from' => $cityFrom,
+        $requestData = [
             'to' => $cityTo,
             'payment' => $payment,
             'offers' => json_encode($offers),
             'debug' => 1
-        ]);
+        ];
+        if ($cityFrom !== '') $requestData['from'] = $cityFrom;
+        $response = $this->api->calculateDelivery($service, $requestData);
 
         if($response->hasErrors()) throw new \Exception(esc_html(__("Ошибка при расчёте стоимости доставки", 'eshoplogisticru')));
 

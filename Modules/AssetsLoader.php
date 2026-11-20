@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Classes\Plugin;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
@@ -84,6 +86,21 @@ class AssetsLoader implements ModuleInterface
 			}
 		}
 
+        if (is_checkout() && $frameEnable) {
+            wp_enqueue_script('wc_esl_sender_cities', WC_ESL_PLUGIN_URL . 'assets/js/sender-cities.js', [], filemtime(WC_ESL_PLUGIN_DIR . 'assets/js/sender-cities.js'), true);
+            $selectedSender = '';
+            try {
+                $selectedSender = SenderCities::getSelected();
+            } catch (\Exception $e) {
+                // WooCommerce may initialize the customer session later.
+            }
+            wp_localize_script('wc_esl_sender_cities', 'wcEslSenderCitiesConfig', [
+                'options' => SenderCities::getOptions(),
+                'selected' => $selectedSender,
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wc-esl-shipping'),
+            ]);
+        }
 		if(is_checkout()) {
 			wp_enqueue_script(
 				'wc_esl_http_client_js',
@@ -115,7 +132,7 @@ class AssetsLoader implements ModuleInterface
 				'wc_esl_checkout_js',
 				WC_ESL_PLUGIN_URL . 'assets/js/checkout.js',
 				[ 'jquery' ],
-				WC_ESL_VERSION,
+				filemtime(WC_ESL_PLUGIN_DIR . 'assets/js/checkout.js'),
 				true
 			);
 
@@ -163,8 +180,8 @@ class AssetsLoader implements ModuleInterface
 				wp_enqueue_script(
 					'wc_esl_checkout_frame_js_v2',
 					WC_ESL_PLUGIN_URL . 'assets/js/checkout_frame_v2.js',
-					[ 'jquery' ],
-					WC_ESL_VERSION,
+					[ 'jquery', 'wc_esl_sender_cities' ],
+					filemtime(WC_ESL_PLUGIN_DIR . 'assets/js/checkout_frame_v2.js'),
 					true
 				);
 				$this->injectGlobals('wc_esl_object_hash');

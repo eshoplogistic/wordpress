@@ -177,7 +177,7 @@ class CheckoutValidator implements ModuleInterface
 
 		if(!isset($typeServiceShipping[1])) return false;
 
-		$typeServiceShipping = $typeServiceShipping[1];
+		$typeServiceShipping = explode(':', $typeServiceShipping[1])[0];
 
 		if($typeServiceShipping === 'mixed'){
 			$sessionService = new SessionService();
@@ -206,7 +206,7 @@ class CheckoutValidator implements ModuleInterface
         if(!isset($typeServiceShipping[1])) return false;
 
         $serviceShipping = $typeServiceShipping[0];
-        $typeServiceShipping = $typeServiceShipping[1];
+        $typeServiceShipping = explode(':', $typeServiceShipping[1])[0];
 
 	    if($typeServiceShipping === 'mixed'){
 		    $sessionService = new SessionService();

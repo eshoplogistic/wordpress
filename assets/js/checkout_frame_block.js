@@ -1873,6 +1873,7 @@
      * Отправить параметры виджету
      */
     function sendWidgetParams(root, settlementOverride = null) {
+        if (root && window.wcEslSenderCities) window.wcEslSenderCities.init(root, () => sendWidgetParams(root));
         if (!root) {
             console.warn('eShopLogistic: Cannot send params, root is null');
             return;
@@ -1931,7 +1932,7 @@
             root.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                 detail: {
                     settlement,
-                    requestParams: params
+                    requestParams: window.wcEslSenderCities ? window.wcEslSenderCities.params(params) : params
                 }
             }));
             
@@ -2019,6 +2020,7 @@
      */
     function buildLegacyShippingFrameData(deliveryData) {
         const eslData = {
+            from: window.wcEslSenderCities ? window.wcEslSenderCities.value() : '',
             price: 0,
             time: '',
             name: deliveryData?.service?.name || '',
@@ -2353,15 +2355,16 @@
             // В этот НП никто не доставляет: сбрасываем на сервере выбор с прошлого
             // расчёта, иначе в ставке остаются служба и цена предыдущего НП.
             const cityName = getLegacyShippingCityName(getWidgetData());
-            if (notAvailableReportedCity === cityName) {
+            const from = window.wcEslSenderCities ? window.wcEslSenderCities.value() : '';
+            if (notAvailableReportedCity === cityName + '|' + from) {
                 return;
             }
-            notAvailableReportedCity = cityName;
+            notAvailableReportedCity = cityName + '|' + from;
 
             const shippingTerminal = document.getElementById('wc_esl_shipping_terminal');
             if (shippingTerminal) shippingTerminal.value = '';
 
-            updateShippingData(JSON.stringify({ notAvailable: 1 }), { name: cityName });
+            updateShippingData(JSON.stringify({ notAvailable: 1, from }), { name: cityName });
         }
 
         root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', reportNoServicesAvailable);
@@ -2372,6 +2375,7 @@
         }, 3000);
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
+            if (window.wcEslSenderCities?.isChanging()) return;
             const deliveryData = event.detail;
             const responseData = deliveryData?.service?.responseData?.[deliveryData?.typeDelivery];
 
