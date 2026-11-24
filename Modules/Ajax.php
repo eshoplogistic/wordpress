@@ -330,10 +330,23 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
-		$addFrom = !empty($_POST['add_form']) ? $this->sanitize_array(wp_unslash($_POST['add_form'])) : [];
-		$addFrom = stripslashes(html_entity_decode($addFrom));
-		$addFrom = json_decode($addFrom, true);
+		// Decode before sanitizing: repeated unslashing breaks quotes inside JSON values.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Decoded fields sanitized below
+		$addFrom = isset($_POST['add_form']) && is_string($_POST['add_form'])
+			? json_decode(wp_unslash($_POST['add_form']), true)
+			: null;
+		if (!is_array($addFrom) || empty($addFrom)) {
+			$this->jsonErrorAddForm();
+			return;
+		}
+		foreach ($addFrom as $value) {
+			if (!is_array($value) || !isset($value['name'], $value['value'])
+				|| !is_string($value['name']) || !is_string($value['value'])) {
+				$this->jsonErrorAddForm();
+				return;
+			}
+		}
+		$addFrom = $this->sanitize_array($addFrom);
 		$result = array();
 
 		foreach ($addFrom as $value) {
@@ -352,6 +365,15 @@ class Ajax implements ModuleInterface
 		$response = $optionsController->saveAddForm($result);
 
 		$response->send();
+	}
+
+	private function jsonErrorAddForm()
+	{
+		$optionsController = new OptionsController();
+		$optionsController->json([
+			'status' => 'error',
+			'msg' => __('Ошибка сохранения настроек', 'eshoplogisticru'),
+		])->send();
 	}
 
 	public function saveExportForm()
