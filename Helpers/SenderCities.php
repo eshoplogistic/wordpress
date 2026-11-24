@@ -41,7 +41,7 @@ class SenderCities
             $options[$city['fias']] = $city['name'] . ($city['region'] !== '' ? ' (' . $city['region'] . ')' : '');
         }
         if (is_string($current) && $current !== '' && !isset($options[$current])) {
-            $options[$current] = __('Город удалён — используется город по умолчанию', 'eshoplogisticru');
+            $options[$current] = __('Город удалён - используется город по умолчанию', 'eshoplogisticru');
         }
         return $options;
     }
