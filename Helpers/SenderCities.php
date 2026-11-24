@@ -36,7 +36,7 @@ class SenderCities
 
     public static function getOptions($current = ''): array
     {
-        $options = ['' => __('По умолчанию (город из кабинета eShopLogistic)', 'eshoplogisticru')];
+        $options = ['' => __('Основной склад', 'eshoplogisticru')];
         foreach (self::getList() as $city) {
             $options[$city['fias']] = $city['name'] . ($city['region'] !== '' ? ' (' . $city['region'] . ')' : '');
         }
