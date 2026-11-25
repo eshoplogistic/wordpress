@@ -14,6 +14,7 @@
 namespace eshoplogistic\WCEshopLogistic\Blocks\Ajax;
 
 use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
 use eshoplogistic\WCEshopLogistic\Services\SessionService;
 
 class BlocksCheckoutHandler {
@@ -54,6 +55,12 @@ class BlocksCheckoutHandler {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via sanitize_text_field()
 		$forceDoor = isset($_POST['force_door']) && sanitize_text_field(wp_unslash($_POST['force_door'])) === '1';
 
+        $sender = SenderCities::getSelected();
+        if (($data['from'] ?? '') !== $sender) {
+            wp_send_json_error(['message' => 'Город отправки изменился, повторите выбор доставки']);
+            return;
+        }
+        $data['from'] = $sender;
 		$sessionService = new SessionService();
 		$sessionService->set('mode_shipping', 'shipping');
 		$previousFrame = $sessionService->get('esl_shipping_frame');
@@ -70,6 +77,7 @@ class BlocksCheckoutHandler {
 		if ( ! empty($data['notAvailable']) ) {
 			$notAvailableFrame = [
 				'notAvailable' => '1',
+                'from' => $sender,
 				'city'         => $data['city'],
 			];
 			if ( $this->hasFrameChanged($previousFrame, $notAvailableFrame) || empty($previousFrame['notAvailable']) ) {
@@ -241,6 +249,7 @@ class BlocksCheckoutHandler {
 
 		$normalize = static function(array $payload): array {
 			return [
+				'from' => (string) ($payload['from'] ?? ''),
 				'name' => (string) ($payload['name'] ?? ''),
 				'key' => (string) ($payload['key'] ?? ''),
 				'mode' => (string) ($payload['mode'] ?? ''),

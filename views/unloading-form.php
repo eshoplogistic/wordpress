@@ -1,5 +1,7 @@
 <?php
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Variables passed via View::render extract are prefixed
 
 use eshoplogistic\WCEshopLogistic\Classes\Table;
@@ -21,6 +23,16 @@ $wc_esl_typeMethod         = isset( $wc_esl_typeMethod ) ? $wc_esl_typeMethod : 
 $wc_esl_additionalFields   = isset( $wc_esl_additionalFields ) ? $wc_esl_additionalFields : array();
 $wc_esl_exportFormSettings = isset( $wc_esl_exportFormSettings ) ? $wc_esl_exportFormSettings : array();
 $wc_esl_shippingMethods    = isset( $wc_esl_shippingMethods ) ? $wc_esl_shippingMethods : array();
+$wc_esl_senderCity = SenderCities::getByFias($wc_esl_shippingMethods['sender_fias'] ?? '');
+if ($wc_esl_senderCity && mb_strtolower(trim($wc_esl_exportFormSettings['sender-city'] ?? '')) !== mb_strtolower($wc_esl_senderCity['name'])) {
+    $wc_esl_exportFormSettings['sender-city'] = $wc_esl_senderCity['name'];
+    $wc_esl_exportFormSettings['sender-region'] = $wc_esl_senderCity['region'];
+    foreach ($wc_esl_exportFormSettings as $wc_esl_key => $wc_esl_value) {
+        if (in_array($wc_esl_key, ['sender-street', 'sender-house', 'sender-room'], true) || strpos($wc_esl_key, 'sender-terminal-') === 0) {
+            $wc_esl_exportFormSettings[$wc_esl_key] = '';
+        }
+    }
+}
 $wc_esl_fieldDelivery      = isset( $wc_esl_fieldDelivery ) ? $wc_esl_fieldDelivery : array();
 $wc_esl_orderShippingId    = isset( $wc_esl_orderShippingId ) ? $wc_esl_orderShippingId : '';
 $wc_esl_infoApi            = isset( $wc_esl_infoApi ) ? $wc_esl_infoApi : '';

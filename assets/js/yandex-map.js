@@ -1,7 +1,45 @@
-window.addEventListener('load', function (event) {
-    // Запускаем только если на странице есть элемент с терминалами (legacy checkout)
-    if (document.getElementById('wcEslTerminals')) {
-        eslRunMap();
+// Инициализация карты ПВЗ (legacy checkout и блочный без виджета).
+//
+// Раньше eslRunMap() запускался только из window 'load' и только если на странице
+// уже есть #wcEslTerminals. Это ломалось у гостей:
+//  - #wcEslTerminals выводится лишь когда в сессии уже выбран ПВЗ-метод с
+//    терминалами — у нового гостя он появляется позже, через update_checkout;
+//  - кеш/оптимизаторы (WP Rocket, LiteSpeed и т.п. "Delay JS") для незалогиненных
+//    выполняют скрипт уже ПОСЛЕ события load - подписка на load не срабатывает.
+// Поэтому: запускаем сразу, если load уже прошёл, а клик по кнопке выбора ПВЗ
+// ловим делегатом снаружи и при необходимости инициализируем карту прямо в нём.
+var eslMapInitialized = false;
+var eslOpenTerminals = null;
+
+function eslInitMapOnce() {
+    if (eslMapInitialized) return;
+    eslMapInitialized = true;
+    eslRunMap();
+}
+
+function eslInitMapIfNeeded() {
+    if (document.getElementById('wcEslTerminals')
+        || document.getElementById('wc-esl-terminals-wrap-billing')
+        || document.getElementById('wc-esl-terminals-wrap-shipping')) {
+        eslInitMapOnce();
+    }
+}
+
+if (document.readyState === 'complete') {
+    eslInitMapIfNeeded();
+} else {
+    window.addEventListener('load', eslInitMapIfNeeded);
+}
+
+// Делегирование клика: WooCommerce пересоздаёт блок способов доставки при
+// update_checkout (например, при смене города), и прямой addEventListener на
+// найденных при загрузке кнопках теряется вместе со старым DOM-узлом.
+document.addEventListener('click', function (event) {
+    let button = event.target.closest && event.target.closest('.wc-esl-terminals__button');
+    if (!button) return;
+    eslInitMapOnce();
+    if (typeof eslOpenTerminals === 'function') {
+        eslOpenTerminals(event);
     }
 });
 
@@ -58,7 +96,8 @@ function eslRunMap() {
 
                 if (request.readyState === 4 && request.status === 200 && request.response.data) {
                     yandexMaps.destroyMap()
-                    document.getElementById('wcEslTerminals').value = JSON.stringify(request.response.data)
+                    let terminalsElFilter = document.getElementById('wcEslTerminals')
+                    if (terminalsElFilter) terminalsElFilter.value = JSON.stringify(request.response.data)
                     yandexMaps.renderTerminals(request.response.data)
                 }
             })
@@ -306,7 +345,8 @@ function eslRunMap() {
                 if (listWrap) { listWrap.innerHTML = ''; listWrap.style.display = 'none'; }
 
                 let defaultControls = ['zoomControl']
-                let apiKeyYa = document.getElementById('wcEslKeyYa').value
+                let keyYaEl = document.getElementById('wcEslKeyYa')
+                let apiKeyYa = keyYaEl ? keyYaEl.value : ''
                 if(apiKeyYa)
                     defaultControls = ['zoomControl', 'searchControl']
 
@@ -401,10 +441,14 @@ function eslRunMap() {
 
     let bindEvents = {
         clickOnTerminals: function (event) {
+            // #wcEslTerminals может отсутствовать (гость, ПВЗ выбран уже после загрузки
+            // и таблица заказа ещё не перерисована) — тогда просто идём за терминалами
+            // на сервер, кэш в этом случае не используем.
             const terminalsEl = document.getElementById('wcEslTerminals');
-            if (!terminalsEl) return;
             var parsedTerminals = [];
-            try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
+            if (terminalsEl) {
+                try { parsedTerminals = JSON.parse(terminalsEl.value || '[]'); } catch(e) {}
+            }
 
             modalDom.open();
 
@@ -441,10 +485,10 @@ function eslRunMap() {
                 .then(function(data) {
                     if (preloader) preloader.style.display = 'none';
                     if (data.success && data.data && data.data.terminals && data.data.terminals.length) {
-                        terminalsEl.value = JSON.stringify(data.data.terminals);
+                        if (terminalsEl) terminalsEl.value = JSON.stringify(data.data.terminals);
                         yandexMaps.renderTerminals(data.data.terminals);
                     } else {
-                        terminalsEl.value = '[]';
+                        if (terminalsEl) terminalsEl.value = '[]';
                         yandexMaps.showFallback([]);
                     }
                 })
@@ -461,23 +505,16 @@ function eslRunMap() {
             yandexMaps.destroyMap()
         },
         filterOn: function (event) {
-            let terminals = document.getElementById('wcEslTerminals').value
-            if (terminals) {
+            let terminalsElFilterOn = document.getElementById('wcEslTerminals')
+            if (!terminalsElFilterOn || terminalsElFilterOn.value) {
                 esl.setFilter()
             }
 
         },
     }
 
-    // Делегирование клика: WooCommerce пересоздаёт блок способов доставки при
-    // update_checkout (например, при смене города), и прямой addEventListener на
-    // найденных при загрузке кнопках теряется вместе со старым DOM-узлом.
-    document.addEventListener('click', function (event) {
-        let button = event.target.closest && event.target.closest('.wc-esl-terminals__button');
-        if (button) {
-            bindEvents.clickOnTerminals(event);
-        }
-    });
+    // Клик по кнопке выбора ПВЗ ловит делегат вверху файла (см. eslInitMapOnce).
+    eslOpenTerminals = bindEvents.clickOnTerminals;
 
     let esl_filters = document.getElementsByClassName('filter-map-esl')
 

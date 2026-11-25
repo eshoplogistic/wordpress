@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Modules;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 use eshoplogistic\WCEshopLogistic\Classes\Shipping\ExportFileds;
 use eshoplogistic\WCEshopLogistic\Contracts\ModuleInterface;
 use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
@@ -32,6 +34,8 @@ class Ajax implements ModuleInterface
 
 	public function initRoutes()
 	{
+		add_action('wp_ajax_nopriv_wc_esl_set_sender_city', [$this, 'setSenderCity']);
+		add_action('wp_ajax_wc_esl_set_sender_city', [$this, 'setSenderCity']);
 		add_action('wp_ajax_nopriv_wc_esl_search_cities', [$this, 'searchCities']);
 		add_action('wp_ajax_wc_esl_search_cities', [$this, 'searchCities']);
 
@@ -60,6 +64,7 @@ class Ajax implements ModuleInterface
 
 	public function initAdminRoutes()
 	{
+		add_action('wp_ajax_wc_esl_save_sender_cities', [$this, 'saveSenderCities']);
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin', [$this, 'changeEnablePlugin']);
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin_price_shipping', [$this, 'changeEnablePluginPriceShipping']);
 		add_action('wp_ajax_wc_esl_shipping_change_enable_plugin_log', [$this, 'changeEnablePluginLog']);
@@ -325,10 +330,23 @@ class Ajax implements ModuleInterface
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_array method
-		$addFrom = !empty($_POST['add_form']) ? $this->sanitize_array(wp_unslash($_POST['add_form'])) : [];
-		$addFrom = stripslashes(html_entity_decode($addFrom));
-		$addFrom = json_decode($addFrom, true);
+		// Decode before sanitizing: repeated unslashing breaks quotes inside JSON values.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Decoded fields sanitized below
+		$addFrom = isset($_POST['add_form']) && is_string($_POST['add_form'])
+			? json_decode(wp_unslash($_POST['add_form']), true)
+			: null;
+		if (!is_array($addFrom) || empty($addFrom)) {
+			$this->jsonErrorAddForm();
+			return;
+		}
+		foreach ($addFrom as $value) {
+			if (!is_array($value) || !isset($value['name'], $value['value'])
+				|| !is_string($value['name']) || !is_string($value['value'])) {
+				$this->jsonErrorAddForm();
+				return;
+			}
+		}
+		$addFrom = $this->sanitize_array($addFrom);
 		$result = array();
 
 		foreach ($addFrom as $value) {
@@ -347,6 +365,15 @@ class Ajax implements ModuleInterface
 		$response = $optionsController->saveAddForm($result);
 
 		$response->send();
+	}
+
+	private function jsonErrorAddForm()
+	{
+		$optionsController = new OptionsController();
+		$optionsController->json([
+			'status' => 'error',
+			'msg' => __('Ошибка сохранения настроек', 'eshoplogisticru'),
+		])->send();
 	}
 
 	public function saveExportForm()
@@ -417,6 +444,41 @@ class Ajax implements ModuleInterface
 	}
 
 
+    public function setSenderCity()
+    {
+        check_ajax_referer('wc-esl-shipping', 'nonce');
+        $fias = isset($_POST['fias']) && is_string($_POST['fias']) ? sanitize_text_field(wp_unslash($_POST['fias'])) : '';
+        if ($fias !== '' && !SenderCities::getByFias($fias)) {
+            wp_send_json_error('Город отправки не найден', 400);
+            return;
+        }
+        $session = new SessionService();
+        $session->set('sender_fias', $fias);
+        $session->set('esl_shipping_frame', '');
+        $session->set('esl_frame_calculation', []);
+        $session->drop('shipping_methods');
+        $session->drop('terminal_location');
+        if (WC()->session) {
+            foreach (array_keys(WC()->session->get_session_data()) as $key) {
+                if (strpos($key, 'shipping_for_package_') === 0) WC()->session->__unset($key);
+            }
+        }
+        wp_send_json_success();
+    }
+
+    public function saveSenderCities()
+    {
+        check_ajax_referer('wc-esl-shipping', 'nonce');
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Недостаточно прав', 403);
+            return;
+        }
+        $raw = isset($_POST['cities']) ? wp_unslash($_POST['cities']) : [];
+        $cities = SenderCities::sanitize($raw);
+        (new OptionsRepository())->save(['wc_esl_shipping' => ['sender_cities' => $cities]]);
+        wp_send_json_success($cities);
+    }
+
 	public function searchCities()
 	{
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Public AJAX endpoint, sanitized via sanitize_text_field
@@ -438,7 +500,16 @@ class Ajax implements ModuleInterface
 		$eshopLogisticApi = new EshopLogisticApi(new WpHttpClient());
 		$result = $eshopLogisticApi->search($target, $currentCountry);
 
-		if ($result->hasErrors()) wp_send_json(['success' => false]);
+        if ($result->hasErrors()) {
+            $message = __('Не удалось выполнить поиск городов. Повторите попытку.', 'eshoplogisticru');
+            if ($result instanceof \JsonSerializable) {
+                $error = $result->jsonSerialize();
+                $details = $error['data']['exception'] ?? $error['data']['messages'] ?? '';
+                if (is_string($details) && $details !== '') $message = wp_strip_all_tags($details);
+            }
+            wp_send_json(['success' => false, 'message' => $message]);
+            return;
+        }
 
 		$result = $result->data();
 		if ($typeFilter != 'false') {
@@ -998,6 +1069,9 @@ class Ajax implements ModuleInterface
 		$data = $this->sanitize_array($data);
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Input sanitized via wc_clean()
 		$data['city'] = isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '';
+        $sender = SenderCities::getSelected();
+        if (($data['from'] ?? '') !== $sender) return;
+        $data['from'] = $sender;
 		$sessionService = new SessionService();
 		$sessionService->set('esl_shipping_frame', $data);
 		$frameMode = isset($data['mode']) ? strtolower(trim((string) $data['mode'])) : '';
@@ -1076,7 +1150,7 @@ class Ajax implements ModuleInterface
 				}
 
 				foreach ($methodInstances as $method) {
-					if ($method->id === $chosenMethod && method_exists($method, 'calculate_shipping_basic')) {
+					if ($method->get_rate_id() === $chosenMethod && method_exists($method, 'calculate_shipping_basic')) {
 						$method->calculate_shipping_basic($package);
 						break;
 					}

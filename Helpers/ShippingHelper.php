@@ -22,7 +22,7 @@ class ShippingHelper
 
         $idWithoutPrefix = explode(WC_ESL_PREFIX, $methodId)[1];
         
-        return explode('_', $idWithoutPrefix)[1];
+        return explode(':', explode('_', $idWithoutPrefix)[1])[0];
     }
 
     public function getSlugMethod($methodId)

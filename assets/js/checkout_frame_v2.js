@@ -802,6 +802,7 @@ function isNumeric(value) {
                 payment: this.widget_payment
             }
 
+            window.wcEslSenderCities.init(widget, () => this.run('from'));
             console.log(this.widget_city)
             if (reload.length !== 0 && window.widgetInit) {
                 switch (reload) {
@@ -827,7 +828,7 @@ function isNumeric(value) {
                 widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                     detail: {
                         settlement: settlement,
-                        requestParams: params
+                        requestParams: window.wcEslSenderCities.params(params)
                     }
                 }))
             } else {
@@ -838,7 +839,7 @@ function isNumeric(value) {
                     widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                         detail: {
                             settlement: settlement,
-                            requestParams: params
+                            requestParams: window.wcEslSenderCities.params(params)
                         }
                     }))
                 })
@@ -847,6 +848,7 @@ function isNumeric(value) {
 
         },
         confirm: async function (response) {
+            if (window.wcEslSenderCities.isChanging()) return;
             const serviceData = response.service && response.service.responseData
                 ? response.service.responseData[response.typeDelivery]
                 : undefined
@@ -859,6 +861,7 @@ function isNumeric(value) {
             }
 
             let esldata = {
+                from: window.wcEslSenderCities.value(),
                 price: 0,
                 time: '',
                 name: response.service.name,
@@ -965,7 +968,7 @@ function isNumeric(value) {
             widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                 detail: {
                     settlement: settlement,
-                    requestParams: params
+                    requestParams: window.wcEslSenderCities.params(params)
                 }
             }))
             window.widgetInit = true

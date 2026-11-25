@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Classes\Shipping;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
@@ -109,6 +111,13 @@ class Base extends \WC_Shipping_Method
 			);
 		}
 
+        $formFields['sender_city'] = [
+            'title' => __('Город-отправитель', 'eshoplogisticru'),
+            'type' => 'select',
+            'default' => '',
+            'options' => SenderCities::getOptions((get_option($this->get_instance_option_key(), [])['sender_city'] ?? '')),
+            'description' => __('Список городов задаётся в общих настройках eShopLogistic. В режиме виджета город выбирает покупатель.', 'eshoplogisticru'),
+        ];
 		$this->instance_form_fields = $formFields;
 	}
 
@@ -148,7 +157,6 @@ class Base extends \WC_Shipping_Method
 		$optionsRepository = new OptionsRepository();
 		$shippingHelper = new ShippingHelper();
 
-		$accountServices = $optionsRepository->getOption('wc_esl_shipping_account_services');
 
 		$paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 		$payment = isset($paymentMethods[WC()->session->chosen_payment_method]) ? $paymentMethods[WC()->session->chosen_payment_method] : '';
@@ -175,7 +183,8 @@ class Base extends \WC_Shipping_Method
 		$cityFias = isset($modeState['fias']) ? $modeState['fias'] : '';
 
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
-		$cityFrom = isset($accountServices[$service]['city_code']) ? $accountServices[$service]['city_code'] : '';
+		$senderCity = SenderCities::getByFias($this->get_option('sender_city', ''));
+		$cityFrom = $senderCity ? $senderCity['fias'] : '';
 		$cityTo = isset($avalaibleServices[$service]) ? $avalaibleServices[$service] : $cityFias;
 		$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 
@@ -246,8 +255,9 @@ class Base extends \WC_Shipping_Method
 				isset($response[$this->getType()]) &&
 				!empty($response[$this->getType()])
 			) {
-				$shippingMethods[$this->id] = $response[$this->getType()];
-				$shippingMethods[$this->id]['debug'] = ( $response['debug'] ?? [] );
+				$shippingMethods[$this->get_rate_id()] = $response[$this->getType()];
+				$shippingMethods[$this->get_rate_id()]['sender_fias'] = $cityFrom;
+                $shippingMethods[$this->get_rate_id()]['debug'] = ( $response['debug'] ?? [] );
 				$cost = isset($response[$this->getType()]['price']) ? $response[$this->getType()]['price'] : 0;
 				if(is_array($cost))
 					$cost = isset($response[$this->getType()]['price']['value']) ? $response[$this->getType()]['price']['value'] : $cost;
@@ -259,7 +269,7 @@ class Base extends \WC_Shipping_Method
 				switch($this->getType()) {
 					case 'terminal':
 						if(isset($response['terminals'])) {
-							$shippingMethods[$this->id]['terminals'] = $response['terminals'];
+							$shippingMethods[$this->get_rate_id()]['terminals'] = $response['terminals'];
 						}
 						break;
 
@@ -271,13 +281,13 @@ class Base extends \WC_Shipping_Method
 				}
 
 				if(isset($response['comments']) && is_string($response['comments'])) {
-					$shippingMethods[$this->id]['comments'] = ($shippingMethods[$this->id]['comments'])?$shippingMethods[$this->id]['comments'].' '.$response['comments']:$response['comments'];
+					$shippingMethods[$this->get_rate_id()]['comments'] = ($shippingMethods[$this->get_rate_id()]['comments'])?$shippingMethods[$this->get_rate_id()]['comments'].' '.$response['comments']:$response['comments'];
 				}
 			} else {
-				unset($shippingMethods[$this->id]);
+				unset($shippingMethods[$this->get_rate_id()]);
 			}
 		} catch(\Exception $e) {
-			unset($shippingMethods[$this->id]);
+			unset($shippingMethods[$this->get_rate_id()]);
 
 			EslLogger::debug( '[ESL calculate_shipping_basic] ' . $e->getMessage() );
 		}
@@ -301,11 +311,12 @@ class Base extends \WC_Shipping_Method
 		if($cost === 0)
 			$labelTitle = $labelTitle.': Бесплатно';
 
-		if(isset($shippingMethods[$this->id]['time']['value']))
-			$labelTitle = $labelTitle.'. Срок доставки - '.$shippingMethods[$this->id]['time']['value'].' '.$shippingMethods[$this->id]['time']['unit'];
+		if(isset($shippingMethods[$this->get_rate_id()]['time']['value']))
+			$labelTitle = $labelTitle.'. Срок доставки - '.$shippingMethods[$this->get_rate_id()]['time']['value'].' '.$shippingMethods[$this->get_rate_id()]['time']['unit'];
 
 		$rate = array(
-			'id' => $this->id,
+			'id' => $this->get_rate_id(),
+            'meta_data' => ['esl_shipping_methods' => wp_json_encode($shippingMethods[$this->get_rate_id()] ?? [])],
 			'label' => $labelTitle,
 			'cost' => $cost,
 			'package' => $package
@@ -397,6 +408,7 @@ class Base extends \WC_Shipping_Method
 		$frameMethodData = self::getFrameCalculationData($shippingFrame, $widgetCityEsl);
 		if($frameMethodData){
 			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
+			$shippingMethods[$this->id]['sender_fias'] = $frameMethodData['sender_fias'];
 			$shippingMethods[$this->id]['debug'] = $frameMethodData['debug'];
 			$shippingMethods[$this->id]['data']['terminal'] = $frameMethodData['data']['terminal'];
 			$shippingMethods[$this->id]['data']['door'] = $frameMethodData['data']['door'];
@@ -437,12 +449,14 @@ class Base extends \WC_Shipping_Method
 			$widgetCityEsl = maybe_unserialize( $widgetCityEsl );
 		}
 
+        if (is_array($shippingFrame) && !empty($shippingFrame['from']) && !SenderCities::getByFias($shippingFrame['from'])) return null;
 		$optionsRepository = new OptionsRepository();
 		$cacheJson = array(
 			'city' => ( is_array( $widgetCityEsl ) ? ( $widgetCityEsl['fias'] ?? '' ) : '' ),
 			'key' => $optionsRepository->getOption('wc_esl_shipping_api_key_wcart'),
 			'service' => ( is_array( $shippingFrame ) ? ( $shippingFrame['key'] ?? '' ) : '' )
 		);
+		if (is_array($shippingFrame) && !empty($shippingFrame['from'])) $cacheJson['from'] = $shippingFrame['from'];
 		$cache_key  = md5('widget/calculation'.json_encode($cacheJson));
 		$cache_data = get_transient( $cache_key );
 
@@ -470,6 +484,7 @@ class Base extends \WC_Shipping_Method
 		}
 
 		return array(
+            'sender_fias' => is_array($shippingFrame) ? ($shippingFrame['from'] ?? '') : '',
 			'debug' => ( $cache_data['debug'] ?? [] ),
 			'data'  => array(
 				'terminal' => ( $cache_data['data']['terminal'] ?? [] ),
@@ -489,6 +504,7 @@ class Base extends \WC_Shipping_Method
 			return false;
 		}
 
+        if (($shippingFrame['from'] ?? '') !== SenderCities::getSelected()) return false;
 		$frameCityRaw = isset( $shippingFrame['city'] ) ? (string) $shippingFrame['city'] : '';
 		$modeCityRaw  = ( is_array( $widgetCityEsl ) && isset( $widgetCityEsl['city'] ) ) ? (string) $widgetCityEsl['city'] : '';
 		$frameCity    = function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( $frameCityRaw ) ) : strtolower( trim( $frameCityRaw ) );

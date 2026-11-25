@@ -218,7 +218,7 @@
 				!differentShippingAddress && ( billingCountry )
 			) {
 				if(offAddressCheck.length === 0){
-					if(currentShippingMethod !== 'wc_esl_postrf_terminal'){
+					if(currentShippingMethod.split(':')[0] !== 'wc_esl_postrf_terminal'){
 						billingAddress1.hide();
 						billingAddress2.hide();
 						shippingAddress1.hide();

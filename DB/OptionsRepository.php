@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\DB;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 if (!defined('ABSPATH')) {
 	exit;
 }
@@ -13,6 +15,7 @@ class OptionsRepository
 	public function __construct()
 	{
 		$this->defaults = [
+			'wc_esl_shipping_sender_cities' => [],
 			'wc_esl_shipping_api_key' => '',
 			'wc_esl_shipping_api_key_wcart' => '',
 			'wc_esl_shipping_api_key_ya' => '',
@@ -75,6 +78,9 @@ class OptionsRepository
 		
 		foreach ($data['wc_esl_shipping'] as $key => $value) {
 			$option_name = 'wc_esl_shipping_' . $key;
+			if ($key === 'sender_cities') {
+				$value = SenderCities::sanitize($value);
+			}
 			update_option($option_name, $value);
 		}
 

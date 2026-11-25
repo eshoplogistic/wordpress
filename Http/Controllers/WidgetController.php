@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\Http\Controllers;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\Contracts\ResponseInterface;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
@@ -30,6 +32,11 @@ class WidgetController extends Controller {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- public REST widget endpoint, no user session to tie a nonce to
 			$query_data = $this->sanitizeQueryData( $_POST );
 			unset( $query_data['method'] );
+            if (isset($query_data['from'])) {
+                $city = SenderCities::getByFias($query_data['from']);
+                if ($city) $query_data['from'] = $city['fias'];
+                else unset($query_data['from']);
+            }
 			$cache_key  = md5( $method . wp_json_encode( $query_data ) );
 			$cache_data = get_transient( $cache_key );
 
@@ -70,6 +77,7 @@ class WidgetController extends Controller {
 			'key'     => $keyWidget[0],
 			'service' => $data['service'] ?? '',
 		);
+		if (!empty($data['from'])) $cacheJson['from'] = $data['from'];
 		$cache_key = md5( 'widget/calculation' . json_encode( $cacheJson ) );
 		if ( false === get_transient( $cache_key ) ) {
 			set_transient( $cache_key, $result, self::CACHE_TTL );
@@ -174,6 +182,7 @@ class WidgetController extends Controller {
 						'key'  => $keyWidget[0],
 						'service' => $data['service']
 					);
+					if (!empty($data['from'])) $cacheJson['from'] = $data['from'];
 					$cache_key = md5( $method . json_encode( $cacheJson ) );
 					set_transient( $cache_key, $result, self::CACHE_TTL );
 				}
