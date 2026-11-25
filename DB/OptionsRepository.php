@@ -2,6 +2,8 @@
 
 namespace eshoplogistic\WCEshopLogistic\DB;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
 if (!defined('ABSPATH')) {
 	exit;
 }
@@ -13,6 +15,7 @@ class OptionsRepository
 	public function __construct()
 	{
 		$this->defaults = [
+			'wc_esl_shipping_sender_cities' => [],
 			'wc_esl_shipping_api_key' => '',
 			'wc_esl_shipping_api_key_wcart' => '',
 			'wc_esl_shipping_api_key_ya' => '',
@@ -22,12 +25,14 @@ class OptionsRepository
 			'wc_esl_shipping_plugin_enable' => '1',
 			'wc_esl_shipping_plugin_enable_price_shipping' => '1',
 			'wc_esl_shipping_plugin_enable_log' => '0',
-			'wc_esl_shipping_plugin_enable_api_v2' => '0',
+
 			'wc_esl_shipping_account_domain' => '',
 			'wc_esl_shipping_account_enable' => '0',
 			'wc_esl_shipping_account_balance' => '0',
 			'wc_esl_shipping_account_paid_days' => '0',
+			'wc_esl_shipping_account_paid_days_text' => '',
 			'wc_esl_shipping_account_free_days' => '0',
+			'wc_esl_shipping_account_sync_error' => '',
 			'wc_esl_shipping_account_services' => [],
 			'wc_esl_shipping_account_settings' => [],
 			'wc_esl_shipping_account_init_services' => [],
@@ -44,10 +49,11 @@ class OptionsRepository
 	 */
 	public function getOption(string $key)
 	{
-		return get_option(
+		$value = get_option(
 			$key,
 			isset($this->defaults[$key]) ? $this->defaults[$key] : null
 		);
+		return $value;
 	}
 
 	/**
@@ -66,8 +72,16 @@ class OptionsRepository
 
 	public function save($data)
 	{
+		if (!isset($data['wc_esl_shipping'])) {
+			return;
+		}
+		
 		foreach ($data['wc_esl_shipping'] as $key => $value) {
-			update_option('wc_esl_shipping_' . $key, $value);
+			$option_name = 'wc_esl_shipping_' . $key;
+			if ($key === 'sender_cities') {
+				$value = SenderCities::sanitize($value);
+			}
+			update_option($option_name, $value);
 		}
 
 		// Flush WooCommerce Shipping Cache

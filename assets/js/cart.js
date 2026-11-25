@@ -2,18 +2,23 @@
 	'use strict';
 
 	function searchCity( target, renderFunc ) {
+		const query = String(target || '').trim();
+
+		if (query.length < 2) {
+			renderFunc([]);
+			return;
+		}
+
 		$.ajax({
 			method: 'POST',
 			url: wc_esl_shipping_global.ajaxUrl,
 			async: true,
 			data: {
 				action : 'wc_esl_search_cities',
-				target
+				target: query
 			},
 			dataType: 'json',
 			success: function( response ) {
-
-				console.log(response);
 
 				if( response.success ) {
 					renderFunc( response.data );
@@ -22,9 +27,10 @@
 		});
 	}
 
-	function renderCitiesItem( { fias, name, region, postal_code, services } ) {
+	function renderCitiesItem( { fias, name, region, sub_region, postal_code, services } ) {
 		let label = name;
 		label += ( region.length > 0 ) ? ` - ${region}` : '';
+		label += ( sub_region && sub_region.length > 0 ) ? ` <span class="wc-esl-search-city__subregion">- ${sub_region}</span>` : '';
 
 		let html = `<li
 			class="wc-esl-search-city__item"
@@ -117,12 +123,11 @@
 					postcode,
 					services,
 					city,
-					mode
+					mode,
+					nonce: wc_esl_shipping_global.nonce
 				},
 				dataType: 'json',
 				success: function( response ) {
-
-					console.log( response );
 
 					if( response.success ) {
 

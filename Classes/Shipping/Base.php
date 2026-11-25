@@ -2,6 +2,10 @@
 
 namespace eshoplogistic\WCEshopLogistic\Classes\Shipping;
 
+use eshoplogistic\WCEshopLogistic\Helpers\SenderCities;
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use eshoplogistic\WCEshopLogistic\Api\EshopLogisticApi;
 use eshoplogistic\WCEshopLogistic\DB\OptionsRepository;
 use eshoplogistic\WCEshopLogistic\Http\WpHttpClient;
@@ -11,6 +15,7 @@ use eshoplogistic\WCEshopLogistic\Services\CalculationService;
 use eshoplogistic\WCEshopLogistic\Models\CheckoutOrderData;
 use eshoplogistic\WCEshopLogistic\Helpers\ShippingHelper;
 use eshoplogistic\WCEshopLogistic\Helpers\ConflictPluginsHelper;
+use eshoplogistic\WCEshopLogistic\Helpers\EslLogger;
 
 class Base extends \WC_Shipping_Method
 {
@@ -44,6 +49,7 @@ class Base extends \WC_Shipping_Method
 	public function is_available( $package )
 	{
 		$is_available = true;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- mirrors WooCommerce core's own hook name (WC_Shipping_Method::is_available()), must not be prefixed.
 		return apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', $is_available, $package, $this );
 	}
 
@@ -105,6 +111,13 @@ class Base extends \WC_Shipping_Method
 			);
 		}
 
+        $formFields['sender_city'] = [
+            'title' => __('Город-отправитель', 'eshoplogisticru'),
+            'type' => 'select',
+            'default' => '',
+            'options' => SenderCities::getOptions((get_option($this->get_instance_option_key(), [])['sender_city'] ?? '')),
+            'description' => __('Список городов задаётся в общих настройках eShopLogistic. В режиме виджета город выбирает покупатель.', 'eshoplogisticru'),
+        ];
 		$this->instance_form_fields = $formFields;
 	}
 
@@ -113,24 +126,29 @@ class Base extends \WC_Shipping_Method
 	 *
 	 * @access public
 	 * @param mixed $package
-	 * @return void
 	 */
 	public function calculate_shipping( $package = array() )
 	{
-		if(is_checkout()){
-			$optionsRepository = new OptionsRepository();
-			$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
-			if($frameEnable){
-				$rate = $this->calculate_shipping_frame($package);
-			}else{
-				$rate = $this->calculate_shipping_basic($package);
-			}
-
-			if($rate)
-				$this->add_rate( $rate );
+		// Не гейтим на is_checkout(): WooCommerce кеширует посчитанные тарифы в сессии по
+		// хешу пакета (город + состав корзины) вне зависимости от того, какая страница их
+		// запросила. is_checkout() ненадёжен как гейт здесь — при гидратации блока чекаута
+		// WooCommerce Blocks вызывает Store API контроллер напрямую в PHP, минуя REST-диспетчер
+		// (REST_REQUEST не выставляется), и is_checkout() там может быть false; если тариф
+		// в этот момент не посчитается, в кеше навсегда осядет пакет без ESL-метода, и он не
+		// появится больше нигде для этого сочетания город+корзина, пока хеш не изменится.
+		$optionsRepository = new OptionsRepository();
+		$frameEnable = $optionsRepository->getOption('wc_esl_shipping_frame_enable');
+		if($frameEnable)
+		{
+			$rate = $this->calculate_shipping_frame($package);
+		}else{
+			$rate = $this->calculate_shipping_basic($package);
 		}
 
+		if($rate)
+			$this->add_rate( $rate );
 	}
+
 
 	public function calculate_shipping_basic($package): array {
 		$cost = 0;
@@ -139,18 +157,19 @@ class Base extends \WC_Shipping_Method
 		$optionsRepository = new OptionsRepository();
 		$shippingHelper = new ShippingHelper();
 
-		$accountServices = $optionsRepository->getOption('wc_esl_shipping_account_services');
 
 		$paymentMethods = $optionsRepository->getOption('wc_esl_shipping_payment_methods');
 		$payment = isset($paymentMethods[WC()->session->chosen_payment_method]) ? $paymentMethods[WC()->session->chosen_payment_method] : '';
 
 		$postRequest = [];
-		$postData = isset($_POST['post_data']) ? wc_clean($_POST['post_data']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce checkout request context, sanitized via sanitize_text_field
+		$postData = isset($_POST['post_data']) ? sanitize_text_field(wp_unslash($_POST['post_data'])) : '';
 		parse_str($postData, $postRequest);
 
 		$mode = 'billing';
 		if(isset($postRequest['ship_to_different_address'])) $mode = 'shipping';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout request context.
 		if(isset($_POST['calc_shipping'])) $mode = 'billing';
 
 		$modeState = $sessionService->get($mode) ? $sessionService->get($mode) : [];
@@ -164,7 +183,8 @@ class Base extends \WC_Shipping_Method
 		$cityFias = isset($modeState['fias']) ? $modeState['fias'] : '';
 
 		$apiKey = $optionsRepository->getOption('wc_esl_shipping_api_key');
-		$cityFrom = isset($accountServices[$service]['city_code']) ? $accountServices[$service]['city_code'] : '';
+		$senderCity = SenderCities::getByFias($this->get_option('sender_city', ''));
+		$cityFrom = $senderCity ? $senderCity['fias'] : '';
 		$cityTo = isset($avalaibleServices[$service]) ? $avalaibleServices[$service] : $cityFias;
 		$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
 
@@ -193,8 +213,6 @@ class Base extends \WC_Shipping_Method
 			}
 		}
 
-		$logger = new \WC_Logger();
-
 		try {
 			if(!$apiKey) throw new \Exception(__("API ключ не установлен", 'eshoplogisticru'));
 			//if(!$payment) throw new \Exception(__("Метод оплаты не установлен", 'eshoplogisticru'));
@@ -211,10 +229,8 @@ class Base extends \WC_Shipping_Method
 				}
 			}
 
-			$cacheKey = str_replace(
-				' ',
-				'_',
-				WC_ESL_PREFIX . $data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
+			$cacheKey = WC_ESL_PREFIX . md5(
+				$data->getHash() . '_' . $apiKey . '_' . $cityTo . '_' . $cityFrom . '_' . $payment . '_' . $service
 			);
 
 			$response = get_transient($cacheKey);
@@ -239,8 +255,9 @@ class Base extends \WC_Shipping_Method
 				isset($response[$this->getType()]) &&
 				!empty($response[$this->getType()])
 			) {
-				$shippingMethods[$this->id] = $response[$this->getType()];
-				$shippingMethods[$this->id]['debug'] = ( $response['debug'] ?? [] );
+				$shippingMethods[$this->get_rate_id()] = $response[$this->getType()];
+				$shippingMethods[$this->get_rate_id()]['sender_fias'] = $cityFrom;
+                $shippingMethods[$this->get_rate_id()]['debug'] = ( $response['debug'] ?? [] );
 				$cost = isset($response[$this->getType()]['price']) ? $response[$this->getType()]['price'] : 0;
 				if(is_array($cost))
 					$cost = isset($response[$this->getType()]['price']['value']) ? $response[$this->getType()]['price']['value'] : $cost;
@@ -250,8 +267,10 @@ class Base extends \WC_Shipping_Method
 				$cost = $conflict->init($cost);
 
 				switch($this->getType()) {
-					case 'terminal' && isset($response['terminals']):
-						$shippingMethods[$this->id]['terminals'] = $response['terminals'];
+					case 'terminal':
+						if(isset($response['terminals'])) {
+							$shippingMethods[$this->get_rate_id()]['terminals'] = $response['terminals'];
+						}
 						break;
 
 					case 'door':
@@ -262,15 +281,15 @@ class Base extends \WC_Shipping_Method
 				}
 
 				if(isset($response['comments']) && is_string($response['comments'])) {
-					$shippingMethods[$this->id]['comments'] = ($shippingMethods[$this->id]['comments'])?$shippingMethods[$this->id]['comments'].' '.$response['comments']:$response['comments'];
+					$shippingMethods[$this->get_rate_id()]['comments'] = ($shippingMethods[$this->get_rate_id()]['comments'])?$shippingMethods[$this->get_rate_id()]['comments'].' '.$response['comments']:$response['comments'];
 				}
 			} else {
-				unset($shippingMethods[$this->id]);
+				unset($shippingMethods[$this->get_rate_id()]);
 			}
 		} catch(\Exception $e) {
-			unset($shippingMethods[$this->id]);
+			unset($shippingMethods[$this->get_rate_id()]);
 
-			$logger->debug($e->getMessage());
+			EslLogger::debug( '[ESL calculate_shipping_basic] ' . $e->getMessage() );
 		}
 
 		$sessionService->set('shipping_methods', $shippingMethods);
@@ -292,11 +311,12 @@ class Base extends \WC_Shipping_Method
 		if($cost === 0)
 			$labelTitle = $labelTitle.': Бесплатно';
 
-		if(isset($shippingMethods[$this->id]['time']['value']))
-			$labelTitle = $labelTitle.'. Срок доставки - '.$shippingMethods[$this->id]['time']['value'].' '.$shippingMethods[$this->id]['time']['unit'];
+		if(isset($shippingMethods[$this->get_rate_id()]['time']['value']))
+			$labelTitle = $labelTitle.'. Срок доставки - '.$shippingMethods[$this->get_rate_id()]['time']['value'].' '.$shippingMethods[$this->get_rate_id()]['time']['unit'];
 
 		$rate = array(
-			'id' => $this->id,
+			'id' => $this->get_rate_id(),
+            'meta_data' => ['esl_shipping_methods' => wp_json_encode($shippingMethods[$this->get_rate_id()] ?? [])],
 			'label' => $labelTitle,
 			'cost' => $cost,
 			'package' => $package
@@ -315,17 +335,28 @@ class Base extends \WC_Shipping_Method
 		$optionsRepository = new OptionsRepository();
 
 		$postRequest = [];
-		$postData = isset($_POST['post_data']) ? wc_clean($_POST['post_data']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce checkout request context, sanitized via sanitize_text_field
+		$postData = isset($_POST['post_data']) ? sanitize_text_field(wp_unslash($_POST['post_data'])) : '';
 		parse_str($postData, $postRequest);
 
 		$mode = 'billing';
 		if(isset($postRequest['ship_to_different_address'])) $mode = 'shipping';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checkout request context.
 		if(isset($_POST['calc_shipping'])) $mode = 'billing';
 
 		$sessionService->set('mode_shipping', $mode);
 		$shippingFrame = $sessionService->get('esl_shipping_frame') ? $sessionService->get('esl_shipping_frame') : 0;
 		$widgetCityEsl = $sessionService->get($mode) ? $sessionService->get($mode) : '';
+
+		// В некоторых сценариях данные из сессии могут приходить сериализованной строкой.
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+
+		if ( is_string( $widgetCityEsl ) ) {
+			$widgetCityEsl = maybe_unserialize( $widgetCityEsl );
+		}
 
 		$widgetPaymentSelected = $sessionService->get('esl_shipping_selected_payment') ? $sessionService->get('esl_shipping_selected_payment') : '';
 		$sessionService->set('esl_shipping_selected_payment', ( $postRequest['payment_method'] ?? '' ));
@@ -347,7 +378,10 @@ class Base extends \WC_Shipping_Method
 		}
 
 		$pluginEnableShippingPrice = $optionsRepository->getOption('wc_esl_shipping_plugin_enable_price_shipping');
-		if($shippingFrame && isset($widgetCityEsl['city']) && $widgetCityEsl['city'] == $shippingFrame['city']){
+
+		$canApplyFrameLabel = $this->canApplyFrameSelectionForContext( $shippingFrame, $widgetCityEsl );
+
+		if( $canApplyFrameLabel ){
 			if(isset($shippingFrame['name']) && isset($shippingFrame['price'])){
 				$labelTitle = $shippingFrame['name'];
 				if($shippingFrame['mode'])
@@ -371,18 +405,14 @@ class Base extends \WC_Shipping_Method
 			$cost = 0;
 		}
 
-		$apiWidgetKey = $optionsRepository->getOption('wc_esl_shipping_api_key_wcart');
-		$cacheJson = array(
-			'city' => $widgetCityEsl['fias'] ?? '',
-			'key' => $apiWidgetKey,
-			'service' => $shippingFrame['key'] ?? ''
-		);
-		$cache_key = md5('widget/calculation'.json_encode($cacheJson));
-		$cache_data = get_transient($cache_key);
-		if($cache_data){
-			$shippingMethods[$this->id]['debug'] = ( $cache_data['debug'] ?? [] );
-			$shippingMethods[$this->id]['data']['terminal'] = ( $cache_data['data']['terminal'] ?? [] );
-			$shippingMethods[$this->id]['data']['door'] = ( $cache_data['data']['door'] ?? [] );
+		$frameMethodData = self::getFrameCalculationData($shippingFrame, $widgetCityEsl);
+		if($frameMethodData){
+			$shippingMethods = $sessionService->get('shipping_methods') ? $sessionService->get('shipping_methods') : [];
+			$shippingMethods[$this->id]['sender_fias'] = $frameMethodData['sender_fias'];
+			$shippingMethods[$this->id]['debug'] = $frameMethodData['debug'];
+			$shippingMethods[$this->id]['data']['terminal'] = $frameMethodData['data']['terminal'];
+			$shippingMethods[$this->id]['data']['door'] = $frameMethodData['data']['door'];
+			$shippingMethods[$this->id]['data']['tariffs'] = $frameMethodData['data']['tariffs'];
 			$sessionService->set('shipping_methods', $shippingMethods);
 		}
 
@@ -398,6 +428,91 @@ class Base extends \WC_Shipping_Method
 		);
 
 		return $rate;
+	}
+
+	/**
+	 * Данные расчёта виджета (debug + data.terminal/door/tariffs) для frame-метода из
+	 * transient'а, который пишет WidgetController::ApiQuery() при widget/calculation
+	 * (с запасной копией в сессии на случай истечения transient'а).
+	 * Используется и при расчёте ставки, и при сохранении заказа (OrderCreator), если
+	 * сессионный ключ shipping_methods уже был сброшен предыдущим заказом, а WooCommerce
+	 * не пересчитал доставку (закэшированные ставки пакета) — без этого в заказ не
+	 * попадает esl_shipping_methods и в форме выгрузки пустой тариф.
+	 *
+	 * @return array|null
+	 */
+	public static function getFrameCalculationData( $shippingFrame, $widgetCityEsl ) {
+		if ( is_string( $shippingFrame ) ) {
+			$shippingFrame = maybe_unserialize( $shippingFrame );
+		}
+		if ( is_string( $widgetCityEsl ) ) {
+			$widgetCityEsl = maybe_unserialize( $widgetCityEsl );
+		}
+
+        if (is_array($shippingFrame) && !empty($shippingFrame['from']) && !SenderCities::getByFias($shippingFrame['from'])) return null;
+		$optionsRepository = new OptionsRepository();
+		$cacheJson = array(
+			'city' => ( is_array( $widgetCityEsl ) ? ( $widgetCityEsl['fias'] ?? '' ) : '' ),
+			'key' => $optionsRepository->getOption('wc_esl_shipping_api_key_wcart'),
+			'service' => ( is_array( $shippingFrame ) ? ( $shippingFrame['key'] ?? '' ) : '' )
+		);
+		if (is_array($shippingFrame) && !empty($shippingFrame['from'])) $cacheJson['from'] = $shippingFrame['from'];
+		$cache_key  = md5('widget/calculation'.json_encode($cacheJson));
+		$cache_data = get_transient( $cache_key );
+
+		// Transient живёт WidgetController::CACHE_TTL (1 ч), а покупатель может оформить заказ
+		// гораздо позже выбора доставки. Поэтому держим копию последнего расчёта в сессии
+		// WooCommerce (живёт до 48 ч) и берём её, если transient уже истёк — при условии, что
+		// город и служба те же (совпадает ключ кэша).
+		$sessionCopyKey = 'esl_frame_calculation';
+		try {
+			$sessionService = new SessionService();
+			if ( $cache_data && is_array( $cache_data ) ) {
+				$sessionService->set( $sessionCopyKey, array( 'cache_key' => $cache_key, 'data' => $cache_data ) );
+			} else {
+				$sessionCopy = $sessionService->get( $sessionCopyKey );
+				if ( is_array( $sessionCopy ) && ( $sessionCopy['cache_key'] ?? '' ) === $cache_key && is_array( $sessionCopy['data'] ?? null ) ) {
+					$cache_data = $sessionCopy['data'];
+				}
+			}
+		} catch ( \Exception $e ) {
+			// Сессия WooCommerce не инициализирована — работаем только с transient'ом.
+		}
+
+		if ( ! $cache_data || ! is_array( $cache_data ) ) {
+			return null;
+		}
+
+		return array(
+            'sender_fias' => is_array($shippingFrame) ? ($shippingFrame['from'] ?? '') : '',
+			'debug' => ( $cache_data['debug'] ?? [] ),
+			'data'  => array(
+				'terminal' => ( $cache_data['data']['terminal'] ?? [] ),
+				'door'     => ( $cache_data['data']['door'] ?? [] ),
+				// Полный список тарифов по каждому типу доставки (не только "лучший" по цене) —
+				// нужен, чтобы форма выгрузки заказа могла показать именно тот тариф, который
+				// покупатель выбрал во всплывающем окне "Выберите тариф" виджета, а не автоматически
+				// самый дешёвый (см. Classes/Shipping/ExportFileds.php::resolveOrderTariff()).
+				'tariffs'  => ( $cache_data['data']['tariffs'] ?? [] ),
+			),
+		);
+	}
+
+	private function canApplyFrameSelectionForContext( $shippingFrame, $widgetCityEsl ): bool
+	{
+		if ( ! is_array( $shippingFrame ) || ! isset( $shippingFrame['name'], $shippingFrame['price'] ) ) {
+			return false;
+		}
+
+        if (($shippingFrame['from'] ?? '') !== SenderCities::getSelected()) return false;
+		$frameCityRaw = isset( $shippingFrame['city'] ) ? (string) $shippingFrame['city'] : '';
+		$modeCityRaw  = ( is_array( $widgetCityEsl ) && isset( $widgetCityEsl['city'] ) ) ? (string) $widgetCityEsl['city'] : '';
+		$frameCity    = function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( $frameCityRaw ) ) : strtolower( trim( $frameCityRaw ) );
+		$modeCity     = function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( $modeCityRaw ) ) : strtolower( trim( $modeCityRaw ) );
+
+		// Legacy flow usually has full city context; Blocks recalculation can be triggered
+		// before city fields are fully synced, so empty city on either side is accepted.
+		return $frameCity === '' || $modeCity === '' || $frameCity === $modeCity;
 	}
 
 	public function getSlug()

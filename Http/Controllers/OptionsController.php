@@ -45,7 +45,7 @@ class OptionsController extends Controller
 		}
 
 		$this->options->save($data);
-
+		
 		return $this->json([
 			'status' => 'success',
 			'msg'    => __('Настройки успешно сохранены', 'eshoplogisticru'),
@@ -72,28 +72,39 @@ class OptionsController extends Controller
 
 		$info_account = $eshopLogisticApi->infoAccount($api_key);
 		$init_account = $eshopLogisticApi->initAccount();
-		$all_services = $eshopLogisticApi->allServices();
-
-		if(
-			$info_account->hasErrors() ||
-			$init_account->hasErrors() ||
-			$all_services->hasErrors()
-		) {
-			$errorMsg = 'API ключ введён некорректно';
-			$info_account_data = $info_account->jsonSerialize();
-			if(isset($info_account_data['data']['messages']))
-				$errorMsg = $info_account_data['data']['messages'];
-
-			return $this->json([
-				'status' => 'error',
-				'msg'    => $errorMsg
-			]);
-		}
 
 		$data = [];
 		$data['wc_esl_shipping'] = [];
 
 		$data['wc_esl_shipping']['api_key'] = $api_key;
+
+		// Ошибка client/state (например, у аккаунта закончился баланс — API отказывает в
+		// запросе всей учётной информации) не означает, что ключ введён неверно. Сохраняем
+		// ключ в любом случае, чтобы пользователь не терял корректный ключ из-за временной
+		// блокировки по балансу; предыдущее известное состояние аккаунта (баланс/дни/blocked)
+		// при этом не трогаем — оно обновится при следующей успешной синхронизации.
+		if ($info_account->hasErrors()) {
+			$errorMsg = 'API ключ введён некорректно';
+			$info_account_data = $info_account->jsonSerialize();
+			if (!empty($info_account_data['data']['messages'])) {
+				$errorMsg = $info_account_data['data']['messages'];
+			}
+
+			// Помечаем последнее состояние аккаунта как "не удалось синхронизировать" —
+			// показывать устаревший account_blocked/account_balance как достоверный статус
+			// было бы обманчиво (см. кейс "закончился баланс").
+			$data['wc_esl_shipping']['account_sync_error'] = $errorMsg;
+
+			$this->options->save($data);
+
+			return $this->json([
+				'status' => 'error',
+				'msg'    => $errorMsg,
+				'data'   => $this->options->getAll()
+			]);
+		}
+
+		$data['wc_esl_shipping']['account_sync_error'] = '';
 
 		if(!empty($info_account->data())) {
 
@@ -102,6 +113,7 @@ class OptionsController extends Controller
 			$data['wc_esl_shipping']['account_domain'] = $info_account->data()['domain'];
 			$data['wc_esl_shipping']['account_free_days'] = $info_account->data()['free_days'];
 			$data['wc_esl_shipping']['account_paid_days'] = $info_account->data()['paid_days'];
+			$data['wc_esl_shipping']['account_paid_days_text'] = $info_account->data()['paid_days_text'] ?? '';
 			$data['wc_esl_shipping']['account_services'] = $info_account->data()['services'];
 			$data['wc_esl_shipping']['account_settings'] = $info_account->data()['settings'];
 		}

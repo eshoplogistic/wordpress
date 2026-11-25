@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "eshoplogisticru/product-calculator",
+  "title": "Product Shipping Calculator",
+  "category": "widgets",
+  "description": "Quick shipping calculator widget for product pages",
+  "keywords": ["shipping", "delivery", "eshoplogistic", "calculator", "product"],
+  "icon": "calculator",
+  "supports": {
+    "align": [ "left", "center", "right" ],
+    "html": false,
+    "customClassName": true,
+    "reusable": true,
+    "lock": false,
+    "remove": true,
+    "inserter": true,
+    "multiple": true,
+    "anchor": false
+  },
+  "textdomain": "eshoplogisticru",
+  "attributes": {
+    "widgetKey": {
+      "type": "string",
+      "default": ""
+    },
+    "displayMode": {
+      "type": "string",
+      "default": "button"
+    }
+  }
+}

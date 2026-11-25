@@ -21,8 +21,6 @@ class ConflictPluginsHelper
     }
 
     private function woocs($value, $namePlug){
-        global $WOOCS;
-
         $currencies = get_option($namePlug, array());
         //$currenciesSite = $WOOCS->default_currency;
         //$result = isset($currencies[$currenciesSite]) ? $currencies[$currenciesSite] : $value;

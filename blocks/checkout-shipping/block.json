@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "eshoplogisticru/checkout-shipping",
+  "title": "Shipping Calculator (Checkout)",
+  "category": "widgets",
+  "description": "Displays eShopLogistic shipping calculator in checkout area",
+  "keywords": ["shipping", "delivery", "eshoplogistic", "calculator", "checkout"],
+  "icon": "location",
+  "supports": {
+    "align": ["left", "center", "right", "wide", "full"],
+    "html": false,
+    "customClassName": true,
+    "reusable": true,
+    "lock": false,
+    "remove": true,
+    "inserter": true,
+    "multiple": true,
+    "anchor": false,
+    "layout": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    },
+    "__experimentalLayout": {
+      "type": "flow"
+    }
+  },
+  "textdomain": "eshoplogisticru",
+  "attributes": {
+    "alignment": {
+      "type": "string",
+      "default": "left"
+    }
+  }
+}
